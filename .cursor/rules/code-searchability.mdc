@@ -24,9 +24,9 @@ See [sgconfig.yml](mdc:sgconfig.yml) and [rules/](mdc:rules/) for complete confi
 ast-grep --pattern 'async function $NAME' src/
 sg -p 'const $VAR = fetch($$$)' src/
 
-# Run specific rules  
-ast-grep scan -r sql-injection-risk
-sg scan -r unstructured-log
+# Filter by specific rules
+ast-grep scan --filter "sql-injection-risk"
+sg scan --filter "unstructured-log"
 
 # Scan all rules in project
 ast-grep scan
@@ -40,11 +40,11 @@ ast-grep --pattern 'throw Errors.$METHOD($$$)' src/api/
 
 | Feature | Command | Location |
 |---------|---------|----------|
-| **SQL Injection** | `sg scan -r sql-injection-risk` | All TS files |
-| **CORS Missing** | `sg scan -r missing-cors-headers` | All TS files |
-| **Unstructured Logs** | `sg scan -r unstructured-log` | All TS files |
-| **Hardcoded URLs** | `sg scan -r hardcoded-url` | All files |
-| **WORKER_URL Dupe** | `sg scan -r worker-url-definition` | Dashboard files |
+| **SQL Injection** | `sg scan --filter "sql-injection-risk"` | All TS files |
+| **CORS Missing** | `sg scan --filter "missing-cors-headers"` | All TS files |
+| **Unstructured Logs** | `sg scan --filter "unstructured-log"` | All TS files |
+| **Hardcoded URLs** | `sg scan --filter "hardcoded-url"` | All files |
+| **WORKER_URL Dupe** | `sg scan --filter "worker-url-definition"` | Dashboard files |
 
 ---
 
@@ -83,7 +83,7 @@ ast-grep --pattern 'async function $NAME(request: Request, env: Env, requestId: 
 sg -p 'async function getEvents' src/api/
 
 # Find endpoints without requestId
-sg scan -r missing-request-id
+sg scan --filter "missing-request-id"
 ```
 
 **Example Output:**
@@ -117,7 +117,7 @@ ast-grep --pattern 'env.$DB.prepare($QUERY)' src/
 sg -p "env.ANALYTICS.prepare(\`SELECT * FROM line_movements\`)" src/
 
 # Find potential SQL injection risks
-sg scan -r sql-injection-risk
+sg scan --filter "sql-injection-risk"
 ```
 
 **Anti-Pattern Detection:**

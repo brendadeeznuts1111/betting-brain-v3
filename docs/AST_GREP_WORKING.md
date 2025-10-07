@@ -22,8 +22,9 @@ $ sg -p 'console.log' src/index.ts
 
 ### ✅ Rule Scanning
 ```bash
-sg scan                    # Run all rules
-sg scan -r RULE_ID         # Run specific rule
+sg scan                         # Run all rules
+sg scan --filter "RULE_ID"      # Filter by rule ID
+sg scan --filter "RULE_ID" PATH # Filter by rule ID + specific path
 ```
 
 **Example Output:**
@@ -108,10 +109,14 @@ sg -p 'const WORKER_URL' dashboards/
 # Scan all rules
 sg scan
 
-# Scan specific rule
-sg scan -r unstructured-log
-sg scan -r worker-url-definition
-sg scan -r sql-injection-risk
+# Filter by specific rule ID
+sg scan --filter "unstructured-log"
+sg scan --filter "worker-url-definition"
+sg scan --filter "sql-injection-risk"
+
+# Filter by rule ID + specific path
+sg scan --filter "unstructured-log" src/index.ts
+sg scan --filter "worker-url-definition" dashboards/
 ```
 
 ---
@@ -130,10 +135,16 @@ $ sg -p 'console.log' src/
 ### Rule Scan Results
 ```bash
 $ sg scan
-✅ Detected issues:
-   • 50+ unstructured logs (missing requestId)
-   • 5+ WORKER_URL duplications in dashboards
+✅ Detected 325 issues across codebase:
+   • 300+ unstructured logs (missing requestId)
+   • 15+ WORKER_URL duplications in dashboards
    • 0 SQL injection risks (good!)
+
+$ sg scan --filter "unstructured-log" src/index.ts
+✅ Detected 15 issues in specific file
+
+$ sg scan --filter "worker-url-definition" dashboards/
+✅ Detected 6 WORKER_URL duplicates in dashboards
 ```
 
 ---
@@ -172,7 +183,7 @@ When adding a new rule:
 - [ ] Inside file, set: `id: YOUR-RULE-ID` (exact match!)
 - [ ] Set `language:` (TypeScript, JavaScript, etc.)
 - [ ] Define `rule:` with pattern
-- [ ] Test with: `sg scan -r YOUR-RULE-ID`
+- [ ] Test with: `sg scan --filter "YOUR-RULE-ID"`
 - [ ] Verify with: `sg scan` (should appear in output)
 
 ---
