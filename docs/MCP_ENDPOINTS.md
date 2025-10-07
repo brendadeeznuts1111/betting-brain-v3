@@ -3,6 +3,14 @@
 **Last Updated:** 2025-10-07  
 **Status:** ✅ **13/15 Tools Active**
 
+**Metadata:**
+- **Version:** 3.0.0
+- **Total Endpoints:** 13 active tools
+- **Protocol:** JSON-RPC 2.0
+- **Topics:** #mcp #api #documentation
+- **Audience:** Developers, Architects
+- **Related Docs:** [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md), [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)
+
 ---
 
 ## 📡 Base Endpoint

@@ -1,8 +1,17 @@
 # 📋 Cursor Rules Guide
 
-**Location:** `.cursor/rules/*.mdc`  
-**Count:** 7 comprehensive rules  
-**Last Updated:** 2025-10-07
+---
+
+**Metadata:**
+- **Status:** ✅ Active
+- **Version:** 3.0.0
+- **Last Updated:** 2025-10-07
+- **Total Rules:** 8 comprehensive rules
+- **Total Lines:** ~1,346 lines of guidance
+- **Location:** `.cursor/rules/*.mdc`
+- **Topics:** #developer-tools #rules #automation
+- **Audience:** AI Assistants, Developers, Maintainers
+- **Related Docs:** [ROOT_STRUCTURE.md](ROOT_STRUCTURE.md), [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md)
 
 ---
 
@@ -81,6 +90,18 @@
 - No backup files (*.backup)
 - No spaces or mixed case
 
+### 8. **endpoint-routing.mdc** (Applied to src/index.ts, dashboards/*.html) ✨ NEW
+**Purpose:** Endpoint routing patterns and request handling
+
+**Key Points:**
+- Endpoint mapping (13 routes documented)
+- Dashboard integration patterns
+- CORS configuration
+- Request ID tracking
+- Health check patterns
+- MCP protocol endpoints
+- BetTicker interception routes
+
 ---
 
 ## 🎯 Rule Application
@@ -91,12 +112,13 @@ These rules apply to EVERY request:
 - `bun-runtime.mdc` - Bun usage requirements
 - `file-naming.mdc` - Naming conventions
 
-### Glob-based (4 rules)
+### Glob-based (5 rules)
 These apply to specific file types:
 - `documentation.mdc` → `*.md` files
 - `testing.mdc` → `*.test.ts`, `*.spec.ts` files
 - `mcp-integration.mdc` → `src/mcp/**/*.ts` files
 - `cloudflare-workers.mdc` → `src/**/*.ts`, `wrangler*.toml` files
+- `endpoint-routing.mdc` → `src/index.ts`, `dashboards/*.html` files
 
 ---
 
