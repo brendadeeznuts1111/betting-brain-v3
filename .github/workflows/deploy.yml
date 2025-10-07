@@ -64,7 +64,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     needs: test
-    if: github.event_name == 'pull_request'
+    if: false  # Disabled until wrangler staging config is fixed
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -95,7 +95,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: false  # Disabled until ready for production
     runs-on: ubuntu-latest
     environment: production
     steps:
