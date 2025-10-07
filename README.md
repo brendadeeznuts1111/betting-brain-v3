@@ -313,9 +313,11 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
 
 ### Developer Resources
-- **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules guide (9 rules)
+- **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules guide (10 rules)
 - **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
+- **[ast-grep Configuration](.ast-grep.yml)** - Code searchability patterns
+- **[Dashboard Organization](dashboards/README.md)** - Dashboard architecture
 
 ## 📞 Support
 

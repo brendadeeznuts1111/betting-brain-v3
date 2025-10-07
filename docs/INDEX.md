@@ -71,10 +71,13 @@
 ### Developer Resources ✨ NEW
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|
-| [CURSOR_RULES.md](CURSOR_RULES.md) | AI assistant rules guide (9 rules) | AI Assistants | ✅ Complete |
+| [CURSOR_RULES.md](CURSOR_RULES.md) | AI assistant rules guide (10 rules) | AI Assistants | ✅ Complete |
 | [AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md) | Testing workflows | Developers | ✅ Complete |
-| [SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md) | Complete src/ analysis 🆕 | All Devs | ✅ Complete |
-| [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide 🆕 | All Devs | ✅ Complete |
+| [SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md) | Complete src/ analysis | All Devs | ✅ Complete |
+| [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide | All Devs | ✅ Complete |
+| [DASHBOARD_REFACTORING_SUMMARY.md](DASHBOARD_REFACTORING_SUMMARY.md) | Dashboard refactoring (60% reduction) 🆕 | All Devs | ✅ Complete |
+| [dashboards/README.md](../dashboards/README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
+| [.ast-grep.yml](../.ast-grep.yml) | Code searchability patterns 🆕 | All Devs | ✅ Complete |
 
 ### Archive (Historical)
 | Document | Purpose | Status |
@@ -275,7 +278,7 @@ npm run link-check
 **Last Updated:** October 7, 2025  
 **Version:** 3.0.0  
 **Total Documents:** 26 active + 4 archived  
-**Cursor Rules:** 9 rules (~1,700+ lines)  
+**Cursor Rules:** 10 rules (~2,200+ lines)  
 **Link Check:** ✅ Passing  
 **Maintainer:** Betting-Brain Team
 
