@@ -12,10 +12,12 @@
 | **Quick Start** | [QUICKSTART.md](QUICKSTART.md) | 15-second setup guide |
 | **Architecture** | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Technical deep-dive |
 | **Structure** | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | File organization guide |
+| **Deployment** | [DEPLOYMENT.md](DEPLOYMENT.md) | Complete deployment guide |
 | **API Docs** | _Generated at build time_ | OpenAPI 3.0 specification |
 | **Database** | [../migrations/](../migrations/) | D1 schema & migrations |
 | **Tests** | [../tests/](../tests/) | Unit test suite |
 | **Scripts** | [../scripts/](../scripts/) | Automation & deployment |
+| **Deploy Scripts** | [../deploy/](../deploy/) | Production deployment tools |
 | **Dashboards** | [../grafana/dashboard.json](../grafana/dashboard.json) | Grafana monitoring |
 | **CI/CD** | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml) | GitHub Actions |
 | **Contributing** | [../CONTRIBUTING.md](../CONTRIBUTING.md) | How to contribute |
@@ -30,6 +32,7 @@
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|
 | [QUICKSTART.md](QUICKSTART.md) | Fast setup & deployment | Developers | ✅ Complete |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Full deployment guide | DevOps, All Devs | ✅ Complete |
 | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Architecture overview | Architects | ✅ Complete |
 | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | Codebase organization | All Devs | ✅ Complete |
 | [BUILD_REPORT.md](BUILD_REPORT.md) | Build statistics | PM, Leads | ✅ Complete |
@@ -39,6 +42,14 @@
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues & solutions | All Devs | ✅ Complete |
 | [FINAL_REVIEW.md](FINAL_REVIEW.md) | Comprehensive project review | All Teams | ✅ Complete |
 | [SANITY_CHECK.md](SANITY_CHECK.md) | Production readiness verification | DevOps | ✅ Complete |
+
+### Deployment Scripts
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| [../deploy/setup-production.sh](../deploy/setup-production.sh) | Initial production setup | One-time environment creation |
+| [../deploy/production-deploy.sh](../deploy/production-deploy.sh) | Safe production deployment | Deploy with health checks & rollback |
+| [../deploy/staging-deploy.sh](../deploy/staging-deploy.sh) | Quick staging deployment | Test changes before production |
+| [../deploy/README.md](../deploy/README.md) | Deployment guide | Full deployment documentation |
 
 ---
 

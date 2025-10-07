@@ -1,0 +1,263 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'grafana/README.md'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Build Documentation Site
+        run: |
+          # Create site directory
+          mkdir -p _site
+          
+          # Copy all documentation
+          cp -r docs/* _site/
+          cp -r grafana _site/
+          cp README.md _site/
+          cp LICENSE _site/
+          
+          # Create index.html from docs/INDEX.md
+          cat > _site/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Betting Brain v3 - Documentation</title>
+              <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { 
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                      line-height: 1.6;
+                      color: #333;
+                      background: #f5f5f5;
+                  }
+                  .header {
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      padding: 60px 20px;
+                      text-align: center;
+                  }
+                  .header h1 { font-size: 3em; margin-bottom: 10px; }
+                  .header p { font-size: 1.2em; opacity: 0.9; }
+                  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+                  .nav {
+                      background: white;
+                      border-radius: 8px;
+                      padding: 20px;
+                      margin: -30px auto 30px;
+                      max-width: 1160px;
+                      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                  }
+                  .nav a {
+                      display: inline-block;
+                      margin: 5px 10px;
+                      padding: 8px 16px;
+                      background: #667eea;
+                      color: white;
+                      text-decoration: none;
+                      border-radius: 4px;
+                      transition: all 0.3s;
+                  }
+                  .nav a:hover { background: #764ba2; transform: translateY(-2px); }
+                  .content {
+                      background: white;
+                      border-radius: 8px;
+                      padding: 40px;
+                      margin-bottom: 30px;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  }
+                  .grid {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                      gap: 20px;
+                      margin: 30px 0;
+                  }
+                  .card {
+                      background: white;
+                      border: 1px solid #e0e0e0;
+                      border-radius: 8px;
+                      padding: 24px;
+                      transition: all 0.3s;
+                  }
+                  .card:hover { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+                  .card h3 { color: #667eea; margin-bottom: 12px; }
+                  .card a { color: #667eea; text-decoration: none; }
+                  .card a:hover { text-decoration: underline; }
+                  .badge {
+                      display: inline-block;
+                      padding: 4px 8px;
+                      background: #28a745;
+                      color: white;
+                      border-radius: 3px;
+                      font-size: 0.85em;
+                      margin-left: 8px;
+                  }
+                  pre {
+                      background: #f8f9fa;
+                      padding: 16px;
+                      border-radius: 4px;
+                      overflow-x: auto;
+                      border-left: 4px solid #667eea;
+                  }
+                  code { 
+                      background: #f8f9fa;
+                      padding: 2px 6px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                  }
+                  .footer {
+                      text-align: center;
+                      padding: 40px 20px;
+                      color: #666;
+                      border-top: 1px solid #e0e0e0;
+                      margin-top: 40px;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>🧠 Betting Brain v3</h1>
+                  <p>Edge-Native Sports Betting Intelligence System</p>
+              </div>
+              
+              <div class="nav">
+                  <a href="#overview">Overview</a>
+                  <a href="#quickstart">Quick Start</a>
+                  <a href="#architecture">Architecture</a>
+                  <a href="#deployment">Deployment</a>
+                  <a href="#monitoring">Monitoring</a>
+                  <a href="#api">API</a>
+                  <a href="https://github.com/brendadeeznuts1111/betting-brain-v3" target="_blank">GitHub</a>
+              </div>
+              
+              <div class="container">
+                  <div class="content">
+                      <h2 id="overview">📚 Documentation Overview</h2>
+                      <p>Comprehensive documentation for the Betting Brain v3 production-ready betting intelligence system.</p>
+                      
+                      <div class="grid">
+                          <div class="card">
+                              <h3>🚀 Quick Start</h3>
+                              <p>Get up and running in 15 seconds</p>
+                              <a href="QUICKSTART.html">View Guide →</a>
+                          </div>
+                          
+                          <div class="card">
+                              <h3>🏗️ Architecture</h3>
+                              <p>Technical deep-dive and implementation details</p>
+                              <a href="IMPLEMENTATION_SUMMARY.html">View Details →</a>
+                          </div>
+                          
+                          <div class="card">
+                              <h3>📊 Monitoring</h3>
+                              <p>Grafana dashboards and observability</p>
+                              <a href="grafana/README.html">View Dashboard Docs →</a>
+                          </div>
+                          
+                          <div class="card">
+                              <h3>🔧 Deployment</h3>
+                              <p>Production deployment guide</p>
+                              <a href="deploy/README.html">View Guide →</a>
+                          </div>
+                          
+                          <div class="card">
+                              <h3>🐛 Troubleshooting</h3>
+                              <p>Common issues and solutions</p>
+                              <a href="TROUBLESHOOTING.html">View Guide →</a>
+                          </div>
+                          
+                          <div class="card">
+                              <h3>✅ Final Review</h3>
+                              <p>Production readiness assessment</p>
+                              <a href="FINAL_REVIEW.html">View Report →</a>
+                          </div>
+                      </div>
+                      
+                      <h2 id="quickstart">⚡ Quick Start</h2>
+                      <pre><code># Clone the repository
+git clone https://github.com/brendadeeznuts1111/betting-brain-v3.git
+cd betting-brain-v3
+
+# Install dependencies
+npm install
+
+# Setup production environment
+./deploy/setup-production.sh
+
+# Deploy to production
+./deploy/production-deploy.sh</code></pre>
+                      
+                      <h2 id="features">✨ Key Features</h2>
+                      <ul style="list-style-position: inside; line-height: 2;">
+                          <li>✅ Edge-native architecture on Cloudflare Workers</li>
+                          <li>✅ Zero-downtime deployment with automated rollback</li>
+                          <li>✅ Cost-capped operations (stays within free tier)</li>
+                          <li>✅ Real-time betting intelligence APIs</li>
+                          <li>✅ Comprehensive Grafana monitoring (17 panels)</li>
+                          <li>✅ Production-ready with 95/100 quality score</li>
+                      </ul>
+                      
+                      <h2 id="architecture">🏗️ Architecture</h2>
+                      <p>The system consists of:</p>
+                      <ul style="list-style-position: inside; line-height: 2;">
+                          <li><strong>Cloudflare Workers:</strong> Serverless edge compute</li>
+                          <li><strong>D1 Database:</strong> Serverless SQL with auto-cleanup</li>
+                          <li><strong>Queues:</strong> Event-driven architecture</li>
+                          <li><strong>Analytics Engine:</strong> Real-time metrics</li>
+                          <li><strong>MCP Tools:</strong> Auto-generated intelligence APIs</li>
+                      </ul>
+                  </div>
+                  
+                  <div class="footer">
+                      <p><strong>Betting Brain v3</strong> | Version 3.0.0</p>
+                      <p>Edge-Native Sports Betting Intelligence System</p>
+                      <p style="margin-top: 10px;">
+                          <a href="https://github.com/brendadeeznuts1111/betting-brain-v3" style="color: #667eea;">GitHub</a> |
+                          <a href="INDEX.html" style="color: #667eea;">Full Documentation</a> |
+                          <a href="LICENSE.html" style="color: #667eea;">MIT License</a>
+                      </p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          HTML
+          
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
