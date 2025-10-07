@@ -385,11 +385,11 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
 - **[docs/MCP_TESTING_GUIDE.md](docs/MCP_TESTING_GUIDE.md)** - Comprehensive testing guide
 
 ### Code Organization & Rules ✨ **NEW**
-- **[docs/CURSOR_RULES.md](docs/CURSOR_RULES.md)** - AI assistant rules guide (7 rules)
+- **[docs/CURSOR_RULES.md](docs/CURSOR_RULES.md)** - AI assistant rules guide (9 rules)
 - **[docs/ROOT_STRUCTURE.md](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[docs/CODEBASE_REVIEW.md](docs/CODEBASE_REVIEW.md)** - Comprehensive codebase review
 - **[docs/MCP_ENDPOINTS.md](docs/MCP_ENDPOINTS.md)** - Complete MCP API reference (13 tools) ✨ NEW
-- **[.cursor/rules/](.cursor/rules/)** - Active Cursor rules (1,346 lines):
+- **[.cursor/rules/](.cursor/rules/)** - Active Cursor rules (1,700+ lines):
   - `root-organization.mdc` - Root directory policy (CRITICAL)
   - `bun-runtime.mdc` - Bun usage requirements
   - `documentation.mdc` - Documentation placement
@@ -397,6 +397,8 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
   - `mcp-integration.mdc` - MCP server patterns
   - `cloudflare-workers.mdc` - Workers-specific rules
   - `file-naming.mdc` - Naming conventions
+  - `endpoint-routing.mdc` - Endpoint routing patterns
+  - `api-patterns.mdc` - API validation & error handling ✨ NEW
 
 ### Archived Documentation
 - **[docs/archive/](docs/archive/)** - Historical docs, migration reports, obsolete guides
