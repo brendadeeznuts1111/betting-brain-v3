@@ -1,0 +1,31 @@
+# Observability Rules for ast-grep
+# Ensure proper logging and monitoring
+
+rules:
+  - id: unstructured-log
+    message: Unstructured log without requestId
+    severity: warning
+    language: TypeScript
+    rule:
+      all:
+        - pattern: console.log($MSG)
+        - not:
+            pattern: console.log(`[${requestId}]$$$`)
+            
+  - id: missing-request-id
+    message: Handler without requestId tracking
+    severity: warning
+    language: TypeScript
+    rule:
+      all:
+        - pattern: |
+            async function $HANDLER(request: Request, env: Env$$$) {
+              $$$
+            }
+        - not:
+            pattern: |
+              async function $HANDLER(request: Request, env: Env$$$) {
+                const requestId = $$$
+                $$$
+              }
+

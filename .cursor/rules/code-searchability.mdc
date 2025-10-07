@@ -1,10 +1,17 @@
 # Code Searchability & Pattern Matching
 
+---
+**Metadata:**
+- **Status:** ✅ Active
+- **Always Apply:** true
+- **Topics:** #searchability #ast-grep #patterns
+---
+
 ## Overview
 
 This codebase uses **ast-grep** for structural code search and pattern matching. ast-grep provides semantic search beyond simple text matching, understanding TypeScript/JavaScript syntax.
 
-See [.ast-grep.yml](mdc:.ast-grep.yml) for complete configuration.
+See [sgconfig.yml](mdc:sgconfig.yml) and [rules/](mdc:rules/) for complete configuration.
 
 ---
 
@@ -14,32 +21,30 @@ See [.ast-grep.yml](mdc:.ast-grep.yml) for complete configuration.
 
 ```bash
 # Search for specific patterns
-sg search 'async function $NAME'         # Find all async functions
-sg search 'const $VAR = fetch($$$)'      # Find all fetch calls
-sg search 'throw Errors.$METHOD($$$)'    # Find all error throws
+ast-grep --pattern 'async function $NAME' src/
+sg -p 'const $VAR = fetch($$$)' src/
 
-# Run specific rules
-sg run find-api-endpoints                # Find API endpoint handlers
-sg run find-mcp-handlers                 # Find MCP tool handlers
-sg run find-database-queries             # Find D1 database queries
-sg run find-validation-calls             # Find validation calls
-sg run find-sql-injection-risk           # Find potential SQL injection
+# Run specific rules  
+ast-grep scan -r sql-injection-risk
+sg scan -r unstructured-log
 
-# Scan all rules
-sg scan                                  # Run all rules
-sg scan --rule find-console-logs         # Run specific rule
+# Scan all rules in project
+ast-grep scan
+sg scan
+
+# Search in specific files
+ast-grep --pattern 'throw Errors.$METHOD($$$)' src/api/
 ```
 
 ### Search by Feature
 
 | Feature | Command | Location |
 |---------|---------|----------|
-| **API Endpoints** | `sg run find-api-endpoints` | `src/api/routes.ts` |
-| **MCP Handlers** | `sg run find-mcp-handlers` | `src/mcp/handlers/*.ts` |
-| **Database Queries** | `sg run find-database-queries` | `src/**/*.ts` |
-| **Validation** | `sg run find-validation-calls` | `src/api/routes.ts` |
-| **Error Handling** | `sg run find-error-throws` | `src/**/*.ts` |
-| **Console Logs** | `sg run find-console-logs` | `src/**/*.ts` |
+| **SQL Injection** | `sg scan -r sql-injection-risk` | All TS files |
+| **CORS Missing** | `sg scan -r missing-cors-headers` | All TS files |
+| **Unstructured Logs** | `sg scan -r unstructured-log` | All TS files |
+| **Hardcoded URLs** | `sg scan -r hardcoded-url` | All files |
+| **WORKER_URL Dupe** | `sg scan -r worker-url-definition` | Dashboard files |
 
 ---
 
@@ -72,13 +77,13 @@ sg --version
 
 ```bash
 # Find all endpoint handlers
-sg search 'async function $NAME(request: Request, env: Env, requestId: string)'
+ast-grep --pattern 'async function $NAME(request: Request, env: Env, requestId: string)' src/
 
 # Find specific endpoint
-sg search 'async function getEvents'
+sg -p 'async function getEvents' src/api/
 
 # Find endpoints without requestId
-sg run find-missing-request-id
+sg scan -r missing-request-id
 ```
 
 **Example Output:**
@@ -92,27 +97,27 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
 ### 2. Finding MCP Handlers
 
 ```bash
-# Find all MCP tool handlers
-sg run find-mcp-handlers
+# Find all MCP tool handlers  
+ast-grep --pattern 'export async function $NAME(params: $PARAMS, env: Env): Promise<MCPToolResult>' src/mcp/
 
 # Find specific handler
-sg search 'export async function getSteamMoves'
+sg -p 'export async function getSteamMoves' src/
 
 # Find handlers returning MCPToolResult
-sg search 'Promise<MCPToolResult>'
+sg -p 'Promise<MCPToolResult>' src/
 ```
 
 ### 3. Finding Database Queries
 
 ```bash
 # Find all D1 queries
-sg run find-database-queries
+ast-grep --pattern 'env.$DB.prepare($QUERY)' src/
 
 # Find queries with specific table
-sg search "env.ANALYTICS.prepare(\`SELECT * FROM line_movements\`)"
+sg -p "env.ANALYTICS.prepare(\`SELECT * FROM line_movements\`)" src/
 
 # Find potential SQL injection risks
-sg run find-sql-injection-risk
+sg scan -r sql-injection-risk
 ```
 
 **Anti-Pattern Detection:**
@@ -128,38 +133,35 @@ env.ANALYTICS.prepare(`SELECT * FROM table WHERE id = ?`).bind(id);
 
 ```bash
 # Find all validation calls
-sg run find-validation-calls
+ast-grep --pattern 'validateQueryParams($URL, $VALIDATORS)' src/
 
 # Find specific validator
-sg search 'Validators.agentID'
-sg search 'validateQueryParams'
+sg -p 'Validators.agentID' src/
+sg -p 'validateQueryParams' src/
 ```
 
 ### 5. Finding Error Handling
 
 ```bash
 # Find all error throws
-sg run find-error-throws
+ast-grep --pattern 'throw Errors.$METHOD($$$)' src/
 
 # Find specific error type
-sg search 'throw Errors.validationError'
-sg search 'throw Errors.notFound'
-
-# Find missing error handling
-sg run find-missing-error-handling
+sg -p 'throw Errors.validationError' src/
+sg -p 'throw Errors.notFound' src/
 ```
 
 ### 6. Finding Console Logs
 
 ```bash
 # Find all console logs
-sg run find-console-logs
+ast-grep --pattern 'console.$METHOD($$$)' src/
 
 # Find unstructured logs (missing requestId)
-sg run find-unstructured-logs
+sg scan -r unstructured-log
 
 # Find specific log level
-sg search 'console.error'
+sg -p 'console.error' src/
 ```
 
 ---
@@ -170,7 +172,7 @@ sg search 'console.error'
 
 #### 1. SQL Injection Prevention
 ```bash
-sg run find-sql-injection-risk
+sg scan -r sql-injection-risk
 ```
 
 **Rule:** Never use string interpolation in SQL queries.
@@ -185,7 +187,7 @@ const query = env.ANALYTICS.prepare(`SELECT * FROM users WHERE id = ?`).bind(use
 
 #### 2. CORS Headers
 ```bash
-sg run find-missing-cors
+sg scan -r missing-cors-headers
 ```
 
 **Rule:** All API responses must include CORS headers.
@@ -207,7 +209,7 @@ return new Response(JSON.stringify(data), {
 
 #### 1. Request ID Tracking
 ```bash
-sg run find-missing-request-id
+sg scan -r missing-request-id
 ```
 
 **Rule:** All endpoint handlers must generate and use requestId.
@@ -228,7 +230,7 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
 
 #### 2. Structured Logging
 ```bash
-sg run find-unstructured-logs
+sg scan -r unstructured-log
 ```
 
 **Rule:** All logs should include requestId prefix.
@@ -249,13 +251,13 @@ console.log(`[${requestId}] Processing request`);
 
 ```bash
 # Find WORKER_URL definitions (should be 1, in shared/config.js)
-sg run find-worker-url
+sg scan -r worker-url-definition
 
 # Find Chart.js usage
-sg run find-chart-usage
+ast-grep --pattern 'new Chart($CTX, $$$)' dashboards/
 
 # Find duplicate fetch calls
-sg run find-fetch-calls
+sg scan -r duplicate-fetch
 ```
 
 ### Refactoring Checklist
@@ -381,31 +383,31 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
 ### Find All API Endpoints
 
 ```bash
-sg search 'case "/$PATH":'
+ast-grep --pattern 'case "/$PATH":' src/
 ```
 
 ### Find All MCP Tools
 
 ```bash
-sg search 'tools/call'
+sg -p 'tools/call' src/
 ```
 
 ### Find All Database Tables
 
 ```bash
-sg search 'FROM $TABLE'
+ast-grep --pattern 'FROM $TABLE' src/
 ```
 
 ### Find All Validators
 
 ```bash
-sg search 'Validators.$METHOD'
+sg -p 'Validators.$METHOD' src/
 ```
 
 ### Find All Error Types
 
 ```bash
-sg search 'Errors.$TYPE'
+sg -p 'Errors.$TYPE' src/
 ```
 
 ---
@@ -438,7 +440,8 @@ npm install -g @ast-grep/cli
 
 ## Related Documentation
 
-- **[.ast-grep.yml](mdc:.ast-grep.yml)** - Complete configuration
+- **[sgconfig.yml](mdc:sgconfig.yml)** - Project configuration
+- **[rules/](mdc:rules/)** - Rule definitions
 - **[CODE_QUALITY_AUDIT.md](mdc:docs/CODE_QUALITY_AUDIT.md)** - Code quality report
 - **[CURSOR_RULES.md](mdc:docs/CURSOR_RULES.md)** - All Cursor rules
 - **[ast-grep Documentation](https://ast-grep.github.io/)** - Official docs
@@ -447,3 +450,19 @@ npm install -g @ast-grep/cli
 
 **Status:** Production patterns established  
 **Last Updated:** 2025-10-07
+
+## Quick Command Reference
+
+```bash
+# Pattern search
+ast-grep --pattern 'PATTERN' PATH
+sg -p 'PATTERN' PATH
+
+# Rule scan
+ast-grep scan -r RULE_ID
+sg scan -r RULE_ID
+
+# Scan all rules
+ast-grep scan
+sg scan
+```

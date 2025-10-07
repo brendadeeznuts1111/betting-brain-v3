@@ -1,0 +1,40 @@
+# ast-grep Configuration for BetTicker Codebase
+# https://ast-grep.github.io/
+#
+# This is the project configuration file for ast-grep.
+# Place this file at the root of your project.
+#
+# Version: 1.0.0
+# Last Updated: 2025-10-07
+
+# Rule directories
+ruleDirs:
+  - rules
+
+# Test directories  
+testConfigs:
+  - testDir: rules/tests
+
+# Language settings
+languageGlobs:
+  ts:
+    - "**/*.ts"
+    - "**/*.tsx"
+  js:
+    - "**/*.js"
+    - "**/*.jsx"
+
+# Utility settings
+utils:
+  # Custom metavariables or shared patterns can go here
+  
+# Global ignore patterns
+ignore:
+  - node_modules
+  - dist
+  - coverage
+  - .git
+  - bun.lock
+  - package-lock.json
+  - "*.min.js"
+

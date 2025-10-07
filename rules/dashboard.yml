@@ -1,0 +1,20 @@
+# Dashboard Refactoring Rules for ast-grep
+# Find duplicate code in dashboards
+
+rules:
+  - id: worker-url-definition
+    message: WORKER_URL definition found - should use shared config
+    severity: warning
+    language: JavaScript
+    rule:
+      pattern: const WORKER_URL = $$$
+      
+  - id: duplicate-fetch
+    message: Fetch call found - consider using shared utilities
+    severity: info
+    language: JavaScript
+    rule:
+      any:
+        - pattern: fetch($URL$$$)
+        - pattern: await fetch($URL$$$)
+

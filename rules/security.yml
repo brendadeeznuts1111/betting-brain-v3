@@ -1,0 +1,37 @@
+# Security Rules for ast-grep
+# Detect potential security issues
+
+rules:
+  - id: sql-injection-risk
+    message: Potential SQL injection risk - use parameterized queries
+    severity: error
+    language: TypeScript
+    rule:
+      pattern: env.$DB.prepare(`$$$${$VAR}$$$`)
+    fix: Use parameterized queries with .bind()
+    
+  - id: missing-cors-headers
+    message: Response without CORS headers
+    severity: warning
+    language: TypeScript
+    rule:
+      all:
+        - pattern: |
+            return new Response($$$)
+        - not:
+            pattern: |
+              return new Response($$$, {
+                headers: {
+                  $$$
+                  'Access-Control-Allow-Origin'
+                  $$$
+                }
+              })
+              
+  - id: hardcoded-url
+    message: Hardcoded URL found - consider using config
+    severity: warning
+    language: TypeScript  
+    rule:
+      pattern: const $VAR = 'https://$$$'
+
