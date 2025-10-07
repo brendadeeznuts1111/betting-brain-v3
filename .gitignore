@@ -64,3 +64,7 @@ test-results.json
 
 # One-time scripts
 tools/organize-files.sh
+
+# Problematic directories
+~
+~/
