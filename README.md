@@ -289,14 +289,30 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 
 ## 📚 Additional Documentation
 
+### Core Documentation
 - **[Quick Start Guide](docs/QUICKSTART.md)** - 15-second setup
-- **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
 - **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical overview
 - **[Automation Guide](docs/AUTOMATION_GUIDE.md)** - Testing workflows
-- **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status
-- **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API documentation for 13 tools ✨
-- **[Endpoint & Dashboard Integration](docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete integration guide ✨ NEW
-- **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules & conventions (7 rules)
+
+### MCP Integration ✨ NEW
+- **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status & overview
+- **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API docs for 13 tools
+- **[MCP Testing Guide](docs/MCP_TESTING_GUIDE.md)** - Comprehensive testing procedures
+
+### System Integration
+- **[Endpoint & Dashboard Integration](docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete integration guide
+- **[System Integration Map](docs/SYSTEM_INTEGRATION_MAP.md)** - Visual architecture diagrams
+- **[Database & Cron Verification](docs/DATABASE_CRON_VERIFICATION.md)** - System verification
+
+### Quality & Testing
+- **[Test Audit Report](docs/TEST_AUDIT_REPORT.md)** - Quality score: 100/100
+- **[Code Quality Audit](docs/CODE_QUALITY_AUDIT.md)** - Comprehensive review
+- **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
+
+### Developer Resources
+- **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules guide (8 rules)
+- **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
+- **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
 
 ## 📞 Support
 
