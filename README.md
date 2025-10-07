@@ -295,6 +295,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Automation Guide](docs/AUTOMATION_GUIDE.md)** - Testing workflows
 - **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status
 - **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API documentation for 13 tools ✨
+- **[Endpoint & Dashboard Integration](docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete integration guide ✨ NEW
 - **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules & conventions (7 rules)
 
 ## 📞 Support
