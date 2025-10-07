@@ -45,4 +45,6 @@ ignore:
   - "tests/**"  # Exclude test files from production rules
   - "scripts/**"  # Exclude utility scripts (no request context)
   - "tools/**"  # Exclude diagnostic tools
+  - "dashboards/**"  # Exclude dashboards (browser context, no requestId)
+  - "browser-extension/**"  # Exclude extension (browser context)
 

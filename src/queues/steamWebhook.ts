@@ -182,7 +182,7 @@ async function calculateSigma(eventId: string, marketType: string, env: Env): Pr
     ts: string;
   }>;
 
-  if (recentMovements.length < 2) {
+  if (!recentMovements || !Array.isArray(recentMovements) || recentMovements.length < 2) {
     return 0; // Not enough data
   }
 

@@ -1,6 +1,7 @@
 # 🧠 Betting-Brain v3
 
 [![CI](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
+[![Security](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg?job=security)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
 [![Link Check](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg?job=linkcheck)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](tsconfig.json)

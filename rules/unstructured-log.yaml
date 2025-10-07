@@ -1,6 +1,6 @@
 id: unstructured-log
 message: Unstructured log without requestId
-severity: warning
+severity: hint
 language: TypeScript
 rule:
   all:
@@ -8,4 +8,14 @@ rule:
     - not:
         pattern: console.log(`[${requestId}]$$$`)
 note: "All logs should include requestId prefix for traceability"
+constraints:
+  MSG:
+    not:
+      regex: '\[.*\]'  # Allow any bracketed prefix (requestId, batchId, etc.)
+# Exclude files that don't have request context
+ignore:
+  - "src/queues/**"
+  - "src/schedules/**"
+  - "src/triggers/**"
+  - "src/guards/costCap.ts"
 

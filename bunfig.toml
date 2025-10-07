@@ -1,0 +1,12 @@
+# Bun configuration for betting-brain-v3
+# https://bun.sh/docs/runtime/bunfig
+
+[test]
+# Default timeout for all tests (10 seconds)
+timeout = 10000
+
+# Preload files before running tests
+# preload = ["./tests/setup/global-setup.ts"]
+
+# Root directory for tests
+root = "."

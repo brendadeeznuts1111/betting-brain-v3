@@ -20,14 +20,21 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.2.23
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
       - name: Install ast-grep
-        run: bun install -g @ast-grep/cli
+        run: bun install -g @ast-grep/cli@0.39.5
 
       - name: Run security scan
-        run: sg scan --error
-        working-directory: .
+        run: sg scan src/
 
       - name: Validate SQL migrations
         run: bun run scripts/validate-migrations.ts

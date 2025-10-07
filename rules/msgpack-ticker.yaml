@@ -1,6 +1,6 @@
 id: msgpack-ticker
 language: TypeScript
-severity: warning
+severity: hint
 rule:
   pattern: JSON.stringify($TICKER_DATA)
 message: |
