@@ -1,0 +1,22 @@
+id: queue-batch-limit
+language: TypeScript
+severity: warning
+rule:
+  pattern: $QUEUE.send($BATCH)
+message: |
+  Cloudflare Queue limit: 100 messages per batch.
+  
+  If sending arrays, ensure you slice to max 100 items:
+  const batch = items.slice(0, 100);
+  await queue.send(batch);
+  
+  For larger datasets, use pagination:
+  for (let i = 0; i < items.length; i += 100) {
+    await queue.send(items.slice(i, i + 100));
+  }
+note: |
+  Cloudflare Queue enforces a strict limit of 100 messages per batch.
+  Exceeding this will cause runtime errors.
+  
+  See: https://developers.cloudflare.com/queues/platform/limits/
+

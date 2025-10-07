@@ -1,0 +1,14 @@
+id: no-parsefloat-stake
+language: TypeScript
+severity: error
+rule:
+  pattern: parseFloat($$$)
+message: |
+  parseFloat allows "100abc" → 100, which is dangerous for stake amounts.
+  Use Number() to reject garbage input and ensure type safety.
+note: |
+  Bad:  parseFloat(userInput)  → accepts "100abc"
+  Good: Number(userInput)      → rejects invalid input with NaN
+  
+  For betting stakes, always validate with Number() + isNaN() check.
+

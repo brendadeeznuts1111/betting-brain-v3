@@ -1,0 +1,22 @@
+id: no-new-date-edge
+language: TypeScript
+severity: warning
+rule:
+  all:
+    - pattern: new Date()
+    - not:
+        pattern: new Date().toISOString()
+    - not:
+        pattern: new Date().getTime()
+message: |
+  Edge workers run in UTC only. Using new Date() without arguments
+  can cause timezone-related bugs.
+  
+  Use Date.now() for timestamps or new Date(epochMs) for specific times.
+note: |
+  Bad:  new Date()                    → ambiguous timezone
+  Good: Date.now()                    → milliseconds since epoch
+  Good: new Date(timestamp)           → explicit UTC time
+  Good: new Date().toISOString()      → UTC string (allowed)
+  Good: new Date().getTime()          → epoch ms (allowed)
+

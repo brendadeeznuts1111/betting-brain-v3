@@ -1,0 +1,21 @@
+id: d1-sql-injection
+language: TypeScript
+severity: error
+rule:
+  any:
+    - pattern: $db.exec(`$$$${$VAR}$$$`)
+    - pattern: $db.prepare(`$$$${$VAR}$$$`)
+message: |
+  SQL INJECTION RISK: Never use template literal interpolation in D1 queries.
+  Always use parameterized queries with .bind()
+note: |
+  ❌ DANGEROUS:
+  db.prepare(`SELECT * FROM users WHERE id = '${userId}'`)
+  
+  ✅ SAFE:
+  db.prepare(`SELECT * FROM users WHERE id = ?`).bind(userId)
+  
+  ✅ SAFE (multiple params):
+  db.prepare(`INSERT INTO bets (user_id, amount) VALUES (?, ?)`)
+    .bind(userId, amount)
+

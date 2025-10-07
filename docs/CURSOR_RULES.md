@@ -8,6 +8,7 @@
 - **Last Updated:** 2025-10-07
 - **Total Rules:** 10 comprehensive rules
 - **Total Lines:** ~2,200+ lines of guidance
+- **ast-grep Rules:** 15+ security/lint rules (5 new production rules)
 - **Location:** `.cursor/rules/*.mdc`
 - **Topics:** #developer-tools #rules #automation #searchability
 - **Audience:** AI Assistants, Developers, Maintainers

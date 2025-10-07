@@ -1,0 +1,212 @@
+# Production Security Patterns
+
+**Metadata:**
+- **Status:** ✅ Active
+- **Always Apply:** true
+- **Topics:** #security #production #scale
+- **Last Updated:** 2025-10-07
+
+---
+
+## Overview
+
+This rule enforces **production-ready security patterns** for sports betting platforms handling real money at scale.
+
+All patterns are enforced via **ast-grep** rules in the `rules/` directory.
+
+---
+
+## Critical Security Rules
+
+### 1. No parseFloat on Stakes (CRITICAL)
+
+**Rule:** `rules/no-parsefloat-stake.yaml`
+
+**Why:** `parseFloat("100abc")` returns `100`, accepting garbage input. For betting stakes, this is catastrophic.
+
+```typescript
+// ❌ DANGEROUS
+const stake = parseFloat(userInput);  // Accepts "100abc" → 100
+
+// ✅ SAFE
+const stake = Number(userInput);
+if (isNaN(stake) || stake <= 0) {
+  throw Errors.validationError('Invalid stake amount');
+}
+```
+
+**Enforcement:**
+```bash
+sg scan --filter "no-parsefloat-stake" --error
+```
+
+---
+
+### 2. D1 SQL Injection Prevention (CRITICAL)
+
+**Rule:** `rules/d1-sql-injection.yaml`
+
+**Why:** Template literal interpolation bypasses D1's parameterization.
+
+```typescript
+// ❌ SQL INJECTION RISK
+const userId = request.query.id;
+await env.ANALYTICS.prepare(`SELECT * FROM users WHERE id = '${userId}'`).all();
+
+// ✅ PARAMETERIZED QUERY
+await env.ANALYTICS.prepare(`SELECT * FROM users WHERE id = ?`)
+  .bind(userId)
+  .all();
+```
+
+**Enforcement:**
+```bash
+sg scan --filter "d1-sql-injection" --error
+```
+
+---
+
+### 3. Queue Batch Size Limits (HIGH)
+
+**Rule:** `rules/queue-batch-limit.yaml`
+
+**Why:** Cloudflare Queues enforce a hard limit of 100 messages per batch.
+
+```typescript
+// ❌ WILL FAIL at runtime
+await env.QUEUE.send(items);  // items.length > 100
+
+// ✅ CORRECT: Batch in chunks
+for (let i = 0; i < items.length; i += 100) {
+  const batch = items.slice(i, i + 100);
+  await env.QUEUE.send(batch);
+}
+```
+
+**Enforcement:**
+```bash
+sg scan --filter "queue-batch-limit"
+```
+
+---
+
+### 4. No new Date() in Edge Workers (MEDIUM)
+
+**Rule:** `rules/no-new-date-edge.yaml`
+
+**Why:** Edge workers run in UTC-only environments. Timezone ambiguity causes bugs.
+
+```typescript
+// ❌ WRONG: Timezone ambiguity
+const now = new Date();
+
+// ✅ CORRECT: Explicit UTC
+const nowMs = Date.now();
+const nowISO = new Date().toISOString();
+```
+
+**Enforcement:**
+```bash
+sg scan --filter "no-new-date-edge" --error
+```
+
+---
+
+### 5. WASM Memory Management (HIGH)
+
+**Rule:** `rules/wasm-memory-guard.yaml`
+
+**Why:** WASM linear memory is not garbage collected. Memory leaks at the edge.
+
+```typescript
+// ❌ MEMORY LEAK
+const result = wasmModule.instance.exports.calculate(ptr);
+
+// ✅ SAFE: Always free in finally{}
+let ptr;
+try {
+  ptr = wasmModule.instance.exports.alloc(1024);
+  const result = wasmModule.instance.exports.calculate(ptr);
+  return result;
+} finally {
+  if (ptr) wasmModule.instance.exports.free(ptr);
+}
+```
+
+**Enforcement:**
+```bash
+sg scan --filter "wasm-memory-guard" --error
+```
+
+---
+
+## CI/CD Integration
+
+### Required Pre-Deployment Check
+
+Add to `.github/workflows/deploy.yml`:
+
+```yaml
+- name: Security scan (ast-grep)
+  run: sg scan --error  # Fail CI on security issues
+```
+
+### Pre-Commit Hook
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+sg scan --filter "no-parsefloat-stake" --error
+sg scan --filter "d1-sql-injection" --error
+```
+
+---
+
+## Production Checklist
+
+Before deploying to production:
+
+- [ ] Run `sg scan --error` locally
+- [ ] All critical rules pass (no-parsefloat-stake, d1-sql-injection)
+- [ ] Input validation uses `Number()` not `parseFloat()`
+- [ ] All D1 queries use `.bind()` parameterization
+- [ ] Queue sends respect 100-message batch limit
+- [ ] No `new Date()` without arguments in workers
+- [ ] WASM memory freed in finally{} blocks
+
+---
+
+## Scale Testing
+
+### Game-Day Load (1,000× normal traffic)
+
+**Test scenario:**
+- 1M req/min → Worker
+- 10K bets/sec → D1
+- 100K queue messages/sec
+
+**Validation:**
+```bash
+# Load test with k6
+bun run scripts/load-test.ts
+
+# Monitor queue depth
+wrangler queues list
+
+# Check D1 latency
+wrangler d1 execute betting-analytics --command "SELECT COUNT(*) FROM bets WHERE created_at > datetime('now', '-1 hour')"
+```
+
+---
+
+## Related Documentation
+
+- **[Production Patterns](../docs/PRODUCTION_PATTERNS.md)** - Complete guide
+- **[ast-grep Quick Start](../docs/AST_GREP_QUICKSTART.md)** - Rule usage
+- **[Security Audit](../docs/CODE_QUALITY_AUDIT.md)** - Code quality review
+
+---
+
+**Status:** Production-Ready  
+**Enforcement:** CI/CD Required  
+**Zero Tolerance:** SQL Injection, parseFloat on stakes

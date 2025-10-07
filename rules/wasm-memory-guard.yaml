@@ -1,0 +1,33 @@
+id: wasm-memory-guard
+language: TypeScript
+severity: error
+rule:
+  pattern: $MOD.instance.exports.$FUNC($$$)
+message: |
+  WASM memory leak risk: Always free linear memory in finally{} block
+  or use RAII wrapper pattern.
+note: |
+  ❌ WRONG:
+  const result = wasmModule.instance.exports.calculate(ptr);
+  
+  ✅ CORRECT:
+  let ptr;
+  try {
+    ptr = wasmModule.instance.exports.alloc(size);
+    const result = wasmModule.instance.exports.calculate(ptr);
+    return result;
+  } finally {
+    if (ptr) wasmModule.instance.exports.free(ptr);
+  }
+  
+  ✅ BETTER: Use RAII wrapper
+  class WasmBuffer {
+    constructor(size) {
+      this.ptr = wasm.alloc(size);
+    }
+    [Symbol.dispose]() {
+      wasm.free(this.ptr);
+    }
+  }
+  using buffer = new WasmBuffer(1024);
+

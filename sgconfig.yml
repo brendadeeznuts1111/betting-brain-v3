@@ -4,7 +4,7 @@
 # This is the project configuration file for ast-grep.
 # Place this file at the root of your project.
 #
-# Version: 1.0.0
+# Version: 2.0.0
 # Last Updated: 2025-10-07
 
 # Rule directories
@@ -14,6 +14,11 @@ ruleDirs:
 # Test directories  
 testConfigs:
   - testDir: rules/tests
+    snapshot: true
+
+# Utility directories (for shared ast-grep patterns)
+utilDirs:
+  - src/utils
 
 # Language settings
 languageGlobs:
@@ -37,4 +42,6 @@ ignore:
   - bun.lock
   - package-lock.json
   - "*.min.js"
+  - "tests/**"  # Exclude test files from production rules
+  - "scripts/**"  # Exclude utility scripts
 
