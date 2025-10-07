@@ -15,9 +15,14 @@ const __root = resolve(__dirname, '..');
 console.log('🔍 Checking all markdown links...\n');
 
 async function main() {
-  const mdFiles = await glob('**/*.md', { 
+  const mdFiles = await glob('**/*.md', {
     cwd: __root,
-    ignore: ['node_modules/**', 'dist/**', '.wrangler/**']
+    ignore: [
+      'node_modules/**',
+      'dist/**',
+      '.wrangler/**',
+      'docs/archive/**'  // Ignore archived content (historical snapshots)
+    ]
   });
 
   console.log(`📄 Found ${mdFiles.length} markdown files\n`);
@@ -39,10 +44,11 @@ async function main() {
       const linkText = match[1];
       const linkUrl = match[2];
 
-      // Skip external URLs, anchors, and mailto links
-      if (linkUrl.startsWith('http') || 
-          linkUrl.startsWith('#') || 
-          linkUrl.startsWith('mailto:')) {
+      // Skip external URLs, anchors, mailto links, and Cursor MDC references
+      if (linkUrl.startsWith('http') ||
+          linkUrl.startsWith('#') ||
+          linkUrl.startsWith('mailto:') ||
+          linkUrl.startsWith('mdc:')) {
         continue;
       }
 

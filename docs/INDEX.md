@@ -77,7 +77,7 @@
 | [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide | All Devs | ✅ Complete |
 | [DASHBOARD_REFACTORING_SUMMARY.md](DASHBOARD_REFACTORING_SUMMARY.md) | Dashboard refactoring (60% reduction) 🆕 | All Devs | ✅ Complete |
 | [dashboards/README.md](../README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
-| [AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md) | ast-grep code search guide (WORKING!) 🆕 | All Devs | ✅ Complete |
+| [AST_GREP_QUICKSTART.md](QUICKSTART.md) | ast-grep code search guide (WORKING!) 🆕 | All Devs | ✅ Complete |
 | [sgconfig.yml](../sgconfig.yml) | ast-grep project configuration 🆕 | All Devs | ✅ Complete |
 
 ### Archive (Historical)
@@ -269,10 +269,10 @@ npm run link-check
 | Understand architecture | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) |
 | Find a specific file | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) |
 | Check build stats | [BUILD_REPORT.md](archive/BUILD_REPORT.md) |
-| See recent fixes | [FIXES_APPLIED.md](FIXES_APPLIED.md) |
-| Review code quality | [REVIEW_AND_GAPS.md](REVIEW_AND_GAPS.md) |
-| Contribute code | [../CONTRIBUTING.md](../CONTRIBUTING.md) |
-| See all links | [LINK_VERIFICATION.md](LINK_VERIFICATION.md) |
+| See recent fixes | [FIXES_APPLIED.md](archive/FIXES_APPLIED.md) |
+| Review code quality | [REVIEW_AND_GAPS.md](archive/REVIEW_AND_GAPS.md) |
+| Contribute code | [../CONTRIBUTING.md](CONTRIBUTING.md) |
+| See all links | [LINK_VERIFICATION.md](archive/LINK_VERIFICATION.md) |
 
 ---
 

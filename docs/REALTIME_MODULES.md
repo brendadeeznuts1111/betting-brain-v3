@@ -753,7 +753,7 @@ wscat -c wss://api.mysportsbook.xyz/ticker/TEST_MARKET_123
 - **[Production Patterns](PRODUCTION_PATTERNS.md)** - Original guide
 - **[Production Integration](PRODUCTION_INTEGRATION.md)** - MCP integration
 - **[MCP Endpoints](MCP_ENDPOINTS.md)** - All 13 tools
-- **[ast-grep Quick Start](AST_GREP_QUICKSTART.md)** - Security rules
+- **[ast-grep Quick Start](QUICKSTART.md)** - Security rules
 
 ---
 

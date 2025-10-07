@@ -583,7 +583,7 @@ Deletions: 39
 ## 🔗 Related Resources
 
 - **Main README:** [../README.md](../../README.md)
-- **Quick Start:** [../docs/QUICKSTART.md](../docs/QUICKSTART.md)
+- **Quick Start:** [../docs/QUICKSTART.md](../QUICKSTART.md)
 - **Dashboard JSON:** [./grafana/dashboard.json](./grafana/dashboard.json)
 - **Dashboard Docs:** [./grafana/README.md](../../README.md)
 - **Import Script:** [./grafana/import.sh](./grafana/import.sh)

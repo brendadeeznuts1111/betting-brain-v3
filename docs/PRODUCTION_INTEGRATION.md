@@ -530,7 +530,7 @@ jobs:
 - **[MCP Endpoints](MCP_ENDPOINTS.md)** - All 13 tools
 - **[REST API Reference](REST_API_REFERENCE.md)** - All endpoints
 - **[Database Schema](../migrations/)** - D1 tables
-- **[ast-grep Quick Start](AST_GREP_QUICKSTART.md)** - Security rules
+- **[ast-grep Quick Start](QUICKSTART.md)** - Security rules
 
 ---
 

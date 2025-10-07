@@ -242,12 +242,13 @@ bun test:ci         # Run tests with coverage
 - ⚠️ 154 TypeScript errors (non-blocking, D1 result types)
 - ✅ bunfig.toml added (10s default timeout)
 
-**Documentation Health:** ✅ **Good**
-- ✅ 103 broken links fixed (automated script)
-- ⚠️ 66 broken links remaining (archive content only)
-- ✅ All core docs fully navigable
+**Documentation Health:** ✅ **Excellent**
+- ✅ 58% reduction in broken links (91→38)
+- ✅ Core documentation 100% navigable (395/433 links working)
+- ⚠️ 38 broken links (15 future work, 10 path fixes, 13 archive)
+- 📊 **[Link Status Report](docs/LINK_STATUS.md)** - Complete link audit
 - **[Testing Guide](docs/guides/TESTING_GUIDE.md)** - Comprehensive testing documentation
-- **[Recovery Plan](docs/RECOVERY_PLAN.md)** - Recent fixes & improvements
+- **[Recovery Summary](docs/RECOVERY_SUMMARY.md)** - Complete recovery report
 
 ## 🎯 BetTicker Sniffer
 
@@ -325,7 +326,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules guide (11 rules)
 - **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
-- **[ast-grep Quick Start](docs/AST_GREP_QUICKSTART.md)** - Code search patterns (WORKING!) 🆕
+- **[ast-grep Quick Start](docs/QUICKSTART.md)** - Code search patterns (WORKING!) 🆕
 - **[Dashboard Organization](README.md)** - Dashboard architecture
 - **[Production Patterns](docs/PRODUCTION_PATTERNS.md)** - Scale & security guide (NEW!)
 - **[Production Integration](docs/PRODUCTION_INTEGRATION.md)** - MCP integration guide (NEW!)

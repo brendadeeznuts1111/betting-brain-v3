@@ -304,7 +304,7 @@ bash scripts/link-check-simple.sh
 1. Check the [QUICKSTART.md](QUICKSTART.md) for setup instructions
 2. Review [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for architecture details
 3. Check [INDEX.md](INDEX.md) for complete documentation map
-4. Review [CHANGELOG.md](../CHANGELOG.md) for recent changes
+4. Review [CHANGELOG.md](CHANGELOG.md) for recent changes
 
 ---
 

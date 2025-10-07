@@ -441,9 +441,9 @@ The project is exceptionally well-built with professional-grade documentation, c
 | Resource | Location |
 |----------|----------|
 | **Main Documentation** | [docs/INDEX.md](INDEX.md) |
-| **Quick Start** | [docs/QUICKSTART.md](QUICKSTART.md) |
+| **Quick Start** | [docs/QUICKSTART.md](../QUICKSTART.md) |
 | **Troubleshooting** | [docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
-| **Architecture** | [docs/IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) |
+| **Architecture** | [docs/IMPLEMENTATION_SUMMARY.md](../IMPLEMENTATION_SUMMARY.md) |
 | **Contributing** | [../CONTRIBUTING.md](../CONTRIBUTING.md) |
 | **Changelog** | [../CHANGELOG.md](../CHANGELOG.md) |
 

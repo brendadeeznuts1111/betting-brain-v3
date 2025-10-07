@@ -115,8 +115,8 @@ npm run link-check
 **Quick Links Bar:**
 ```
 [📚 Documentation Index](INDEX.md) | 
-[🚀 Quick Start](QUICKSTART.md) | 
-[🏗️ Architecture](IMPLEMENTATION_SUMMARY.md) | 
+[🚀 Quick Start](../QUICKSTART.md) | 
+[🏗️ Architecture](../IMPLEMENTATION_SUMMARY.md) | 
 [📊 Dashboard](../../monitoring/grafana/dashboard.json)
 ```
 

@@ -217,15 +217,15 @@ scripts/
 ### For Developers:
 1. Start here: [README.md](../README.md)
 2. Quick setup: [docs/QUICKSTART.md](QUICKSTART.md)
-3. Contribute: [CONTRIBUTING.md](../CONTRIBUTING.md)
+3. Contribute: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### For Architects:
 1. Technical overview: [docs/IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
-2. Quality review: [docs/REVIEW_AND_GAPS.md](REVIEW_AND_GAPS.md)
+2. Quality review: [docs/REVIEW_AND_GAPS.md](archive/REVIEW_AND_GAPS.md)
 
 ### For Project Managers:
 1. Build report: [docs/BUILD_REPORT.md](archive/BUILD_REPORT.md)
-2. Change log: [CHANGELOG.md](../CHANGELOG.md)
+2. Change log: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 

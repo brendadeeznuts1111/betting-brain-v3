@@ -14,8 +14,8 @@ Thank you for your interest in contributing! 🎉
 
 ### Before You Start
 
-- Read the [Quick Start Guide](../QUICKSTART.md)
-- Review the [Implementation Summary](../IMPLEMENTATION_SUMMARY.md)
+- Read the [Quick Start Guide](QUICKSTART.md)
+- Review the [Implementation Summary](IMPLEMENTATION_SUMMARY.md)
 - Check existing [Issues](https://github.com/mybook/betting-brain-v3/issues)
 
 ### Making Changes

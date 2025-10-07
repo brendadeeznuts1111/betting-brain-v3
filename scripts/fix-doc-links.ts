@@ -11,7 +11,14 @@ import { join, dirname, relative } from 'path';
 
 // Path mappings: old pattern -> new path
 const PATH_MAPPINGS: Record<string, string> = {
-  // Root files
+  // Root files moved to docs/
+  'QUICKSTART.md': 'docs/QUICKSTART.md',
+  'API.md': 'docs/API.md',
+  'CONTRIBUTING.md': 'docs/CONTRIBUTING.md',
+  'CHANGELOG.md': 'docs/CHANGELOG.md',
+  'IMPLEMENTATION_SUMMARY.md': 'docs/IMPLEMENTATION_SUMMARY.md',
+
+  // Guides
   'TESTING_GUIDE.md': 'docs/guides/TESTING_GUIDE.md',
   'DEBUGGING_DATA_CAPTURE.md': 'docs/guides/DEBUGGING_DATA_CAPTURE.md',
   'START_HERE.md': 'docs/guides/START_HERE.md',
@@ -27,6 +34,9 @@ const PATH_MAPPINGS: Record<string, string> = {
   'BUILD_REPORT.md': 'docs/archive/BUILD_REPORT.md',
   'URGENT_TEST_FIXES.md': 'docs/archive/URGENT_TEST_FIXES.md',
   'ORGANIZATION_SUMMARY.md': 'docs/archive/ORGANIZATION_SUMMARY.md',
+  'FIXES_APPLIED.md': 'docs/archive/FIXES_APPLIED.md',
+  'REVIEW_AND_GAPS.md': 'docs/archive/REVIEW_AND_GAPS.md',
+  'LINK_VERIFICATION.md': 'docs/archive/LINK_VERIFICATION.md',
 
   // Dashboard files
   'dashboards/index.html': 'dashboards/index.html',

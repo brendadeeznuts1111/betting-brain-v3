@@ -426,7 +426,7 @@ new-rule:
 
 ## 📚 Related Documentation
 
-- **[ast-grep Quick Start](AST_GREP_QUICKSTART.md)** - Code search patterns
+- **[ast-grep Quick Start](QUICKSTART.md)** - Code search patterns
 - **[Cursor Rules](CURSOR_RULES.md)** - AI assistant rules (10 rules)
 - **[REST API Reference](REST_API_REFERENCE.md)** - All endpoints
 - **[MCP Endpoints](MCP_ENDPOINTS.md)** - MCP protocol tools

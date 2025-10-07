@@ -218,7 +218,7 @@ sg -p 'function $NAME' src/
 
 ## 📚 Resources
 
-- **Quick Start:** [docs/AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md)
+- **Quick Start:** [docs/AST_GREP_QUICKSTART.md](QUICKSTART.md)
 - **Cursor Rule:** [.cursor/rules/code-searchability.mdc](../.cursor/rules/code-searchability.mdc)
 - **Configuration:** [sgconfig.yml](../sgconfig.yml)
 - **Official Docs:** https://ast-grep.github.io/
