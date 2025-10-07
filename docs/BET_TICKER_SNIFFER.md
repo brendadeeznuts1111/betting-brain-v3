@@ -425,7 +425,7 @@ await env.BET_TICKER_BUCKET.put(key, rawBody, {
 - [Cloudflare KV Documentation](https://developers.cloudflare.com/kv/)
 - [Workers KV API](https://developers.cloudflare.com/kv/api/)
 - [Workers Context](https://developers.cloudflare.com/workers/runtime-apis/execution-context/)
-- [Testing Guide](./testing/TESTING_GUIDE.md)
+- [Testing Guide](guides/TESTING_GUIDE.md)
 
 ## 🎯 Use Cases
 

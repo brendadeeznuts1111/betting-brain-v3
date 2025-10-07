@@ -345,7 +345,7 @@ try {
 |----------|--------|------|
 | **MCP Integration Status** | ✅ Complete | [docs/MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) |
 | **MCP Endpoints Reference** | ✅ Complete | [docs/MCP_ENDPOINTS.md](MCP_ENDPOINTS.md) |
-| **MCP Testing Guide** | ✅ Complete | [docs/MCP_TESTING_GUIDE.md](MCP_TESTING_GUIDE.md) |
+| **MCP Testing Guide** | ✅ Complete | [docs/MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md) |
 | **SRC Directory Review** | ✅ Complete | [docs/SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md) |
 | **Cursor Rules (MCP)** | ✅ Complete | [.cursor/rules/mcp-integration.mdc](.cursor/rules/mcp-integration.mdc) |
 | **This Report** | ✅ Complete | [docs/MCP_VERIFICATION_REPORT.md](MCP_VERIFICATION_REPORT.md) |
@@ -416,7 +416,7 @@ try {
 
 - **[MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md)** - MCP server status overview
 - **[MCP_ENDPOINTS.md](MCP_ENDPOINTS.md)** - Complete API reference for 13 tools
-- **[MCP_TESTING_GUIDE.md](MCP_TESTING_GUIDE.md)** - Comprehensive testing procedures
+- **[MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md)** - Comprehensive testing procedures
 - **[SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md)** - Complete src/ analysis
 - **[CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md)** - Comprehensive code quality review
 - **[FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md)** - fantasy402.com integration guide

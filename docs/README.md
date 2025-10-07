@@ -53,7 +53,7 @@ Detailed guide to the codebase organization and file structure.
 
 ## 📊 Project Management
 
-### [Build Report](BUILD_REPORT.md)
+### [Build Report](archive/BUILD_REPORT.md)
 Comprehensive build statistics and quality checklist.
 
 **Contents:**
@@ -116,14 +116,14 @@ Recent bug fixes and improvements applied to the codebase.
 3. Check [Project Structure](PROJECT_STRUCTURE.md)
 
 ### For Project Managers:
-1. Check [Build Report](BUILD_REPORT.md)
+1. Check [Build Report](archive/BUILD_REPORT.md)
 2. Review [Changelog](../CHANGELOG.md)
 3. See [Review & Gap Analysis](REVIEW_AND_GAPS.md)
 
 ### For QA Engineers:
 1. Start with [Review & Gap Analysis](REVIEW_AND_GAPS.md)
 2. Check [Fixes Applied](FIXES_APPLIED.md)
-3. Review [Build Report](BUILD_REPORT.md)
+3. Review [Build Report](archive/BUILD_REPORT.md)
 
 ---
 
@@ -134,7 +134,7 @@ Recent bug fixes and improvements applied to the codebase.
 | [QUICKSTART.md](QUICKSTART.md) | Fast setup guide | ~300 lines | Developers |
 | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Technical overview | ~300 lines | Architects |
 | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | Structure guide | ~330 lines | All Devs |
-| [BUILD_REPORT.md](BUILD_REPORT.md) | Build statistics | ~350 lines | PM, Leads |
+| [BUILD_REPORT.md](archive/BUILD_REPORT.md) | Build statistics | ~350 lines | PM, Leads |
 | [REVIEW_AND_GAPS.md](REVIEW_AND_GAPS.md) | Quality review | ~400 lines | QA, Leads |
 | [FIXES_APPLIED.md](FIXES_APPLIED.md) | Recent fixes | ~250 lines | All Devs |
 | [LINK_VERIFICATION.md](LINK_VERIFICATION.md) | Link audit report | ~200 lines | Maintainers |
@@ -176,7 +176,7 @@ Recent bug fixes and improvements applied to the codebase.
 | Set up the project | [QUICKSTART.md](QUICKSTART.md) |
 | Understand architecture | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) |
 | Find a specific file | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) |
-| Check quality metrics | [BUILD_REPORT.md](BUILD_REPORT.md) |
+| Check quality metrics | [BUILD_REPORT.md](archive/BUILD_REPORT.md) |
 | See recent fixes | [FIXES_APPLIED.md](FIXES_APPLIED.md) |
 | Review code quality | [REVIEW_AND_GAPS.md](REVIEW_AND_GAPS.md) |
 | Contribute code | [../CONTRIBUTING.md](../CONTRIBUTING.md) |

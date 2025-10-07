@@ -364,7 +364,7 @@ All 5 dashboards will be updated to use shared modules:
 
 ## 🔗 Related Documentation
 
-- **[dashboards/README.md](../dashboards/README.md)** - Complete dashboard docs
+- **[dashboards/README.md](../README.md)** - Complete dashboard docs
 - **[ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)** - Integration guide
 - **[CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md)** - Code quality report
 

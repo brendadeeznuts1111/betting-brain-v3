@@ -279,7 +279,7 @@ Updated `docs/INDEX.md` with:
 | Dashboard | Path | Description |
 |-----------|------|-------------|
 | **Grafana Config** | [../grafana/dashboard.json](../grafana/dashboard.json) | 17-panel monitoring |
-| **Dashboard Docs** | [../grafana/README.md](../grafana/README.md) | Installation & setup guide |
+| **Dashboard Docs** | [../grafana/README.md](../../README.md) | Installation & setup guide |
 | **Import Script** | [../grafana/import.sh](../grafana/import.sh) | Automated dashboard deployment |
 | **Cost Metrics** | _Embedded in dashboard_ | 4 cost cap gauges |
 | **Performance** | _Embedded in dashboard_ | Request latency & error tracking |
@@ -582,12 +582,12 @@ Deletions: 39
 
 ## 🔗 Related Resources
 
-- **Main README:** [../README.md](../README.md)
+- **Main README:** [../README.md](../../README.md)
 - **Quick Start:** [../docs/QUICKSTART.md](../docs/QUICKSTART.md)
 - **Dashboard JSON:** [./grafana/dashboard.json](./grafana/dashboard.json)
-- **Dashboard Docs:** [./grafana/README.md](./grafana/README.md)
+- **Dashboard Docs:** [./grafana/README.md](../../README.md)
 - **Import Script:** [./grafana/import.sh](./grafana/import.sh)
-- **Documentation Index:** [../docs/INDEX.md](../docs/INDEX.md)
+- **Documentation Index:** [../docs/INDEX.md](../INDEX.md)
 - **GitHub Repository:** https://github.com/brendadeeznuts1111/betting-brain-v3
 
 ---

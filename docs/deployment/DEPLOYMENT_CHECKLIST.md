@@ -213,11 +213,11 @@
 ## 📚 **Resources**
 
 ### 📖 **Documentation**
-- [Implementation Guide](docs/IMPLEMENTATION_SUMMARY.md)
-- [API Documentation](docs/API.md)
-- [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
-- [Security Guide](docs/SECURITY.md)
-- [Performance Guide](docs/PERFORMANCE.md)
+- [Implementation Guide](../IMPLEMENTATION_SUMMARY.md)
+- [API Documentation](../API.md)
+- [Troubleshooting Guide](../TROUBLESHOOTING.md)
+- [Security Guide](../SECURITY.md)
+- [Performance Guide](../PERFORMANCE.md)
 
 ### 🔗 **External Resources**
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)

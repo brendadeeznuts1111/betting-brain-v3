@@ -143,7 +143,7 @@ preview_id = "your-staging-bet-ticker-preview-kv-id"    # ← UPDATE
 
 ## 📚 Full Documentation
 
-👉 **[Complete Guide](docs/BET_TICKER_SNIFFER.md)**
+👉 **[Complete Guide](../BET_TICKER_SNIFFER.md)**
 
 ---
 

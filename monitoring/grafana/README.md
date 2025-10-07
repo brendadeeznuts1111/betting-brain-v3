@@ -427,7 +427,7 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 
 - [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/)
 - [Grafana Dashboards](https://grafana.com/docs/grafana/latest/dashboards/)
-- [Betting-Brain Documentation](../docs/INDEX.md)
+- [Betting-Brain Documentation](../../docs/INDEX.md)
 
 ---
 

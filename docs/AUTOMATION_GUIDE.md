@@ -247,9 +247,9 @@ ls -la browser-extension/
 ## 📚 Additional Resources
 
 - [Worker Deployment Guide](DEPLOYMENT.md)
-- [Testing Best Practices](testing/TESTING_GUIDE.md)
+- [Testing Best Practices](guides/TESTING_GUIDE.md)
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
-- [MCP Testing Guide](MCP_TESTING_GUIDE.md)
+- [MCP Testing Guide](guides/TESTING_GUIDE.md)
 
 ## 🤝 Contributing
 

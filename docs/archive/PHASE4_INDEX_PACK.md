@@ -117,7 +117,7 @@ npm run link-check
 [📚 Documentation Index](INDEX.md) | 
 [🚀 Quick Start](QUICKSTART.md) | 
 [🏗️ Architecture](IMPLEMENTATION_SUMMARY.md) | 
-[📊 Dashboard](../monitoring/grafana/dashboard.json)
+[📊 Dashboard](../../monitoring/grafana/dashboard.json)
 ```
 
 ---

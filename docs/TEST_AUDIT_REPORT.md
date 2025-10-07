@@ -272,7 +272,7 @@ grep -h "^describe" tests/**/*.test.ts | wc -l
 ### Related Files
 - **[Testing Rules](.cursor/rules/testing.mdc)** - Cursor rules for test patterns
 - **[Testing Status](./TESTING_STATUS.md)** - Current test health
-- **[MCP Testing Guide](./MCP_TESTING_GUIDE.md)** - MCP-specific testing
+- **[MCP Testing Guide](guides/TESTING_GUIDE.md)** - MCP-specific testing
 - **[Automation Guide](./AUTOMATION_GUIDE.md)** - Test automation workflows
 
 ---

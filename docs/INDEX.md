@@ -50,7 +50,7 @@
 |----------|---------|----------|--------|
 | [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) | MCP server status & overview | All Teams | ✅ Complete |
 | [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md) | Complete API docs (13 tools) | Developers | ✅ Complete |
-| [MCP_TESTING_GUIDE.md](MCP_TESTING_GUIDE.md) | Testing procedures | QA, Developers | ✅ Complete |
+| [MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | Testing procedures | QA, Developers | ✅ Complete |
 | [MCP_VERIFICATION_REPORT.md](MCP_VERIFICATION_REPORT.md) | Complete MCP verification results 🆕 | All Teams | ✅ Complete |
 
 ### System Integration ✨ NEW
@@ -76,7 +76,7 @@
 | [SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md) | Complete src/ analysis | All Devs | ✅ Complete |
 | [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide | All Devs | ✅ Complete |
 | [DASHBOARD_REFACTORING_SUMMARY.md](DASHBOARD_REFACTORING_SUMMARY.md) | Dashboard refactoring (60% reduction) 🆕 | All Devs | ✅ Complete |
-| [dashboards/README.md](../dashboards/README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
+| [dashboards/README.md](../README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
 | [AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md) | ast-grep code search guide (WORKING!) 🆕 | All Devs | ✅ Complete |
 | [sgconfig.yml](../sgconfig.yml) | ast-grep project configuration 🆕 | All Devs | ✅ Complete |
 
@@ -94,7 +94,7 @@
 | [../deploy/setup-production.sh](../deploy/setup-production.sh) | Initial production setup | One-time environment creation |
 | [../deploy/production-deploy.sh](../deploy/production-deploy.sh) | Safe production deployment | Deploy with health checks & rollback |
 | [../deploy/staging-deploy.sh](../deploy/staging-deploy.sh) | Quick staging deployment | Test changes before production |
-| [../deploy/README.md](../deploy/README.md) | Deployment guide | Full deployment documentation |
+| [../deploy/README.md](../README.md) | Deployment guide | Full deployment documentation |
 
 ---
 
@@ -166,7 +166,7 @@
 | Dashboard | Path | Description |
 |-----------|------|-------------|
 | **Grafana Config** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | 17-panel monitoring |
-| **Dashboard Docs** | [../monitoring/grafana/README.md](../monitoring/grafana/README.md) | Installation & setup guide |
+| **Dashboard Docs** | [../monitoring/grafana/README.md](../README.md) | Installation & setup guide |
 | **Import Script** | [../monitoring/grafana/import.sh](../monitoring/grafana/import.sh) | Automated dashboard deployment |
 | **Cost Metrics** | _Embedded in dashboard_ | 4 cost cap gauges |
 | **Performance** | _Embedded in dashboard_ | Request latency & error tracking |
@@ -268,7 +268,7 @@ npm run link-check
 | Fix common issues | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | Understand architecture | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) |
 | Find a specific file | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) |
-| Check build stats | [BUILD_REPORT.md](BUILD_REPORT.md) |
+| Check build stats | [BUILD_REPORT.md](archive/BUILD_REPORT.md) |
 | See recent fixes | [FIXES_APPLIED.md](FIXES_APPLIED.md) |
 | Review code quality | [REVIEW_AND_GAPS.md](REVIEW_AND_GAPS.md) |
 | Contribute code | [../CONTRIBUTING.md](../CONTRIBUTING.md) |

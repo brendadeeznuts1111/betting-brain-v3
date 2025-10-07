@@ -225,16 +225,16 @@ cat link-check-results.txt | grep "✗" | wc -l
 **Common broken link patterns:**
 
 1. **Moved to docs/guides/**
-   - Find: `[...](TESTING_GUIDE.md)`
-   - Replace: `[...](docs/guides/TESTING_GUIDE.md)`
+   - Find: `[...](guides/TESTING_GUIDE.md)`
+   - Replace: `[...](guides/TESTING_GUIDE.md)`
 
 2. **Moved to docs/archive/**
-   - Find: `[...](BUILD_REPORT.md)`
-   - Replace: `[...](docs/archive/BUILD_REPORT.md)`
+   - Find: `[...](archive/BUILD_REPORT.md)`
+   - Replace: `[...](archive/BUILD_REPORT.md)`
 
 3. **Deleted files**
-   - Find: `[...](URGENT_TEST_FIXES.md)`
-   - Replace: `[...](docs/URGENT_TEST_FIXES.md)`
+   - Find: `[...](archive/URGENT_TEST_FIXES.md)`
+   - Replace: `[...](archive/URGENT_TEST_FIXES.md)`
 
 **Automated fix script:**
 ```typescript

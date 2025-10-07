@@ -287,7 +287,7 @@ All tests passing, zero runtime errors, fully functional.
 ## 📚 Documentation Links
 
 - **[User Guide](../BET_TICKER_SNIFFER.md)** - Complete documentation
-- **[Testing Guide](../testing/TESTING_GUIDE.md)** - Test patterns
+- **[Testing Guide](../guides/TESTING_GUIDE.md)** - Test patterns
 - **[Quick Start](../QUICKSTART.md)** - 15-second setup
 - **[Main README](../../README.md)** - Project overview
 

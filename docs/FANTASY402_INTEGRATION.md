@@ -621,7 +621,7 @@ window.__betTickerStats
 
 - **[BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md)** - Technical implementation details
 - **[ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete endpoint guide
-- **[browser-extension/README.md](../browser-extension/README.md)** - Extension installation guide
+- **[browser-extension/README.md](../README.md)** - Extension installation guide
 - **[TESTING_GUIDE.md](guides/TESTING_GUIDE.md)** - Complete testing procedures
 - **[DEBUGGING_DATA_CAPTURE.md](guides/DEBUGGING_DATA_CAPTURE.md)** - Troubleshooting guide
 

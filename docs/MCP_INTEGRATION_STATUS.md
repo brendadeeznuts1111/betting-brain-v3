@@ -9,7 +9,7 @@
 - **Protocol:** JSON-RPC 2.0
 - **Topics:** #mcp #api #integration
 - **Audience:** All Teams, Developers
-- **Related Docs:** [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md), [MCP_TESTING_GUIDE.md](MCP_TESTING_GUIDE.md)
+- **Related Docs:** [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md), [MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md)
 
 ---
 
@@ -48,7 +48,7 @@ curl -X POST http://localhost:8787/mcp \
 
 ### Detailed Testing Guide
 
-See **[docs/MCP_TESTING_GUIDE.md](./docs/MCP_TESTING_GUIDE.md)** for:
+See **[docs/MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md)** for:
 - 10 example cURL commands
 - Postman collection setup
 - JavaScript/TypeScript examples
@@ -330,7 +330,7 @@ See migration files in `deployment/deploy/migrations/` (if available) or create 
 
 ### Documentation
 - **[PHASE4_COMPLETE.md](./PHASE4_COMPLETE.md)** - Detailed implementation guide
-- **[docs/MCP_TESTING_GUIDE.md](./docs/MCP_TESTING_GUIDE.md)** - Testing guide with examples
+- **[docs/MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md)** - Testing guide with examples
 - **[MCP_INTEGRATION_SUMMARY.md](./MCP_INTEGRATION_SUMMARY.md)** - Original integration plan
 
 ### Code References

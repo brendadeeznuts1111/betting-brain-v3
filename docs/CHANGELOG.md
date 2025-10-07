@@ -82,6 +82,6 @@ This release represents a complete, production-ready betting intelligence layer 
 
 ---
 
-For upgrade instructions, see [docs/QUICKSTART.md](docs/QUICKSTART.md)
+For upgrade instructions, see [docs/QUICKSTART.md](../QUICKSTART.md)
 
-For detailed changes, see [docs/FIXES_APPLIED.md](docs/FIXES_APPLIED.md)
+For detailed changes, see [docs/FIXES_APPLIED.md](../FIXES_APPLIED.md)

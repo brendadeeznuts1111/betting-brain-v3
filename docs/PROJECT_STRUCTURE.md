@@ -224,7 +224,7 @@ scripts/
 2. Quality review: [docs/REVIEW_AND_GAPS.md](REVIEW_AND_GAPS.md)
 
 ### For Project Managers:
-1. Build report: [docs/BUILD_REPORT.md](BUILD_REPORT.md)
+1. Build report: [docs/BUILD_REPORT.md](archive/BUILD_REPORT.md)
 2. Change log: [CHANGELOG.md](../CHANGELOG.md)
 
 ---

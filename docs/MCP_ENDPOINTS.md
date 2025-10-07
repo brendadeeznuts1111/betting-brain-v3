@@ -559,7 +559,7 @@ Route by method:
 ## 📚 Related Documentation
 
 - **[MCP Integration Status](./MCP_INTEGRATION_STATUS.md)** - Overall MCP status
-- **[MCP Testing Guide](./MCP_TESTING_GUIDE.md)** - Comprehensive testing guide
+- **[MCP Testing Guide](guides/TESTING_GUIDE.md)** - Comprehensive testing guide
 - **[Testing Status](./TESTING_STATUS.md)** - Current testing status
 - **[CLAUDE.md](../CLAUDE.md)** - MCP Quick Reference section
 - **[Code Quality Audit](./CODE_QUALITY_AUDIT.md)** - Security & quality review

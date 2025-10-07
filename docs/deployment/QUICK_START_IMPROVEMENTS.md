@@ -206,8 +206,8 @@ bun run monitor:staging
 ### **Documentation**
 - [Improvement Plan](IMPROVEMENT_PLAN.md)
 - [Deployment Checklist](DEPLOYMENT_CHECKLIST.md)
-- [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)
-- [API Documentation](docs/API.md)
+- [Implementation Summary](../IMPLEMENTATION_SUMMARY.md)
+- [API Documentation](../API.md)
 
 ### **Scripts**
 - [Environment Setup](scripts/setup-environments.sh)

@@ -12,14 +12,14 @@
 
 Created two comprehensive hub pages that organize all HTML tools and dashboards:
 
-#### 📊 **[Dashboards Hub](dashboards/index.html)**
+#### 📊 **[Dashboards Hub](../../dashboards/index.html)**
 - Single entry point for all 4 betting intelligence dashboards
 - Live system status and data statistics
 - Features comparison table
 - Quick actions for common tasks
 - Smart navigation with hover effects
 
-#### 🛠️ **[Testing Tools Hub](tools/index.html)**
+#### 🛠️ **[Testing Tools Hub](../../tools/index.html)**
 - Single entry point for all 10 testing/diagnostic tools
 - Categorized by function (Essential, Setup, Advanced)
 - Live worker status check
@@ -117,12 +117,12 @@ betting-brain-v3/
 
 ### **For Daily Use:**
 
-1. **Start Here:** Open [dashboards/index.html](dashboards/index.html)
+1. **Start Here:** Open [dashboards/index.html](../../dashboards/index.html)
    - View all 4 dashboards
    - Check system status
    - Access quick actions
 
-2. **For Testing:** Open [tools/index.html](tools/index.html)
+2. **For Testing:** Open [tools/index.html](../../tools/index.html)
    - Run health checks
    - Test extension
    - Diagnose issues
@@ -347,11 +347,11 @@ betting-brain-v3/
 ## 📞 Support
 
 ### **Quick Links:**
-- **[Dashboards Hub](dashboards/index.html)** - Start here for monitoring
-- **[Testing Tools Hub](tools/index.html)** - Start here for testing
-- **[Testing Guide](TESTING_GUIDE.md)** - Comprehensive testing docs
-- **[Main README](README.md)** - Project overview
-- **[Documentation Index](docs/INDEX.md)** - All documentation
+- **[Dashboards Hub](../../dashboards/index.html)** - Start here for monitoring
+- **[Testing Tools Hub](../../tools/index.html)** - Start here for testing
+- **[Testing Guide](../guides/TESTING_GUIDE.md)** - Comprehensive testing docs
+- **[Main README](../../README.md)** - Project overview
+- **[Documentation Index](../INDEX.md)** - All documentation
 
 ### **Common Tasks:**
 - **Check system health:** → tools/system-health-monitor.html
