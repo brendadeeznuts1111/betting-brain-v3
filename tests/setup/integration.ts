@@ -3,7 +3,7 @@
  * Configures environment for integration testing
  */
 
-import { beforeAll, afterAll } from 'vitest';
+import { beforeAll, afterAll } from 'bun:test';
 
 // Mock Cloudflare environment for integration tests
 const mockEnv = {

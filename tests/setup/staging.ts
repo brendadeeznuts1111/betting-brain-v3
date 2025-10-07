@@ -3,7 +3,7 @@
  * Configures environment for staging testing
  */
 
-import { beforeAll, afterAll } from 'vitest';
+import { beforeAll, afterAll } from 'bun:test';
 
 // Staging environment configuration
 const stagingEnv = {
