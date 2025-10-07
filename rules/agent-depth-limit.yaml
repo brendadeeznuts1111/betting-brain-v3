@@ -1,0 +1,27 @@
+id: agent-depth-limit
+language: TypeScript
+severity: error
+rule:
+  pattern: env.ANALYTICS.prepare(`INSERT INTO agents$$$`).bind($$$)
+message: |
+  Agent tree insert must verify depth ≤ 5 before insertion.
+  
+  Use a CTE to check tree depth:
+  WITH RECURSIVE depth AS (
+    SELECT 1 AS d, id FROM agents WHERE id = ?
+    UNION ALL
+    SELECT d + 1, a.id FROM agents a
+    JOIN depth ON a.parent_id = depth.id
+  )
+  SELECT MAX(d) FROM depth;
+note: |
+  The agent tree has a maximum depth of 5 levels to prevent
+  excessive commission calculations and circular references.
+  
+  Check depth before INSERT:
+  1. Query current depth of parent_id
+  2. If depth >= 5, reject insertion
+  3. Otherwise proceed with INSERT
+  
+  This prevents O(n^2) tree traversals during nightly settlement.
+

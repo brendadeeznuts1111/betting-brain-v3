@@ -1,0 +1,34 @@
+id: tx-dual-write
+language: TypeScript
+severity: error
+rule:
+  pattern: env.ANALYTICS.prepare(`INSERT INTO transactions$$$`)
+message: |
+  Transaction must be written to both D1 and R2 for audit trail.
+  
+  Required dual-write pattern:
+  1. Write to D1 (hot, queryable)
+  2. Write to R2 (cold, immutable)
+  
+  Example:
+  const txRecord = { user_id, amount_cents, timestamp, nonce };
+  
+  // 1. D1 write
+  await env.ANALYTICS.prepare(
+    'INSERT INTO transactions (...) VALUES (...)'
+  ).bind(...).run();
+  
+  // 2. R2 write (immutable audit log)
+  const datePath = new Date().toISOString().split('T')[0];
+  await env.TX_LOG.put(
+    `tx/${datePath}/${txRecord.nonce}.json`,
+    JSON.stringify(txRecord)
+  );
+note: |
+  Dual-write provides:
+  • D1: Fast queries for recent transactions
+  • R2: Immutable audit trail (GDPR compliant)
+  • ClickHouse: Hourly merge for analytics
+  
+  R2 is the source of truth for audits.
+

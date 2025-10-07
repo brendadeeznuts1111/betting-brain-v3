@@ -1,0 +1,31 @@
+id: agent-circular-ref
+language: SQL
+severity: error
+rule:
+  pattern: UPDATE agents SET parent_id = $$$
+message: |
+  Agent tree update must check for circular references via trigger.
+  
+  Required BEFORE UPDATE trigger:
+  CREATE TRIGGER prevent_circular_ref BEFORE UPDATE ON agents
+  FOR EACH ROW
+  BEGIN
+    SELECT RAISE(ABORT, 'Circular reference detected')
+    WHERE EXISTS (
+      WITH RECURSIVE path AS (
+        SELECT NEW.parent_id AS id
+        UNION ALL
+        SELECT parent_id FROM agents JOIN path ON agents.id = path.id
+      )
+      SELECT 1 FROM path WHERE id = NEW.id
+    );
+  END;
+note: |
+  Circular references in agent tree cause:
+  • Infinite loops during commission calculation
+  • Stack overflow in recursive queries
+  • Corrupted revenue distribution
+  
+  The trigger walks up the tree from new parent_id.
+  If it encounters NEW.id, the update is aborted.
+

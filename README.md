@@ -320,6 +320,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Dashboard Organization](dashboards/README.md)** - Dashboard architecture
 - **[Production Patterns](docs/PRODUCTION_PATTERNS.md)** - Scale & security guide (NEW!)
 - **[Production Integration](docs/PRODUCTION_INTEGRATION.md)** - MCP integration guide (NEW!)
+- **[Real-Time Modules](docs/REALTIME_MODULES.md)** - WebSocket + Positions + Agents (NEW!)
 
 ## 📞 Support
 

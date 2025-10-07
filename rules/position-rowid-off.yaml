@@ -1,0 +1,32 @@
+id: position-rowid-off
+language: SQL
+severity: error
+rule:
+  pattern: CREATE TABLE positions($$$)
+  not:
+    pattern: CREATE TABLE positions($$$) WITHOUT ROWID
+message: |
+  Positions table must use WITHOUT ROWID for composite key performance.
+  
+  Composite primary key (user_id, market_id, outcome) benefits from
+  WITHOUT ROWID optimization in SQLite:
+  • No separate ROWID column (saves 8 bytes per row)
+  • Primary key becomes the clustered index
+  • Faster lookups for composite keys
+  
+  Always use:
+  CREATE TABLE positions(
+    user_id TEXT,
+    market_id TEXT,
+    outcome INT,
+    ...,
+    PRIMARY KEY (user_id, market_id, outcome)
+  ) WITHOUT ROWID;
+note: |
+  WITHOUT ROWID is critical for tables with:
+  • Composite primary keys
+  • High read/write ratio
+  • Need for space efficiency
+  
+  Saves ~30% storage and improves lookup speed 2×
+

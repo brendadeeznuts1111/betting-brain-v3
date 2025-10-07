@@ -1,0 +1,30 @@
+id: weblog-integrity
+language: TypeScript
+severity: error
+rule:
+  pattern: env.WEBLOG.send($OBJ)
+message: |
+  Weblog entry must contain required fields for attribution:
+  • sid (session id)
+  • ts (timestamp)
+  • path (request path)
+  
+  Required format:
+  env.WEBLOG.send({
+    ts: Date.now(),
+    sid: getSessionCookie(),
+    path: new URL(request.url).pathname,
+    ip: request.headers.get('CF-Connecting-IP'),
+    ua: request.headers.get('User-Agent'),
+    cc: request.cf?.country,
+    ref: request.headers.get('Referer'),
+    betslip_id: headers.get('X-Betslip-ID')
+  });
+note: |
+  Session ID (sid) is critical for:
+  • Click-to-bet attribution
+  • Fraud detection (multi-account abuse)
+  • GDPR compliance (user data association)
+  
+  Without sid, attribution pipeline cannot join weblog to bets.
+

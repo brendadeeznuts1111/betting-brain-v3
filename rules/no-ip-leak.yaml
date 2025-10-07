@@ -1,0 +1,23 @@
+id: no-ip-leak
+language: TypeScript
+severity: error
+rule:
+  pattern: console.log($$$)
+message: |
+  Never log real IP addresses to console (GDPR violation).
+  
+  ❌ BAD:  console.log('User IP:', request.headers.get('CF-Connecting-IP'));
+  ✅ GOOD: console.log('User country:', request.cf?.country);
+note: |
+  GDPR compliance requires:
+  • IP addresses are personal data
+  • Must not be logged to console (CloudWatch, etc.)
+  • Must be pseudonymized or hashed if stored
+  
+  Alternatives:
+  • Log country code (request.cf.country)
+  • Log hashed IP: crypto.subtle.digest('SHA-256', ip)
+  • Store IP in R2 with TTL, not in logs
+  
+  Console logs are not GDPR-compliant storage.
+

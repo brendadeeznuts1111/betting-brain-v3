@@ -1,0 +1,33 @@
+id: betslip-attribution
+language: TypeScript
+severity: warning
+rule:
+  pattern: env.ANALYTICS.prepare(`INSERT INTO bets$$$`)
+message: |
+  Bet insertion should include betslip_id for click attribution.
+  
+  Required fields for attribution pipeline:
+  • betslip_id (UUID from frontend)
+  • session_id (from cookie)
+  • timestamp (for delay calculation)
+  
+  Example:
+  await env.ANALYTICS.prepare(`
+    INSERT INTO bets (
+      user_id, market_id, stake_cents, odds_millis,
+      betslip_id, session_id, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    userId, marketId, stakeCents, oddsMillis,
+    betslipId, sessionId, Date.now()
+  ).run();
+note: |
+  Attribution pipeline joins:
+  • weblog (path, referer, timestamp) ON session_id
+  • bets (stake, market) ON betslip_id
+  
+  Produces conversion events:
+  { path: '/live', delay_ms: 342, stake_usd: 50, agent_id: 'xyz' }
+  
+  Without betslip_id, attribution is impossible.
+

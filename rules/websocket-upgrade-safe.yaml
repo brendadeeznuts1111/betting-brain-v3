@@ -1,0 +1,29 @@
+id: websocket-upgrade-safe
+language: TypeScript
+severity: warning
+rule:
+  pattern: new WebSocketPair()
+message: |
+  WebSocket upgrade must validate origin and rate limit.
+  
+  Required checks before upgrade:
+  1. Verify Origin header (prevent CSRF)
+  2. Check rate limit (prevent DoS)
+  3. Validate authentication token
+  
+  Example:
+  const origin = request.headers.get('Origin');
+  if (!ALLOWED_ORIGINS.includes(origin)) {
+    return new Response('Forbidden', { status: 403 });
+  }
+  
+  const clientId = await authenticate(request);
+  if (!clientId) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  
+  const [client, server] = Object.values(new WebSocketPair());
+note: |
+  WebSocket upgrades bypass normal HTTP request limits.
+  Always validate before accepting connections.
+

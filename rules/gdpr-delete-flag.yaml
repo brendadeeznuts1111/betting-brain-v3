@@ -1,0 +1,29 @@
+id: gdpr-delete-flag
+language: TypeScript
+severity: error
+rule:
+  pattern: env.ANALYTICS.prepare(`DELETE FROM $TABLE WHERE user_id = $$$`)
+message: |
+  GDPR delete must use soft-delete flag, not hard DELETE.
+  
+  ❌ WRONG: DELETE FROM transactions WHERE user_id = ?
+  ✅ RIGHT: UPDATE transactions SET is_deleted = 1 WHERE user_id = ?
+  
+  Then in ClickHouse:
+  INSERT INTO transactions (..., is_deleted) VALUES (..., 1)
+  
+  Queries filter:
+  SELECT * FROM transactions WHERE is_deleted = 0
+note: |
+  Hard DELETE violates audit requirements:
+  • Transaction history must be immutable
+  • Auditors need to see deleted records
+  • Soft delete maintains referential integrity
+  
+  GDPR compliance:
+  • Mark is_deleted = 1 in all tables
+  • Anonymize PII fields (name, email, IP → hash)
+  • Keep transaction amounts for accounting
+  
+  ClickHouse can purge is_deleted=1 rows after 7 years.
+

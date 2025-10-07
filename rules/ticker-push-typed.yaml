@@ -1,0 +1,18 @@
+id: ticker-push-typed
+language: TypeScript
+severity: error
+rule:
+  pattern: $ROOM.fetch($REQ)
+message: |
+  Ticker push must carry X-Ticker-Push header for authentication.
+  
+  Ensure the request includes the authentication header:
+  new Request('https://internal/api/ticker-push', {
+    headers: { 'X-Ticker-Push': '1' }
+  })
+note: |
+  The TickerRoom Durable Object requires authentication via the
+  X-Ticker-Push header to prevent unauthorized updates.
+  
+  This ensures only the OddsEngine WASM can push ticker updates.
+

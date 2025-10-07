@@ -1,0 +1,26 @@
+id: durable-object-alarm
+language: TypeScript
+severity: warning
+rule:
+  pattern: class $NAME implements DurableObject
+message: |
+  Durable Object should implement alarm() for cleanup tasks.
+  
+  Recommended pattern:
+  class TickerRoom implements DurableObject {
+    async alarm() {
+      // Prune dead WebSocket connections
+      // Flush buffered data to D1
+      // Set next alarm
+      await this.storage.setAlarm(Date.now() + 30_000);
+    }
+  }
+note: |
+  Alarms provide scheduled cleanup without cron jobs:
+  • Remove dead WebSocket connections
+  • Flush accumulated data to D1/R2
+  • Implement TTL on cached data
+  
+  Set alarm in constructor or after significant events.
+  Max alarm delay: 30 days
+

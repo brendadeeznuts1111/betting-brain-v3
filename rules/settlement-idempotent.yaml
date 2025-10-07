@@ -1,0 +1,33 @@
+id: settlement-idempotent
+language: TypeScript
+severity: error
+rule:
+  pattern: env.ANALYTICS.prepare(`INSERT INTO settlements$$$`)
+message: |
+  Settlement must include idempotency key to prevent double-payout.
+  
+  Required:
+  • Composite unique index: (user_id, market_id, outcome)
+  • nonce field (UUID) for deduplication
+  • Check agent_commission_calculated flag before reprocessing
+  
+  Example:
+  await env.ANALYTICS.prepare(`
+    INSERT INTO settlements (
+      user_id, market_id, outcome, payout_cents, nonce
+    ) VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT (user_id, market_id, outcome) DO NOTHING
+  `).bind(userId, marketId, outcome, payoutCents, nonce).run();
+note: |
+  Settlement can be triggered multiple times:
+  • Market result updated (correction)
+  • Settlement job retries (queue)
+  • Manual admin settlement
+  
+  ON CONFLICT ensures idempotency:
+  • First settlement wins
+  • Duplicate nonce rejected
+  • Agent commission calculated once
+  
+  Without this, users get double-paid!
+

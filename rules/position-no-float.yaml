@@ -1,0 +1,24 @@
+id: position-no-float
+language: TypeScript
+severity: error
+rule:
+  any:
+    - pattern: parseFloat($STAKE)
+    - pattern: Number.parseFloat($STAKE)
+message: |
+  Position calculations must use integer cents only.
+  Convert to cents early and use integer arithmetic throughout.
+  
+  ❌ BAD:  const total = stake * odds;  // Float arithmetic
+  ✅ GOOD: const totalCents = stakeCents * oddsMillis / 1000;
+note: |
+  Float arithmetic causes rounding errors in financial calculations.
+  
+  Always use:
+  • stakeCents (integer cents)
+  • oddsMillis (odds * 1000, integer)
+  • Final division after all multiplications
+  
+  Example:
+  const avgOdds = (oldStake * oldOdds + newStake * newOdds) / (oldStake + newStake);
+
