@@ -37,7 +37,11 @@
     "setup:dev": "bun install && bun run format && bun run lint && bun run test",
     "setup:prod": "bun install --production && bun run build:worker && bun run deploy:production",
     "clean": "rm -rf dist node_modules/.cache coverage",
-    "reset": "bun run clean && bun install && bun run setup:dev"
+    "reset": "bun run clean && bun install && bun run setup:dev",
+    "security": "sg scan --error",
+    "security:migrations": "bun run scripts/validate-migrations.ts",
+    "pre-push": "bun run security && bun run security:migrations && echo '✅ Security checks passed'",
+    "prepare": "husky"
   },
   "keywords": [
     "betting",
@@ -59,6 +63,7 @@
   "devDependencies": {
     "@types/bun": "^1.0.0",
     "glob": "^10.3.10",
+    "husky": "^9.1.7",
     "typescript": "^5.3.0"
   },
   "engines": {

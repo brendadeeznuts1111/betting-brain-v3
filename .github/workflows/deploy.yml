@@ -10,6 +10,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  security:
+    name: Security Scan (ast-grep)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install ast-grep
+        run: bun install -g @ast-grep/cli
+
+      - name: Run security scan
+        run: sg scan --error
+        working-directory: .
+
+      - name: Validate SQL migrations
+        run: bun run scripts/validate-migrations.ts
+
+      - name: Summary
+        if: success()
+        run: echo "✅ All 20 security rules passed"
+
   linkcheck:
     name: Check Documentation Links
     runs-on: ubuntu-latest
@@ -31,7 +57,7 @@ jobs:
 
   test:
     name: Run Tests
-    needs: linkcheck
+    needs: [security, linkcheck]  # Block on security + links
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
