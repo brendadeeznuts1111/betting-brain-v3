@@ -295,7 +295,9 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical overview
 - **[Automation Guide](docs/AUTOMATION_GUIDE.md)** - Testing workflows
 
-### MCP Integration ✨ NEW
+### API Documentation ✨ NEW
+- **[REST API Reference](docs/REST_API_REFERENCE.md)** - Complete REST API docs (9 endpoints) 🆕
+- **[API Enhancement Summary](docs/API_ENHANCEMENT_SUMMARY.md)** - API layer overview & features 🆕
 - **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status & overview
 - **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API docs for 13 tools
 - **[MCP Testing Guide](docs/MCP_TESTING_GUIDE.md)** - Comprehensive testing procedures

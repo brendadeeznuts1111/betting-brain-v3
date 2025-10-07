@@ -39,12 +39,19 @@
 | [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md) | Complete codebase analysis | All Teams | ✅ Complete |
 | [ROOT_STRUCTURE.md](ROOT_STRUCTURE.md) | Root directory reference | Maintainers | ✅ Complete |
 
+### API Documentation ✨ NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| [REST_API_REFERENCE.md](REST_API_REFERENCE.md) | Complete REST API docs (9 endpoints) 🆕 | Developers | ✅ Complete |
+| [API_ENHANCEMENT_SUMMARY.md](API_ENHANCEMENT_SUMMARY.md) | API layer overview & features 🆕 | All Teams | ✅ Complete |
+
 ### MCP Integration ✨ NEW
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|
 | [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) | MCP server status & overview | All Teams | ✅ Complete |
 | [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md) | Complete API docs (13 tools) | Developers | ✅ Complete |
 | [MCP_TESTING_GUIDE.md](MCP_TESTING_GUIDE.md) | Testing procedures | QA, Developers | ✅ Complete |
+| [MCP_VERIFICATION_REPORT.md](MCP_VERIFICATION_REPORT.md) | Complete MCP verification results 🆕 | All Teams | ✅ Complete |
 
 ### System Integration ✨ NEW
 | Document | Purpose | Audience | Status |
@@ -66,6 +73,8 @@
 |----------|---------|----------|--------|
 | [CURSOR_RULES.md](CURSOR_RULES.md) | AI assistant rules guide (8 rules) | AI Assistants | ✅ Complete |
 | [AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md) | Testing workflows | Developers | ✅ Complete |
+| [SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md) | Complete src/ analysis 🆕 | All Devs | ✅ Complete |
+| [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide 🆕 | All Devs | ✅ Complete |
 
 ### Archive (Historical)
 | Document | Purpose | Status |
