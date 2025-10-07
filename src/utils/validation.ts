@@ -1,178 +1,307 @@
 /**
- * Zod Validation Schemas
- * Centralized validation for all API inputs and outputs
+ * Validation Utilities
+ * Comprehensive input validation and sanitization
  */
 
-import { z } from 'zod';
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  sanitized?: any;
+}
 
-// Common validation patterns
-export const EventIdSchema = z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/);
-export const CustomerIdSchema = z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/);
-export const MarketTypeSchema = z.enum(['SPREAD', 'MONEYLINE', 'TOTAL', 'PROP']);
-export const SideSchema = z.enum(['HOME', 'AWAY']);
-export const TimestampSchema = z.string().datetime();
+export interface ValidationRule {
+  field: string;
+  required?: boolean;
+  type?: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'date';
+  min?: number;
+  max?: number;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  enum?: any[];
+  custom?: (value: any) => string | null;
+}
 
-// Line movement validation
-export const LineMovementInputSchema = z.object({
-  eid: EventIdSchema,
-  mt: MarketTypeSchema,
-  lb: z.number().nullable(),
-  la: z.number().nullable(),
-  vb: z.number().int().nonnegative().nullable(),
-  va: z.number().int().nonnegative().nullable(),
-  ts: TimestampSchema
-});
+/**
+ * Validate input against rules
+ */
+export function validateInput(data: any, rules: ValidationRule[]): ValidationResult {
+  const errors: string[] = [];
+  const sanitized: any = {};
 
-// API request schemas
-export const GetBettingExposureRequestSchema = z.object({
-  eid: EventIdSchema,
-  includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().int().min(1).max(24).optional().default(1)
-});
+  for (const rule of rules) {
+    const value = data[rule.field];
+    
+    // Check required
+    if (rule.required && (value === undefined || value === null || value === '')) {
+      errors.push(`${rule.field} is required`);
+      continue;
+    }
 
-export const GetSharpScoreRequestSchema = z.object({
-  cid: CustomerIdSchema,
-  includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().int().min(1).max(168).optional().default(24)
-});
+    // Skip validation if field is optional and not provided
+    if (!rule.required && (value === undefined || value === null)) {
+      continue;
+    }
 
-export const GetHoldPercentageRequestSchema = z.object({
-  eid: EventIdSchema,
-  mt: MarketTypeSchema,
-  includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().int().min(1).max(24).optional().default(1)
-});
+    // Type validation
+    if (rule.type) {
+      const typeError = validateType(rule.field, value, rule.type);
+      if (typeError) {
+        errors.push(typeError);
+        continue;
+      }
+    }
 
-export const GetCLVRequestSchema = z.object({
-  cid: CustomerIdSchema,
-  includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().int().min(1).max(168).optional().default(24)
-});
+    // Numeric range validation
+    if (rule.type === 'number' && typeof value === 'number') {
+      if (rule.min !== undefined && value < rule.min) {
+        errors.push(`${rule.field} must be at least ${rule.min}`);
+      }
+      if (rule.max !== undefined && value > rule.max) {
+        errors.push(`${rule.field} must be at most ${rule.max}`);
+      }
+    }
 
-// API response schemas
-export const BettingExposureResponseSchema = z.object({
-  eid: EventIdSchema,
-  sides: z.array(z.object({
-    side: SideSchema,
-    risk: z.number(),
-    net: z.number(),
-    percentage: z.number()
-  })),
-  totalRisk: z.number(),
-  maxExposure: z.number(),
-  lastUpdated: TimestampSchema,
-  alertThreshold: z.object({
-    maxAmount: z.number(),
-    maxPercentage: z.number()
+    // String length validation
+    if (rule.type === 'string' && typeof value === 'string') {
+      if (rule.minLength !== undefined && value.length < rule.minLength) {
+        errors.push(`${rule.field} must be at least ${rule.minLength} characters`);
+      }
+      if (rule.maxLength !== undefined && value.length > rule.maxLength) {
+        errors.push(`${rule.field} must be at most ${rule.maxLength} characters`);
+      }
+      if (rule.pattern && !rule.pattern.test(value)) {
+        errors.push(`${rule.field} has invalid format`);
+      }
+    }
+
+    // Enum validation
+    if (rule.enum && !rule.enum.includes(value)) {
+      errors.push(`${rule.field} must be one of: ${rule.enum.join(', ')}`);
+    }
+
+    // Custom validation
+    if (rule.custom) {
+      const customError = rule.custom(value);
+      if (customError) {
+        errors.push(customError);
+      }
+    }
+
+    // Add sanitized value
+    sanitized[rule.field] = sanitizeValue(value, rule.type);
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    sanitized: errors.length === 0 ? sanitized : undefined
+  };
+}
+
+function validateType(field: string, value: any, expectedType: string): string | null {
+  switch (expectedType) {
+    case 'string':
+      if (typeof value !== 'string') {
+        return `${field} must be a string`;
+      }
+      break;
+    case 'number':
+      if (typeof value !== 'number' || isNaN(value)) {
+        return `${field} must be a number`;
+      }
+      break;
+    case 'boolean':
+      if (typeof value !== 'boolean') {
+        return `${field} must be a boolean`;
+      }
+      break;
+    case 'array':
+      if (!Array.isArray(value)) {
+        return `${field} must be an array`;
+      }
+      break;
+    case 'object':
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return `${field} must be an object`;
+      }
+      break;
+    case 'date':
+      if (!(value instanceof Date) && isNaN(Date.parse(value))) {
+        return `${field} must be a valid date`;
+      }
+      break;
+  }
+  return null;
+}
+
+function sanitizeValue(value: any, type?: string): any {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  switch (type) {
+    case 'string':
+      return String(value).trim();
+    case 'number':
+      return Number(value);
+    case 'boolean':
+      return Boolean(value);
+    case 'date':
+      return new Date(value);
+    default:
+      return value;
+  }
+}
+
+/**
+ * Common validation patterns
+ */
+export const Validators = {
+  agentID: (required = true): ValidationRule => ({
+    field: 'agentID',
+    required,
+    type: 'string',
+    minLength: 1,
+    maxLength: 100,
+    pattern: /^[a-zA-Z0-9_-]+$/
+  }),
+
+  customerID: (required = false): ValidationRule => ({
+    field: 'customerID',
+    required,
+    type: 'string',
+    minLength: 1,
+    maxLength: 100
+  }),
+
+  eventID: (required = false): ValidationRule => ({
+    field: 'eventID',
+    required,
+    type: 'string',
+    minLength: 1,
+    maxLength: 100
+  }),
+
+  marketType: (required = false): ValidationRule => ({
+    field: 'marketType',
+    required,
+    type: 'string',
+    enum: ['MONEYLINE', 'SPREAD', 'TOTAL', 'PROP', 'FUTURE', 'PARLAY']
+  }),
+
+  sport: (required = false): ValidationRule => ({
+    field: 'sport',
+    required,
+    type: 'string',
+    enum: ['NFL', 'NBA', 'MLB', 'NHL', 'NCAAF', 'NCAAB', 'SOCCER', 'MMA', 'BOXING', 'TENNIS', 'GOLF']
+  }),
+
+  date: (field: string, required = false): ValidationRule => ({
+    field,
+    required,
+    type: 'string',
+    pattern: /^\d{4}-\d{2}-\d{2}$/,
+    custom: (value) => {
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return `${field} must be a valid date (YYYY-MM-DD)`;
+      }
+      return null;
+    }
+  }),
+
+  limit: (max = 1000): ValidationRule => ({
+    field: 'limit',
+    required: false,
+    type: 'number',
+    min: 1,
+    max
+  }),
+
+  offset: (): ValidationRule => ({
+    field: 'offset',
+    required: false,
+    type: 'number',
+    min: 0
+  }),
+
+  threshold: (min: number, max: number): ValidationRule => ({
+    field: 'threshold',
+    required: false,
+    type: 'number',
+    min,
+    max
+  }),
+
+  exposureLevel: (): ValidationRule => ({
+    field: 'exposureLevel',
+    required: false,
+    type: 'string',
+    enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+  }),
+
+  groupBy: (): ValidationRule => ({
+    field: 'groupBy',
+    required: false,
+    type: 'string',
+    enum: ['event', 'market', 'customer', 'sport']
   })
-});
+};
 
-export const SharpScoreResponseSchema = z.object({
-  cid: CustomerIdSchema,
-  sharpScore: z.number().min(0).max(100),
-  clv: z.number(),
-  winRate: z.number().min(0).max(100),
-  actionCount: z.number().int().nonnegative(),
-  lastUpdated: TimestampSchema,
-  alertThreshold: z.number()
-});
+/**
+ * Validate query parameters from URL
+ */
+export function validateQueryParams(url: URL, rules: ValidationRule[]): ValidationResult {
+  const data: any = {};
+  
+  for (const rule of rules) {
+    const value = url.searchParams.get(rule.field);
+    
+    if (value !== null) {
+      // Convert to appropriate type
+      if (rule.type === 'number') {
+        data[rule.field] = Number(value);
+      } else if (rule.type === 'boolean') {
+        data[rule.field] = value === 'true' || value === '1';
+      } else {
+        data[rule.field] = value;
+      }
+    }
+  }
 
-export const HoldPercentageResponseSchema = z.object({
-  eid: EventIdSchema,
-  mt: MarketTypeSchema,
-  holdPercentage: z.number(),
-  totalVolume: z.number().nonnegative(),
-  totalRisk: z.number().nonnegative(),
-  lastUpdated: TimestampSchema,
-  alertThreshold: z.object({
-    min: z.number(),
-    max: z.number()
-  })
-});
+  return validateInput(data, rules);
+}
 
-export const CLVResponseSchema = z.object({
-  cid: CustomerIdSchema,
-  lifetimeValue: z.number(),
-  winRate: z.number().min(0).max(100),
-  actionCount: z.number().int().nonnegative(),
-  netBet: z.number(),
-  lastUpdated: TimestampSchema,
-  alertThreshold: z.number()
-});
-
-export const ErrorResponseSchema = z.object({
-  error: z.string(),
-  code: z.string().optional(),
-  details: z.record(z.any()).optional(),
-  timestamp: TimestampSchema
-});
-
-// Validation helper functions
-export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; error: string } {
+/**
+ * Validate JSON body
+ */
+export async function validateJSONBody(request: Request, rules: ValidationRule[]): Promise<ValidationResult> {
   try {
-    // Check for circular references
-    if (hasCircularReference(data)) {
-      return { success: false, error: 'Circular reference detected' };
-    }
-    
-    // Check for large objects (over 1MB)
-    const dataSize = JSON.stringify(data).length;
-    if (dataSize > 1024 * 1024) {
-      return { success: false, error: 'Object too large' };
-    }
-    
-    const validated = schema.parse(data);
-    return { success: true, data: validated };
+    const body = await request.json() as Record<string, unknown>;
+    return validateInput(body, rules);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return {
-        success: false,
-        error: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
-      };
-    }
-    return { success: false, error: 'Validation failed' };
+    return {
+      valid: false,
+      errors: ['Invalid JSON body']
+    };
   }
 }
 
-function hasCircularReference(obj: unknown, seen = new WeakSet()): boolean {
-  if (obj === null || typeof obj !== 'object') {
-    return false;
-  }
-  
-  if (seen.has(obj)) {
-    return true;
-  }
-  
-  seen.add(obj);
-  
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      if (hasCircularReference(item, seen)) {
-        return true;
-      }
-    }
-  } else {
-    for (const value of Object.values(obj)) {
-      if (hasCircularReference(value, seen)) {
-        return true;
-      }
-    }
-  }
-  
-  seen.delete(obj);
-  return false;
-}
-
-export function createErrorResponse(error: string, code?: string, details?: Record<string, any>): string {
-  return JSON.stringify({
-    error,
-    code,
-    details,
+/**
+ * Create validation error response
+ */
+export function validationErrorResponse(errors: string[], requestId?: string): Response {
+  return new Response(JSON.stringify({
+    error: 'Validation Error',
+    errors,
+    requestId,
     timestamp: new Date().toISOString()
+  }), {
+    status: 400,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
   });
-}
-
-export function createSuccessResponse<T>(data: T, schema: z.ZodSchema<T>): string {
-  const validated = schema.parse(data);
-  return JSON.stringify(validated);
 }

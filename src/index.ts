@@ -16,6 +16,7 @@ import { getHoldPercentage } from './tools/intelligence/getHoldPercentage';
 import { getCLV } from './tools/intelligence/getCLV';
 import { handleBetTickerInterception, getBetTickerHistory, getBetTickerResponse } from './interceptors/bet-ticker-sniffer';
 import { handleMCPRequest } from './mcp/server';
+import { handleAPIRoute } from './api/routes';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -172,6 +173,12 @@ export default {
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       }
+    }
+
+    // REST API routes (/api/*)
+    if (url.pathname.startsWith('/api/')) {
+      console.log(`[${requestId}] 🔌 REST API: ${url.pathname}`);
+      return handleAPIRoute(request, env, ctx);
     }
 
     // MCP Tools API routes
