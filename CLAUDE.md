@@ -384,8 +384,114 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
 - **[docs/TESTING_STATUS.md](docs/TESTING_STATUS.md)** - Testing status and next steps
 - **[docs/MCP_TESTING_GUIDE.md](docs/MCP_TESTING_GUIDE.md)** - Comprehensive testing guide
 
+### Code Organization & Rules ✨ **NEW**
+- **[docs/CURSOR_RULES.md](docs/CURSOR_RULES.md)** - AI assistant rules guide (7 rules)
+- **[docs/ROOT_STRUCTURE.md](docs/ROOT_STRUCTURE.md)** - Root directory reference
+- **[docs/CODEBASE_REVIEW.md](docs/CODEBASE_REVIEW.md)** - Comprehensive codebase review
+- **[.cursor/rules/](/.cursor/rules/)** - Active Cursor rules (850 lines):
+  - `root-organization.mdc` - Root directory policy (CRITICAL)
+  - `bun-runtime.mdc` - Bun usage requirements
+  - `documentation.mdc` - Documentation placement
+  - `testing.mdc` - Bun Test patterns
+  - `mcp-integration.mdc` - MCP server patterns
+  - `cloudflare-workers.mdc` - Workers-specific rules
+  - `file-naming.mdc` - Naming conventions
+
 ### Archived Documentation
 - **[docs/archive/](docs/archive/)** - Historical docs, migration reports, obsolete guides
+
+---
+
+## 🔍 Code Searchability & Navigation
+
+### Quick File Finder Patterns
+
+**MCP Integration:**
+```bash
+# Find MCP handlers
+find src/mcp/handlers -name "*.ts"
+
+# Search MCP types
+grep -r "MCPToolResult" src/mcp/
+
+# Find tool definitions
+cat src/mcp/tools.ts
+```
+
+**Testing:**
+```bash
+# Find all test files
+find tests -name "*.test.ts"
+
+# Search for specific test
+grep -r "describe.*CLV" tests/
+
+# Find mocks
+ls tests/mocks/
+```
+
+**Documentation:**
+```bash
+# Find all markdown docs
+find docs -name "*.md"
+
+# Search docs for topic
+grep -r "MCP" docs/
+
+# List guides
+ls docs/guides/
+```
+
+### Key Code Locations
+
+| Feature | Location | Key Files |
+|---------|----------|-----------|
+| **MCP Server** | `src/mcp/` | server.ts, toolRegistry.ts, tools.ts, types.ts |
+| **MCP Handlers** | `src/mcp/handlers/` | 9 handler files (steamMoves.ts, etc.) |
+| **Intelligence APIs** | `src/tools/intelligence/` | getBettingExposure.ts, getCLV.ts, etc. |
+| **BetTicker Sniffer** | `src/interceptors/` | bet-ticker-sniffer.ts |
+| **Queue Consumers** | `src/queues/` | lineIngress.ts, steamWebhook.ts |
+| **Scheduled Jobs** | `src/schedules/` | sharpCalc.ts, exposureCalc.ts |
+| **Guards** | `src/guards/` | rateLimit.ts, costCap.ts |
+| **Types** | `src/types/` | api.ts (all interfaces) |
+| **Tests** | `tests/unit/`, `tests/integration/` | *.test.ts files |
+| **Cursor Rules** | `.cursor/rules/` | 7 .mdc rule files |
+
+### MCP Endpoint Map
+
+```
+POST /mcp → handleMCPRequest() [src/mcp/server.ts]
+├── initialize → capabilities
+├── tools/list → tool definitions [src/mcp/tools.ts]
+└── tools/call → [src/mcp/toolRegistry.ts]
+    ├── getBettingExposure → [src/tools/intelligence/getBettingExposure.ts]
+    ├── getCLV → [src/tools/intelligence/getCLV.ts]
+    ├── getHoldPercentage → [src/tools/intelligence/getHoldPercentage.ts]
+    ├── getSharpScore → [src/tools/intelligence/getSharpScore.ts]
+    ├── getSteamMoves → [src/mcp/handlers/steamMoves.ts]
+    ├── getRiskConcentration → [src/mcp/handlers/riskConcentration.ts]
+    ├── getSharpActivity → [src/mcp/handlers/sharpActivity.ts]
+    ├── getTimeSeriesCLV → [src/mcp/handlers/timeSeriesCLV.ts]
+    ├── getEnhancedSharpScore → [src/mcp/handlers/enhancedSharpScore.ts]
+    ├── getHoldForecast → [src/mcp/handlers/holdForecast.ts]
+    ├── getHandleAndHold → [src/mcp/handlers/handleAndHold.ts]
+    ├── getCustomerVolume → [src/mcp/handlers/customerVolume.ts]
+    └── getTimeSeriesAnalytics → [src/mcp/handlers/timeSeriesAnalytics.ts]
+```
+
+### Database Schema Reference
+
+```
+D1 Database: betting-analytics (ANALYTICS binding)
+├── line_movements        # [migrations/0001_initial_schema.sql]
+├── sharp_indicators      # [migrations/0001_initial_schema.sql]
+├── exposure_tracking     # [migrations/0001_initial_schema.sql]
+├── steam_dedupe          # [migrations/0002_add_ttl.sql]
+├── bet_history          # [migrations/0003_mcp_tables.sql] ✨ NEW
+└── hold_tracking        # [migrations/0003_mcp_tables.sql] ✨ NEW
+
+Test Data: [migrations/0004_test_data.sql]
+```
 
 ---
 
