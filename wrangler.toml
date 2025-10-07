@@ -2,6 +2,7 @@ name = "betting-brain-v3"
 main = "src/index.ts"
 compatibility_date = "2023-12-01"
 compatibility_flags = ["nodejs_compat"]
+account_id = "80693377f3abb78e00820aa69a415ce4"
 
 [env.production]
 name = "betting-brain-v3-prod"
@@ -9,7 +10,7 @@ name = "betting-brain-v3-prod"
 [[d1_databases]]
 binding = "ANALYTICS"
 database_name = "betting-analytics"
-database_id = "your-database-id"
+database_id = "1fd6d6d3-7b0f-4488-a651-a234c61705b1"
 migrations_dir = "migrations"
 
 [[queues.producers]]
@@ -33,12 +34,18 @@ max_batch_timeout = 10
 [triggers]
 crons = [
   "0 * * * *",  # hourly sharp calculation
-  "*/30 * * * * *"  # 30-second exposure calculation
+  "* * * * *"  # every minute exposure calculation (closest to 30s possible)
 ]
 
-[analytics_engine_datasets]
+[[analytics_engine_datasets]]
 binding = "ANALYTICS_ENGINE"
 dataset = "betting-metrics"
+
+# KV Namespace for BetTicker raw data storage
+[[kv_namespaces]]
+binding = "BET_TICKER_RAW"
+id = "8b9618cb00c647f18ad83458e0061018"
+preview_id = "0d4410da8b824c70834a0f105654029e"
 
 [limits]
 cpu_ms = 50

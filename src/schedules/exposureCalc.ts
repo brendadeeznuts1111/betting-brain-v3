@@ -48,9 +48,9 @@ async function getActiveEvents(env: Env): Promise<string[]> {
     WHERE ing > datetime('now', '-5 minutes')
     ORDER BY ing DESC
     LIMIT 50
-  `).all();
+  `).all() as Array<{ eid: string }>;
   
-  return result.map((row: any) => row.eid);
+  return result.map(row => row.eid);
 }
 
 async function calculateEventExposure(eventId: string, env: Env): Promise<ExposureMetrics> {
@@ -59,7 +59,11 @@ async function calculateEventExposure(eventId: string, env: Env): Promise<Exposu
     SELECT side, risk, net
     FROM exposure_tracking
     WHERE eid = ?
-  `).bind(eventId).all();
+  `).bind(eventId).all() as Array<{
+    side: string;
+    risk: number;
+    net: number;
+  }>;
   
   // Calculate total risk and max exposure
   let totalRisk = 0;
@@ -111,6 +115,13 @@ async function updateExposureTracking(exposureUpdates: ExposureMetrics[], env: E
         now
       ).run();
     }
+    
+    // Write to analytics engine
+    await env.ANALYTICS_ENGINE.writeDataPoint({
+      blobs: [exposure.eventId, 'exposure_update'],
+      doubles: [exposure.totalRisk, exposure.maxExposure],
+      indexes: ['exposure_calculation']
+    });
   }
 }
 

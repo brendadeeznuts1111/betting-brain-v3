@@ -17,11 +17,20 @@ export function formatCurrency(amount: number, currency: string = 'USD'): string
 
 // Percentage formatting
 export function formatPercentage(value: number, decimals: number = 2): string {
+  if (value === null || value === undefined || isNaN(value)) {
+    return 'NaN%';
+  }
   return `${value.toFixed(decimals)}%`;
 }
 
 // Number formatting
 export function formatNumber(value: number, decimals: number = 2): string {
+  if (value === null || value === undefined) {
+    return '0.00';
+  }
+  if (isNaN(value)) {
+    return 'NaN';
+  }
   return value.toLocaleString('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
@@ -31,6 +40,11 @@ export function formatNumber(value: number, decimals: number = 2): string {
 // Timestamp formatting
 export function formatTimestamp(timestamp: string | Date, includeTime: boolean = true): string {
   const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
   
   if (includeTime) {
     return date.toLocaleString('en-US', {
@@ -54,6 +68,12 @@ export function formatTimestamp(timestamp: string | Date, includeTime: boolean =
 // Relative time formatting
 export function formatRelativeTime(timestamp: string | Date): string {
   const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+  
   const now = Date.now();
   const diff = now - date.getTime();
   

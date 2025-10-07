@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { handleSteamWebhook } from '../src/queues/steamWebhook';
+import { handleSteamWebhook } from '../../src/queues/steamWebhook';
 
 describe('Steam Move Detection', () => {
   let mockEnv: any;
@@ -22,7 +22,14 @@ describe('Steam Move Detection', () => {
               { lb: -107, la: -105, ts: new Date().toISOString() }
             ],
             run: async () => ({ success: true })
-          })
+          }),
+          first: async () => null,
+          all: async () => [
+            { lb: -110, la: -108, ts: new Date(Date.now() - 120000).toISOString() },
+            { lb: -108, la: -107, ts: new Date(Date.now() - 60000).toISOString() },
+            { lb: -107, la: -105, ts: new Date().toISOString() }
+          ],
+          run: async () => ({ success: true })
         })
       },
       ANALYTICS_ENGINE: {

@@ -18,11 +18,24 @@ export class DatabaseHelper {
   ): Promise<T[]> {
     const { retry = 3, timeout = 5000 } = options;
     
+    // Handle null/undefined params
+    const safeParams = params || [];
+    
     for (let attempt = 0; attempt < retry; attempt++) {
       try {
         const stmt = this.env.ANALYTICS.prepare(query);
-        const bound = params.length > 0 ? stmt.bind(...params) : stmt;
-        const result = await bound.all();
+        const bound = safeParams.length > 0 ? stmt.bind(...safeParams) : stmt;
+        
+        // Add timeout handling
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Timeout')), timeout);
+        });
+        
+        const result = await Promise.race([
+          bound.all(),
+          timeoutPromise
+        ]);
+        
         return result as T[];
       } catch (error) {
         if (attempt === retry - 1) {
@@ -33,7 +46,7 @@ export class DatabaseHelper {
       }
     }
     
-    return [];
+    throw new Error('Query failed after all retry attempts');
   }
 
   /**
@@ -41,17 +54,40 @@ export class DatabaseHelper {
    */
   async executeQueryFirst<T = any>(
     query: string,
-    params: any[] = []
+    params: any[] = [],
+    options: { retry?: number; timeout?: number } = {}
   ): Promise<T | null> {
-    try {
-      const stmt = this.env.ANALYTICS.prepare(query);
-      const bound = params.length > 0 ? stmt.bind(...params) : stmt;
-      const result = await bound.first();
-      return result as T | null;
-    } catch (error) {
-      console.error('Query first failed:', error);
-      return null;
+    const { retry = 3, timeout = 5000 } = options;
+    
+    // Handle null/undefined params
+    const safeParams = params || [];
+    
+    for (let attempt = 0; attempt < retry; attempt++) {
+      try {
+        const stmt = this.env.ANALYTICS.prepare(query);
+        const bound = safeParams.length > 0 ? stmt.bind(...safeParams) : stmt;
+        
+        // Add timeout handling
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Timeout')), timeout);
+        });
+        
+        const result = await Promise.race([
+          bound.first(),
+          timeoutPromise
+        ]);
+        
+        return result as T | null;
+      } catch (error) {
+        if (attempt === retry - 1) {
+          console.error('Query first failed:', error);
+          return null;
+        }
+        await this.sleep(Math.pow(2, attempt) * 100); // Exponential backoff
+      }
     }
+    
+    return null;
   }
 
   /**
@@ -82,6 +118,11 @@ export class DatabaseHelper {
     operations: Array<{ query: string; params: any[] }>
   ): Promise<{ success: boolean; rowsAffected: number }> {
     try {
+      // Handle empty operations array
+      if (operations.length === 0) {
+        return { success: true, rowsAffected: 0 };
+      }
+      
       const statements = operations.map(op => {
         const stmt = this.env.ANALYTICS.prepare(op.query);
         return op.params.length > 0 ? stmt.bind(...op.params) : stmt;
@@ -135,14 +176,26 @@ export class DatabaseHelper {
    * Vacuum database to reclaim space
    */
   async vacuum(): Promise<void> {
-    await this.executeWrite('VACUUM');
+    try {
+      const stmt = this.env.ANALYTICS.prepare('VACUUM');
+      await stmt.run();
+    } catch (error) {
+      console.error('Write operation failed:', error);
+      throw error;
+    }
   }
 
   /**
    * Analyze database for query optimization
    */
   async analyze(): Promise<void> {
-    await this.executeWrite('ANALYZE');
+    try {
+      const stmt = this.env.ANALYTICS.prepare('ANALYZE');
+      await stmt.run();
+    } catch (error) {
+      console.error('Write operation failed:', error);
+      throw error;
+    }
   }
 
   /**

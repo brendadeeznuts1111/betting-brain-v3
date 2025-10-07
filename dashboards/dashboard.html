@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 BetTicker Sniffer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .response-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status-success { color: #10b981; }
+        .status-error { color: #ef4444; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🎯 BetTicker Sniffer Dashboard</h1>
+                    <p class="text-white/80">Real-time API interception monitoring</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-bold" id="totalRequests">0</div>
+                    <div class="text-sm text-white/80">Total Intercepted</div>
+                    <div class="mt-2">
+                        <span class="pulse inline-block w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                        <span class="text-sm">Live</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="glass rounded-xl p-6 text-white">
+                <div class="text-sm text-white/80 mb-2">Last 24 Hours</div>
+                <div class="text-3xl font-bold" id="last24h">-</div>
+            </div>
+            <div class="glass rounded-xl p-6 text-white">
+                <div class="text-sm text-white/80 mb-2">Avg Response Size</div>
+                <div class="text-3xl font-bold" id="avgSize">-</div>
+            </div>
+            <div class="glass rounded-xl p-6 text-white">
+                <div class="text-sm text-white/80 mb-2">Success Rate</div>
+                <div class="text-3xl font-bold" id="successRate">-</div>
+            </div>
+            <div class="glass rounded-xl p-6 text-white">
+                <div class="text-sm text-white/80 mb-2">Storage Used</div>
+                <div class="text-3xl font-bold" id="storageUsed">-</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-white font-bold mb-4">📊 Response Status Codes</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-white font-bold mb-4">📈 Requests Over Time</h3>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Requests Table -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-white font-bold text-xl">📋 Recent Intercepted Requests</h3>
+                <div class="flex gap-2">
+                    <button onclick="refreshData()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition">
+                        🔄 Refresh
+                    </button>
+                    <button onclick="clearFilters()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-white">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="text-left py-3 px-4">Timestamp</th>
+                            <th class="text-left py-3 px-4">Status</th>
+                            <th class="text-left py-3 px-4">Size</th>
+                            <th class="text-left py-3 px-4">IP</th>
+                            <th class="text-left py-3 px-4">User Agent</th>
+                            <th class="text-left py-3 px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTable">
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-white/60">
+                                <div class="pulse">Loading...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Response Viewer Modal -->
+        <div id="responseModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50">
+            <div class="glass rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-bold text-2xl">🔍 Response Details</h3>
+                    <button onclick="closeModal()" class="text-white/80 hover:text-white text-2xl">×</button>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Metadata -->
+                    <div class="bg-white/10 rounded-lg p-4">
+                        <h4 class="text-white font-bold mb-2">📊 Metadata</h4>
+                        <div id="responseMetadata" class="text-white/90 text-sm space-y-1"></div>
+                    </div>
+                    
+                    <!-- Response Body -->
+                    <div class="bg-white/10 rounded-lg p-4">
+                        <h4 class="text-white font-bold mb-2">📄 Response Body</h4>
+                        <div class="response-content">
+                            <pre id="responseBody" class="text-white/90 text-xs overflow-x-auto p-4 bg-black/30 rounded"></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                        <button onclick="copyResponse()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                            📋 Copy Response
+                        </button>
+                        <button onclick="downloadResponse()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
+                            💾 Download JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        const REFRESH_INTERVAL = 10000; // 10 seconds
+        
+        let currentResponse = null;
+        let statusChart = null;
+        let timeChart = null;
+        let refreshTimer = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            refreshData();
+            startAutoRefresh();
+        });
+
+        // Start auto-refresh
+        function startAutoRefresh() {
+            refreshTimer = setInterval(refreshData, REFRESH_INTERVAL);
+        }
+
+        // Refresh data
+        async function refreshData() {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=50`);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                
+                const data = await response.json();
+                updateStats(data);
+                updateTable(data);
+                updateCharts(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('requestsTable').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-red-400">
+                            ❌ Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Update statistics
+        function updateStats(data) {
+            // Total requests
+            document.getElementById('totalRequests').textContent = data.length;
+
+            // Last 24 hours (all data is within 7 days due to TTL)
+            const last24h = data.filter(item => {
+                const age = Date.now() - parseInt(item.key.split(':')[2]);
+                return age < 86400000; // 24 hours
+            });
+            document.getElementById('last24h').textContent = last24h.length;
+
+            // Average size
+            if (data.length > 0) {
+                const avgSize = data.reduce((sum, item) => sum + (item.metadata.contentLength || 0), 0) / data.length;
+                document.getElementById('avgSize').textContent = formatBytes(avgSize);
+            }
+
+            // Success rate
+            const successCount = data.filter(item => item.metadata.status >= 200 && item.metadata.status < 400).length;
+            const successRate = data.length > 0 ? (successCount / data.length * 100).toFixed(1) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+
+            // Storage used (approximate)
+            const totalSize = data.reduce((sum, item) => sum + (item.metadata.contentLength || 0), 0);
+            document.getElementById('storageUsed').textContent = formatBytes(totalSize);
+        }
+
+        // Update table
+        function updateTable(data) {
+            const tbody = document.getElementById('requestsTable');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-white/60">
+                            No intercepted requests yet
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => {
+                const timestamp = new Date(item.metadata.timestamp);
+                const statusClass = item.metadata.status >= 200 && item.metadata.status < 400 
+                    ? 'status-success' 
+                    : 'status-error';
+                const userAgent = item.metadata.userAgent.substring(0, 30);
+                
+                return `
+                    <tr class="border-b border-white/10 hover:bg-white/5 transition">
+                        <td class="py-3 px-4 text-sm">${timestamp.toLocaleString()}</td>
+                        <td class="py-3 px-4">
+                            <span class="${statusClass} font-bold">${item.metadata.status}</span>
+                        </td>
+                        <td class="py-3 px-4 text-sm">${formatBytes(item.metadata.contentLength)}</td>
+                        <td class="py-3 px-4 text-sm font-mono">${item.metadata.ip.split(':').pop()}</td>
+                        <td class="py-3 px-4 text-sm">${userAgent}...</td>
+                        <td class="py-3 px-4">
+                            <button onclick="viewResponse('${item.key}')" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded transition">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // View response
+        async function viewResponse(key) {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/response?key=${key}`);
+                if (!response.ok) throw new Error('Failed to fetch response');
+                
+                const data = await response.json();
+                currentResponse = data;
+                
+                // Show metadata
+                const metadata = data.metadata;
+                document.getElementById('responseMetadata').innerHTML = `
+                    <div><strong>Status:</strong> ${metadata.status}</div>
+                    <div><strong>Timestamp:</strong> ${new Date(metadata.timestamp).toLocaleString()}</div>
+                    <div><strong>IP:</strong> ${metadata.ip}</div>
+                    <div><strong>User Agent:</strong> ${metadata.userAgent}</div>
+                    <div><strong>Content Type:</strong> ${metadata.contentType}</div>
+                    <div><strong>Content Length:</strong> ${formatBytes(metadata.contentLength)}</div>
+                `;
+                
+                // Show body
+                try {
+                    const bodyJson = JSON.parse(data.body);
+                    document.getElementById('responseBody').textContent = JSON.stringify(bodyJson, null, 2);
+                } catch {
+                    document.getElementById('responseBody').textContent = data.body;
+                }
+                
+                // Show modal
+                document.getElementById('responseModal').classList.remove('hidden');
+            } catch (error) {
+                alert('Error loading response: ' + error.message);
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('responseModal').classList.add('hidden');
+        }
+
+        // Copy response
+        function copyResponse() {
+            if (!currentResponse) return;
+            navigator.clipboard.writeText(currentResponse.body);
+            alert('✅ Response copied to clipboard!');
+        }
+
+        // Download response
+        function downloadResponse() {
+            if (!currentResponse) return;
+            
+            const blob = new Blob([currentResponse.body], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `response-${new Date().getTime()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Status chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Success (2xx)', 'Redirect (3xx)', 'Client Error (4xx)', 'Server Error (5xx)'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+
+            // Time chart
+            const timeCtx = document.getElementById('timeChart').getContext('2d');
+            timeChart = new Chart(timeCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Requests',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update charts
+        function updateCharts(data) {
+            // Status chart
+            const statusCounts = [0, 0, 0, 0];
+            data.forEach(item => {
+                const status = item.metadata.status;
+                if (status >= 200 && status < 300) statusCounts[0]++;
+                else if (status >= 300 && status < 400) statusCounts[1]++;
+                else if (status >= 400 && status < 500) statusCounts[2]++;
+                else if (status >= 500) statusCounts[3]++;
+            });
+            statusChart.data.datasets[0].data = statusCounts;
+            statusChart.update();
+
+            // Time chart - group by hour
+            const hourCounts = {};
+            data.forEach(item => {
+                const date = new Date(item.metadata.timestamp);
+                const hour = date.getHours();
+                hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            });
+            
+            const hours = Object.keys(hourCounts).sort((a, b) => a - b);
+            timeChart.data.labels = hours.map(h => `${h}:00`);
+            timeChart.data.datasets[0].data = hours.map(h => hourCounts[h]);
+            timeChart.update();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            if (confirm('Clear all data from KV? This cannot be undone.')) {
+                alert('⚠️ This would require backend support. Currently disabled.');
+            }
+        }
+
+        // Format bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Close modal on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
+

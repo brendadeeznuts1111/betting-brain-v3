@@ -3,7 +3,8 @@
  * Hard-wired cost controls with graceful degradation
  */
 
-import { CostCapConfig, CostCapMetrics } from '../types/metrics';
+import { CostCapConfig } from '../types/api';
+import { CostCapMetrics } from '../types/metrics';
 import { Env } from '../types/api';
 
 export class CostCapGuard {
@@ -93,10 +94,10 @@ export class CostCapGuard {
           COUNT(*) as rows
         FROM dbstat
         WHERE name NOT LIKE 'sqlite_%'
-      `).first();
+      `).first() as { size: number; rows: number } | null;
 
-      const size = (sizeResult?.size as number) || 0;
-      const rows = (sizeResult?.rows as number) || 0;
+      const size = typeof sizeResult?.size === 'number' ? sizeResult.size : 0;
+      const rows = typeof sizeResult?.rows === 'number' ? sizeResult.rows : 0;
 
       return {
         size,
@@ -196,8 +197,8 @@ export class CostCapGuard {
    * Apply sampling to analytics data
    */
   applySampling(data: any[]): any[] {
-    if (this.config.analytics.samplingRate >= 1.0) {
-      return data;
+    if (!data || !Array.isArray(data) || this.config.analytics.samplingRate >= 1.0) {
+      return data || [];
     }
 
     const sampleSize = Math.floor(data.length * this.config.analytics.samplingRate);

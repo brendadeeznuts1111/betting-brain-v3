@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getBettingExposure } from '../src/tools/intelligence/getBettingExposure';
+import { getBettingExposure } from '../../src/tools/intelligence/getBettingExposure';
 
 describe('Exposure Tracking', () => {
   let mockEnv: any;
@@ -15,11 +15,19 @@ describe('Exposure Tracking', () => {
       ANALYTICS: {
         prepare: (query: string) => ({
           bind: (...params: any[]) => ({
+            first: async () => null,
             all: async () => [
               { side: 'HOME', risk: 30000, net: -15000 },
               { side: 'AWAY', risk: 25000, net: 15000 }
-            ]
-          })
+            ],
+            run: async () => ({ success: true })
+          }),
+          first: async () => null,
+          all: async () => [
+            { side: 'HOME', risk: 30000, net: -15000 },
+            { side: 'AWAY', risk: 25000, net: 15000 }
+          ],
+          run: async () => ({ success: true })
         })
       },
       ANALYTICS_ENGINE: {
@@ -43,11 +51,19 @@ describe('Exposure Tracking', () => {
   it('should alert when exposure > $50k', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
+        first: async () => null,
         all: async () => [
           { side: 'HOME', risk: 60000, net: -55000 },
           { side: 'AWAY', risk: 45000, net: 55000 }
-        ]
-      })
+        ],
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => [
+        { side: 'HOME', risk: 60000, net: -55000 },
+        { side: 'AWAY', risk: 45000, net: 55000 }
+      ],
+      run: async () => ({ success: true })
     });
 
     const response = await getBettingExposure(mockRequest, mockEnv);
@@ -60,11 +76,19 @@ describe('Exposure Tracking', () => {
   it('should alert when exposure > 60% of risk', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
+        first: async () => null,
         all: async () => [
           { side: 'HOME', risk: 40000, net: -25000 },
           { side: 'AWAY', risk: 35000, net: 25000 }
-        ]
-      })
+        ],
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => [
+        { side: 'HOME', risk: 40000, net: -25000 },
+        { side: 'AWAY', risk: 35000, net: 25000 }
+      ],
+      run: async () => ({ success: true })
     });
 
     const response = await getBettingExposure(mockRequest, mockEnv);
@@ -83,8 +107,13 @@ describe('Exposure Tracking', () => {
 
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
-        all: async () => manyRows
-      })
+        first: async () => null,
+        all: async () => manyRows,
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => manyRows,
+      run: async () => ({ success: true })
     });
 
     const response = await getBettingExposure(mockRequest, mockEnv);
@@ -94,8 +123,13 @@ describe('Exposure Tracking', () => {
   it('should handle event with no exposure data', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
-        all: async () => []
-      })
+        first: async () => null,
+        all: async () => [],
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => [],
+      run: async () => ({ success: true })
     });
 
     const response = await getBettingExposure(mockRequest, mockEnv);

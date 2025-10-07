@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "BetTicker Interceptor Proxy",
+  "version": "1.0.0",
+  "description": "Automatically proxies getBetTicker requests through Cloudflare Worker for analytics",
+  "permissions": [
+    "declarativeNetRequest",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://fantasy402.com/*",
+    "https://betting-brain-v3.nolarose1968-806.workers.dev/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  }
+}
+

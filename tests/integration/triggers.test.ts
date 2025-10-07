@@ -1,0 +1,504 @@
+/**
+ * Database Trigger Scenario Tests
+ * Tests the database trigger handlers for line movement processing
+ */
+
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Env } from '../../src/types/api';
+
+// Mock the database and analytics engine
+const mockEnv: Env = {
+  ANALYTICS: {
+    prepare: vi.fn().mockReturnValue({
+      first: vi.fn().mockResolvedValue({ count: 0 }),
+      run: vi.fn().mockResolvedValue({ success: true }),
+      all: vi.fn().mockResolvedValue([]),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 0 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue([])
+        }),
+      bind: vi.fn().mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 0 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue([])
+      })
+    }),
+    exec: vi.fn().mockResolvedValue({ success: true })
+  } as any,
+  STEAM_WEBHOOK: {
+    send: vi.fn().mockResolvedValue({ success: true })
+  } as any,
+  ANALYTICS_ENGINE: {
+    writeDataPoint: vi.fn().mockResolvedValue(undefined)
+  } as any
+};
+
+const mockCtx: ExecutionContext = {
+  waitUntil: vi.fn(),
+  passThroughOnException: vi.fn()
+} as any;
+
+describe('Database Trigger Scenario Tests', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Line Movement Trigger', () => {
+    it('should process line movement events successfully', async () => {
+      const mockLineMovement = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 1 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue([mockLineMovement]),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 1 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue([mockLineMovement])
+        })
+      } as any);
+
+      // Import and test the trigger handler
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      await onLineMove(mockEnv, mockLineMovement);
+      
+      // Verify database interactions
+      expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalled();
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
+    });
+
+    it('should detect significant line movements', async () => {
+      const significantMovement = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 7.0, // Significant change
+        vb: 10000,
+        va: 25000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 1 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue([significantMovement]),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 1 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue([significantMovement])
+        })
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      await onLineMove(mockEnv, significantMovement);
+      
+      // Verify that significant movements are flagged
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
+        expect.objectContaining({
+          blobs: ['nba_123', 'SPREAD', 'line_movement'],
+          doubles: expect.objectContaining({
+            line_change: 1.5
+          }),
+          indexes: ['line_movement_trigger']
+        })
+      );
+    });
+
+    it('should handle rapid line movements within time window', async () => {
+      const rapidMovements = [
+        {
+          eid: 'nba_123',
+          mt: 'SPREAD',
+          lb: 5.5,
+          la: 6.0,
+          vb: 10000,
+          va: 12000,
+          ts: new Date(Date.now() - 30000).toISOString() // 30 seconds ago
+        },
+        {
+          eid: 'nba_123',
+          mt: 'SPREAD',
+          lb: 6.0,
+          la: 6.5,
+          vb: 12000,
+          va: 15000,
+          ts: new Date().toISOString() // Now
+        }
+      ];
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 2 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue(rapidMovements),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 2 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue(rapidMovements)
+        })
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Process the second movement
+      await onLineMove(mockEnv, rapidMovements[1]);
+      
+      // Verify that rapid movements are detected
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
+        expect.objectContaining({
+          blobs: ['nba_123', 'SPREAD', 'line_movement'],
+          doubles: expect.objectContaining({
+            line_change: 0.5
+          }),
+          indexes: ['line_movement_trigger']
+        })
+      );
+    });
+
+    it('should handle database errors gracefully', async () => {
+      const mockLineMovement = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockRejectedValue(new Error('Database connection failed')),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue([])
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Should not throw - errors should be handled gracefully
+      await expect(onLineMove(mockEnv, mockLineMovement)).resolves.toBeUndefined();
+    });
+
+    it('should validate line movement data', async () => {
+      const invalidMovement = {
+        eid: '', // Invalid empty ID
+        mt: 'INVALID', // Invalid mt
+        lb: 'invalid', // Invalid line value
+        la: 6.0,
+        vb: -1000, // Invalid negative volume
+        va: 15000,
+        ts: 'invalid-date' // Invalid ts
+      };
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Should handle invalid data gracefully
+      await expect(onLineMove(mockEnv, invalidMovement)).resolves.toBeUndefined();
+    });
+
+    it('should handle concurrent line movements', async () => {
+      const concurrentMovements = [
+        {
+          eid: 'nba_123',
+          mt: 'SPREAD',
+          lb: 5.5,
+          la: 6.0,
+          vb: 10000,
+          va: 15000,
+          ts: new Date().toISOString()
+        },
+        {
+          eid: 'nba_456',
+          mt: 'TOTAL',
+          lb: 220.5,
+          la: 221.0,
+          vb: 8000,
+          va: 12000,
+          ts: new Date().toISOString()
+        }
+      ];
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 2 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue(concurrentMovements),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 2 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue(concurrentMovements)
+        })
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Process both movements concurrently
+      const promises = concurrentMovements.map(movement => 
+        onLineMove(mockEnv, movement)
+      );
+      
+      await Promise.all(promises);
+      
+      // Both should be processed successfully
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('Trigger Performance and Limits', () => {
+    it('should complete within reasonable time limits', async () => {
+      // Set NODE_ENV to production to avoid test delay
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      
+      const mockLineMovement = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      const startTime = Date.now();
+      
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      await onLineMove(mockEnv, mockLineMovement);
+      
+      const endTime = Date.now();
+      const executionTime = endTime - startTime;
+      
+      // Restore original environment
+      process.env.NODE_ENV = originalEnv;
+      
+      // Should complete within 1 second (without test delay)
+      expect(executionTime).toBeLessThan(1000);
+    });
+
+    it('should handle high-frequency trigger events', async () => {
+      const highFrequencyMovements = Array.from({ length: 100 }, (_, i) => ({
+        eid: `nba_${i}`,
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 5.5 + (i * 0.1),
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString()
+      }));
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 100 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue(highFrequencyMovements),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 100 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue(highFrequencyMovements)
+        })
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Process all movements
+      const promises = highFrequencyMovements.map(movement => 
+        onLineMove(mockEnv, movement)
+      );
+      
+      await Promise.all(promises);
+      
+      // All should be processed successfully
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(100);
+    });
+
+    it('should respect cost cap limits during trigger execution', async () => {
+      const mockLineMovement = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      // Mock cost cap guard to return limit exceeded
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 0 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue([])
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      await onLineMove(mockEnv, mockLineMovement);
+      
+      // Should complete without throwing errors even if limits are exceeded
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
+    });
+  });
+
+  describe('Trigger Data Validation', () => {
+    it('should validate event ID format', async () => {
+      const invalidEventId = {
+        eid: 'invalid-format',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Should handle invalid event ID gracefully
+      await expect(onLineMove(mockEnv, invalidEventId)).resolves.toBeUndefined();
+    });
+
+    it('should validate mt type', async () => {
+      const invalidMarket = {
+        eid: 'nba_123',
+        mt: 'INVALID_MARKET',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Should handle invalid mt gracefully
+      await expect(onLineMove(mockEnv, invalidMarket)).resolves.toBeUndefined();
+    });
+
+    it('should validate line values', async () => {
+      const invalidLineValues = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: NaN,
+        la: Infinity,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Should handle invalid line values gracefully
+      await expect(onLineMove(mockEnv, invalidLineValues)).resolves.toBeUndefined();
+    });
+
+    it('should validate volume values', async () => {
+      const invalidVolume = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: -1000, // Negative volume
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      // Should handle invalid volume gracefully
+      await expect(onLineMove(mockEnv, invalidVolume)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('Trigger Integration', () => {
+    it('should integrate with queue system', async () => {
+      const mockLineMovement = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 1 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue([mockLineMovement]),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 1 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue([mockLineMovement])
+        })
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      await onLineMove(mockEnv, mockLineMovement);
+      
+      // Verify queue integration
+      expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eid: 'nba_123',
+          mt: 'SPREAD'
+        })
+      );
+    });
+
+    it('should integrate with analytics engine', async () => {
+      const mockLineMovement = {
+        eid: 'nba_123',
+        mt: 'SPREAD',
+        lb: 5.5,
+        la: 6.0,
+        vb: 10000,
+        va: 15000,
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
+      };
+
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 1 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue([mockLineMovement]),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 1 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue([mockLineMovement])
+        })
+      } as any);
+
+      const { onLineMove } = await import('../../src/triggers/onLineMove');
+      
+      await onLineMove(mockEnv, mockLineMovement);
+      
+      // Verify analytics integration
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
+        expect.objectContaining({
+          blobs: ['nba_123', 'SPREAD', 'line_movement'],
+          doubles: expect.objectContaining({
+            line_change: 0.5,
+            volume_change: 5000
+          }),
+          indexes: ['line_movement_trigger']
+        })
+      );
+    });
+  });
+});

@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://betting-brain-v3.nolarose1968-806.workers.dev/cloud/api/Manager/getBetTicker?\\1"
+      }
+    },
+    "condition": {
+      "regexFilter": "^https://fantasy402\\.com/cloud/api/Manager/getBetTicker(.*)",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
+]
+

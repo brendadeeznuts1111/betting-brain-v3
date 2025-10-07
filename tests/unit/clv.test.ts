@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getCLV } from '../src/tools/intelligence/getCLV';
+import { getCLV } from '../../src/tools/intelligence/getCLV';
 
 describe('CLV Calculations', () => {
   let mockEnv: any;
@@ -22,7 +22,13 @@ describe('CLV Calculations', () => {
               ao: 100,
               nb: 1500
             })
-          })
+          }),
+          first: async () => ({
+            size: 1000000,
+            rows: 1000
+          }),
+          run: async () => ({ success: true }),
+          all: async () => []
         })
       },
       ANALYTICS_ENGINE: {

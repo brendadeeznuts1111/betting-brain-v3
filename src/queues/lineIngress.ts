@@ -8,6 +8,32 @@ import { Env } from '../types/api';
 import { costCapGuard } from '../guards/costCap';
 import { z } from 'zod';
 
+// Helper function to determine if an error should trigger a retry
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof Error) {
+    // Don't retry validation errors or parsing errors
+    if (error.name === 'ZodError' || error.message.includes('validation')) {
+      return false;
+    }
+    
+    // Don't retry database constraint errors
+    if (error.message.includes('UNIQUE constraint') || 
+        error.message.includes('FOREIGN KEY constraint')) {
+      return false;
+    }
+    
+    // Retry network errors, timeouts, and other transient errors
+    if (error.message.includes('timeout') || 
+        error.message.includes('network') ||
+        error.message.includes('connection')) {
+      return true;
+    }
+  }
+  
+  // Default to retryable for unknown errors
+  return true;
+}
+
 // Validation schema for line movement data
 const LineMovementSchema = z.object({
   eid: z.string().min(1),
@@ -19,9 +45,19 @@ const LineMovementSchema = z.object({
   ts: z.string().datetime()
 });
 
+// Type inference from schema
+type LineMovementData = z.infer<typeof LineMovementSchema>;
+
 export async function handleLineIngress(message: Message, env: Env, ctx: ExecutionContext): Promise<void> {
   try {
-    const data = JSON.parse(message.body as string);
+    let data;
+    try {
+      data = JSON.parse(message.body as string);
+    } catch (parseError) {
+      console.error('JSON parsing error:', parseError);
+      // JSON parsing errors are non-retryable
+      return;
+    }
     
     // Validate incoming data
     const validatedData = LineMovementSchema.parse(data);
@@ -30,6 +66,7 @@ export async function handleLineIngress(message: Message, env: Env, ctx: Executi
     const costCheck = await costCapGuard.checkRequest(new Request('https://internal'), env);
     if (!costCheck.allowed) {
       console.warn('Line ingress blocked by cost cap:', costCheck.reason);
+      // Acknowledge message even if blocked by cost cap to prevent retry loops
       return;
     }
 
@@ -37,9 +74,20 @@ export async function handleLineIngress(message: Message, env: Env, ctx: Executi
     await processLineMovement(validatedData, env);
     
     console.log(`Processed line movement for event ${validatedData.eid}, market ${validatedData.mt}`);
+    
+    // Message will be automatically acknowledged on successful completion
   } catch (error) {
     console.error('Error processing line movement:', error);
-    throw error; // This will trigger message retry
+    
+    // Check if this is a retryable error
+    if (isRetryableError(error)) {
+      console.log('Retryable error detected, message will be retried');
+      throw error; // This will trigger message retry
+    } else {
+      console.error('Non-retryable error, acknowledging message to prevent retry loop');
+      // For non-retryable errors, we don't throw, so the message is acknowledged
+      // This prevents infinite retry loops for validation errors, etc.
+    }
   }
 }
 
@@ -71,6 +119,18 @@ async function processLineMovement(data: LineMovementInsert, env: Env): Promise<
 
   // Update exposure tracking if needed
   await updateExposureTracking(data, env);
+  
+  // Write metrics to analytics engine
+  await env.ANALYTICS_ENGINE.writeDataPoint({
+    blobs: [data.eid, data.mt, 'line_ingress'],
+    doubles: [
+      data.lb || 0,
+      data.la || 0,
+      data.vb || 0,
+      data.va || 0
+    ],
+    indexes: ['line_ingress']
+  });
 }
 
 async function checkSignificantMovement(data: LineMovementInsert, env: Env): Promise<boolean> {

@@ -1,0 +1,113 @@
+# 🧠 Betting-Brain v3 - Production Environment Configuration
+
+name = "betting-brain-v3-prod"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Production-specific settings
+[env.production]
+name = "betting-brain-v3-prod"
+route = "brain.your-domain.com/*"
+
+# Environment variables
+[env.production.vars]
+NODE_ENV = "production"
+DEBUG = "false"
+LOG_LEVEL = "warn"
+ANALYTICS_SAMPLE_RATE = "0.01"
+MONITORING_ENABLED = "true"
+SECURITY_ENABLED = "true"
+
+# D1 Database (production)
+[[env.production.d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics-prod"
+database_id = "your-production-database-id"
+migrations_dir = "migrations"
+
+# Queues (production)
+[[env.production.queues.producers]]
+binding = "LINE_INGRESS"
+queue = "line-ingress-prod"
+
+[[env.production.queues.consumers]]
+queue = "line-ingress-prod"
+max_batch_size = 20
+max_batch_timeout = 3
+
+[[env.production.queues.producers]]
+binding = "STEAM_WEBHOOK"
+queue = "steam-webhook-prod"
+
+[[env.production.queues.consumers]]
+queue = "steam-webhook-prod"
+max_batch_size = 10
+max_batch_timeout = 5
+
+# Scheduled triggers (production)
+[env.production.triggers]
+crons = [
+  "0 * * * *",  # hourly sharp calculation
+  "*/30 * * * * *"  # 30-second exposure calculation
+]
+
+# Analytics Engine (production)
+[env.production.analytics_engine_datasets]
+binding = "ANALYTICS_ENGINE"
+dataset = "betting-metrics-prod"
+
+# Limits (production - optimized)
+[env.production.limits]
+cpu_ms = 50
+memory_mb = 128
+
+# KV Storage (production)
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "your-production-kv-id"
+preview_id = "your-production-preview-kv-id"
+
+[[env.production.kv_namespaces]]
+binding = "BET_TICKER_RAW"
+id = "d6790282fda54b8e811aa85cdcc18ad0"
+preview_id = "df70a1f0e2394923b3d6ab3a0ec83f25"
+
+# R2 Storage (production)
+[[env.production.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "betting-brain-prod"
+
+# Durable Objects (production)
+[[env.production.durable_objects]]
+binding = "RATE_LIMITER"
+class_name = "RateLimiter"
+script_name = "betting-brain-v3-prod"
+
+# Workers (production)
+[env.production.workers]
+min_instances = 5
+max_instances = 100
+
+# Security settings
+[env.production.security]
+headers = [
+  "X-Frame-Options: DENY",
+  "X-Content-Type-Options: nosniff",
+  "X-XSS-Protection: 1; mode=block",
+  "Strict-Transport-Security: max-age=31536000; includeSubDomains"
+]
+
+# Rate limiting (production)
+[env.production.rate_limiting]
+requests_per_second = 10
+burst_limit = 20
+window_size = 60
+
+# Cost cap (production)
+[env.production.cost_cap]
+d1_max_size = 5368709120
+d1_max_rows = 50000000
+queue_max_ops_per_month = 1000000
+analytics_max_points_per_month = 25000000
+requests_max_per_day = 100000

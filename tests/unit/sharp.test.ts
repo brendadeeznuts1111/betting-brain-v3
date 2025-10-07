@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getSharpScore } from '../src/tools/intelligence/getSharpScore';
+import { getSharpScore } from '../../src/tools/intelligence/getSharpScore';
 
 describe('Sharp Score Calculations', () => {
   let mockEnv: any;
@@ -20,8 +20,18 @@ describe('Sharp Score Calculations', () => {
               clv: 5000,
               wr: 58,
               ao: 150
-            })
-          })
+            }),
+            all: async () => [],
+            run: async () => ({ success: true })
+          }),
+          first: async () => ({
+            cid: 'test-customer-1',
+            clv: 5000,
+            wr: 58,
+            ao: 150
+          }),
+          all: async () => [],
+          run: async () => ({ success: true })
         })
       },
       ANALYTICS_ENGINE: {
@@ -49,8 +59,18 @@ describe('Sharp Score Calculations', () => {
           clv: 25000,
           wr: 65,
           ao: 500
-        })
-      })
+        }),
+        all: async () => [],
+        run: async () => ({ success: true })
+      }),
+      first: async () => ({
+        cid: 'sharp-customer',
+        clv: 25000,
+        wr: 65,
+        ao: 500
+      }),
+      all: async () => [],
+      run: async () => ({ success: true })
     });
 
     const response = await getSharpScore(mockRequest, mockEnv);
@@ -72,8 +92,18 @@ describe('Sharp Score Calculations', () => {
           clv: 100,
           wr: 48,
           ao: 5
-        })
-      })
+        }),
+        all: async () => [],
+        run: async () => ({ success: true })
+      }),
+      first: async () => ({
+        cid: 'low-activity',
+        clv: 100,
+        wr: 48,
+        ao: 5
+      }),
+      all: async () => [],
+      run: async () => ({ success: true })
     });
 
     const response = await getSharpScore(mockRequest, mockEnv);
@@ -92,8 +122,13 @@ describe('Sharp Score Calculations', () => {
   it('should handle customer with no sharp data', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
-        first: async () => null
-      })
+        first: async () => null,
+        all: async () => [],
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => [],
+      run: async () => ({ success: true })
     });
 
     const response = await getSharpScore(mockRequest, mockEnv);

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getHoldPercentage } from '../src/tools/intelligence/getHoldPercentage';
+import { getHoldPercentage } from '../../src/tools/intelligence/getHoldPercentage';
 
 describe('Hold Percentage Calculations', () => {
   let mockEnv: any;
@@ -15,13 +15,23 @@ describe('Hold Percentage Calculations', () => {
       ANALYTICS: {
         prepare: (query: string) => ({
           bind: (...params: any[]) => ({
+            first: async () => null,
             all: async () => [{
               vb: 5000,
               va: 5500,
               lb: -110,
               la: -115
-            }]
-          })
+            }],
+            run: async () => ({ success: true })
+          }),
+          first: async () => null,
+          all: async () => [{
+            vb: 5000,
+            va: 5500,
+            lb: -110,
+            la: -115
+          }],
+          run: async () => ({ success: true })
         })
       },
       ANALYTICS_ENGINE: {
@@ -44,13 +54,23 @@ describe('Hold Percentage Calculations', () => {
   it('should alert when hold percentage < 4%', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
+        first: async () => null,
         all: async () => [{
           vb: 10000,
           va: 10200,
           lb: -105,
           la: -105
-        }]
-      })
+        }],
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => [{
+        vb: 10000,
+        va: 10200,
+        lb: -105,
+        la: -105
+      }],
+      run: async () => ({ success: true })
     });
 
     const response = await getHoldPercentage(mockRequest, mockEnv);
@@ -62,13 +82,23 @@ describe('Hold Percentage Calculations', () => {
   it('should alert when hold percentage > 8%', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
+        first: async () => null,
         all: async () => [{
           vb: 8000,
           va: 9000,
           lb: -120,
           la: -125
-        }]
-      })
+        }],
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => [{
+        vb: 8000,
+        va: 9000,
+        lb: -120,
+        la: -125
+      }],
+      run: async () => ({ success: true })
     });
 
     const response = await getHoldPercentage(mockRequest, mockEnv);
@@ -80,8 +110,13 @@ describe('Hold Percentage Calculations', () => {
   it('should handle missing event data', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
-        all: async () => []
-      })
+        first: async () => null,
+        all: async () => [],
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => [],
+      run: async () => ({ success: true })
     });
 
     const response = await getHoldPercentage(mockRequest, mockEnv);

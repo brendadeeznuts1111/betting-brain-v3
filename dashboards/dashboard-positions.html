@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Position & Risk Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        .scrollable {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .risk-positive { color: #10b981; }
+        .risk-negative { color: #ef4444; }
+        .exposure-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .exposure-fill-home {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            float: left;
+        }
+        .exposure-fill-away {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+            float: right;
+        }
+        .pulse-live {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Enhanced Agent Risk Styling */
+        .risk-badge { font-weight: 600; font-size: 0.75rem; }
+        .agent-card { transition: all 0.3s ease; }
+        .agent-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
+        .risk-progress { height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; }
+        .risk-progress-fill { height: 100%; transition: width 0.3s ease; }
+        
+        /* Module Organization */
+        .dashboard-module { margin-bottom: 2rem; }
+        .module-header { display: flex; align-items: center; justify-content-between; margin-bottom: 1rem; }
+        .module-title { font-size: 1.25rem; font-weight: 700; color: white; }
+        .module-actions { display: flex; gap: 0.5rem; }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .grid-cols-1 { grid-template-columns: 1fr; }
+            .md\\:grid-cols-4 { grid-template-columns: 1fr; }
+            .module-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-[1920px] mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                        📊 Position & Risk Tracker
+                        <span id="autoRefreshIndicator" class="text-sm font-normal text-slate-400 flex items-center gap-2">
+                            <span class="pulse-live inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                            Auto-refresh: ON
+                        </span>
+                    </h1>
+                    <p class="text-slate-400 mt-2">
+                        Real-time exposure tracking • Last updated: <span id="lastUpdate" class="text-white font-semibold">Never</span>
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="toggleAutoRefresh()" id="refreshToggle" class="glass rounded-lg px-4 py-2 text-white hover:bg-white/10 transition">
+                        ⏸️ Pause
+                    </button>
+                    <button onclick="refreshData()" class="glass rounded-lg px-4 py-2 text-white hover:bg-white/10 transition">
+                        🔄 Refresh Now
+                    </button>
+                    <button onclick="exportPositions()" class="glass rounded-lg px-4 py-2 text-white hover:bg-white/10 transition">
+                        📊 Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Risk Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Total Action</div>
+                <div class="text-2xl font-bold text-white" id="totalAction">$0</div>
+                <div class="text-xs text-slate-400 mt-1" id="totalWagers">0 wagers</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Net Exposure</div>
+                <div class="text-2xl font-bold" id="netExposure">$0</div>
+                <div class="text-xs text-slate-400 mt-1">Across all positions</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Worst Case Loss</div>
+                <div class="text-2xl font-bold text-red-400" id="worstCase">$0</div>
+                <div class="text-xs text-slate-400 mt-1">Max liability</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Games Active</div>
+                <div class="text-2xl font-bold text-white" id="activeGames">0</div>
+                <div class="text-xs text-slate-400 mt-1" id="customerCount">0 customers</div>
+            </div>
+        </div>
+
+        <!-- Game Positions -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white">🎯 Game Positions</h2>
+                <div class="flex gap-2">
+                    <select id="sportFilter" onchange="applyFilters()" class="glass rounded-lg px-3 py-2 text-white text-sm">
+                        <option value="">All Sports</option>
+                        <option value="Baseball">⚾ Baseball</option>
+                        <option value="Football">🏈 Football</option>
+                        <option value="Basketball">🏀 Basketball</option>
+                        <option value="Hockey">🏒 Hockey</option>
+                        <option value="Soccer">⚽ Soccer</option>
+                        <option value="Tennis">🎾 Tennis</option>
+                    </select>
+                    <select id="riskFilter" onchange="applyFilters()" class="glass rounded-lg px-3 py-2 text-white text-sm">
+                        <option value="">All Risk Levels</option>
+                        <option value="high">🔥 High Risk (>$10k)</option>
+                        <option value="medium">⚡ Medium Risk ($5k-$10k)</option>
+                        <option value="low">✅ Low Risk (<$5k)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="scrollable">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 glass">
+                        <tr class="text-slate-400 text-left border-b border-slate-700">
+                            <th class="py-3 px-4">Game</th>
+                            <th class="py-3 px-4 text-right">Total Action</th>
+                            <th class="py-3 px-4 text-right">Home Side</th>
+                            <th class="py-3 px-4 text-right">Away Side</th>
+                            <th class="py-3 px-4 text-right">Net Exposure</th>
+                            <th class="py-3 px-4 text-center">Balance</th>
+                            <th class="py-3 px-4 text-center">Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gamePositionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Customer Positions -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white">👤 Customer Positions</h2>
+                <input 
+                    type="text" 
+                    id="customerSearch" 
+                    placeholder="Search customer..." 
+                    onkeyup="filterCustomers()"
+                    class="glass rounded-lg px-4 py-2 text-white text-sm w-64"
+                />
+            </div>
+            
+            <div class="scrollable">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 glass">
+                        <tr class="text-slate-400 text-left border-b border-slate-700">
+                            <th class="py-3 px-4">#</th>
+                            <th class="py-3 px-4">Customer</th>
+                            <th class="py-3 px-4">Agent</th>
+                            <th class="py-3 px-4 text-right">Total Risk</th>
+                            <th class="py-3 px-4 text-right">Potential Win</th>
+                            <th class="py-3 px-4 text-right">Net Position</th>
+                            <th class="py-3 px-4 text-center">Wagers</th>
+                            <th class="py-3 px-4 text-center">Avg Bet</th>
+                            <th class="py-3 px-4 text-center">Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerPositionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Enhanced Agent Risk Summary -->
+        <div class="glass rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-white">🏢 Agent Risk Summary</h2>
+                <div class="flex gap-2">
+                    <button onclick="toggleAgentView()" id="agentViewToggle" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition">
+                        📊 Risk View
+                    </button>
+                    <button onclick="exportAgentData()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition">
+                        📄 Export
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Agent Risk Overview Cards -->
+            <div id="agentRiskCards" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+            
+            <!-- Agent Risk Table -->
+            <div class="scrollable">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 glass">
+                        <tr class="text-slate-400 text-left border-b border-slate-700">
+                            <th class="py-3 px-4">#</th>
+                            <th class="py-3 px-4">Agent</th>
+                            <th class="py-3 px-4 text-right">Total Action</th>
+                            <th class="py-3 px-4 text-right">Net Exposure</th>
+                            <th class="py-3 px-4 text-center">Risk Score</th>
+                            <th class="py-3 px-4 text-center">Customers</th>
+                            <th class="py-3 px-4 text-center">Wagers</th>
+                            <th class="py-3 px-4 text-center">Avg/Customer</th>
+                            <th class="py-3 px-4 text-center">Win Rate</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentSummaryTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        const REFRESH_INTERVAL = 10000; // 10 seconds
+        
+        let allWagers = [];
+        let gamePositions = {};
+        let customerPositions = {};
+        let agentSummary = {};
+        let refreshTimer = null;
+        let autoRefresh = true;
+        let lastRefreshTime = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Position Tracker initialized');
+            refreshData();
+            startAutoRefresh();
+        });
+
+        function startAutoRefresh() {
+            if (autoRefresh) {
+                refreshTimer = setInterval(refreshData, REFRESH_INTERVAL);
+            }
+        }
+
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const btn = document.getElementById('refreshToggle');
+            const indicator = document.getElementById('autoRefreshIndicator');
+            
+            if (autoRefresh) {
+                btn.textContent = '⏸️ Pause';
+                indicator.innerHTML = '<span class="pulse-live inline-block w-2 h-2 bg-green-400 rounded-full"></span> Auto-refresh: ON';
+                startAutoRefresh();
+            } else {
+                btn.textContent = '▶️ Resume';
+                indicator.innerHTML = '<span class="inline-block w-2 h-2 bg-slate-400 rounded-full"></span> Auto-refresh: OFF';
+                clearInterval(refreshTimer);
+            }
+        }
+
+        async function refreshData() {
+            try {
+                console.log('🔄 Fetching data...');
+                const startTime = Date.now();
+                
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=50`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                console.log(`✅ Loaded ${data.length} responses in ${Date.now() - startTime}ms`);
+                
+                await parseAllWagers(data);
+                calculatePositions();
+                updateUI();
+                
+                lastRefreshTime = new Date();
+                document.getElementById('lastUpdate').textContent = lastRefreshTime.toLocaleTimeString();
+            } catch (error) {
+                console.error('❌ Refresh error:', error);
+                document.getElementById('lastUpdate').textContent = 'Error - ' + error.message;
+            }
+        }
+
+        async function parseAllWagers(responses) {
+            allWagers = [];
+            const parseStart = Date.now();
+            let validResponses = 0;
+            let htmlErrors = 0;
+            let jsonErrors = 0;
+            
+            for (const resp of responses) {
+                try {
+                    const fullResp = await fetch(`${WORKER_URL}/interceptor/response?key=${resp.key}`);
+                    if (!fullResp.ok) continue;
+                    
+                    const fullData = await fullResp.json();
+                    
+                    // Skip HTML error responses (401/403)
+                    if (!fullData.body || typeof fullData.body !== 'string') continue;
+                    const bodyTrimmed = fullData.body.trim();
+                    if (bodyTrimmed.startsWith('<') || bodyTrimmed.startsWith('<!')) {
+                        htmlErrors++;
+                        continue;
+                    }
+                    
+                    const bodyData = JSON.parse(fullData.body);
+                    
+                    if (bodyData.LIST && Array.isArray(bodyData.LIST)) {
+                        allWagers.push(...bodyData.LIST);
+                        validResponses++;
+                    }
+                } catch (error) {
+                    // Check if it's a JSON parse error vs HTML error
+                    if (error.message.includes('Unexpected token') && error.message.includes('<')) {
+                        htmlErrors++;
+                    } else {
+                        jsonErrors++;
+                    }
+                }
+            }
+            
+            console.log(`📊 Data Summary:`);
+            console.log(`  ✅ Valid responses: ${validResponses}`);
+            console.log(`  🚫 HTML errors (401/403): ${htmlErrors}`);
+            console.log(`  ❌ JSON parse errors: ${jsonErrors}`);
+            console.log(`  📈 Total wagers: ${allWagers.length} (${Date.now() - parseStart}ms)`);
+        }
+
+        function calculatePositions() {
+            console.log('🧮 Calculating positions...');
+            gamePositions = {};
+            customerPositions = {};
+            agentSummary = {};
+
+            allWagers.forEach(wager => {
+                const gameId = extractGameId(wager.ShortDesc);
+                const customer = (wager.Login || '').toString().trim() || 'Unknown';
+                const customerId = (wager.CustomerID || '').toString().trim();
+                const agent = (wager.AgentID || '').toString().trim();
+                const risk = parseFloat(wager.AmountWagered) || 0;
+                const toWin = parseFloat(wager.ToWinAmount) || 0;
+                const sport = extractSport(wager.ShortDesc);
+                
+                // Game positions
+                if (gameId) {
+                    if (!gamePositions[gameId]) {
+                        gamePositions[gameId] = {
+                            gameName: gameId,
+                            sport: sport,
+                            totalAction: 0,
+                            homeSide: 0,
+                            awaySide: 0,
+                            wagers: []
+                        };
+                    }
+                    
+                    gamePositions[gameId].totalAction += risk;
+                    gamePositions[gameId].wagers.push(wager);
+                    
+                    // Determine side (simplified - home vs away)
+                    const side = determineSide(wager.ShortDesc);
+                    if (side === 'home') {
+                        gamePositions[gameId].homeSide += risk;
+                    } else {
+                        gamePositions[gameId].awaySide += risk;
+                    }
+                }
+
+                // Customer positions
+                if (customerId) {
+                    if (!customerPositions[customerId]) {
+                        customerPositions[customerId] = {
+                            customer: customer,
+                            customerId: customerId,
+                            agent: agent,
+                            totalRisk: 0,
+                            potentialWin: 0,
+                            wagerCount: 0,
+                            wagers: []
+                        };
+                    }
+                    
+                    customerPositions[customerId].totalRisk += risk;
+                    customerPositions[customerId].potentialWin += toWin;
+                    customerPositions[customerId].wagerCount++;
+                    customerPositions[customerId].wagers.push(wager);
+                }
+
+                // Agent summary
+                if (agent) {
+                    if (!agentSummary[agent]) {
+                        agentSummary[agent] = {
+                            agent: agent,
+                            totalAction: 0,
+                            customers: new Set(),
+                            wagerCount: 0
+                        };
+                    }
+                    
+                    agentSummary[agent].totalAction += risk;
+                    agentSummary[agent].customers.add(customerId);
+                    agentSummary[agent].wagerCount++;
+                }
+            });
+
+            console.log(`✅ Calculated ${Object.keys(gamePositions).length} game positions, ${Object.keys(customerPositions).length} customer positions`);
+        }
+
+        function extractGameId(desc) {
+            if (!desc) return 'Unknown';
+            
+            // Extract game number (e.g., "#903", "#501")
+            const match = desc.match(/#(\d+)/);
+            if (match) return `Game #${match[1]}`;
+            
+            // Extract team names
+            const teams = extractTeams(desc);
+            if (teams) return teams;
+            
+            return desc.substring(0, 50);
+        }
+
+        function extractTeams(desc) {
+            if (!desc) return null;
+            
+            // Common patterns: "Team1 vs Team2", "Team1/Team2"
+            const vsMatch = desc.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+vs\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+            if (vsMatch) return `${vsMatch[1]} vs ${vsMatch[2]}`;
+            
+            const slashMatch = desc.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*\/\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+            if (slashMatch) return `${slashMatch[1]} vs ${slashMatch[2]}`;
+            
+            return null;
+        }
+
+        function extractSport(desc) {
+            if (!desc) return 'Unknown';
+            const sport = desc.match(/^[A-Z][:.]([A-Za-z]+)/);
+            return sport ? sport[1] : 'Unknown';
+        }
+
+        function determineSide(desc) {
+            // Simplified: look for common indicators
+            if (!desc) return 'away';
+            if (desc.includes(' -') || desc.includes(' Under')) return 'away';
+            return 'home';
+        }
+
+        function updateUI() {
+            updateGlobalMetrics();
+            renderGamePositions();
+            renderCustomerPositions();
+            renderAgentSummary();
+        }
+
+        function updateGlobalMetrics() {
+            const totalAction = allWagers.reduce((sum, w) => sum + (parseFloat(w.AmountWagered) || 0), 0);
+            const totalPayout = allWagers.reduce((sum, w) => sum + (parseFloat(w.ToWinAmount) || 0), 0);
+            const netExposure = totalPayout - totalAction;
+            const worstCase = Math.max(...Object.values(gamePositions).map(g => 
+                Math.max(g.homeSide, g.awaySide)
+            ).filter(v => v > 0)) || 0;
+
+            document.getElementById('totalAction').textContent = formatCurrency(totalAction);
+            document.getElementById('totalWagers').textContent = `${allWagers.length} wagers`;
+            document.getElementById('netExposure').textContent = formatCurrency(Math.abs(netExposure));
+            document.getElementById('netExposure').className = 'text-2xl font-bold ' + (netExposure > 0 ? 'text-red-400' : 'text-green-400');
+            document.getElementById('worstCase').textContent = formatCurrency(worstCase);
+            document.getElementById('activeGames').textContent = Object.keys(gamePositions).length;
+            document.getElementById('customerCount').textContent = `${Object.keys(customerPositions).length} customers`;
+        }
+
+        function renderGamePositions() {
+            const sportFilter = document.getElementById('sportFilter').value;
+            const riskFilter = document.getElementById('riskFilter').value;
+            
+            let games = Object.values(gamePositions).filter(g => {
+                if (sportFilter && g.sport !== sportFilter) return false;
+                
+                const maxExposure = Math.abs(g.homeSide - g.awaySide);
+                if (riskFilter === 'high' && maxExposure <= 1000000) return false;
+                if (riskFilter === 'medium' && (maxExposure <= 500000 || maxExposure > 1000000)) return false;
+                if (riskFilter === 'low' && maxExposure > 500000) return false;
+                
+                return true;
+            });
+
+            games.sort((a, b) => Math.abs(b.homeSide - b.awaySide) - Math.abs(a.homeSide - a.awaySide));
+
+            document.getElementById('gamePositionsTable').innerHTML = games.map(game => {
+                const netExposure = game.homeSide - game.awaySide;
+                const balance = (Math.min(game.homeSide, game.awaySide) / game.totalAction * 100).toFixed(0);
+                const riskLevel = Math.abs(netExposure) > 1000000 ? '🔥 Critical' : 
+                                 Math.abs(netExposure) > 500000 ? '⚠️ High' : 
+                                 Math.abs(netExposure) > 100000 ? '⚡ Medium' : '✅ Low';
+                
+                return `
+                    <tr class="text-white hover:bg-white/5 transition border-b border-slate-800">
+                        <td class="py-3 px-4">
+                            <div class="font-semibold">${game.gameName}</div>
+                            <div class="text-xs text-slate-400">${game.sport}</div>
+                        </td>
+                        <td class="py-3 px-4 text-right font-bold">${formatCurrency(game.totalAction)}</td>
+                        <td class="py-3 px-4 text-right text-blue-400">${formatCurrency(game.homeSide)}</td>
+                        <td class="py-3 px-4 text-right text-red-400">${formatCurrency(game.awaySide)}</td>
+                        <td class="py-3 px-4 text-right font-bold ${netExposure > 0 ? 'text-blue-400' : 'text-red-400'}">
+                            ${netExposure > 0 ? '+' : ''}${formatCurrency(Math.abs(netExposure))}
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="exposure-bar">
+                                <div class="exposure-fill-home" style="width: ${game.homeSide / game.totalAction * 100}%"></div>
+                                <div class="exposure-fill-away" style="width: ${game.awaySide / game.totalAction * 100}%"></div>
+                            </div>
+                            <div class="text-xs text-center mt-1 text-slate-400">${balance}% balanced</div>
+                        </td>
+                        <td class="py-3 px-4 text-center text-xs">${riskLevel}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderCustomerPositions() {
+            let customers = Object.values(customerPositions).sort((a, b) => b.totalRisk - a.totalRisk);
+
+            document.getElementById('customerPositionsTable').innerHTML = customers.map((cust, idx) => {
+                const netPosition = cust.potentialWin - cust.totalRisk;
+                const avgBet = cust.totalRisk / cust.wagerCount;
+                const riskLevel = cust.totalRisk > 5000000 ? '🔥 Critical' : 
+                                 cust.totalRisk > 1000000 ? '⚠️ High' : 
+                                 cust.totalRisk > 500000 ? '⚡ Medium' : '✅ Low';
+
+                return `
+                    <tr class="text-white hover:bg-white/5 transition border-b border-slate-800">
+                        <td class="py-3 px-4 text-slate-400">${idx + 1}</td>
+                        <td class="py-3 px-4 font-mono font-semibold">${cust.customer}</td>
+                        <td class="py-3 px-4 text-slate-400">${cust.agent}</td>
+                        <td class="py-3 px-4 text-right font-bold text-red-400">${formatCurrency(cust.totalRisk)}</td>
+                        <td class="py-3 px-4 text-right text-green-400">${formatCurrency(cust.potentialWin)}</td>
+                        <td class="py-3 px-4 text-right font-bold ${netPosition > 0 ? 'text-green-400' : 'text-red-400'}">
+                            ${netPosition > 0 ? '+' : ''}${formatCurrency(Math.abs(netPosition))}
+                        </td>
+                        <td class="py-3 px-4 text-center text-slate-400">${cust.wagerCount}</td>
+                        <td class="py-3 px-4 text-center">${formatCurrency(avgBet)}</td>
+                        <td class="py-3 px-4 text-center text-xs">${riskLevel}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        let agentViewMode = 'risk'; // 'risk' or 'performance'
+        
+        function renderAgentSummary() {
+            let agents = Object.values(agentSummary).map(a => ({
+                ...a,
+                customerCount: a.customers.size,
+                riskScore: calculateAgentRiskScore(a),
+                winRate: calculateAgentWinRate(a),
+                avgWagerSize: a.totalAction / a.wagerCount,
+                concentrationRisk: calculateConcentrationRisk(a)
+            })).sort((a, b) => {
+                return agentViewMode === 'risk' ? b.riskScore - a.riskScore : b.totalAction - a.totalAction;
+            });
+
+            // Render risk overview cards
+            renderAgentRiskCards(agents);
+            
+            // Render agent table
+            document.getElementById('agentSummaryTable').innerHTML = agents.map((agent, idx) => {
+                const riskBadge = getRiskBadge(agent.riskScore);
+                const winRateColor = agent.winRate > 0.5 ? 'text-green-400' : agent.winRate > 0.3 ? 'text-yellow-400' : 'text-red-400';
+                
+                return `
+                    <tr class="text-white hover:bg-white/5 transition border-b border-slate-800">
+                        <td class="py-3 px-4 text-slate-400">${idx + 1}</td>
+                        <td class="py-3 px-4">
+                            <div class="font-mono font-semibold">${agent.agent}</div>
+                            <div class="text-xs text-slate-400">${agent.customerCount} customers</div>
+                        </td>
+                        <td class="py-3 px-4 text-right font-bold">${formatCurrency(agent.totalAction)}</td>
+                        <td class="py-3 px-4 text-right ${agent.totalAction * 0.1 > 100000 ? 'text-red-400' : 'text-slate-400'}">
+                            ${formatCurrency(agent.totalAction * 0.1)}
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-1 rounded text-xs ${riskBadge.class}">${riskBadge.text}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center text-blue-400">${agent.customerCount}</td>
+                        <td class="py-3 px-4 text-center text-slate-400">${agent.wagerCount}</td>
+                        <td class="py-3 px-4 text-center">${formatCurrency(agent.avgWagerSize)}</td>
+                        <td class="py-3 px-4 text-center ${winRateColor}">${(agent.winRate * 100).toFixed(1)}%</td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="viewAgentDetails('${agent.agent}')" class="text-blue-400 hover:text-blue-300 text-xs">
+                                👁️ View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function renderAgentRiskCards(agents) {
+            const totalAgents = agents.length;
+            const highRiskAgents = agents.filter(a => a.riskScore > 70).length;
+            const totalAgentAction = agents.reduce((sum, a) => sum + a.totalAction, 0);
+            const avgRiskScore = agents.reduce((sum, a) => sum + a.riskScore, 0) / totalAgents;
+            
+            document.getElementById('agentRiskCards').innerHTML = `
+                <div class="bg-gradient-to-r from-blue-900/30 to-blue-800/30 rounded-lg p-4 border border-blue-500/30">
+                    <div class="text-blue-400 text-sm font-semibold">Total Agents</div>
+                    <div class="text-2xl font-bold text-white">${totalAgents}</div>
+                    <div class="text-xs text-blue-300">Active agents</div>
+                </div>
+                <div class="bg-gradient-to-r from-red-900/30 to-red-800/30 rounded-lg p-4 border border-red-500/30">
+                    <div class="text-red-400 text-sm font-semibold">High Risk</div>
+                    <div class="text-2xl font-bold text-white">${highRiskAgents}</div>
+                    <div class="text-xs text-red-300">Risk score > 70</div>
+                </div>
+                <div class="bg-gradient-to-r from-green-900/30 to-green-800/30 rounded-lg p-4 border border-green-500/30">
+                    <div class="text-green-400 text-sm font-semibold">Total Action</div>
+                    <div class="text-2xl font-bold text-white">${formatCurrency(totalAgentAction)}</div>
+                    <div class="text-xs text-green-300">All agents</div>
+                </div>
+                <div class="bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 rounded-lg p-4 border border-yellow-500/30">
+                    <div class="text-yellow-400 text-sm font-semibold">Avg Risk</div>
+                    <div class="text-2xl font-bold text-white">${avgRiskScore.toFixed(0)}</div>
+                    <div class="text-xs text-yellow-300">Risk score</div>
+                </div>
+            `;
+        }
+        
+        function calculateAgentRiskScore(agent) {
+            let score = 0;
+            
+            // Volume risk (0-40 points)
+            const volumeRisk = Math.min(40, (agent.totalAction / 1000000) * 40);
+            score += volumeRisk;
+            
+            // Customer concentration risk (0-30 points)
+            const concentrationRisk = Math.min(30, (agent.customerCount / 50) * 30);
+            score += concentrationRisk;
+            
+            // Average wager size risk (0-20 points)
+            const avgWager = agent.totalAction / agent.wagerCount;
+            const wagerRisk = Math.min(20, (avgWager / 50000) * 20);
+            score += wagerRisk;
+            
+            // Win rate risk (0-10 points) - lower win rate = higher risk
+            const winRate = calculateAgentWinRate(agent);
+            const winRateRisk = Math.max(0, 10 - (winRate * 20));
+            score += winRateRisk;
+            
+            return Math.min(100, Math.round(score));
+        }
+        
+        function calculateAgentWinRate(agent) {
+            // Simplified win rate calculation based on wager types
+            // In reality, you'd need historical win/loss data
+            const wagerTypes = agent.wagers || [];
+            const totalWagers = wagerTypes.length;
+            if (totalWagers === 0) return 0.5; // Default 50% if no data
+            
+            // Estimate based on wager types (S=Straight, P=Parlay, M=Moneyline, etc.)
+            const straightWagers = wagerTypes.filter(w => w.WagerType === 'S').length;
+            const parlayWagers = wagerTypes.filter(w => w.WagerType === 'P').length;
+            
+            // Straight bets have higher win rate than parlays
+            const estimatedWinRate = (straightWagers * 0.55 + parlayWagers * 0.25) / totalWagers;
+            return Math.max(0.1, Math.min(0.9, estimatedWinRate));
+        }
+        
+        function calculateConcentrationRisk(agent) {
+            // Risk based on how concentrated the agent's action is
+            const customerCount = agent.customerCount;
+            const totalAction = agent.totalAction;
+            
+            if (customerCount === 0) return 1.0;
+            
+            const avgPerCustomer = totalAction / customerCount;
+            const concentrationRatio = avgPerCustomer / (totalAction / Math.max(1, customerCount));
+            
+            return Math.min(1.0, concentrationRatio);
+        }
+        
+        function getRiskBadge(riskScore) {
+            if (riskScore >= 80) return { text: '🔥 Critical', class: 'bg-red-900 text-red-300' };
+            if (riskScore >= 60) return { text: '⚠️ High', class: 'bg-orange-900 text-orange-300' };
+            if (riskScore >= 40) return { text: '⚡ Medium', class: 'bg-yellow-900 text-yellow-300' };
+            return { text: '✅ Low', class: 'bg-green-900 text-green-300' };
+        }
+        
+        function toggleAgentView() {
+            agentViewMode = agentViewMode === 'risk' ? 'performance' : 'risk';
+            const btn = document.getElementById('agentViewToggle');
+            btn.textContent = agentViewMode === 'risk' ? '📊 Risk View' : '💰 Performance View';
+            renderAgentSummary();
+        }
+        
+        function viewAgentDetails(agentId) {
+            // Show detailed agent analysis modal
+            const agent = agentSummary[agentId];
+            if (!agent) return;
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 z-50';
+            modal.innerHTML = `
+                <div class="glass rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-white font-bold text-2xl">Agent: ${agentId}</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-white/80 hover:text-white text-3xl px-3">&times;</button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/10 rounded-lg p-4">
+                                <div class="text-white font-bold">Total Action</div>
+                                <div class="text-2xl text-blue-400">${formatCurrency(agent.totalAction)}</div>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-4">
+                                <div class="text-white font-bold">Customers</div>
+                                <div class="text-2xl text-green-400">${agent.customerCount}</div>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-4">
+                                <div class="text-white font-bold">Wagers</div>
+                                <div class="text-2xl text-yellow-400">${agent.wagerCount}</div>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-4">
+                                <div class="text-white font-bold">Risk Score</div>
+                                <div class="text-2xl text-red-400">${calculateAgentRiskScore(agent)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/10 rounded-lg p-4">
+                            <div class="text-white font-bold mb-2">Customer List</div>
+                            <div class="space-y-1 max-h-32 overflow-y-auto">
+                                ${Array.from(agent.customers).map(customer => `
+                                    <div class="text-sm text-slate-300">${customer}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function exportAgentData() {
+            const agents = Object.values(agentSummary).map(a => ({
+                agent: a.agent,
+                totalAction: a.totalAction,
+                netExposure: a.totalAction * 0.1,
+                riskScore: calculateAgentRiskScore(a),
+                customerCount: a.customerCount,
+                wagerCount: a.wagerCount,
+                avgWagerSize: a.totalAction / a.wagerCount,
+                winRate: calculateAgentWinRate(a),
+                concentrationRisk: calculateConcentrationRisk(a)
+            }));
+            
+            const csv = [
+                ['Agent', 'Total Action', 'Net Exposure', 'Risk Score', 'Customers', 'Wagers', 'Avg Wager', 'Win Rate', 'Concentration Risk'],
+                ...agents.map(a => [
+                    a.agent,
+                    a.totalAction,
+                    a.netExposure,
+                    a.riskScore,
+                    a.customerCount,
+                    a.wagerCount,
+                    a.avgWagerSize.toFixed(2),
+                    (a.winRate * 100).toFixed(1) + '%',
+                    (a.concentrationRisk * 100).toFixed(1) + '%'
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `agent-risk-analysis-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function applyFilters() {
+            renderGamePositions();
+        }
+
+        function filterCustomers() {
+            const query = document.getElementById('customerSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#customerPositionsTable tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        function exportPositions() {
+            const data = {
+                exportTime: new Date().toISOString(),
+                globalMetrics: {
+                    totalAction: allWagers.reduce((sum, w) => sum + (parseFloat(w.AmountWagered) || 0), 0) / 100,
+                    totalWagers: allWagers.length,
+                    activeGames: Object.keys(gamePositions).length,
+                    customers: Object.keys(customerPositions).length
+                },
+                gamePositions: Object.values(gamePositions).map(g => ({
+                    game: g.gameName,
+                    sport: g.sport,
+                    totalAction: g.totalAction / 100,
+                    homeSide: g.homeSide / 100,
+                    awaySide: g.awaySide / 100,
+                    netExposure: (g.homeSide - g.awaySide) / 100
+                })),
+                customerPositions: Object.values(customerPositions).map(c => ({
+                    customer: c.customer,
+                    agent: c.agent,
+                    totalRisk: c.totalRisk / 100,
+                    potentialWin: c.potentialWin / 100,
+                    netPosition: (c.potentialWin - c.totalRisk) / 100,
+                    wagerCount: c.wagerCount
+                })),
+                agentSummary: Object.values(agentSummary).map(a => ({
+                    agent: a.agent,
+                    totalAction: a.totalAction / 100,
+                    customers: a.customers.size,
+                    wagerCount: a.wagerCount
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `positions-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            console.log(`✅ Exported positions: ${Object.keys(gamePositions).length} games, ${Object.keys(customerPositions).length} customers`);
+        }
+
+        function formatCurrency(amount) {
+            return '$' + (amount / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,89 @@
+# 🧠 Betting-Brain v3 - Staging Environment Configuration
+
+name = "betting-brain-v3-staging"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Staging-specific settings
+[env.staging]
+name = "betting-brain-v3-staging"
+route = "staging-brain.your-domain.com/*"
+
+# Environment variables
+[env.staging.vars]
+NODE_ENV = "staging"
+DEBUG = "false"
+LOG_LEVEL = "info"
+ANALYTICS_SAMPLE_RATE = "0.1"
+MONITORING_ENABLED = "true"
+
+# D1 Database (staging)
+[[env.staging.d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics-staging"
+database_id = "your-staging-database-id"
+migrations_dir = "migrations"
+
+# Queues (staging)
+[[env.staging.queues.producers]]
+binding = "LINE_INGRESS"
+queue = "line-ingress-staging"
+
+[[env.staging.queues.consumers]]
+queue = "line-ingress-staging"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[[env.staging.queues.producers]]
+binding = "STEAM_WEBHOOK"
+queue = "steam-webhook-staging"
+
+[[env.staging.queues.consumers]]
+queue = "steam-webhook-staging"
+max_batch_size = 5
+max_batch_timeout = 10
+
+# Scheduled triggers (staging)
+[env.staging.triggers]
+crons = [
+  "0 * * * *",  # hourly sharp calculation
+  "*/30 * * * * *"  # 30-second exposure calculation
+]
+
+# Analytics Engine (staging)
+[env.staging.analytics_engine_datasets]
+binding = "ANALYTICS_ENGINE"
+dataset = "betting-metrics-staging"
+
+# Limits (staging - more generous)
+[env.staging.limits]
+cpu_ms = 100
+memory_mb = 256
+
+# KV Storage (staging)
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "your-staging-kv-id"
+preview_id = "your-staging-preview-kv-id"
+
+[[env.staging.kv_namespaces]]
+binding = "BET_TICKER_RAW"
+id = "your-staging-bet-ticker-kv-id"
+preview_id = "your-staging-bet-ticker-preview-kv-id"
+
+# R2 Storage (staging)
+[[env.staging.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "betting-brain-staging"
+
+# Durable Objects (staging)
+[[env.staging.durable_objects]]
+binding = "RATE_LIMITER"
+class_name = "RateLimiter"
+script_name = "betting-brain-v3-staging"
+
+# Workers (staging)
+[env.staging.workers]
+min_instances = 1
+max_instances = 10

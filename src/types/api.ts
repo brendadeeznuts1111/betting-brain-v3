@@ -11,6 +11,12 @@ export interface Env {
   LINE_INGRESS: Queue;
   STEAM_WEBHOOK: Queue;
   ANALYTICS_ENGINE: AnalyticsEngineDataset;
+  BET_TICKER_RAW?: KVNamespace; // Optional: BetTicker interception storage
+}
+
+// Extended environment for BetTicker sniffer
+export interface BetTickerSnifferEnv extends Env {
+  BET_TICKER_RAW: KVNamespace; // Required for sniffer
 }
 
 // Request schemas

@@ -49,6 +49,19 @@ export class RateLimitGuard {
     const currentRate = data.requests.length / this.config.windowSize;
     const maxRate = this.config.requestsPerSecond;
 
+    // Check burst limit first
+    if (data.burstCount >= this.config.burstLimit) {
+      const oldestRequest = Math.min(...data.requests);
+      const retryAfter = Math.ceil((oldestRequest + (this.config.windowSize * 1000) - now) / 1000);
+      
+      return {
+        allowed: false,
+        retryAfter,
+        remaining: 0,
+        resetTime: oldestRequest + (this.config.windowSize * 1000)
+      };
+    }
+
     if (currentRate >= maxRate && !isBurst) {
       // Rate limit exceeded
       const oldestRequest = Math.min(...data.requests);

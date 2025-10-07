@@ -3,6 +3,7 @@
  * Handles blue-green deployment with rollback tagging
  */
 
+/// <reference types="bun" />
 import { spawn } from 'child_process';
 // Using Bun native file operations (no Node.js fs module)
 

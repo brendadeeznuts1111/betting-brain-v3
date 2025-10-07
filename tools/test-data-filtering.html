@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Data Filtering Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">🧪 Data Filtering Test</h1>
+        
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+            <div id="testResults" class="space-y-2">
+                <div class="text-gray-400">Running tests...</div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Live Data Check</h2>
+            <button onclick="testLiveData()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition">
+                🔄 Test Live Data
+            </button>
+            <div id="liveResults" class="mt-4 space-y-2"></div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        
+        // Test data filtering logic
+        function testDataFiltering() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '';
+            
+            // Test cases
+            const testCases = [
+                {
+                    name: 'Valid JSON Response',
+                    body: '{"LIST":[{"WagerNumber":123,"AmountWagered":1000}]}',
+                    expected: 'Valid'
+                },
+                {
+                    name: 'HTML 401 Error',
+                    body: '<html><h1>401 Unauthorized</h1></html>',
+                    expected: 'Filtered out'
+                },
+                {
+                    name: 'HTML 403 Error',
+                    body: '<!DOCTYPE html><html><body>403 Forbidden</body></html>',
+                    expected: 'Filtered out'
+                },
+                {
+                    name: 'Empty Response',
+                    body: '',
+                    expected: 'Filtered out'
+                },
+                {
+                    name: 'Invalid JSON',
+                    body: '{"LIST": [invalid json}',
+                    expected: 'Filtered out'
+                }
+            ];
+            
+            testCases.forEach((testCase, index) => {
+                const result = testResponse(testCase.body);
+                const status = result === testCase.expected ? '✅' : '❌';
+                const color = result === testCase.expected ? 'text-green-400' : 'text-red-400';
+                
+                results.innerHTML += `
+                    <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                        <span>${testCase.name}</span>
+                        <span class="${color}">${status} ${result}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        function testResponse(body) {
+            try {
+                // Skip if body is empty
+                if (!body || typeof body !== 'string') {
+                    return 'Filtered out';
+                }
+                
+                // Skip if body starts with HTML tags
+                const bodyTrimmed = body.trim();
+                if (bodyTrimmed.startsWith('<') || bodyTrimmed.startsWith('<!')) {
+                    return 'Filtered out';
+                }
+                
+                // Try to parse JSON
+                const data = JSON.parse(body);
+                if (data.LIST && Array.isArray(data.LIST)) {
+                    return 'Valid';
+                }
+                
+                return 'Filtered out';
+            } catch (error) {
+                return 'Filtered out';
+            }
+        }
+        
+        async function testLiveData() {
+            const results = document.getElementById('liveResults');
+            results.innerHTML = '<div class="text-gray-400">Testing live data...</div>';
+            
+            try {
+                // Get recent responses
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=10`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const responses = await response.json();
+                console.log('📊 Testing with', responses.length, 'responses');
+                
+                let validCount = 0;
+                let htmlErrorCount = 0;
+                let jsonErrorCount = 0;
+                let totalWagers = 0;
+                
+                for (const resp of responses) {
+                    try {
+                        const fullResp = await fetch(`${WORKER_URL}/interceptor/response?key=${resp.key}`);
+                        if (!fullResp.ok) continue;
+                        
+                        const fullData = await fullResp.json();
+                        
+                        // Skip HTML error responses
+                        if (!fullData.body || typeof fullData.body !== 'string') continue;
+                        const bodyTrimmed = fullData.body.trim();
+                        if (bodyTrimmed.startsWith('<') || bodyTrimmed.startsWith('<!')) {
+                            htmlErrorCount++;
+                            continue;
+                        }
+                        
+                        const bodyData = JSON.parse(fullData.body);
+                        if (bodyData.LIST && Array.isArray(bodyData.LIST)) {
+                            totalWagers += bodyData.LIST.length;
+                            validCount++;
+                        }
+                    } catch (error) {
+                        if (error.message.includes('Unexpected token') && error.message.includes('<')) {
+                            htmlErrorCount++;
+                        } else {
+                            jsonErrorCount++;
+                        }
+                    }
+                }
+                
+                results.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="text-green-400">✅ Valid responses: ${validCount}</div>
+                        <div class="text-red-400">🚫 HTML errors: ${htmlErrorCount}</div>
+                        <div class="text-yellow-400">❌ JSON errors: ${jsonErrorCount}</div>
+                        <div class="text-blue-400">📈 Total wagers: ${totalWagers}</div>
+                        <div class="text-gray-400">📊 Total responses tested: ${responses.length}</div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                results.innerHTML = `<div class="text-red-400">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Run tests on load
+        document.addEventListener('DOMContentLoaded', () => {
+            testDataFiltering();
+        });
+    </script>
+</body>
+</html>

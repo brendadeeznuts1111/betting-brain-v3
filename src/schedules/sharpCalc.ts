@@ -54,9 +54,9 @@ async function getActiveCustomers(env: Env): Promise<string[]> {
     WHERE upd > datetime('now', '-24 hours')
     ORDER BY upd DESC
     LIMIT 1000
-  `).all();
+  `).all() as Array<{ cid: string }>;
   
-  return result.map((row: any) => row.cid);
+  return result.map(row => row.cid);
 }
 
 async function processBatchSharpCalculation(customerIds: string[], env: Env): Promise<void> {
@@ -155,6 +155,13 @@ async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Pr
       score.clv, // Using CLV as net bet for simplicity
       now
     ).run();
+    
+    // Write to analytics engine
+    await env.ANALYTICS_ENGINE.writeDataPoint({
+      blobs: [score.customerId, 'sharp_score'],
+      doubles: [score.sharpScore, score.clv, score.winRate, score.actionCount],
+      indexes: ['sharp_calculation']
+    });
   }
 }
 

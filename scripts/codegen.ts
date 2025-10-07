@@ -3,6 +3,7 @@
  * Auto-generates OpenAPI spec and Redoc UI from TypeScript types
  */
 
+/// <reference types="bun" />
 // Using Bun native file operations (no Node.js fs module)
 
 interface OpenAPISpec {

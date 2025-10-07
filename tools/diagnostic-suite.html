@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 BetTicker Diagnostic Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .status-good { color: #10b981; }
+        .status-bad { color: #ef4444; }
+        .status-warn { color: #f59e0b; }
+        .monospace { font-family: 'Courier New', monospace; }
+        .log-entry {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6 text-white">
+            <h1 class="text-4xl font-bold mb-2">🔬 BetTicker Diagnostic Suite</h1>
+            <p class="text-white/80">Complete system health check & troubleshooting</p>
+        </div>
+
+        <!-- Quick Status -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass rounded-xl p-4 text-white">
+                <div class="text-xs text-white/60 mb-1">Worker Status</div>
+                <div class="text-2xl font-bold" id="workerStatus">⏳ Testing...</div>
+            </div>
+            <div class="glass rounded-xl p-4 text-white">
+                <div class="text-xs text-white/60 mb-1">KV Storage</div>
+                <div class="text-2xl font-bold" id="kvStatus">⏳ Testing...</div>
+            </div>
+            <div class="glass rounded-xl p-4 text-white">
+                <div class="text-xs text-white/60 mb-1">Extension Active</div>
+                <div class="text-2xl font-bold" id="extensionStatus">⏳ Testing...</div>
+            </div>
+            <div class="glass rounded-xl p-4 text-white">
+                <div class="text-xs text-white/60 mb-1">Total Records</div>
+                <div class="text-2xl font-bold" id="totalRecords">0</div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- System Tests -->
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-white font-bold text-xl mb-4">🧪 System Tests</h3>
+                <div id="systemTests" class="space-y-3 text-white text-sm"></div>
+                <button onclick="runDiagnostics()" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                    🔄 Run All Tests
+                </button>
+            </div>
+
+            <!-- KV Analysis -->
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-white font-bold text-xl mb-4">💾 KV Storage Analysis</h3>
+                <div id="kvAnalysis" class="space-y-2 text-white text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Real-Time Monitor -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-white font-bold text-xl">📡 Real-Time Request Monitor</h3>
+                <div class="flex gap-2">
+                    <button onclick="startMonitoring()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition text-sm">
+                        ▶️ Start
+                    </button>
+                    <button onclick="stopMonitoring()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition text-sm">
+                        ⏸️ Stop
+                    </button>
+                    <button onclick="clearLogs()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition text-sm">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+            <div id="realtimeLog" class="bg-black/30 rounded-lg p-4 max-h-96 overflow-y-auto text-xs text-white/90 monospace space-y-1"></div>
+        </div>
+
+        <!-- Latest Records -->
+        <div class="glass rounded-xl p-6">
+            <h3 class="text-white font-bold text-xl mb-4">📋 Latest KV Records (Auto-refreshing)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-white text-sm">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="text-left py-2 px-2">Timestamp</th>
+                            <th class="text-left py-2 px-2">Key</th>
+                            <th class="text-left py-2 px-2">Status</th>
+                            <th class="text-right py-2 px-2">Size</th>
+                            <th class="text-left py-2 px-2">IP</th>
+                            <th class="text-left py-2 px-2">Age</th>
+                        </tr>
+                    </thead>
+                    <tbody id="latestRecords"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Test Interception -->
+        <div class="glass rounded-xl p-6 mt-6">
+            <h3 class="text-white font-bold text-xl mb-4">🧪 Test Interception</h3>
+            <p class="text-white/80 text-sm mb-4">
+                This will make a test request to see if the interception system is working.
+                <strong>Note:</strong> You need valid authentication cookies from fantasy402.com for this to work.
+            </p>
+            <div class="flex gap-2">
+                <button onclick="testInterception()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                    🚀 Test Interception
+                </button>
+                <button onclick="openOriginSite()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
+                    🌐 Open Origin Site
+                </button>
+            </div>
+            <div id="testResult" class="mt-4 p-4 bg-black/30 rounded-lg text-white/90 text-sm monospace hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        let monitoringInterval = null;
+        let lastRecordCount = 0;
+
+        // Run on load
+        document.addEventListener('DOMContentLoaded', () => {
+            runDiagnostics();
+            startMonitoring();
+        });
+
+        async function runDiagnostics() {
+            log('🔬 Starting diagnostic suite...');
+            
+            // Test 1: Worker Health
+            await testWorkerHealth();
+            
+            // Test 2: KV Storage
+            await testKVStorage();
+            
+            // Test 3: Analyze Records
+            await analyzeKVRecords();
+            
+            log('✅ Diagnostics complete!');
+        }
+
+        async function testWorkerHealth() {
+            addTest('Worker Health Check', '⏳ Testing...');
+            
+            try {
+                const start = Date.now();
+                const response = await fetch(`${WORKER_URL}/health`);
+                const duration = Date.now() - start;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addTest('Worker Health Check', `✅ OK (${duration}ms)`, 'good');
+                    document.getElementById('workerStatus').innerHTML = '<span class="status-good">✅ Online</span>';
+                    log(`✅ Worker is healthy (${duration}ms) - Version: ${data.version}`);
+                } else {
+                    addTest('Worker Health Check', `❌ HTTP ${response.status}`, 'bad');
+                    document.getElementById('workerStatus').innerHTML = '<span class="status-bad">❌ Error</span>';
+                    log(`❌ Worker returned HTTP ${response.status}`);
+                }
+            } catch (error) {
+                addTest('Worker Health Check', `❌ ${error.message}`, 'bad');
+                document.getElementById('workerStatus').innerHTML = '<span class="status-bad">❌ Offline</span>';
+                log(`❌ Worker health check failed: ${error.message}`);
+            }
+        }
+
+        async function testKVStorage() {
+            addTest('KV Storage Access', '⏳ Testing...');
+            
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=5`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.length;
+                    
+                    addTest('KV Storage Access', `✅ OK (${count} records)`, 'good');
+                    document.getElementById('kvStatus').innerHTML = `<span class="status-good">✅ ${count}</span>`;
+                    document.getElementById('totalRecords').textContent = count;
+                    log(`✅ KV storage accessible - Found ${count} records`);
+                    
+                    if (count === 0) {
+                        log('⚠️ WARNING: No records in KV storage!');
+                        log('⚠️ This means interception is NOT working');
+                    }
+                } else {
+                    addTest('KV Storage Access', `❌ HTTP ${response.status}`, 'bad');
+                    document.getElementById('kvStatus').innerHTML = '<span class="status-bad">❌ Error</span>';
+                    log(`❌ KV storage check failed: HTTP ${response.status}`);
+                }
+            } catch (error) {
+                addTest('KV Storage Access', `❌ ${error.message}`, 'bad');
+                document.getElementById('kvStatus').innerHTML = '<span class="status-bad">❌ Error</span>';
+                log(`❌ KV storage check failed: ${error.message}`);
+            }
+        }
+
+        async function analyzeKVRecords() {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=100`);
+                if (!response.ok) return;
+                
+                const records = await response.json();
+                const analysis = document.getElementById('kvAnalysis');
+                
+                if (records.length === 0) {
+                    analysis.innerHTML = `
+                        <div class="bg-red-900/30 border border-red-500/50 rounded p-3">
+                            <div class="font-bold text-red-400">⚠️ NO RECORDS FOUND</div>
+                            <div class="text-sm mt-2">
+                                This means:
+                                <ul class="list-disc ml-5 mt-1">
+                                    <li>Extension is not redirecting requests</li>
+                                    <li>OR no one has visited fantasy402.com</li>
+                                    <li>OR worker is not storing data</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Analyze timestamps
+                const now = Date.now();
+                const timestamps = records.map(r => parseInt(r.key.split(':')[2]));
+                const newest = Math.max(...timestamps);
+                const oldest = Math.min(...timestamps);
+                const ageMinutes = Math.floor((now - newest) / 60000);
+                
+                analysis.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-white/60">Total Records:</span>
+                            <span class="font-bold">${records.length}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/60">Newest Record:</span>
+                            <span class="font-bold ${ageMinutes < 5 ? 'status-good' : ageMinutes < 60 ? 'status-warn' : 'status-bad'}">
+                                ${ageMinutes} min ago
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/60">Oldest Record:</span>
+                            <span class="font-bold">${new Date(oldest).toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/60">Time Span:</span>
+                            <span class="font-bold">${Math.floor((newest - oldest) / 3600000)}h</span>
+                        </div>
+                    </div>
+                    
+                    ${ageMinutes > 60 ? `
+                        <div class="mt-3 bg-yellow-900/30 border border-yellow-500/50 rounded p-3 text-sm">
+                            <div class="font-bold text-yellow-400">⚠️ Data is OLD</div>
+                            <div class="mt-1">Last capture was ${ageMinutes} minutes ago.</div>
+                            <div class="mt-1">New data is NOT being captured!</div>
+                        </div>
+                    ` : `
+                        <div class="mt-3 bg-green-900/30 border border-green-500/50 rounded p-3 text-sm">
+                            <div class="font-bold text-green-400">✅ Recent Activity</div>
+                            <div class="mt-1">System is actively capturing data!</div>
+                        </div>
+                    `}
+                `;
+                
+                log(`📊 Analysis: ${records.length} records, newest is ${ageMinutes} min old`);
+            } catch (error) {
+                log(`❌ Analysis failed: ${error.message}`);
+            }
+        }
+
+        async function startMonitoring() {
+            log('▶️ Starting real-time monitoring...');
+            stopMonitoring(); // Clear any existing
+            
+            // Fetch every 5 seconds
+            monitoringInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${WORKER_URL}/interceptor/history?limit=10`);
+                    if (response.ok) {
+                        const records = await response.json();
+                        updateLatestRecords(records);
+                        
+                        if (records.length > lastRecordCount) {
+                            log(`🆕 NEW DATA! ${records.length - lastRecordCount} new records detected!`, 'good');
+                        }
+                        lastRecordCount = records.length;
+                    }
+                } catch (error) {
+                    log(`❌ Monitoring error: ${error.message}`, 'bad');
+                }
+            }, 5000);
+            
+            // Initial fetch
+            const response = await fetch(`${WORKER_URL}/interceptor/history?limit=10`);
+            if (response.ok) {
+                const records = await response.json();
+                updateLatestRecords(records);
+                lastRecordCount = records.length;
+            }
+        }
+
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                log('⏸️ Monitoring stopped');
+            }
+        }
+
+        function updateLatestRecords(records) {
+            const tbody = document.getElementById('latestRecords');
+            const now = Date.now();
+            
+            tbody.innerHTML = records.map(r => {
+                const timestamp = parseInt(r.key.split(':')[2]);
+                const age = Math.floor((now - timestamp) / 60000);
+                const ageText = age < 1 ? 'Just now' : age < 60 ? `${age}m ago` : `${Math.floor(age/60)}h ago`;
+                const statusClass = r.metadata.status >= 200 && r.metadata.status < 400 ? 'status-good' : 'status-bad';
+                
+                return `
+                    <tr class="border-b border-white/5 hover:bg-white/5">
+                        <td class="py-2 px-2 text-xs">${new Date(timestamp).toLocaleTimeString()}</td>
+                        <td class="py-2 px-2 text-xs monospace">${r.key.substring(0, 30)}...</td>
+                        <td class="py-2 px-2"><span class="${statusClass} font-bold">${r.metadata.status}</span></td>
+                        <td class="py-2 px-2 text-right text-xs">${formatBytes(r.metadata.contentLength)}</td>
+                        <td class="py-2 px-2 text-xs monospace">${r.metadata.ip.split(':').pop()}</td>
+                        <td class="py-2 px-2 text-xs ${age < 5 ? 'status-good' : age < 60 ? 'status-warn' : 'status-bad'}">${ageText}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function testInterception() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.textContent = '🧪 Testing interception...';
+            
+            try {
+                // This will fail without cookies, but we can see if the redirect works
+                const response = await fetch('https://fantasy402.com/cloud/api/Manager/getBetTicker', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: 'GetOpenBets' })
+                });
+                
+                resultDiv.textContent = `Response: HTTP ${response.status}\n`;
+                resultDiv.textContent += `Headers: ${JSON.stringify(Object.fromEntries(response.headers), null, 2)}`;
+                
+                log(`🧪 Test request completed: HTTP ${response.status}`);
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+                log(`❌ Test request failed: ${error.message}`);
+            }
+        }
+
+        function openOriginSite() {
+            window.open('https://fantasy402.com', '_blank');
+            log('🌐 Opened fantasy402.com - Log in and make some bets!');
+        }
+
+        function addTest(name, result, status = 'neutral') {
+            const container = document.getElementById('systemTests');
+            const existing = Array.from(container.children).find(el => 
+                el.querySelector('.test-name')?.textContent === name
+            );
+            
+            const html = `
+                <div class="flex justify-between items-center p-2 bg-white/5 rounded">
+                    <span class="test-name">${name}</span>
+                    <span class="font-bold ${
+                        status === 'good' ? 'status-good' : 
+                        status === 'bad' ? 'status-bad' : 
+                        status === 'warn' ? 'status-warn' : ''
+                    }">${result}</span>
+                </div>
+            `;
+            
+            if (existing) {
+                existing.outerHTML = html;
+            } else {
+                container.innerHTML += html;
+            }
+        }
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('realtimeLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'good' ? 'text-green-400' : type === 'bad' ? 'text-red-400' : 'text-blue-400';
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${color}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            
+            // Keep only last 50 entries
+            while (logDiv.children.length > 50) {
+                logDiv.removeChild(logDiv.lastChild);
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('realtimeLog').innerHTML = '';
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
+

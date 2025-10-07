@@ -3,24 +3,31 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'miniflare',
-    environmentOptions: {
-      bindings: {
-        ANALYTICS: 'test-d1-database'
-      },
-      kvNamespaces: ['TEST_NAMESPACE'],
-      d1Databases: ['ANALYTICS']
+    environment: 'node',
+    setupFiles: ['./tests/setup/test-setup.ts'],
+    env: {
+      NODE_ENV: 'test'
     },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
+        'tests/',
+        'scripts/',
+        'migrations/',
+        'docs/',
+        'deployment/',
+        'monitoring/',
+        'config/',
+        'coverage/',
         'dist/',
-        '**/*.test.ts',
-        '**/*.spec.ts'
+        '*.config.ts',
+        '*.config.js'
       ]
     },
-    testTimeout: 10000
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    teardownTimeout: 10000
   }
 });

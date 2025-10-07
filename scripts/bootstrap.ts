@@ -3,6 +3,7 @@
  * Creates D1 database, queues, and applies migrations
  */
 
+/// <reference types="bun" />
 import { spawn } from 'child_process';
 
 function exec(command: string, args: string[] = []): Promise<void> {

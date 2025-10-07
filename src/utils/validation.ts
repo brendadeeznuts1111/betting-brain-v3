@@ -110,6 +110,17 @@ export const ErrorResponseSchema = z.object({
 // Validation helper functions
 export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; error: string } {
   try {
+    // Check for circular references
+    if (hasCircularReference(data)) {
+      return { success: false, error: 'Circular reference detected' };
+    }
+    
+    // Check for large objects (over 1MB)
+    const dataSize = JSON.stringify(data).length;
+    if (dataSize > 1024 * 1024) {
+      return { success: false, error: 'Object too large' };
+    }
+    
     const validated = schema.parse(data);
     return { success: true, data: validated };
   } catch (error) {
@@ -121,6 +132,35 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): { suc
     }
     return { success: false, error: 'Validation failed' };
   }
+}
+
+function hasCircularReference(obj: unknown, seen = new WeakSet()): boolean {
+  if (obj === null || typeof obj !== 'object') {
+    return false;
+  }
+  
+  if (seen.has(obj)) {
+    return true;
+  }
+  
+  seen.add(obj);
+  
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      if (hasCircularReference(item, seen)) {
+        return true;
+      }
+    }
+  } else {
+    for (const value of Object.values(obj)) {
+      if (hasCircularReference(value, seen)) {
+        return true;
+      }
+    }
+  }
+  
+  seen.delete(obj);
+  return false;
 }
 
 export function createErrorResponse(error: string, code?: string, details?: Record<string, any>): string {

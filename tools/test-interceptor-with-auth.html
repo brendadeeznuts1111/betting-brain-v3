@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🧪 Test Interceptor with Auth</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">🧪 Test BetTicker Interceptor</h1>
+        
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">📋 Test Request with Auth Headers</h2>
+            
+            <div class="mb-4">
+                <label class="block mb-2">Authorization Bearer Token:</label>
+                <input type="text" id="bearerToken" class="w-full p-2 bg-gray-700 rounded" 
+                       value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCSUxMWTY2NiIsInR5cGUiOjAsImFnIjoiIiwiaW1wIjoiIiwib2ZmIjoiTk9MQVJPU0UiLCJyYiI6bnVsbCwibmJmIjoxNzU5ODQzNzQyLCJleHAiOjE3NTk4NDUwMDJ9.43yL8fAROS6FskjB3eqCEtG-Yf734ZhGOmGh5WeA2_w">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">Cookie:</label>
+                <input type="text" id="cookie" class="w-full p-2 bg-gray-700 rounded" 
+                       value="PHPSESSID=movo8vfv72tbafbt2i1bb4nmug; __cf_bm=Bl.ZVmoxkgaIHJZndfFnGs.ORxXzdloAod8cZaKm1iY-1759843802-1.0.1.1-sXhpmVuq1OKWgmlnqlXrD6KlLPH3VweXEGWbbM7xDivqepHHOPS8hH.C5z2TOTHEwSjo44FY0RrTeQbTIM4sQ31viPhYm0L4bDR5kMCLbbo; cf_clearance=RWFx5I.xijOVm.A7I2TZKRo99lHoKYPeFJoaGEy7J2k-1759843803-1.2.1.1-U1yEM8.zoleWqoMkq13Y5E33DzidEb6hhWv4BKswrL1icN_.KM4_VsFxqF6_GM8DBiRuAG5UBbSv7_F0AMjlQEDACvz8nVCeFSe29L45wFVsYoZIQe7fyu5FHeSzo__v6eHwL5owdt6ylY1Ami_azv_LX6BlL1ZhBEyLAQDPYBxGhjuVcDz2T5KFQCq9p2AE4ZFTWgbfGqSWLYxBcMycVwEqqPIsaj3xu.uDvHY0cJ4">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2">Request Body (URL-encoded):</label>
+                <textarea id="requestBody" class="w-full p-2 bg-gray-700 rounded" rows="3">agent=&level=0&ticket=&customer=&daterange=01%2F01%2F1970+-+12%2F31%2F2026&show=&limit=100&offset=0</textarea>
+            </div>
+            
+            <button onclick="testDirect()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded mr-2">
+                🎯 Test Direct (fantasy402.com)
+            </button>
+            
+            <button onclick="testThroughWorker()" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded">
+                🔄 Test Through Worker (interceptor)
+            </button>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">📊 Results</h2>
+            <div id="results" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        const DIRECT_URL = 'https://fantasy402.com';
+
+        async function testDirect() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="text-yellow-400">⏳ Testing direct call to fantasy402.com...</div>';
+            
+            try {
+                const bearer = document.getElementById('bearerToken').value;
+                const cookie = document.getElementById('cookie').value;
+                const body = document.getElementById('requestBody').value;
+                
+                const response = await fetch(`${DIRECT_URL}/cloud/api/Manager/getBetTicker`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${bearer}`,
+                        'Cookie': cookie,
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'Origin': 'https://fantasy402.com',
+                        'Referer': 'https://fantasy402.com/manager.html',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: body
+                });
+                
+                const data = await response.json();
+                const wagerCount = data.LIST ? data.LIST.length : 0;
+                
+                resultsDiv.innerHTML = `
+                    <div class="bg-green-900 border border-green-500 rounded p-4">
+                        <div class="font-bold mb-2">✅ Direct Call Successful!</div>
+                        <div class="text-sm space-y-1">
+                            <div>Status: <strong>${response.status}</strong></div>
+                            <div>Wagers: <strong>${wagerCount}</strong></div>
+                            <div>Response Size: <strong>${JSON.stringify(data).length} bytes</strong></div>
+                            <div class="mt-2 text-xs bg-gray-900 p-2 rounded overflow-auto max-h-48">
+                                <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="bg-red-900 border border-red-500 rounded p-4">
+                        <div class="font-bold mb-2">❌ Direct Call Failed</div>
+                        <div class="text-sm">${error.message}</div>
+                        <div class="text-xs mt-2">Note: CORS may block this. That's expected.</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function testThroughWorker() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="text-yellow-400">⏳ Testing call through worker interceptor...</div>';
+            
+            try {
+                const bearer = document.getElementById('bearerToken').value;
+                const cookie = document.getElementById('cookie').value;
+                const body = document.getElementById('requestBody').value;
+                
+                const response = await fetch(`${WORKER_URL}/cloud/api/Manager/getBetTicker`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${bearer}`,
+                        'Cookie': cookie,
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'Origin': 'https://fantasy402.com',
+                        'Referer': 'https://fantasy402.com/manager.html',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: body
+                });
+                
+                const data = await response.json();
+                const wagerCount = data.LIST ? data.LIST.length : 0;
+                
+                resultsDiv.innerHTML = `
+                    <div class="bg-green-900 border border-green-500 rounded p-4">
+                        <div class="font-bold mb-2">✅ Worker Interceptor Successful!</div>
+                        <div class="text-sm space-y-1">
+                            <div>Status: <strong>${response.status}</strong></div>
+                            <div>Wagers: <strong>${wagerCount}</strong></div>
+                            <div>Response Size: <strong>${JSON.stringify(data).length} bytes</strong></div>
+                            <div class="mt-4">
+                                <div class="text-green-400 font-bold">🎉 This response is now stored in KV!</div>
+                                <div class="text-xs mt-1">Check your dashboard to see it appear.</div>
+                            </div>
+                            <div class="mt-2 text-xs bg-gray-900 p-2 rounded overflow-auto max-h-48">
+                                <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Auto-refresh dashboard after 2 seconds
+                setTimeout(() => {
+                    resultsDiv.innerHTML += `
+                        <div class="bg-blue-900 border border-blue-500 rounded p-4 mt-4">
+                            <div class="font-bold mb-2">🔄 Refreshing dashboard...</div>
+                            <a href="dashboard-enhanced.html" target="_blank" class="text-blue-400 underline">
+                                Open Dashboard →
+                            </a>
+                        </div>
+                    `;
+                }, 2000);
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="bg-red-900 border border-red-500 rounded p-4">
+                        <div class="font-bold mb-2">❌ Worker Call Failed</div>
+                        <div class="text-sm">${error.message}</div>
+                        <div class="text-xs mt-2 space-y-1">
+                            <div>Possible issues:</div>
+                            <div>• JWT token expired (check exp claim)</div>
+                            <div>• Cookies expired</div>
+                            <div>• CORS headers missing</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
+

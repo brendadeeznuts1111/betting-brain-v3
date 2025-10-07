@@ -7,7 +7,7 @@
 
 **Zero-downtime, zero-config, zero-cost** betting intelligence layer running entirely on Cloudflare Edge.
 
-[📚 Documentation Index](docs/INDEX.md) | [🚀 Quick Start](docs/QUICKSTART.md) | [🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) | [📊 Dashboard](grafana/dashboard.json)
+[📚 Documentation Index](docs/INDEX.md) | [🚀 Quick Start](docs/QUICKSTART.md) | [🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) | [📊 Dashboard](monitoring/grafana/dashboard.json)
 
 ## 🎯 What Changed in v3
 
@@ -103,6 +103,7 @@ CREATE TABLE steam_dedupe (
 | **Steam** | Queue → Webhook | `src/queues/steamWebhook.ts` | Steam move notifications |
 | **Sharp** | Scheduled (hourly) | `src/schedules/sharpCalc.ts` | Sharp calculation |
 | **Exposure** | Scheduled (30s) | `src/schedules/exposureCalc.ts` | Exposure calculation |
+| **BetTicker Sniffer** | Transparent proxy | `src/interceptors/bet-ticker-sniffer.ts` | API interception & archiving |
 
 All queues **auto-scale to zero** when empty.
 
@@ -177,7 +178,7 @@ npm run rollback v3.0.0-<sha>
 
 ```
 betting-brain-v3/
-├── src/
+├── src/                         # Source code
 │   ├── index.ts                 # Main entry point
 │   ├── types/                   # TypeScript definitions
 │   ├── guards/                  # Cost-cap and rate limiting
@@ -185,24 +186,99 @@ betting-brain-v3/
 │   ├── triggers/                # D1 triggers
 │   ├── schedules/               # Cron jobs
 │   ├── tools/                   # MCP tools (auto-generated)
+│   ├── interceptors/            # API interception (BetTicker Sniffer)
 │   └── utils/                   # Shared utilities
+├── dashboards/                  # Betting intelligence dashboards
+│   ├── dashboard.html           # Basic monitoring
+│   ├── dashboard-enhanced.html  # Advanced analytics
+│   ├── dashboard-pro.html       # AI intelligence hub
+│   └── dashboard-positions.html # Position & risk tracker
+├── tools/                       # HTML tools and utilities
+│   ├── capture-live-data.html   # Data capture tool
+│   ├── diagnostic-suite.html    # System diagnostics
+│   └── test-*.html             # Testing utilities
+├── tests/                       # Comprehensive test suite
+│   ├── unit/                    # Unit tests
+│   ├── integration/             # Integration tests
+│   ├── e2e/                     # End-to-end tests
+│   ├── setup/                   # Test setup and configuration
+│   ├── mocks/                   # Shared mocks and test data
+│   └── utils/                   # Test utilities
+├── docs/                        # Documentation
+│   ├── guides/                  # User guides
+│   ├── dashboards/              # Dashboard documentation
+│   ├── testing/                 # Testing documentation
+│   └── deployment/              # Deployment documentation
+├── browser-extension/           # Browser extension for auto-capture
+├── config/                      # Configuration files
+├── deployment/                  # Deployment scripts and configs
+├── monitoring/                  # Grafana and monitoring
 ├── migrations/                  # D1 database migrations
-├── tests/                       # Unit tests
-├── scripts/                     # Build and deployment scripts
-├── grafana/                     # Dashboard configuration
+├── scripts/                     # Build and automation scripts
 └── .github/                     # CI/CD workflows
 ```
 
 ## 🧪 Testing
 
 ```bash
-npm run test         # Run all tests
-npm run test:watch   # Run tests in watch mode
+bun test            # Run all tests
+bun test:unit       # Run unit tests only
+bun test:integration # Run integration tests only
+bun test:e2e        # Run end-to-end tests
+bun test:watch      # Run tests in watch mode
+bun test:ci         # Run tests with coverage
 ```
+
+**Test Health:** ⚠️ **68/100** - Needs Attention  
+- ✅ 249/249 tests passing
+- 🚨 89 TypeScript errors (see [URGENT_TEST_FIXES.md](URGENT_TEST_FIXES.md))
+- ⚠️ Slow integration tests (99s, should be <20s)
+
+**Documentation:**
+- **[Test Health Dashboard](docs/testing/TEST_HEALTH_DASHBOARD.md)** - Current status & metrics
+- **[Test Failure Analysis](docs/testing/TEST_FAILURE_ANALYSIS.md)** - Detailed error breakdown
+- **[Testing Guide](docs/testing/TESTING_GUIDE.md)** - Comprehensive testing documentation
+
+## 🎯 BetTicker Sniffer
+
+**Transparent API interceptor** that archives all `getBetTicker` responses with zero client impact.
+
+### Features
+- ✅ Intercepts `POST /cloud/api/Manager/getBetTicker`
+- ✅ Stores raw responses in KV (7-day retention)
+- ✅ Zero performance impact (async storage)
+- ✅ Analysis endpoints for historical data
+- ✅ Comprehensive metadata tracking
+
+### Quick Access
+```bash
+# View recent responses
+curl https://brain.mybook.com/interceptor/history?limit=10
+
+# Get specific response
+curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300000000"
+```
+
+📖 **[Full Documentation](docs/BET_TICKER_SNIFFER.md)**
+
+## 📊 Dashboards & Tools
+
+### **Quick Access**
+- **Position Tracker:** `dashboards/dashboard-positions.html` - Real-time risk analysis
+- **Enhanced Analytics:** `dashboards/dashboard-enhanced.html` - Charts and alerts
+- **AI Intelligence Hub:** `dashboards/dashboard-pro.html` - AI-powered insights
+- **Data Capture:** `tools/capture-live-data.html` - Get fresh betting data
+
+### **Documentation**
+- **[Dashboard Collection](docs/dashboards/README.md)** - Complete dashboard overview
+- **[Tools & Utilities](tools/README.md)** - HTML tools and utilities
+- **[Agent Risk Guide](docs/guides/AGENT_RISK_GUIDE.md)** - Risk analysis guide
+- **[Start Here Guide](docs/guides/START_HERE.md)** - Complete setup guide
 
 ## 📚 Additional Documentation
 
 - **[Quick Start Guide](docs/QUICKSTART.md)** - 15-second setup
+- **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
 - **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical overview
 - **[Build Report](docs/BUILD_REPORT.md)** - Statistics and checklist
 - **[Review & Gaps](docs/REVIEW_AND_GAPS.md)** - Quality assessment

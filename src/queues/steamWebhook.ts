@@ -9,6 +9,32 @@ import { Env } from '../types/api';
 import { costCapGuard } from '../guards/costCap';
 import { z } from 'zod';
 
+// Helper function to determine if an error should trigger a retry
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof Error) {
+    // Don't retry validation errors or parsing errors
+    if (error.name === 'ZodError' || error.message.includes('validation')) {
+      return false;
+    }
+    
+    // Don't retry database constraint errors
+    if (error.message.includes('UNIQUE constraint') || 
+        error.message.includes('FOREIGN KEY constraint')) {
+      return false;
+    }
+    
+    // Retry network errors, timeouts, and other transient errors
+    if (error.message.includes('timeout') || 
+        error.message.includes('network') ||
+        error.message.includes('connection')) {
+      return true;
+    }
+  }
+  
+  // Default to retryable for unknown errors
+  return true;
+}
+
 // Validation schema for steam move data
 const SteamMoveSchema = z.object({
   eid: z.string().min(1),
@@ -21,9 +47,19 @@ const SteamMoveSchema = z.object({
   trigger: z.string().optional()
 });
 
+// Type inference from schema
+type SteamMoveData = z.infer<typeof SteamMoveSchema>;
+
 export async function handleSteamWebhook(message: Message, env: Env, ctx: ExecutionContext): Promise<void> {
   try {
-    const data = JSON.parse(message.body as string);
+    let data;
+    try {
+      data = JSON.parse(message.body as string);
+    } catch (parseError) {
+      console.error('JSON parsing error:', parseError);
+      // JSON parsing errors are non-retryable
+      return;
+    }
     
     // Validate incoming data
     const validatedData = SteamMoveSchema.parse(data);
@@ -32,6 +68,7 @@ export async function handleSteamWebhook(message: Message, env: Env, ctx: Execut
     const costCheck = await costCapGuard.checkRequest(new Request('https://internal'), env);
     if (!costCheck.allowed) {
       console.warn('Steam webhook blocked by cost cap:', costCheck.reason);
+      // Acknowledge message even if blocked by cost cap to prevent retry loops
       return;
     }
 
@@ -39,6 +76,7 @@ export async function handleSteamWebhook(message: Message, env: Env, ctx: Execut
     const isDuplicate = await checkDeduplication(validatedData, env);
     if (isDuplicate) {
       console.log(`Steam move already processed for event ${validatedData.eid}, market ${validatedData.mt}`);
+      // Acknowledge duplicate messages to prevent retry loops
       return;
     }
 
@@ -46,13 +84,24 @@ export async function handleSteamWebhook(message: Message, env: Env, ctx: Execut
     await processSteamMove(validatedData, env);
     
     console.log(`Processed steam move for event ${validatedData.eid}, market ${validatedData.mt}`);
+    
+    // Message will be automatically acknowledged on successful completion
   } catch (error) {
     console.error('Error processing steam webhook:', error);
-    throw error; // This will trigger message retry
+    
+    // Check if this is a retryable error
+    if (isRetryableError(error)) {
+      console.log('Retryable error detected, message will be retried');
+      throw error; // This will trigger message retry
+    } else {
+      console.error('Non-retryable error, acknowledging message to prevent retry loop');
+      // For non-retryable errors, we don't throw, so the message is acknowledged
+      // This prevents infinite retry loops for validation errors, etc.
+    }
   }
 }
 
-async function checkDeduplication(data: SteamMoveSchema, env: Env): Promise<boolean> {
+async function checkDeduplication(data: SteamMoveData, env: Env): Promise<boolean> {
   const dedupeKey = `${data.eid}_${data.mt}`;
   
   // Check if we've already processed this event/market combination recently
@@ -75,7 +124,7 @@ async function checkDeduplication(data: SteamMoveSchema, env: Env): Promise<bool
   return false; // Not a duplicate
 }
 
-async function processSteamMove(data: SteamMoveSchema, env: Env): Promise<void> {
+async function processSteamMove(data: SteamMoveData, env: Env): Promise<void> {
   // Calculate steam move metrics
   const metrics = await calculateSteamMoveMetrics(data, env);
   
@@ -91,7 +140,7 @@ async function processSteamMove(data: SteamMoveSchema, env: Env): Promise<void> 
   }
 }
 
-async function calculateSteamMoveMetrics(data: SteamMoveSchema, env: Env): Promise<SteamMoveMetrics> {
+async function calculateSteamMoveMetrics(data: SteamMoveData, env: Env): Promise<SteamMoveMetrics> {
   // Calculate line change
   const lineChange = (data.lb !== null && data.la !== null) ? data.la - data.lb : 0;
   
@@ -125,7 +174,11 @@ async function calculateSigma(eventId: string, marketType: string, env: Env): Pr
     AND ts > datetime('now', '-1 hour')
     ORDER BY ts DESC
     LIMIT 100
-  `).bind(eventId, marketType).all();
+  `).bind(eventId, marketType).all() as Array<{
+    lb: number | null;
+    la: number | null;
+    ts: string;
+  }>;
 
   if (recentMovements.length < 2) {
     return 0; // Not enough data

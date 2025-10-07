@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Live Data Capture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(148, 163, 184, 0.1); }
+        .code-block { background: #0f172a; border: 1px solid #334155; }
+        .copy-btn:hover { background: #10b981; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="glass rounded-2xl p-8 mb-6">
+            <h1 class="text-3xl font-bold text-white mb-4">🎯 Live Data Capture Tool</h1>
+            <p class="text-slate-300">Follow these steps to capture fresh betting data:</p>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="glass rounded-xl p-6 mb-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">1</div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-white mb-2">Open fantasy402.com</h3>
+                    <p class="text-slate-400 mb-3">Go to your betting interface:</p>
+                    <a href="https://fantasy402.com/manager.html?bet-ticker=active" target="_blank" 
+                       class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                        🔗 Open fantasy402.com
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="glass rounded-xl p-6 mb-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">2</div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-white mb-2">Open Developer Tools</h3>
+                    <p class="text-slate-400 mb-3">Press <kbd class="bg-slate-700 px-2 py-1 rounded">F12</kbd> or <kbd class="bg-slate-700 px-2 py-1 rounded">⌘+Option+I</kbd></p>
+                    <p class="text-slate-400">Then go to the <strong class="text-white">Console</strong> tab</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="glass rounded-xl p-6 mb-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">3</div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-white mb-3">Run This Script in Console</h3>
+                    <p class="text-slate-400 mb-3">Copy and paste this into the console, then press Enter:</p>
+                    
+                    <div class="code-block rounded-lg p-4 relative">
+                        <button onclick="copyScript()" class="copy-btn absolute top-2 right-2 bg-slate-700 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition">
+                            📋 Copy
+                        </button>
+                        <pre id="captureScript" class="text-green-400 text-sm overflow-x-auto pr-20"><code>// 🎯 BetTicker Live Capture Script
+(async function() {
+    console.log('🎯 Capturing betting data through interceptor...');
+    
+    try {
+        // Make request to YOUR worker (not fantasy402 directly)
+        const response = await fetch(
+            'https://betting-brain-v3.nolarose1968-806.workers.dev/cloud/api/Manager/getBetTicker',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    // Auth headers will be sent automatically from fantasy402.com context
+                },
+                body: 'agent=&level=0&ticket=&customer=&daterange=01%2F01%2F1970+-+12%2F31%2F2026&show=&limit=200&offset=0',
+                credentials: 'include'
+            }
+        );
+        
+        const data = await response.json();
+        const wagerCount = data.LIST ? data.LIST.length : 0;
+        
+        console.log('✅ Success!');
+        console.log('📊 Captured:', wagerCount, 'wagers');
+        console.log('💰 Total Volume:', data.LIST.reduce((s, w) => s + (parseFloat(w.AmountWagered) || 0), 0) / 100);
+        console.log('🎉 Data is now stored in KV!');
+        console.log('📍 Open dashboard: http://localhost:8888/dashboard-positions.html');
+        
+        return data;
+    } catch (error) {
+        console.error('❌ Error:', error);
+        console.log('💡 Try opening this page FROM fantasy402.com to include auth cookies');
+    }
+})();</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="glass rounded-xl p-6 mb-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">4</div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-white mb-2">View Your Dashboards</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                        <a href="http://localhost:8888/dashboard-positions.html" target="_blank" 
+                           class="block bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg transition text-center">
+                            <div class="text-2xl mb-2">📊</div>
+                            <div class="font-semibold">Position Tracker</div>
+                            <div class="text-xs opacity-80 mt-1">Game & customer exposure</div>
+                        </a>
+                        <a href="http://localhost:8888/dashboard-enhanced.html" target="_blank" 
+                           class="block bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition text-center">
+                            <div class="text-2xl mb-2">📈</div>
+                            <div class="font-semibold">Analytics</div>
+                            <div class="text-xs opacity-80 mt-1">Charts & exports</div>
+                        </a>
+                        <a href="http://localhost:8888/dashboard-pro.html" target="_blank" 
+                           class="block bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-lg transition text-center">
+                            <div class="text-2xl mb-2">🧠</div>
+                            <div class="font-semibold">Intelligence Hub</div>
+                            <div class="text-xs opacity-80 mt-1">AI insights</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alternative: Direct Method -->
+        <div class="glass rounded-xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4">📍 Alternative: Copy Network Request</h3>
+            <div class="space-y-3">
+                <p class="text-slate-400 text-sm">If the script doesn't work, manually capture the request:</p>
+                <ol class="list-decimal list-inside space-y-2 text-slate-300 text-sm">
+                    <li>Open DevTools → <strong class="text-white">Network</strong> tab</li>
+                    <li>Filter for "getBetTicker"</li>
+                    <li>Make a bet ticker request in fantasy402.com</li>
+                    <li>Right-click the request → <strong class="text-white">Copy → Copy as cURL</strong></li>
+                    <li>Replace <code class="bg-slate-700 px-2 py-1 rounded">https://fantasy402.com</code> with <code class="bg-blue-600 px-2 py-1 rounded">https://betting-brain-v3.nolarose1968-806.workers.dev</code></li>
+                    <li>Run the modified curl command</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="mt-6 glass rounded-xl p-4">
+            <div class="flex items-center gap-3">
+                <div class="text-2xl">💡</div>
+                <div class="flex-1 text-sm text-slate-300">
+                    <strong class="text-white">Pro Tip:</strong> The script must run in the fantasy402.com console to access auth cookies. 
+                    Or use the browser extension to auto-proxy all requests!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyScript() {
+            const script = document.getElementById('captureScript').textContent;
+            navigator.clipboard.writeText(script);
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Copied!';
+            btn.style.background = '#10b981';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
+
