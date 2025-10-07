@@ -158,7 +158,8 @@ sg -p 'throw Errors.notFound' src/
 ast-grep --pattern 'console.$METHOD($$$)' src/
 
 # Find unstructured logs (missing requestId)
-sg scan -r unstructured-log
+sg scan --filter "unstructured-log"
+sg scan --filter "unstructured-log" src/index.ts  # Specific file
 
 # Find specific log level
 sg -p 'console.error' src/
@@ -172,7 +173,7 @@ sg -p 'console.error' src/
 
 #### 1. SQL Injection Prevention
 ```bash
-sg scan -r sql-injection-risk
+sg scan --filter "sql-injection-risk"
 ```
 
 **Rule:** Never use string interpolation in SQL queries.
@@ -187,7 +188,7 @@ const query = env.ANALYTICS.prepare(`SELECT * FROM users WHERE id = ?`).bind(use
 
 #### 2. CORS Headers
 ```bash
-sg scan -r missing-cors-headers
+sg scan --filter "missing-cors-headers"
 ```
 
 **Rule:** All API responses must include CORS headers.
@@ -209,7 +210,7 @@ return new Response(JSON.stringify(data), {
 
 #### 1. Request ID Tracking
 ```bash
-sg scan -r missing-request-id
+sg scan --filter "missing-request-id"
 ```
 
 **Rule:** All endpoint handlers must generate and use requestId.
@@ -230,7 +231,7 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
 
 #### 2. Structured Logging
 ```bash
-sg scan -r unstructured-log
+sg scan --filter "unstructured-log"
 ```
 
 **Rule:** All logs should include requestId prefix.
@@ -251,13 +252,14 @@ console.log(`[${requestId}] Processing request`);
 
 ```bash
 # Find WORKER_URL definitions (should be 1, in shared/config.js)
-sg scan -r worker-url-definition
+sg scan --filter "worker-url-definition"
+sg scan --filter "worker-url-definition" dashboards/  # Specific directory
 
 # Find Chart.js usage
 ast-grep --pattern 'new Chart($CTX, $$$)' dashboards/
 
 # Find duplicate fetch calls
-sg scan -r duplicate-fetch
+sg scan --filter "duplicate-fetch"
 ```
 
 ### Refactoring Checklist
@@ -336,9 +338,9 @@ Run ast-grep scans before commits:
 
 ```bash
 # Add to pre-commit hook
-sg scan --rule find-sql-injection-risk
-sg scan --rule find-unstructured-logs
-sg scan --rule find-missing-cors
+sg scan --filter "sql-injection-risk"
+sg scan --filter "unstructured-log"
+sg scan --filter "missing-cors"
 ```
 
 ### 2. Code Reviews
@@ -347,9 +349,9 @@ Use ast-grep in PR reviews:
 
 ```bash
 # Check for anti-patterns
-sg run find-sql-injection-risk
-sg run find-missing-error-handling
-sg run find-hardcoded-urls
+sg scan --filter "sql-injection-risk"
+sg scan --filter "missing-error-handling"
+sg scan --filter "hardcoded-urls"
 ```
 
 ### 3. Refactoring
@@ -458,9 +460,9 @@ npm install -g @ast-grep/cli
 ast-grep --pattern 'PATTERN' PATH
 sg -p 'PATTERN' PATH
 
-# Rule scan
-ast-grep scan -r RULE_ID
-sg scan -r RULE_ID
+# Rule scan (filter by ID)
+sg scan --filter "RULE_ID"
+sg scan --filter "RULE_ID" PATH
 
 # Scan all rules
 ast-grep scan
