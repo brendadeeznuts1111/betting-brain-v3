@@ -1,0 +1,49 @@
+feat: Add zombie process fix and one-click CI (v3.1.0)
+
+🎯 Major Features:
+- Process cleanup utility with signal handling
+- One-click CI commands (ci, ci:quick, ci:local)
+- GitHub Actions CI workflow with security gate
+- Comprehensive test suite (13 tests)
+- 4 new Cursor rules for best practices
+
+🛠️ Changes:
+- Created process-cleanup.ts utility (156 lines)
+- Created ci-local.ts for local CI (322 lines)
+- Created GitHub Actions workflow (239 lines)
+- Fixed build-and-test.ts zombie leaks
+- Fixed extension-test-runner.ts spawn usage
+- Added 4 Cursor rules (877 lines)
+- Added comprehensive documentation (762 lines)
+
+✅ Results:
+- Zero zombie processes (was 27)
+- Normal CPU usage (was 600%+)
+- Test timeout enforcement (10s default)
+- Full signal handling (SIGINT, SIGTERM, SIGHUP)
+- Global process tracking and cleanup
+
+📚 Documentation:
+- docs/ZOMBIE_PROCESS_FIX.md (technical details)
+- docs/CI_AND_ZOMBIE_FIX_SUMMARY.md (implementation guide)
+- .cursor/rules/process-management.mdc
+- .cursor/rules/testing-patterns.mdc
+- .cursor/rules/ci-patterns.mdc
+- Updated README.md with CI section
+- Updated docs/INDEX.md
+
+🧪 Testing:
+- 13 new tests for process cleanup
+- All tests passing
+- No zombie processes after test runs
+- Process cleanup verified
+
+🔧 Commands:
+- bun run ci (full CI pipeline)
+- bun run ci:quick (quick mode)
+- bun run ci:local (interactive)
+
+Breaking Changes: None
+
+Co-authored-by: Claude <noreply@anthropic.com>
+

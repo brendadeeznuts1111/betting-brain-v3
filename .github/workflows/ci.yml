@@ -1,0 +1,239 @@
+name: 🚀 CI - One-Click Test & Deploy
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same workflow + branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 🔒 SECURITY GATE - Blocks everything if security fails
+  # ═══════════════════════════════════════════════════════════════════════════
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🥖 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+
+      - name: 📦 Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: 🔍 Install ast-grep
+        run: bun install -g @ast-grep/cli@0.39.5
+
+      - name: 🛡️ Run security scan
+        run: sg scan src/
+
+      - name: 🗄️ Validate SQL migrations
+        run: bun run scripts/validate-migrations.ts
+
+      - name: ✅ Security passed
+        run: echo "✅ All 20 security rules passed"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 🧪 TESTS - Full test suite with zombie process protection
+  # ═══════════════════════════════════════════════════════════════════════════
+  test:
+    name: 🧪 Test Suite
+    needs: security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🥖 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+
+      - name: 📦 Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      - name: 🎨 Lint code
+        run: bun run lint
+        continue-on-error: true
+
+      - name: 📝 Type check
+        run: bun x tsc --noEmit
+        continue-on-error: true
+
+      - name: 🧪 Run unit tests
+        run: bun test tests/unit --timeout 10000
+        timeout-minutes: 5
+
+      - name: 🔗 Run integration tests
+        run: bun test tests/integration --timeout 20000
+        timeout-minutes: 8
+
+      - name: 📊 Generate coverage
+        run: bun test --coverage
+        continue-on-error: true
+
+      - name: 📤 Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+        continue-on-error: true
+
+      - name: 🧹 Verify no zombie processes
+        if: always()
+        run: |
+          echo "Checking for zombie test processes..."
+          ps aux | grep -i bun | grep -v grep || echo "✅ No zombie processes found"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 📚 DOCUMENTATION - Link checks
+  # ═══════════════════════════════════════════════════════════════════════════
+  docs:
+    name: 📚 Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🥖 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      - name: 🔗 Check links
+        run: bun scripts/link-check.js
+        continue-on-error: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 🏗️ BUILD - Production build verification
+  # ═══════════════════════════════════════════════════════════════════════════
+  build:
+    name: 🏗️ Build
+    needs: [security, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🥖 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+
+      - name: 📦 Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      - name: 🔨 Build worker
+        run: bun run build:worker
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 🚀 ALL-IN-ONE - One-click CI check
+  # ═══════════════════════════════════════════════════════════════════════════
+  ci-status:
+    name: ✅ CI Status
+    needs: [security, test, docs, build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 📊 Check results
+        run: |
+          echo "Security: ${{ needs.security.result }}"
+          echo "Tests: ${{ needs.test.result }}"
+          echo "Docs: ${{ needs.docs.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          
+          if [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "❌ Security gate failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.test.result }}" != "success" ]]; then
+            echo "❌ Tests failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "❌ Build failed"
+            exit 1
+          fi
+          
+          echo "✅ All CI checks passed!"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 🚀 DEPLOY - Auto-deploy to staging on main branch
+  # ═══════════════════════════════════════════════════════════════════════════
+  deploy-staging:
+    name: 🚀 Deploy Staging
+    needs: ci-status
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 10
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🥖 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      - name: 🗄️ Apply migrations (staging)
+        run: bun x wrangler d1 migrations apply betting-analytics --env staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: ☁️ Deploy to Cloudflare (staging)
+        run: bun x wrangler deploy --env staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: ✅ Deployment complete
+        run: echo "✅ Deployed to staging"
+

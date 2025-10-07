@@ -4,9 +4,10 @@
  * Tests extension injection, functionality, and log forwarding
  */
 
-import { spawn } from 'bun';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import processManager from '../../tests/utils/process-cleanup';
+import type { Subprocess } from 'bun';
 
 interface TestConfig {
   extensionPath: string;
@@ -27,7 +28,7 @@ interface TestResult {
 class ExtensionTestRunner {
   private config: TestConfig;
   private results: TestResult[] = [];
-  private logMonitor: any = null;
+  private logMonitor: Subprocess | null = null;
 
   constructor(config: TestConfig) {
     this.config = config;
@@ -37,24 +38,27 @@ class ExtensionTestRunner {
     console.log('🚀 Starting Automated Extension Testing Suite');
     console.log('=' .repeat(60));
 
-    // Start log monitor
-    await this.startLogMonitor();
+    try {
+      // Start log monitor
+      await this.startLogMonitor();
 
-    // Run tests
-    await this.testExtensionStructure();
-    await this.testManifestValidation();
-    await this.testContentScriptInjection();
-    await this.testLogForwarding();
-    await this.testWorkerConnectivity();
-    await this.testAuthenticationFlow();
+      // Run tests
+      await this.testExtensionStructure();
+      await this.testManifestValidation();
+      await this.testContentScriptInjection();
+      await this.testLogForwarding();
+      await this.testWorkerConnectivity();
+      await this.testAuthenticationFlow();
 
-    // Stop log monitor
-    await this.stopLogMonitor();
+      // Generate report
+      this.generateReport();
 
-    // Generate report
-    this.generateReport();
-
-    return this.results;
+      return this.results;
+    } finally {
+      // Always stop log monitor and cleanup
+      await this.stopLogMonitor();
+      await processManager.killAll(3000);
+    }
   }
 
   private async testExtensionStructure(): Promise<void> {
@@ -341,11 +345,13 @@ class ExtensionTestRunner {
     console.log('\n📊 Starting log monitor...');
     
     try {
-      this.logMonitor = spawn({
-        cmd: ['bun', 'run', 'tools/logging/log-monitor.js'],
-        cwd: process.cwd(),
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
+      this.logMonitor = processManager.spawn(
+        ['bun', 'run', 'tools/logging/log-monitor.js'],
+        {
+          cwd: process.cwd(),
+          stdio: ['ignore', 'pipe', 'pipe']
+        }
+      );
 
       // Give it a moment to start
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -358,10 +364,12 @@ class ExtensionTestRunner {
   private async stopLogMonitor(): Promise<void> {
     if (this.logMonitor) {
       try {
-        this.logMonitor.kill();
+        await processManager.kill(this.logMonitor, 15, 2000);
         console.log('✅ Log monitor stopped');
       } catch (error) {
         console.log('⚠️  Error stopping log monitor:', error);
+      } finally {
+        this.logMonitor = null;
       }
     }
   }

@@ -36,6 +36,30 @@ bun run deploy:prod
 
 **Live in 60 seconds** with auto-generated Grafana dashboard!
 
+## 🧪 One-Click CI
+
+Run the full CI pipeline locally before pushing:
+
+```bash
+# Full CI pipeline (security, lint, type-check, tests, build)
+bun run ci
+
+# Quick CI (skip slow checks)
+bun run ci:quick
+
+# Just run tests
+bun test
+```
+
+**Features:**
+- ✅ Zero zombie processes (automatic cleanup)
+- ✅ Timeout enforcement (10s default)
+- ✅ Signal handling (Ctrl+C cleanup)
+- ✅ Detailed reporting
+- ✅ Exit code handling
+
+See [Zombie Process Fix](docs/ZOMBIE_PROCESS_FIX.md) for details.
+
 ## 📊 Core Metrics
 
 | Metric | Alert Threshold | Cost Cap | Unit Test |

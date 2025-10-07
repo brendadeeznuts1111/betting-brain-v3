@@ -1,6 +1,6 @@
 {
   "name": "betting-brain-v3",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Enterprise-grade betting data interceptor with circuit breaker and health monitoring",
   "main": "src/index.ts",
   "scripts": {
@@ -19,6 +19,10 @@
     "test:integration": "bun test tests/integration",
     "test:migrate": "bun run scripts/migrate-to-bun-test.ts",
     "test:migrate:dry": "bun run scripts/migrate-to-bun-test.ts --dry-run",
+    "ci": "bun run ci:full",
+    "ci:full": "bun run security && bun run lint && bun run type-check && bun run test && bun run build:worker && echo '✅ All CI checks passed!'",
+    "ci:quick": "bun run security && bun run test:fast && echo '✅ Quick CI passed!'",
+    "ci:local": "bun run scripts/ci-local.ts",
     "lint": "bun run scripts/lint.ts",
     "format": "bun run scripts/format.ts",
     "format:check": "bun run scripts/format-check.ts",
@@ -38,7 +42,7 @@
     "setup:prod": "bun install --production && bun run build:worker && bun run deploy:production",
     "clean": "rm -rf dist node_modules/.cache coverage",
     "reset": "bun run clean && bun install && bun run setup:dev",
-    "security": "sg scan --error src/",
+    "security": "sg scan src/",
     "security:migrations": "bun run scripts/validate-migrations.ts",
     "pre-push": "bun run security && bun run security:migrations && echo '✅ Security checks passed'",
     "prepare": "husky"

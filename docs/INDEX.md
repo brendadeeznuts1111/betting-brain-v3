@@ -45,6 +45,14 @@
 | [REST_API_REFERENCE.md](REST_API_REFERENCE.md) | Complete REST API docs (9 endpoints) 🆕 | Developers | ✅ Complete |
 | [API_ENHANCEMENT_SUMMARY.md](API_ENHANCEMENT_SUMMARY.md) | API layer overview & features 🆕 | All Teams | ✅ Complete |
 
+### CI & Testing ✨ NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| [CI_AND_ZOMBIE_FIX_SUMMARY.md](CI_AND_ZOMBIE_FIX_SUMMARY.md) | Complete CI & zombie fix implementation 🆕 | All Devs | ✅ Complete |
+| [ZOMBIE_PROCESS_FIX.md](ZOMBIE_PROCESS_FIX.md) | Zombie process fix technical details 🆕 | DevOps | ✅ Complete |
+| [TESTING_STATUS.md](TESTING_STATUS.md) | Test health & coverage | QA, Devs | ✅ Complete |
+| [testing/TESTING_GUIDE.md](testing/TESTING_GUIDE.md) | Testing patterns & best practices | All Devs | ✅ Complete |
+
 ### MCP Integration ✨ NEW
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|

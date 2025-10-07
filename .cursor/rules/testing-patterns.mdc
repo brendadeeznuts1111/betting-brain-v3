@@ -1,0 +1,236 @@
+---
+description: Testing patterns and best practices for Bun test
+globs: *.test.ts,*.spec.ts
+---
+
+# Testing Patterns for Bun Test
+
+## Test Structure
+
+### Use Proper Imports
+
+```typescript
+// ✅ CORRECT - Bun test imports
+import { describe, test, expect, beforeEach, afterEach, beforeAll, afterAll } from 'bun:test';
+
+// ❌ WRONG - Don't use Vitest/Jest
+import { describe, test, expect } from 'vitest';
+import { describe, test, expect } from '@jest/globals';
+```
+
+## Process Cleanup in Tests
+
+**ALWAYS cleanup spawned processes:**
+
+```typescript
+import processManager from '../utils/process-cleanup';
+
+describe('My Test Suite', () => {
+  // Cleanup after EACH test
+  afterEach(async () => {
+    await processManager.killAll(3000);
+  });
+  
+  // Or cleanup after ALL tests
+  afterAll(async () => {
+    await processManager.killAll(3000);
+  });
+});
+```
+
+## Test Timeouts
+
+### Global Timeout (bunfig.toml)
+
+```toml
+[test]
+timeout = 10000  # 10 seconds default
+```
+
+### Per-Test Timeout
+
+```typescript
+test('long running test', async () => {
+  // Test code
+}, { timeout: 30000 }); // 30 seconds
+```
+
+### Command Line Timeout
+
+```bash
+bun test --timeout 20000
+```
+
+## Mock Environment Setup
+
+### Cloudflare Environment Mocks
+
+```typescript
+const mockEnv = {
+  ANALYTICS: {
+    prepare: (query: string) => ({
+      bind: (...params: any[]) => ({
+        first: async () => null,
+        all: async () => ({ results: [] }),
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => ({ results: [] }),
+      run: async () => ({ success: true })
+    })
+  },
+  LINE_INGRESS: {
+    send: async (messages: any[]) => ({ success: true })
+  },
+  ANALYTICS_ENGINE: {
+    writeDataPoint: async (data: any) => ({ success: true })
+  }
+};
+```
+
+## Test Organization
+
+### File Naming
+
+```
+tests/
+├── unit/                      # Unit tests
+│   ├── clv.test.ts
+│   ├── sharp-score.test.ts
+│   └── process-cleanup.test.ts
+├── integration/               # Integration tests
+│   ├── queue-integration.test.ts
+│   └── triggers.test.ts
+├── e2e/                       # End-to-end tests
+├── mocks/                     # Shared mocks
+│   ├── env.ts
+│   └── context.ts
+├── setup/                     # Setup files
+│   ├── integration.ts
+│   └── staging.ts
+└── utils/                     # Test utilities
+    ├── test-helpers.ts
+    └── process-cleanup.ts
+```
+
+## Common Patterns
+
+### Testing Async Functions
+
+```typescript
+test('should handle async operations', async () => {
+  const result = await myAsyncFunction();
+  expect(result).toBe(expected);
+});
+```
+
+### Testing Error Handling
+
+```typescript
+test('should throw on invalid input', () => {
+  expect(() => {
+    myFunction(invalidInput);
+  }).toThrow('Expected error message');
+});
+
+test('should reject promise', async () => {
+  await expect(myAsyncFunction()).rejects.toThrow('Error');
+});
+```
+
+### Testing with Mocks
+
+```typescript
+import { mock } from 'bun:test';
+
+test('should call function', () => {
+  const mockFn = mock(() => 'result');
+  const result = mockFn();
+  
+  expect(mockFn).toHaveBeenCalled();
+  expect(mockFn).toHaveBeenCalledTimes(1);
+  expect(result).toBe('result');
+});
+```
+
+## Performance Testing
+
+```typescript
+test('should complete within time limit', async () => {
+  const start = Date.now();
+  
+  await myFunction();
+  
+  const duration = Date.now() - start;
+  expect(duration).toBeLessThan(1000); // < 1 second
+});
+```
+
+## Skipping Tests
+
+```typescript
+// Skip a single test
+test.skip('not ready yet', () => {
+  // Will not run
+});
+
+// Skip entire suite
+describe.skip('WIP feature', () => {
+  test('test 1', () => {});
+  test('test 2', () => {});
+});
+```
+
+## Test Execution
+
+### Local Development
+
+```bash
+# Run all tests
+bun test
+
+# Watch mode
+bun test --watch
+
+# Specific file
+bun test tests/unit/clv.test.ts
+
+# With coverage
+bun test --coverage
+
+# Concurrent
+bun test --concurrent
+```
+
+### CI Environment
+
+```bash
+# Full test suite with timeout
+bun test --timeout 10000
+
+# Quick tests
+bun test tests/unit --timeout 5000
+
+# Integration tests
+bun test tests/integration --timeout 20000
+```
+
+## Key Files
+
+- [Process Cleanup Utility](mdc:tests/utils/process-cleanup.ts) - Process management
+- [Test Helpers](mdc:tests/utils/test-helpers.ts) - Shared utilities
+- [Integration Setup](mdc:tests/setup/integration.ts) - Integration test setup
+- [Bun Config](mdc:bunfig.toml) - Test configuration
+
+## Rules Summary
+
+1. ✅ Use Bun test imports (not Vitest/Jest)
+2. ✅ Always cleanup processes in `afterEach`/`afterAll`
+3. ✅ Set appropriate timeouts (10s default)
+4. ✅ Use descriptive test names
+5. ✅ Group related tests in `describe` blocks
+6. ✅ Mock external dependencies
+7. ✅ Test both success and error paths
+8. ❌ Never leave zombie processes
+9. ❌ Never use infinite waits
+10. ❌ Never test implementation details

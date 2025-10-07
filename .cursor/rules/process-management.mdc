@@ -1,0 +1,159 @@
+---
+description: Process management and zombie process prevention patterns
+globs: *.ts,*.js
+---
+
+# Process Management Rules
+
+## Zombie Process Prevention
+
+**ALWAYS use the process cleanup utility for spawning child processes:**
+
+```typescript
+// ❌ BAD - Can create zombie processes
+const proc = Bun.spawn(['command', 'args']);
+await Promise.race([proc.exited, timeout]); // Process not killed on timeout
+
+// ✅ GOOD - Automatic cleanup
+import processManager from './tests/utils/process-cleanup';
+const proc = processManager.spawn(['command', 'args']);
+try {
+  await Promise.race([proc.exited, timeout]);
+} catch (error) {
+  await processManager.kill(proc, 15, 2000);
+} finally {
+  await processManager.killAll(3000);
+}
+```
+
+## Process Spawning Patterns
+
+### Script Files
+
+For automation scripts that spawn processes:
+
+```typescript
+import processManager from '../tests/utils/process-cleanup';
+
+async function runCommand(command: string[], timeout: number) {
+  const proc = processManager.spawn(command, {
+    cwd: process.cwd(),
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+  
+  try {
+    const exitCode = await Promise.race([
+      proc.exited,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), timeout)
+      )
+    ]);
+    return exitCode === 0;
+  } catch (error) {
+    await processManager.kill(proc, 15, 2000);
+    throw error;
+  }
+}
+```
+
+### Test Files
+
+Always use process manager in tests:
+
+```typescript
+import { describe, test, beforeEach, afterEach } from 'bun:test';
+import processManager from '../utils/process-cleanup';
+
+describe('My Test Suite', () => {
+  afterEach(async () => {
+    // Cleanup all spawned processes after each test
+    await processManager.killAll(3000);
+  });
+  
+  test('should spawn process', async () => {
+    const proc = processManager.spawn(['echo', 'hello']);
+    await proc.exited;
+  });
+});
+```
+
+## Signal Handling
+
+Always ensure scripts handle cleanup on exit:
+
+```typescript
+// Automatic via processManager (recommended)
+import processManager from './tests/utils/process-cleanup';
+// Signal handlers are automatically set up
+
+// Or manual (if needed)
+process.on('SIGINT', async () => {
+  console.log('Cleaning up...');
+  await processManager.killAll(3000);
+  process.exit(0);
+});
+```
+
+## Timeout Enforcement
+
+**ALWAYS set timeouts for spawned processes:**
+
+```typescript
+// ❌ BAD - No timeout
+await proc.exited;
+
+// ✅ GOOD - With timeout
+await Promise.race([
+  proc.exited,
+  new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('Timeout')), 30000)
+  )
+]);
+```
+
+## Cleanup Patterns
+
+### Try-Finally Pattern
+
+```typescript
+let proc;
+try {
+  proc = processManager.spawn(['command']);
+  await proc.exited;
+} finally {
+  if (proc) {
+    await processManager.kill(proc);
+  }
+  await processManager.killAll(); // Cleanup all
+}
+```
+
+### Async Function Cleanup
+
+```typescript
+async function myFunction() {
+  try {
+    const proc = processManager.spawn(['command']);
+    return await proc.exited;
+  } finally {
+    await processManager.killAll(3000);
+  }
+}
+```
+
+## Key Files
+
+- [Process Cleanup Utility](mdc:tests/utils/process-cleanup.ts) - Global process manager
+- [CI Local Script](mdc:scripts/ci-local.ts) - Example usage in CI
+- [Build Automation](mdc:scripts/automation/build-and-test.ts) - Example usage in automation
+
+## Rules Summary
+
+1. ✅ **Always** use `processManager.spawn()` instead of `Bun.spawn()` directly
+2. ✅ **Always** set timeouts for process execution
+3. ✅ **Always** kill processes on timeout/error
+4. ✅ **Always** cleanup in `finally` blocks
+5. ✅ **Always** call `processManager.killAll()` at script end
+6. ❌ **Never** leave spawned processes untracked
+7. ❌ **Never** spawn processes without timeout
+8. ❌ **Never** forget cleanup in test `afterEach`
