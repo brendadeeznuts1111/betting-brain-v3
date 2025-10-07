@@ -1,0 +1,163 @@
+---
+globs: src/mcp/**/*.ts
+description: MCP server integration patterns and conventions
+---
+
+# MCP Integration Rules
+
+## Overview
+
+The MCP (Model Context Protocol) server provides **13 working tools** via JSON-RPC 2.0 endpoint at `/mcp`.
+
+See [docs/MCP_INTEGRATION_STATUS.md](mdc:docs/MCP_INTEGRATION_STATUS.md) for complete status.
+
+## Architecture
+
+```
+src/mcp/
+├── server.ts           # JSON-RPC 2.0 request router
+├── types.ts            # MCP protocol types
+├── tools.ts            # Tool definitions and schemas
+├── toolRegistry.ts     # Handler registry
+└── handlers/           # Tool implementations (9 handlers)
+    ├── steamMoves.ts
+    ├── riskConcentration.ts
+    ├── sharpActivity.ts
+    ├── timeSeriesCLV.ts
+    ├── enhancedSharpScore.ts
+    ├── holdForecast.ts
+    ├── handleAndHold.ts
+    ├── customerVolume.ts
+    └── timeSeriesAnalytics.ts
+```
+
+## Request Flow
+
+```
+POST /mcp → handleMCPRequest() [server.ts]
+  ↓
+Route by method:
+  - initialize → Return capabilities
+  - tools/list → Return tool definitions
+  - tools/call → callTool() [toolRegistry.ts]
+    ↓
+Handler Function [handlers/*.ts]
+    ↓
+D1 Database Query
+    ↓
+MCPToolResult → JSON-RPC Response
+```
+
+## Adding a New Tool
+
+### 1. Create Handler (`src/mcp/handlers/myTool.ts`)
+```typescript
+import type { MCPToolResult, MCPEnv } from '../types';
+
+interface MyToolArgs {
+  param1: string;
+  param2?: number;
+}
+
+export async function getMyTool(
+  args: MyToolArgs,
+  env: MCPEnv
+): Promise<MCPToolResult> {
+  // Validate args
+  if (!args.param1) {
+    return {
+      content: [{ type: 'text', text: 'Error: param1 required' }],
+      isError: true
+    };
+  }
+
+  // Query database
+  const result = await env.ANALYTICS.prepare(
+    'SELECT * FROM table WHERE field = ?'
+  ).bind(args.param1).all();
+
+  // Return formatted result
+  return {
+    content: [{
+      type: 'text',
+      text: JSON.stringify(result.results, null, 2)
+    }]
+  };
+}
+```
+
+### 2. Register in `toolRegistry.ts`
+```typescript
+import { getMyTool } from './handlers/myTool';
+
+case 'getMyTool':
+  return await getMyTool(args, env);
+```
+
+### 3. Define in `tools.ts`
+```typescript
+{
+  name: 'getMyTool',
+  description: 'Clear description of what this tool does',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      param1: { type: 'string', description: '...' },
+      param2: { type: 'number', description: '...', optional: true }
+    },
+    required: ['param1']
+  }
+}
+```
+
+## Testing MCP Tools
+
+### Direct Handler Testing (Fastest)
+```bash
+bun scripts/test-handlers-direct.ts
+```
+
+### HTTP Testing
+```bash
+# Start server
+bun run dev
+
+# Test endpoint
+curl -X POST http://localhost:8787/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+## Database Tables
+
+MCP tools use these D1 tables:
+- `sharp_indicators` - Customer profiling
+- `line_movements` - Line changes
+- `bet_history` - Historical bets ✨ NEW
+- `hold_tracking` - Hold % history ✨ NEW
+- `exposure_tracking` - Real-time exposure
+
+See [migrations/0003_mcp_tables.sql](mdc:migrations/0003_mcp_tables.sql) for MCP-specific schema.
+
+## Tool Categories
+
+### Intelligence (4 tools)
+- getBettingExposure, getCLV, getHoldPercentage, getSharpScore
+
+### Live Betting (3 tools)
+- getSteamMoves, getRiskConcentration, getSharpActivity
+
+### Analytics (6 tools)
+- getTimeSeriesCLV, getEnhancedSharpScore, getHoldForecast
+- getHandleAndHold, getCustomerVolume, getTimeSeriesAnalytics
+
+## Best Practices
+
+1. **Error Handling:** Always return `isError: true` for failures
+2. **Validation:** Validate all args before database queries
+3. **Type Safety:** Use TypeScript interfaces for args
+4. **Performance:** Optimize queries (target < 500ms)
+5. **Documentation:** Clear descriptions in tool definitions
+6. **Testing:** Test with direct handler script first
+
+See [docs/MCP_TESTING_GUIDE.md](mdc:docs/MCP_TESTING_GUIDE.md) for comprehensive testing guide.

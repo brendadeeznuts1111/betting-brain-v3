@@ -1,0 +1,92 @@
+---
+globs: *.md
+description: Documentation file conventions and placement
+---
+
+# Documentation Rules
+
+## File Placement
+
+**All documentation MUST be in the `docs/` directory** (except README.md, LICENSE, CLAUDE.md in root).
+
+### Directory Structure
+```
+docs/
+├── guides/              # User guides and tutorials
+├── testing/             # Testing documentation
+├── deployment/          # Deployment guides
+├── dashboards/          # Dashboard documentation
+├── debug/               # Debugging guides
+├── implementation/      # Technical implementation docs
+└── archive/             # Historical/obsolete docs
+```
+
+## Documentation Types
+
+### Status Files → `docs/`
+```
+docs/TESTING_STATUS.md
+docs/MCP_INTEGRATION_STATUS.md
+docs/AUTOMATION_GUIDE.md
+docs/CODEBASE_REVIEW.md
+docs/CLEANUP_SUMMARY.md
+```
+
+### Guides → `docs/guides/`
+```
+docs/guides/START_HERE.md
+docs/guides/DEBUGGING_DATA_CAPTURE.md
+docs/guides/TESTING_GUIDE.md
+docs/guides/AGENT_RISK_GUIDE.md
+```
+
+### Testing → `docs/testing/`
+```
+docs/testing/TESTING_GUIDE.md
+docs/testing/TEST_HEALTH_DASHBOARD.md
+docs/testing/TEST_FAILURE_ANALYSIS.md
+```
+
+### Archived → `docs/archive/`
+```
+docs/archive/phase-reports/
+docs/archive/bun-upgrade/
+docs/archive/mcp-integration/
+```
+
+## Key Documentation Files
+
+- [README.md](mdc:README.md) - Main project documentation (root only)
+- [CLAUDE.md](mdc:CLAUDE.md) - AI assistant guidance (root only)
+- [docs/INDEX.md](mdc:docs/INDEX.md) - Documentation map
+- [docs/QUICKSTART.md](mdc:docs/QUICKSTART.md) - Quick setup guide
+- [docs/ROOT_STRUCTURE.md](mdc:docs/ROOT_STRUCTURE.md) - Root directory reference
+
+## When Creating Documentation
+
+1. **Choose the right location:**
+   - General docs → `docs/`
+   - Guides/tutorials → `docs/guides/`
+   - Testing docs → `docs/testing/`
+   - Deployment → `docs/deployment/`
+   - Old/obsolete → `docs/archive/`
+
+2. **Never create in root** (except README.md, LICENSE, CLAUDE.md)
+
+3. **Update INDEX.md** when adding significant docs
+
+4. **Link between docs** using relative paths:
+   ```markdown
+   See [Testing Guide](testing/TESTING_GUIDE.md)
+   See [Root Structure](ROOT_STRUCTURE.md)
+   ```
+
+## Archive Policy
+
+Move to `docs/archive/` when:
+- Document is obsolete
+- Issue/feature is complete
+- Migration is finished
+- One-time task is done
+
+Keep documentation focused on current, relevant information.

@@ -1,0 +1,115 @@
+---
+globs: *.test.ts,*.test.tsx,*_test.ts,*.spec.ts
+description: Testing conventions and patterns
+---
+
+# Testing Rules
+
+## Test Runner: Bun Test
+
+**Use Bun Test exclusively** - not Vitest, not Jest.
+
+### Test File Structure
+```typescript
+import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+
+describe("Component/Feature Name", () => {
+  beforeEach(() => {
+    // Setup
+  });
+
+  test("should do something specific", () => {
+    // Arrange
+    const input = "test";
+    
+    // Act
+    const result = myFunction(input);
+    
+    // Assert
+    expect(result).toBe("expected");
+  });
+});
+```
+
+## File Organization
+
+```
+tests/
+├── unit/                # Unit tests (9 files)
+│   ├── clv.test.ts
+│   ├── exposure.test.ts
+│   ├── sharp.test.ts
+│   └── ...
+├── integration/         # Integration tests (8 files)
+│   ├── integration.test.ts
+│   ├── queue-integration.test.ts
+│   └── ...
+├── e2e/                 # End-to-end tests
+├── mocks/               # Shared test mocks
+│   ├── data.ts
+│   └── env.ts
+├── setup/               # Test configuration
+└── utils/               # Test utilities
+```
+
+## File Naming
+
+**Bun Test discovers files matching these patterns:**
+- `*.test.{ts,tsx}`
+- `*_test.{ts,tsx}`
+- `*.spec.{ts,tsx}`
+- `*_spec.{ts,tsx}`
+
+**Preferred:** `*.test.ts` (e.g., `clv.test.ts`)
+
+## Running Tests
+
+```bash
+# All tests
+bun test
+
+# Single file
+bun test tests/unit/clv.test.ts
+
+# With coverage
+bun test --coverage
+
+# Watch mode
+bun test --watch
+
+# Specific pattern
+bun test --test-name-pattern "CLV"
+```
+
+## Mock Environment
+
+See [tests/mocks/env.ts](mdc:tests/mocks/env.ts) for Cloudflare Workers environment mocks.
+
+```typescript
+import { createMockEnv } from "../mocks/env";
+
+test("should use mocked environment", () => {
+  const env = createMockEnv();
+  // Use env.ANALYTICS, env.KV, etc.
+});
+```
+
+## Test Data
+
+See [tests/mocks/data.ts](mdc:tests/mocks/data.ts) for shared test fixtures.
+
+## Important Patterns
+
+1. **No backup files:** Never create `*.test.ts.backup` files
+2. **Clean imports:** Use Bun Test imports only
+3. **Type safety:** Leverage [src/types/api.ts](mdc:src/types/api.ts)
+4. **Fail fast:** Tests should fail fast on errors
+5. **Mock external services:** Never call real APIs in tests
+
+## Status
+
+- ✅ 249/249 tests passing
+- ⚠️ 89 TypeScript errors (non-blocking, mostly test files)
+- Target: < 20s for integration tests (currently 99s)
+
+See [docs/TESTING_STATUS.md](mdc:docs/TESTING_STATUS.md) for current test health.

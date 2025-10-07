@@ -1,0 +1,170 @@
+---
+alwaysApply: true
+description: File and directory naming conventions
+---
+
+# File Naming Conventions
+
+## General Rules
+
+**Use lowercase kebab-case** for all files and directories:
+- ✅ `betting-analytics.ts`
+- ✅ `mcp-integration.md`
+- ✅ `test-helpers.ts`
+- ❌ `BettingAnalytics.ts`
+- ❌ `MCP_Integration.md`
+- ❌ `testHelpers.ts`
+
+**No spaces or mixed case in filenames.**
+
+## TypeScript Files
+
+### Source Files
+```
+src/
+├── index.ts                    # Entry point
+├── mcp/
+│   ├── server.ts              # Single word or kebab-case
+│   ├── tool-registry.ts
+│   └── handlers/
+│       ├── steam-moves.ts
+│       └── risk-concentration.ts
+```
+
+### Test Files
+```
+tests/
+├── unit/
+│   ├── clv.test.ts            # Preferred: feature.test.ts
+│   ├── sharp-score.test.ts
+│   └── bet-ticker-sniffer.test.ts
+├── integration/
+│   ├── queue-integration.test.ts
+│   └── trigger-implementation.test.ts
+```
+
+**Patterns:**
+- `*.test.ts` (preferred)
+- `*_test.ts` (alternative)
+- `*.spec.ts` (alternative)
+
+## Configuration Files
+
+**Standard names (keep as-is):**
+- ✅ `package.json`
+- ✅ `tsconfig.json`
+- ✅ `wrangler.toml`
+- ✅ `bunfig.toml`
+
+**Environment configs:**
+- ✅ `wrangler.staging.toml`
+- ✅ `wrangler.production.toml`
+
+## Documentation Files
+
+**Uppercase for major docs:**
+- ✅ `README.md`
+- ✅ `LICENSE`
+- ✅ `CLAUDE.md`
+- ✅ `CHANGELOG.md`
+- ✅ `CONTRIBUTING.md`
+
+**Uppercase for status/important docs:**
+- ✅ `TESTING_STATUS.md`
+- ✅ `MCP_INTEGRATION_STATUS.md`
+- ✅ `AUTOMATION_GUIDE.md`
+
+**Kebab-case for guides:**
+- ✅ `quick-start.md`
+- ✅ `debugging-guide.md`
+- ✅ `api-reference.md`
+
+## Script Files
+
+```
+scripts/
+├── test-mcp.ts                # Kebab-case
+├── test-handlers-direct.ts
+├── format.ts
+├── lint.ts
+└── automation/
+    └── build-and-test.ts
+```
+
+## HTML Files
+
+```
+tools/
+├── extension-checker.html     # Kebab-case
+├── system-health-monitor.html
+└── troubleshooting-guide.html
+
+dashboards/
+├── dashboard-enhanced.html    # Kebab-case
+├── dashboard-pro.html
+└── dashboard-positions.html
+```
+
+## Directories
+
+**Always lowercase, kebab-case:**
+- ✅ `browser-extension/`
+- ✅ `node_modules/`
+- ✅ `test-results/`
+- ❌ `BrowserExtension/`
+- ❌ `Node_Modules/`
+
+## Database Migrations
+
+```
+migrations/
+├── 0001_initial_schema.sql       # Number_description
+├── 0002_add_ttl.sql
+├── 0003_mcp_tables.sql
+└── 0004_test_data.sql
+```
+
+**Pattern:** `NNNN_description.sql`
+
+## Special Cases
+
+### MCP Handlers
+```
+src/mcp/handlers/
+├── steamMoves.ts              # camelCase (matches tool names)
+├── riskConcentration.ts
+├── sharpActivity.ts
+├── timeSeriesCLV.ts
+└── enhancedSharpScore.ts
+```
+
+**Why camelCase?** These match the MCP tool names exactly (`getSteamMoves` → `steamMoves.ts`)
+
+### Tool Files
+```
+src/tools/intelligence/
+├── getBettingExposure.ts      # camelCase (matches API endpoints)
+├── getSharpScore.ts
+├── getHoldPercentage.ts
+└── getCLV.ts
+```
+
+## What NOT to Create
+
+**Never create:**
+- ❌ Backup files: `*.backup`, `*.old`, `*.bak`
+- ❌ Temp files: `*.tmp`, `*.temp`
+- ❌ System files: `.DS_Store` (gitignored)
+- ❌ Tilde files: `~`, `~/`
+
+## File Extensions
+
+**Standardized extensions:**
+- TypeScript: `.ts` (not `.tsx` unless React)
+- Markdown: `.md` (not `.markdown`)
+- HTML: `.html` (not `.htm`)
+- SQL: `.sql`
+- Config: `.json`, `.toml`, `.yaml`
+
+**Cursor rules:**
+- Rule files: `.mdc` (in `.cursor/rules/`)

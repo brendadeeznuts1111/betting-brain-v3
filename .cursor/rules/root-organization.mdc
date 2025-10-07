@@ -1,0 +1,81 @@
+---
+alwaysApply: true
+description: Root directory organization and file placement rules
+---
+
+# Root Directory Organization Rules
+
+## CRITICAL: Root Directory Policy
+
+**The root directory MUST remain clean and minimal.**
+
+### ✅ ALLOWED in Root
+Only these files are permitted in the project root:
+- `README.md` - Main project documentation
+- `LICENSE` - Project license
+- `CLAUDE.md` - AI assistant guidance (like CONTRIBUTING.md)
+- `package.json` - Dependencies
+- `package-lock.json` - NPM lock file (auto-generated)
+- `bun.lock` - Bun lock file (auto-generated)
+- `tsconfig.json` - TypeScript configuration
+- `wrangler.toml` - Cloudflare Workers base config
+- `wrangler.staging.toml` - Staging environment config
+- `wrangler.production.toml` - Production environment config
+
+### ❌ FORBIDDEN in Root
+**NEVER create these in root:**
+- Markdown files (except README.md, LICENSE, CLAUDE.md)
+- Status files (MCP_INTEGRATION_STATUS.md, TESTING_STATUS.md, etc.)
+- Documentation files
+- Session summaries or reports
+- Cleanup plans or reviews
+- Temporary files
+- Test results or CI artifacts
+- Backup files (*.backup)
+- Build outputs
+- Coverage reports
+- Tilde directories (~, ~/)
+
+## File Placement Rules
+
+### Where Files Must Go
+```
+Documentation → docs/
+Status files → docs/
+Testing guides → docs/testing/ or docs/guides/
+Deployment guides → docs/deployment/
+Scripts → scripts/
+Tools → tools/
+Additional configs → config/
+Archives → docs/archive/
+Session reports → docs/
+Reviews → docs/
+```
+
+### Examples
+```
+❌ BAD: /TESTING_STATUS.md
+✅ GOOD: /docs/TESTING_STATUS.md
+
+❌ BAD: /MCP_INTEGRATION_STATUS.md
+✅ GOOD: /docs/MCP_INTEGRATION_STATUS.md
+
+❌ BAD: /CLEANUP_SUMMARY.md
+✅ GOOD: /docs/CLEANUP_SUMMARY.md
+
+❌ BAD: /setup-guide.md
+✅ GOOD: /docs/guides/setup-guide.md
+```
+
+## Before Creating ANY File
+
+**Ask yourself:**
+1. Is this a standard project file? (package.json, README.md, LICENSE)
+2. Is this a required configuration? (tsconfig.json, wrangler.toml)
+3. If NO to both → **It belongs in a subdirectory, NOT root!**
+
+## Enforcement
+
+See [docs/ROOT_STRUCTURE.md](mdc:docs/ROOT_STRUCTURE.md) for complete root directory reference.
+
+**Violation of these rules will require immediate cleanup and file relocation.**

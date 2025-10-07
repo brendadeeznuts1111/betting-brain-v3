@@ -1,0 +1,71 @@
+---
+alwaysApply: true
+description: Bun runtime requirements and conventions
+---
+
+# Bun Runtime Rules
+
+## Runtime Choice
+
+**This project uses Bun exclusively** - not Node.js, not npm, not yarn.
+
+### Commands
+
+**Always use Bun commands:**
+```bash
+✅ bun install           # Install dependencies
+✅ bun run dev           # Development server
+✅ bun test              # Run tests
+✅ bun run build         # Build project
+✅ bun run lint          # Lint code
+✅ bun run format        # Format code
+
+❌ npm install          # WRONG
+❌ npm run dev          # WRONG
+❌ yarn install         # WRONG
+❌ node script.js       # WRONG - use: bun run script.ts
+```
+
+### Test Runner
+
+**Use Bun Test, not Vitest or Jest:**
+```typescript
+// ✅ CORRECT: Bun Test
+import { describe, test, expect } from "bun:test";
+
+describe("my test", () => {
+  test("should work", () => {
+    expect(true).toBe(true);
+  });
+});
+
+// ❌ WRONG: Vitest/Jest imports
+import { describe, test, expect } from "vitest";
+import { describe, test, expect } from "@jest/globals";
+```
+
+### File System Operations
+
+**Use Bun APIs, not Node.js fs module:**
+```typescript
+// ✅ CORRECT: Bun file API
+const file = Bun.file("path/to/file.txt");
+const contents = await file.text();
+await Bun.write("output.txt", "content");
+
+// ❌ WRONG: Node.js fs
+import fs from "fs";
+import { readFile } from "fs/promises";
+```
+
+### Configuration
+
+- TypeScript config uses `moduleResolution: "bundler"`
+- Project configured in [bunfig.toml](mdc:config/bunfig.toml)
+- See [package.json](mdc:package.json) for available Bun scripts
+
+### Why Bun?
+
+From project memory: "This project uses 100% Bun-native APIs for features such as crypto, compression, encoding, streams, timers, workers, cron, JWT, hash maps, UUID, path, glob, watch, subprocess, HTTP client, WebSocket client, and TLS."
+
+**Never suggest installing external packages for functionality that Bun provides natively.**
