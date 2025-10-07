@@ -3,7 +3,7 @@
  * Alert threshold: < -2%
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach } from "bun:test";
 import { getCLV } from '../../src/tools/intelligence/getCLV';
 
 describe('CLV Calculations', () => {
@@ -39,7 +39,7 @@ describe('CLV Calculations', () => {
     mockRequest = new Request('https://test.com/getCLV?cid=test-customer-1');
   });
 
-  it('should calculate positive CLV for winning customer', async () => {
+  test('should calculate positive CLV for winning customer', async () => {
     const response = await getCLV(mockRequest, mockEnv);
     const data = await response.json();
 
@@ -49,7 +49,7 @@ describe('CLV Calculations', () => {
     expect(data.actionCount).toBe(100);
   });
 
-  it('should trigger alert when CLV < -2%', async () => {
+  test('should trigger alert when CLV < -2%', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => ({
@@ -69,7 +69,7 @@ describe('CLV Calculations', () => {
     expect(data.alertThreshold).toBe(-2);
   });
 
-  it('should handle customer with no data', async () => {
+  test('should handle customer with no data', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null
@@ -80,14 +80,14 @@ describe('CLV Calculations', () => {
     expect(response.status).toBe(404);
   });
 
-  it('should validate customer ID format', async () => {
+  test('should validate customer ID format', async () => {
     const invalidRequest = new Request('https://test.com/getCLV?cid=');
     const response = await getCLV(invalidRequest, mockEnv);
     
     expect(response.status).toBe(400);
   });
 
-  it('should respect cost cap limits', async () => {
+  test('should respect cost cap limits', async () => {
     // Mock cost cap exceeded
     const response = await getCLV(mockRequest, mockEnv);
     expect(response.status).not.toBe(503); // Should not be blocked in test

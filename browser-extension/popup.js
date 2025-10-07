@@ -13,7 +13,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function loadStats() {
   chrome.runtime.sendMessage({ action: 'getStats' }, (response) => {
-    if (!response) return;
+    // Check for errors
+    if (chrome.runtime.lastError) {
+      console.error('Error loading stats:', chrome.runtime.lastError);
+      showError('Connection error');
+      return;
+    }
+    
+    if (!response) {
+      console.warn('No response from background script');
+      showError('No response');
+      return;
+    }
     
     // Update status badge
     const statusBadge = document.getElementById('statusBadge');
@@ -33,6 +44,10 @@ function loadStats() {
     
     // Update stats
     document.getElementById('interceptCount').textContent = response.interceptCount || 0;
+    document.getElementById('successCount').textContent = response.successCount || 0;
+    document.getElementById('failureCount').textContent = response.failureCount || 0;
+    document.getElementById('fallbackCount').textContent = response.fallbackCount || 0;
+    document.getElementById('successRate').textContent = response.successRate + '%' || '0%';
     
     if (response.lastIntercept) {
       const lastTime = new Date(response.lastIntercept);
@@ -51,6 +66,17 @@ function loadStats() {
       document.getElementById('lastIntercept').textContent = 'Never';
     }
   });
+}
+
+function showError(message) {
+  const statusBadge = document.getElementById('statusBadge');
+  const toggleBtn = document.getElementById('toggleBtn');
+  
+  statusBadge.textContent = message;
+  statusBadge.className = 'badge error';
+  toggleBtn.textContent = '⚠️ Error';
+  toggleBtn.className = 'btn-primary disabled';
+  toggleBtn.disabled = true;
 }
 
 function toggle() {
@@ -87,8 +113,9 @@ function reset() {
 }
 
 function openDashboard() {
+  // Open the local dashboard file directly
   chrome.tabs.create({
-    url: 'http://localhost:8888/dashboard-enhanced.html'
+    url: 'file:///Users/nolarose/ffffff/dashboards/dashboard-enhanced.html'
   });
 }
 

@@ -1,0 +1,158 @@
+---
+globs: src/**/*.ts,wrangler*.toml
+description: Cloudflare Workers specific patterns and requirements
+---
+
+# Cloudflare Workers Rules
+
+## Entry Point
+
+Main worker handler: [src/index.ts](mdc:src/index.ts)
+
+```typescript
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    // Handle requests
+  }
+}
+```
+
+## Environment Bindings
+
+Configuration: [wrangler.toml](mdc:wrangler.toml)
+
+### D1 Databases
+- `ANALYTICS` - Main betting analytics database
+- `RAW_FEED_DB` - Raw feed database
+
+### KV Namespaces
+- `BET_TICKER_RAW` - API response storage (7-day retention)
+- `TOKEN_STORE` - Authentication tokens
+- `USER_STORE` - User data
+- `SESSION_STORE` - Active sessions
+- `REFRESH_STORE` - Refresh tokens
+- `LIVEBETS_STORE` - Live betting data
+
+### Queues
+- `LINE_INGRESS` - Line movement ingestion
+- `STEAM_WEBHOOK` - Steam move notifications
+- `STEAM_QUEUE` - Steam processing
+- `EXPOSURE_QUEUE` - Exposure calculation
+
+### Analytics Engine
+- `ANALYTICS_ENGINE` - Metrics collection
+
+## Routing Pattern
+
+```typescript
+const url = new URL(request.url);
+
+// Route by pathname
+switch (url.pathname) {
+  case '/health':
+    return handleHealth();
+  case '/mcp':
+    return handleMCPRequest(request, env);
+  case '/tools/getBettingExposure':
+    return handleTool(request, env);
+  // ...
+}
+```
+
+## CORS Headers
+
+Always include CORS headers for dashboard access:
+```typescript
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+```
+
+## Request ID Tracking
+
+```typescript
+const requestId = Date.now().toString(36);
+console.log(`[${requestId}] ...`);
+```
+
+## Async Storage
+
+Use `ctx.waitUntil()` for non-blocking operations:
+```typescript
+ctx.waitUntil(
+  env.KV.put(key, value, { expirationTtl: 86400 })
+);
+```
+
+## Queue Consumers
+
+```typescript
+export default {
+  async queue(batch: MessageBatch, env: Env): Promise<void> {
+    for (const message of batch.messages) {
+      // Process message
+      message.ack();
+    }
+  }
+}
+```
+
+## Scheduled Tasks
+
+```typescript
+export default {
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    // Run on cron schedule
+  }
+}
+```
+
+## Type Definitions
+
+See [src/types/api.ts](mdc:src/types/api.ts) for:
+- `Env` interface - All bindings
+- `BetTickerSnifferEnv` - BetTicker specific
+- `MCPEnv` - MCP specific
+
+## Limits
+
+From [wrangler.toml](mdc:wrangler.toml):
+```toml
+[limits]
+cpu_ms = 50  # 50ms CPU time limit per request
+```
+
+## Cost Guards
+
+See [src/guards/costCap.ts](mdc:src/guards/costCap.ts) for:
+- Hard cost limits
+- Graceful degradation
+- Request quotas
+
+## Rate Limiting
+
+See [src/guards/rateLimit.ts](mdc:src/guards/rateLimit.ts):
+- 10 req/s per IP (in-memory, per-instance)
+- ⚠️ Not shared across instances
+- Consider Durable Objects for distributed rate limiting
+
+## Deployment
+
+```bash
+# Deploy to default
+wrangler deploy
+
+# Deploy to production
+wrangler deploy --env production
+
+# Apply migrations first
+wrangler d1 migrations apply betting-analytics --remote
+```
+
+## Environments
+
+- Base: [wrangler.toml](mdc:wrangler.toml)
+- Staging: [wrangler.staging.toml](mdc:wrangler.staging.toml)
+- Production: [wrangler.production.toml](mdc:wrangler.production.toml)

@@ -17,11 +17,11 @@
 | **Database** | [../migrations/](../migrations/) | D1 schema & migrations |
 | **Tests** | [../tests/](../tests/) | Unit test suite |
 | **Scripts** | [../scripts/](../scripts/) | Automation & deployment |
-| **Deploy Scripts** | [../deploy/](../deploy/) | Production deployment tools |
-| **Dashboards** | [../grafana/dashboard.json](../grafana/dashboard.json) | Grafana monitoring |
+| **Deploy Scripts** | [../deployment/deploy/](../deployment/deploy/) | Production deployment tools |
+| **Dashboards** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | Grafana monitoring |
 | **CI/CD** | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml) | GitHub Actions |
-| **Contributing** | [../CONTRIBUTING.md](../CONTRIBUTING.md) | How to contribute |
-| **Changelog** | [../CHANGELOG.md](../CHANGELOG.md) | Version history |
+| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
+| **Changelog** | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | **License** | [../LICENSE](../LICENSE) | MIT License |
 
 ---
@@ -35,13 +35,45 @@
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Full deployment guide | DevOps, All Devs | ✅ Complete |
 | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Architecture overview | Architects | ✅ Complete |
 | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | Codebase organization | All Devs | ✅ Complete |
-| [BUILD_REPORT.md](BUILD_REPORT.md) | Build statistics | PM, Leads | ✅ Complete |
-| [REVIEW_AND_GAPS.md](REVIEW_AND_GAPS.md) | Quality assessment | QA, Leads | ✅ Complete |
-| [FIXES_APPLIED.md](FIXES_APPLIED.md) | Recent improvements | All Devs | ✅ Complete |
-| [LINK_VERIFICATION.md](LINK_VERIFICATION.md) | Link audit report | Maintainers | ✅ Complete |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues & solutions | All Devs | ✅ Complete |
-| [FINAL_REVIEW.md](FINAL_REVIEW.md) | Comprehensive project review | All Teams | ✅ Complete |
-| [SANITY_CHECK.md](SANITY_CHECK.md) | Production readiness verification | DevOps | ✅ Complete |
+| [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md) | Complete codebase analysis | All Teams | ✅ Complete |
+| [ROOT_STRUCTURE.md](ROOT_STRUCTURE.md) | Root directory reference | Maintainers | ✅ Complete |
+
+### MCP Integration ✨ NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) | MCP server status & overview | All Teams | ✅ Complete |
+| [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md) | Complete API docs (13 tools) | Developers | ✅ Complete |
+| [MCP_TESTING_GUIDE.md](MCP_TESTING_GUIDE.md) | Testing procedures | QA, Developers | ✅ Complete |
+
+### System Integration ✨ NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) | Endpoint & dashboard mapping | All Devs | ✅ Complete |
+| [SYSTEM_INTEGRATION_MAP.md](SYSTEM_INTEGRATION_MAP.md) | Visual architecture diagrams | Architects | ✅ Complete |
+| [DATABASE_CRON_VERIFICATION.md](DATABASE_CRON_VERIFICATION.md) | Database & cron verification | DevOps | ✅ Complete |
+
+### Quality & Testing ✨ NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| [TEST_AUDIT_REPORT.md](TEST_AUDIT_REPORT.md) | Test quality audit (100/100) | QA, Leads | ✅ Complete |
+| [CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md) | Code quality review | All Devs | ✅ Complete |
+| [TESTING_STATUS.md](TESTING_STATUS.md) | Current testing status | QA | ✅ Complete |
+| [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md) | API interception docs | Developers | ✅ Complete |
+
+### Developer Resources ✨ NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| [CURSOR_RULES.md](CURSOR_RULES.md) | AI assistant rules guide (8 rules) | AI Assistants | ✅ Complete |
+| [AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md) | Testing workflows | Developers | ✅ Complete |
+
+### Archive (Historical)
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [archive/BUILD_REPORT.md](archive/BUILD_REPORT.md) | Historical build stats | 📦 Archived |
+| [archive/FINAL_REVIEW.md](archive/FINAL_REVIEW.md) | Previous review | 📦 Archived |
+| [archive/FIXES_APPLIED.md](archive/FIXES_APPLIED.md) | Historical fixes | 📦 Archived |
+| [archive/LINK_VERIFICATION.md](archive/LINK_VERIFICATION.md) | Previous link audit | 📦 Archived |
 
 ### Deployment Scripts
 | Script | Purpose | Usage |
@@ -120,9 +152,9 @@
 ### Dashboards
 | Dashboard | Path | Description |
 |-----------|------|-------------|
-| **Grafana Config** | [../grafana/dashboard.json](../grafana/dashboard.json) | 17-panel monitoring |
-| **Dashboard Docs** | [../grafana/README.md](../grafana/README.md) | Installation & setup guide |
-| **Import Script** | [../grafana/import.sh](../grafana/import.sh) | Automated dashboard deployment |
+| **Grafana Config** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | 17-panel monitoring |
+| **Dashboard Docs** | [../monitoring/grafana/README.md](../monitoring/grafana/README.md) | Installation & setup guide |
+| **Import Script** | [../monitoring/grafana/import.sh](../monitoring/grafana/import.sh) | Automated dashboard deployment |
 | **Cost Metrics** | _Embedded in dashboard_ | 4 cost cap gauges |
 | **Performance** | _Embedded in dashboard_ | Request latency & error tracking |
 
@@ -178,7 +210,7 @@
 - docs/INDEX.md → ../migrations/
 - docs/INDEX.md → ../tests/
 - docs/INDEX.md → ../scripts/
-- docs/INDEX.md → ../grafana/dashboard.json
+- docs/INDEX.md → ../monitoring/grafana/dashboard.json
 - docs/INDEX.md → ../.github/workflows/deploy.yml
 - docs/INDEX.md → ../CONTRIBUTING.md
 - docs/INDEX.md → ../CHANGELOG.md
@@ -232,6 +264,37 @@ npm run link-check
 ---
 
 **Last Updated:** October 7, 2025  
-**Version:** 3.1.0  
+**Version:** 3.0.0  
+**Total Documents:** 26 active + 4 archived  
+**Cursor Rules:** 8 rules (~1,346 lines)  
 **Link Check:** ✅ Passing  
 **Maintainer:** Betting-Brain Team
+
+---
+
+## 🏷️ Documentation Topics & Tags
+
+### By Topic
+- **#mcp** - MCP_INTEGRATION_STATUS.md, MCP_ENDPOINTS.md, MCP_TESTING_GUIDE.md
+- **#testing** - TEST_AUDIT_REPORT.md, TESTING_STATUS.md, MCP_TESTING_GUIDE.md, AUTOMATION_GUIDE.md
+- **#deployment** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, QUICKSTART.md
+- **#architecture** - IMPLEMENTATION_SUMMARY.md, SYSTEM_INTEGRATION_MAP.md, PROJECT_STRUCTURE.md
+- **#quality** - CODE_QUALITY_AUDIT.md, TEST_AUDIT_REPORT.md, CODEBASE_REVIEW.md
+- **#integration** - ENDPOINT_DASHBOARD_INTEGRATION.md, SYSTEM_INTEGRATION_MAP.md, DATABASE_CRON_VERIFICATION.md
+- **#developer-tools** - CURSOR_RULES.md, ROOT_STRUCTURE.md, AUTOMATION_GUIDE.md
+- **#api** - MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md, ENDPOINT_DASHBOARD_INTEGRATION.md
+
+### By Audience
+- **Developers** - QUICKSTART.md, MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md, CODE_QUALITY_AUDIT.md
+- **DevOps** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, TESTING_STATUS.md
+- **Architects** - IMPLEMENTATION_SUMMARY.md, SYSTEM_INTEGRATION_MAP.md
+- **QA** - TEST_AUDIT_REPORT.md, TESTING_STATUS.md, MCP_TESTING_GUIDE.md
+- **AI Assistants** - CURSOR_RULES.md, ROOT_STRUCTURE.md, CODEBASE_REVIEW.md
+- **All Teams** - MCP_INTEGRATION_STATUS.md, CODEBASE_REVIEW.md, TROUBLESHOOTING.md
+
+### By Priority
+- **🚀 Start Here** - README.md, QUICKSTART.md, INDEX.md
+- **🏗️ Core** - IMPLEMENTATION_SUMMARY.md, PROJECT_STRUCTURE.md, DEPLOYMENT.md
+- **✨ New Features** - MCP_INTEGRATION_STATUS.md, MCP_ENDPOINTS.md, ENDPOINT_DASHBOARD_INTEGRATION.md
+- **🔧 Operations** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, TROUBLESHOOTING.md
+- **📊 Quality** - TEST_AUDIT_REPORT.md, CODE_QUALITY_AUDIT.md, TESTING_STATUS.md

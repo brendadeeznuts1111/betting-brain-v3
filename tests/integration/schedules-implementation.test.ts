@@ -3,7 +3,7 @@
  * Tests the actual implementation of scheduled jobs
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
 
 // Mock the cost cap guard
@@ -41,13 +41,13 @@ const mockCtx: ExecutionContext = {
   passThroughOnException: vi.fn()
 } as any;
 
-describe('Schedule Implementation Tests', () => {
+describe.concurrent('Schedule Implementation Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Sharp Calculation Implementation', () => {
-    it('should execute sharp calculation successfully', async () => {
+  describe.concurrent('Sharp Calculation Implementation', () => {
+    test('should execute sharp calculation successfully', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -80,7 +80,7 @@ describe('Schedule Implementation Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should respect cost cap limits', async () => {
+    test('should respect cost cap limits', async () => {
       // Mock cost cap to block processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -100,7 +100,7 @@ describe('Schedule Implementation Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
 
-    it('should handle database errors gracefully', async () => {
+    test('should handle database errors gracefully', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -126,7 +126,7 @@ describe('Schedule Implementation Tests', () => {
       await expect(handleSharpCalculation(mockEnv, mockCtx)).resolves.not.toThrow();
     });
 
-    it('should process customers in batches', async () => {
+    test('should process customers in batches', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -156,8 +156,8 @@ describe('Schedule Implementation Tests', () => {
     });
   });
 
-  describe('Exposure Calculation Implementation', () => {
-    it('should execute exposure calculation successfully', async () => {
+  describe.concurrent('Exposure Calculation Implementation', () => {
+    test('should execute exposure calculation successfully', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -194,7 +194,7 @@ describe('Schedule Implementation Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should respect max 50 rows constraint', async () => {
+    test('should respect max 50 rows constraint', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -228,7 +228,7 @@ describe('Schedule Implementation Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(50);
     });
 
-    it('should handle empty exposure data', async () => {
+    test('should handle empty exposure data', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -257,8 +257,8 @@ describe('Schedule Implementation Tests', () => {
     });
   });
 
-  describe('Schedule Performance', () => {
-    it('should complete within reasonable time limits', async () => {
+  describe.concurrent('Schedule Performance', () => {
+    test('should complete within reasonable time limits', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -290,7 +290,7 @@ describe('Schedule Implementation Tests', () => {
       expect(executionTime).toBeLessThan(5000);
     });
 
-    it('should handle concurrent execution', async () => {
+    test('should handle concurrent execution', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Setup Wizard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .step-active { background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.5); }
+        .step-completed { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5); }
+        .step-error { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); }
+        .monospace { font-family: 'Courier New', monospace; }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="p-6 text-white">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🧪 Setup Wizard</h1>
+                    <p class="text-white/80">Complete BetTicker system installation and verification</p>
+                </div>
+                <div class="text-right">
+                    <div id="overallProgress" class="text-2xl font-bold mb-2">0% Complete</div>
+                    <div class="w-32 bg-white/20 rounded-full h-2">
+                        <div id="progressBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Steps -->
+        <div class="space-y-6">
+            <!-- Step 1: Prerequisites -->
+            <div id="step1" class="glass rounded-xl p-6 step-inactive">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="step-number w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">1</div>
+                        <h2 class="text-xl font-bold">📋 Prerequisites</h2>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-content">
+                    <p class="mb-4">Before we begin, let's verify you have everything needed:</p>
+                    
+                    <div class="space-y-3">
+                        <div class="check-item flex items-center gap-3 p-3 bg-black/30 rounded-lg">
+                            <input type="checkbox" id="chrome-check" class="w-4 h-4">
+                            <label for="chrome-check" class="flex-1 cursor-pointer">
+                                <div class="font-medium">Google Chrome Browser</div>
+                                <div class="text-sm text-gray-400">Required for extension installation</div>
+                            </label>
+                        </div>
+                        
+                        <div class="check-item flex items-center gap-3 p-3 bg-black/30 rounded-lg">
+                            <input type="checkbox" id="wrangler-check" class="w-4 h-4">
+                            <label for="wrangler-check" class="flex-1 cursor-pointer">
+                                <div class="font-medium">Cloudflare Wrangler CLI</div>
+                                <div class="text-sm text-gray-400">For worker deployment (run: <code class="bg-black/50 px-1 rounded">npm install -g wrangler</code>)</div>
+                            </label>
+                        </div>
+                        
+                        <div class="check-item flex items-center gap-3 p-3 bg-black/30 rounded-lg">
+                            <input type="checkbox" id="account-check" class="w-4 h-4">
+                            <label for="account-check" class="flex-1 cursor-pointer">
+                                <div class="font-medium">Cloudflare Account</div>
+                                <div class="text-sm text-gray-400">With Workers and KV storage enabled</div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex gap-3">
+                        <button onclick="checkPrerequisites()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                            🔍 Check Prerequisites
+                        </button>
+                        <button onclick="nextStep(1)" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition hidden">
+                            Next Step →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Worker Deployment -->
+            <div id="step2" class="glass rounded-xl p-6 step-inactive opacity-50">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="step-number w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">2</div>
+                        <h2 class="text-xl font-bold">☁️ Deploy Worker</h2>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-content">
+                    <p class="mb-4">Deploy the Cloudflare Worker that will intercept and store BetTicker data:</p>
+                    
+                    <div class="bg-black/30 rounded-lg p-4 mb-4">
+                        <h4 class="font-bold mb-2">Deployment Commands:</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyCommand('npm install')" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">
+                                    📋
+                                </button>
+                                <code class="text-sm">npm install</code>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyCommand('wrangler deploy')" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">
+                                    📋
+                                </button>
+                                <code class="text-sm">wrangler deploy</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-4 mb-4">
+                        <div class="font-bold text-yellow-400 mb-2">⚠️ Important Configuration:</div>
+                        <div class="text-sm">
+                            Ensure <code class="bg-black/50 px-1 rounded">wrangler.toml</code> contains:<br>
+                            • KV namespace: <code class="bg-black/50 px-1 rounded">BET_TICKER_RAW</code><br>
+                            • Account ID and zone configured<br>
+                            • Proper environment bindings
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex gap-3">
+                        <button onclick="testWorkerDeployment()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                            🧪 Test Deployment
+                        </button>
+                        <button onclick="nextStep(2)" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition hidden">
+                            Next Step →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Extension Installation -->
+            <div id="step3" class="glass rounded-xl p-6 step-inactive opacity-50">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="step-number w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">3</div>
+                        <h2 class="text-xl font-bold">🧩 Install Extension</h2>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-content">
+                    <p class="mb-4">Install the browser extension that will redirect requests to the worker:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-black/30 rounded-lg p-4">
+                            <h4 class="font-bold mb-2">📝 Installation Steps:</h4>
+                            <ol class="text-sm space-y-1 list-decimal ml-4">
+                                <li>Open Chrome: <code class="bg-black/50 px-1 rounded">chrome://extensions/</code></li>
+                                <li>Enable "Developer mode" (top right)</li>
+                                <li>Click "Load unpacked"</li>
+                                <li>Select the <code class="bg-black/50 px-1 rounded">browser-extension/</code> folder</li>
+                                <li>Verify extension appears with green "ON" badge</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="bg-black/30 rounded-lg p-4">
+                            <h4 class="font-bold mb-2">✅ Verification:</h4>
+                            <ul class="text-sm space-y-1 list-disc ml-4">
+                                <li>Extension name: "BetTicker Interceptor Proxy"</li>
+                                <li>Version: 1.0.0</li>
+                                <li>Status: Enabled (blue toggle)</li>
+                                <li>Badge shows "ON"</li>
+                                <li>No errors in extension details</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex gap-3">
+                        <button onclick="openExtensionsPage()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                            🚀 Open Extensions Page
+                        </button>
+                        <button onclick="testExtensionInstallation()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition">
+                            🧪 Test Extension
+                        </button>
+                        <button onclick="nextStep(3)" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition hidden">
+                            Next Step →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: End-to-End Testing -->
+            <div id="step4" class="glass rounded-xl p-6 step-inactive opacity-50">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="step-number w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">4</div>
+                        <h2 class="text-xl font-bold">🧪 End-to-End Testing</h2>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-content">
+                    <p class="mb-4">Test the complete data flow from browser to dashboard:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-black/30 rounded-lg p-4">
+                            <h4 class="font-bold mb-2">🌐 Manual Testing:</h4>
+                            <ol class="text-sm space-y-1 list-decimal ml-4">
+                                <li>Open <code class="bg-black/50 px-1 rounded">fantasy402.com</code></li>
+                                <li>Open DevTools (F12)</li>
+                                <li>Go to Network tab</li>
+                                <li>Navigate betting pages</li>
+                                <li>Look for <code class="bg-black/50 px-1 rounded">getBetTicker</code> requests</li>
+                                <li>Verify URLs show <code class="bg-black/50 px-1 rounded">workers.dev</code></li>
+                            </ol>
+                        </div>
+                        
+                        <div class="bg-black/30 rounded-lg p-4">
+                            <h4 class="font-bold mb-2">📊 Dashboard Testing:</h4>
+                            <ol class="text-sm space-y-1 list-decimal ml-4">
+                                <li>Open the dashboard</li>
+                                <li>Check for new data</li>
+                                <li>Verify timestamps update</li>
+                                <li>Check request details</li>
+                                <li>Confirm data integrity</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-4">
+                        <div class="font-bold text-blue-400 mb-2">💡 Pro Tip:</div>
+                        <div class="text-sm">
+                            Use the Flow Tester tool for automated end-to-end testing. It can simulate requests and verify the complete data pipeline without requiring manual browsing.
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex gap-3">
+                        <button onclick="runEndToEndTest()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                            🧪 Run Automated Test
+                        </button>
+                        <button onclick="openDashboard()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition">
+                            📊 Open Dashboard
+                        </button>
+                        <button onclick="nextStep(4)" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition hidden">
+                            Complete Setup →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Final Verification -->
+            <div id="step5" class="glass rounded-xl p-6 step-inactive opacity-50">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="step-number w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">5</div>
+                        <h2 class="text-xl font-bold">✅ Final Verification</h2>
+                    </div>
+                    <div class="step-status">⏳</div>
+                </div>
+                
+                <div class="step-content">
+                    <p class="mb-4">Let's verify everything is working correctly:</p>
+                    
+                    <div id="verificationResults" class="space-y-3">
+                        <!-- Verification results will be populated here -->
+                    </div>
+                    
+                    <div class="mt-4 flex gap-3">
+                        <button onclick="runFinalVerification()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                            🔍 Run Verification
+                        </button>
+                        <button onclick="generateSetupReport()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition hidden">
+                            📄 Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="glass rounded-xl p-6 hidden">
+            <div class="text-center">
+                <div class="text-6xl mb-4">🎉</div>
+                <h2 class="text-3xl font-bold mb-2">Setup Complete!</h2>
+                <p class="text-white/80 mb-6">Your BetTicker system is now fully configured and ready to capture data.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="../dashboard.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg text-center transition">
+                        📊 View Dashboard
+                    </a>
+                    <a href="../system-health-monitor.html" class="bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg text-center transition">
+                        🏥 Health Monitor
+                    </a>
+                    <a href="../troubleshooting-guide.html" class="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg text-center transition">
+                        🔧 Troubleshooting
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        
+        let currentStep = 0;
+        let setupProgress = {
+            prerequisites: false,
+            workerDeployment: false,
+            extensionInstallation: false,
+            endToEndTest: false,
+            finalVerification: false
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateProgress();
+            setupCheckboxListeners();
+        });
+
+        // Setup checkbox listeners
+        function setupCheckboxListeners() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    checkStepCompletion(1);
+                });
+            });
+        }
+
+        // Check prerequisites
+        async function checkPrerequisites() {
+            const results = [];
+            
+            // Check Chrome
+            const isChrome = navigator.userAgent.includes('Chrome');
+            document.getElementById('chrome-check').checked = isChrome;
+            results.push(`Chrome Browser: ${isChrome ? '✅' : '❌'}`);
+            
+            // Check Wrangler (would need backend verification)
+            document.getElementById('wrangler-check').checked = true; // Assume installed
+            results.push('Wrangler CLI: ✅ (assumed)');
+            
+            // Check account (would need backend verification)
+            document.getElementById('account-check').checked = true; // Assume configured
+            results.push('Cloudflare Account: ✅ (assumed)');
+            
+            // Show results
+            alert(`Prerequisites Check:\n\n${results.join('\n')}`);
+            
+            checkStepCompletion(1);
+        }
+
+        // Test worker deployment
+        async function testWorkerDeployment() {
+            try {
+                const response = await fetch(`${WORKER_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setupProgress.workerDeployment = true;
+                    updateStepStatus(2, 'completed', `✅ Worker deployed (v${data.version})`);
+                    alert(`✅ Worker deployment successful!\n\nVersion: ${data.version}\nStatus: Healthy\nResponse Time: ${data.duration || 'N/A'}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateStepStatus(2, 'error', `❌ Worker deployment failed: ${error.message}`);
+                alert(`❌ Worker deployment failed!\n\nError: ${error.message}\n\nPlease run:\n1. npm install\n2. wrangler deploy`);
+            }
+            
+            checkStepCompletion(2);
+        }
+
+        // Test extension installation
+        function testExtensionInstallation() {
+            // Check if Chrome APIs are available
+            const hasChromeAPIs = typeof chrome !== 'undefined' && chrome.runtime;
+            
+            if (hasChromeAPIs) {
+                // Try to get extension info
+                chrome.management.getAll((extensions) => {
+                    const bettingExtension = extensions.find(ext => 
+                        ext.name.toLowerCase().includes('betting') || 
+                        ext.name.toLowerCase().includes('ticker')
+                    );
+                    
+                    if (bettingExtension) {
+                        setupProgress.extensionInstallation = true;
+                        updateStepStatus(3, 'completed', `✅ Extension installed (${bettingExtension.enabled ? 'enabled' : 'disabled'})`);
+                        alert(`✅ Extension found!\n\nName: ${bettingExtension.name}\nVersion: ${bettingExtension.version}\nStatus: ${bettingExtension.enabled ? 'Enabled' : 'Disabled'}\n\n${!bettingExtension.enabled ? '⚠️ Please enable the extension!' : ''}`);
+                    } else {
+                        updateStepStatus(3, 'error', '❌ Extension not found');
+                        alert(`❌ Extension not found!\n\nPlease ensure:\n1. You\'re in Chrome\n2. Extension is installed\n3. Developer mode is enabled\n4. Extension is loaded from browser-extension/ folder`);
+                    }
+                    
+                    checkStepCompletion(3);
+                });
+            } else {
+                updateStepStatus(3, 'error', '❌ Chrome APIs not available');
+                alert(`❌ Cannot detect extension from this page!\n\nPlease manually verify:\n1. Go to chrome://extensions/\n2. Look for "BetTicker Interceptor Proxy"\n3. Ensure it\'s enabled`);
+                checkStepCompletion(3);
+            }
+        }
+
+        // Run end-to-end test
+        async function runEndToEndTest() {
+            try {
+                // Test worker
+                const workerResponse = await fetch(`${WORKER_URL}/health`);
+                const workerOk = workerResponse.ok;
+                
+                // Test KV storage
+                const kvResponse = await fetch(`${WORKER_URL}/interceptor/history?limit=1`);
+                const kvOk = kvResponse.ok;
+                
+                // Test simulated request
+                const testResponse = await fetch(`${WORKER_URL}/cloud/api/Manager/getBetTicker`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test: true, timestamp: Date.now() })
+                });
+                const testOk = testResponse.ok;
+                
+                const allPassed = workerOk && kvOk && testOk;
+                
+                if (allPassed) {
+                    setupProgress.endToEndTest = true;
+                    updateStepStatus(4, 'completed', '✅ End-to-end test passed');
+                    alert(`✅ End-to-end test successful!\n\nWorker: ✅\nKV Storage: ✅\nRequest Handling: ✅\n\nSystem is ready!`);
+                } else {
+                    updateStepStatus(4, 'error', '❌ End-to-end test failed');
+                    alert(`❌ End-to-end test failed!\n\nWorker: ${workerOk ? '✅' : '❌'}\nKV Storage: ${kvOk ? '✅' : '❌'}\nRequest Handling: ${testOk ? '✅' : '❌'}\n\nCheck individual components.`);
+                }
+                
+            } catch (error) {
+                updateStepStatus(4, 'error', `❌ Test error: ${error.message}`);
+                alert(`❌ End-to-end test error: ${error.message}`);
+            }
+            
+            checkStepCompletion(4);
+        }
+
+        // Run final verification
+        async function runFinalVerification() {
+            const results = [];
+            
+            try {
+                // Verify all components
+                const workerResponse = await fetch(`${WORKER_URL}/health`);
+                const workerOk = workerResponse.ok;
+                results.push({ component: 'Cloudflare Worker', status: workerOk ? '✅' : '❌' });
+                
+                const kvResponse = await fetch(`${WORKER_URL}/interceptor/history?limit=5`);
+                const kvOk = kvResponse.ok;
+                const kvRecords = kvOk ? await kvResponse.json() : [];
+                results.push({ component: 'KV Storage', status: kvOk ? '✅' : '❌', details: `${kvRecords.length} records` });
+                
+                const diagnosticResponse = await fetch(`${WORKER_URL}/diagnostics`);
+                const diagnosticOk = diagnosticResponse.ok;
+                results.push({ component: 'Diagnostics', status: diagnosticOk ? '✅' : '❌' });
+                
+                // Display results
+                const resultsDiv = document.getElementById('verificationResults');
+                resultsDiv.innerHTML = results.map(result => `
+                    <div class="flex items-center justify-between p-3 bg-black/30 rounded-lg">
+                        <div>
+                            <div class="font-medium">${result.component}</div>
+                            ${result.details ? `<div class="text-sm text-gray-400">${result.details}</div>` : ''}
+                        </div>
+                        <div class="text-xl">${result.status}</div>
+                    </div>
+                `).join('');
+                
+                const allPassed = results.every(r => r.status === '✅');
+                
+                if (allPassed) {
+                    setupProgress.finalVerification = true;
+                    updateStepStatus(5, 'completed', '✅ All systems verified');
+                    showSuccessMessage();
+                } else {
+                    updateStepStatus(5, 'error', '❌ Some components failed verification');
+                }
+                
+            } catch (error) {
+                updateStepStatus(5, 'error', `❌ Verification error: ${error.message}`);
+            }
+            
+            checkStepCompletion(5);
+        }
+
+        // Update step status
+        function updateStepStatus(stepNumber, status, message) {
+            const stepElement = document.getElementById(`step${stepNumber}`);
+            const statusElement = stepElement.querySelector('.step-status');
+            
+            stepElement.classList.remove('step-inactive', 'step-active', 'step-completed', 'step-error');
+            
+            switch (status) {
+                case 'active':
+                    stepElement.classList.add('step-active');
+                    statusElement.textContent = '🔄';
+                    break;
+                case 'completed':
+                    stepElement.classList.add('step-completed');
+                    statusElement.textContent = '✅';
+                    break;
+                case 'error':
+                    stepElement.classList.add('step-error');
+                    statusElement.textContent = '❌';
+                    break;
+            }
+            
+            if (message) {
+                // You could add a message display element here
+                console.log(`Step ${stepNumber}: ${message}`);
+            }
+        }
+
+        // Check if step is completed
+        function checkStepCompletion(stepNumber) {
+            let isCompleted = false;
+            
+            switch (stepNumber) {
+                case 1:
+                    const checkboxes = document.querySelectorAll('#step1 input[type="checkbox"]');
+                    isCompleted = Array.from(checkboxes).every(cb => cb.checked);
+                    setupProgress.prerequisites = isCompleted;
+                    break;
+                case 2:
+                    isCompleted = setupProgress.workerDeployment;
+                    break;
+                case 3:
+                    isCompleted = setupProgress.extensionInstallation;
+                    break;
+                case 4:
+                    isCompleted = setupProgress.endToEndTest;
+                    break;
+                case 5:
+                    isCompleted = setupProgress.finalVerification;
+                    break;
+            }
+            
+            if (isCompleted) {
+                updateStepStatus(stepNumber, 'completed');
+                
+                // Show next button
+                const nextBtn = document.querySelector(`#step${stepNumber} button[onclick*="nextStep(${stepNumber})"]`);
+                if (nextBtn) {
+                    nextBtn.classList.remove('hidden');
+                }
+                
+                // Enable next step if not the last one
+                if (stepNumber < 5) {
+                    const nextStepElement = document.getElementById(`step${stepNumber + 1}`);
+                    nextStepElement.classList.remove('opacity-50');
+                    nextStepElement.classList.add('fade-in');
+                }
+            }
+            
+            updateProgress();
+        }
+
+        // Move to next step
+        function nextStep(currentStep) {
+            if (currentStep < 5) {
+                updateStepStatus(currentStep + 1, 'active');
+                document.getElementById(`step${currentStep + 1}`).scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Update overall progress
+        function updateProgress() {
+            const steps = ['prerequisites', 'workerDeployment', 'extensionInstallation', 'endToEndTest', 'finalVerification'];
+            const completedSteps = steps.filter(step => setupProgress[step]).length;
+            const progress = Math.round((completedSteps / steps.length) * 100);
+            
+            document.getElementById('overallProgress').textContent = `${progress}% Complete`;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        // Show success message
+        function showSuccessMessage() {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.classList.remove('hidden');
+            successDiv.classList.add('fade-in');
+            successDiv.scrollIntoView({ behavior: 'smooth' });
+            
+            // Show generate report button
+            const reportBtn = document.querySelector('#step5 button[onclick*="generateSetupReport"]');
+            if (reportBtn) {
+                reportBtn.classList.remove('hidden');
+            }
+        }
+
+        // Utility functions
+        function copyCommand(command) {
+            navigator.clipboard.writeText(command).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 1000);
+            });
+        }
+
+        function openExtensionsPage() {
+            window.open('chrome://extensions/', '_blank');
+        }
+
+        function openDashboard() {
+            window.open('../dashboard.html', '_blank');
+        }
+
+        function generateSetupReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                setupProgress: setupProgress,
+                workerUrl: WORKER_URL,
+                completedAt: new Date().toISOString(),
+                nextSteps: [
+                    'Monitor data capture using the dashboard',
+                    'Set up alerts for data freshness',
+                    'Configure automated monitoring',
+                    'Document the setup for team members'
+                ]
+            };
+            
+            const reportText = JSON.stringify(report, null, 2);
+            const blob = new Blob([reportText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `betticket-setup-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 BetTicker Dashboards Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .dashboard-card { transition: all 0.3s; cursor: pointer; }
+        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-recommended { background: #10b981; }
+        .badge-pro { background: #8b5cf6; }
+        .badge-basic { background: #6b7280; }
+        .badge-advanced { background: #3b82f6; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-8 mb-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">📊 BetTicker Dashboards Hub</h1>
+                    <p class="text-white/80 text-lg">Real-time betting intelligence and analytics dashboards</p>
+                </div>
+                <div class="text-right">
+                    <a href="../tools/index.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition inline-block">
+                        🛠️ Testing Tools
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-4 gap-4 mt-6">
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold">4</div>
+                    <div class="text-sm text-white/70">Dashboards</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold" id="dataCount">-</div>
+                    <div class="text-sm text-white/70">Records</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold" id="lastUpdate">-</div>
+                    <div class="text-sm text-white/70">Last Update</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold" id="systemStatus">⏳</div>
+                    <div class="text-sm text-white/70">System Status</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommended Dashboard -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-white mb-4">⭐ Recommended</h2>
+            <div onclick="window.location.href='dashboard-enhanced.html'" class="dashboard-card glass rounded-2xl p-8 text-white">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="text-5xl">📈</div>
+                    <span class="badge badge-recommended">RECOMMENDED</span>
+                </div>
+                <h3 class="text-3xl font-bold mb-3">Enhanced Analytics Dashboard</h3>
+                <p class="text-white/80 text-lg mb-4">
+                    Most comprehensive dashboard with real-time charts, alerts, and deep analytics. 
+                    Perfect for daily monitoring and analysis.
+                </p>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="bg-white/10 rounded-lg p-3">
+                        <div class="text-2xl font-bold">📊</div>
+                        <div class="text-sm text-white/70 mt-1">Live Charts</div>
+                    </div>
+                    <div class="bg-white/10 rounded-lg p-3">
+                        <div class="text-2xl font-bold">🚨</div>
+                        <div class="text-sm text-white/70 mt-1">Smart Alerts</div>
+                    </div>
+                    <div class="bg-white/10 rounded-lg p-3">
+                        <div class="text-2xl font-bold">📈</div>
+                        <div class="text-sm text-white/70 mt-1">Trends</div>
+                    </div>
+                </div>
+                <div class="flex gap-2 text-sm">
+                    <span class="bg-blue-600 px-3 py-1 rounded">Real-time</span>
+                    <span class="bg-purple-600 px-3 py-1 rounded">Charts</span>
+                    <span class="bg-green-600 px-3 py-1 rounded">Alerts</span>
+                    <span class="bg-yellow-600 px-3 py-1 rounded">Analytics</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Dashboards -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-white mb-4">🎯 All Dashboards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- AI Intelligence Hub (Pro) -->
+                <div onclick="window.location.href='dashboard-pro.html'" class="dashboard-card glass rounded-xl p-6 text-white">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="text-4xl">🤖</div>
+                        <span class="badge badge-pro">PRO</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">AI Intelligence Hub</h3>
+                    <p class="text-white/80 mb-4">
+                        Advanced AI-powered dashboard with Claude AI integration, intelligent insights, and automated analysis.
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div class="bg-white/10 rounded p-2 text-center text-sm">
+                            <div class="font-bold">AI Analysis</div>
+                        </div>
+                        <div class="bg-white/10 rounded p-2 text-center text-sm">
+                            <div class="font-bold">Smart Insights</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                        <span class="bg-purple-600 px-2 py-1 rounded">AI</span>
+                        <span class="bg-blue-600 px-2 py-1 rounded">Claude</span>
+                        <span class="bg-green-600 px-2 py-1 rounded">Automated</span>
+                    </div>
+                </div>
+
+                <!-- Position & Risk Tracker -->
+                <div onclick="window.location.href='dashboard-positions.html'" class="dashboard-card glass rounded-xl p-6 text-white">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="text-4xl">📍</div>
+                        <span class="badge badge-advanced">ADVANCED</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Position & Risk Tracker</h3>
+                    <p class="text-white/80 mb-4">
+                        Real-time position tracking, exposure monitoring, and risk analysis for comprehensive betting oversight.
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div class="bg-white/10 rounded p-2 text-center text-sm">
+                            <div class="font-bold">Risk Analysis</div>
+                        </div>
+                        <div class="bg-white/10 rounded p-2 text-center text-sm">
+                            <div class="font-bold">Exposure Monitor</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                        <span class="bg-red-600 px-2 py-1 rounded">Risk</span>
+                        <span class="bg-orange-600 px-2 py-1 rounded">Positions</span>
+                        <span class="bg-yellow-600 px-2 py-1 rounded">Exposure</span>
+                    </div>
+                </div>
+
+                <!-- Basic Dashboard -->
+                <div onclick="window.location.href='dashboard.html'" class="dashboard-card glass rounded-xl p-6 text-white">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="text-4xl">📊</div>
+                        <span class="badge badge-basic">BASIC</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Basic Monitoring Dashboard</h3>
+                    <p class="text-white/80 mb-4">
+                        Simple, clean dashboard for basic monitoring and data viewing. Perfect for quick checks and overview.
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div class="bg-white/10 rounded p-2 text-center text-sm">
+                            <div class="font-bold">Clean UI</div>
+                        </div>
+                        <div class="bg-white/10 rounded p-2 text-center text-sm">
+                            <div class="font-bold">Fast Loading</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                        <span class="bg-gray-600 px-2 py-1 rounded">Simple</span>
+                        <span class="bg-blue-600 px-2 py-1 rounded">Clean</span>
+                        <span class="bg-green-600 px-2 py-1 rounded">Fast</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="glass rounded-xl p-6 text-white mb-6">
+            <h3 class="text-xl font-bold mb-4">⚡ Quick Actions</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="refreshData()" class="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg transition">
+                    <div class="text-2xl mb-1">🔄</div>
+                    <div class="text-sm">Refresh Data</div>
+                </button>
+                <a href="../tools/system-health-monitor.html" class="bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg text-center transition">
+                    <div class="text-2xl mb-1">🏥</div>
+                    <div class="text-sm">Health Check</div>
+                </a>
+                <a href="../tools/capture-live-data.html" class="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg text-center transition">
+                    <div class="text-2xl mb-1">📡</div>
+                    <div class="text-sm">Capture Data</div>
+                </a>
+                <a href="../docs/INDEX.md" target="_blank" class="bg-orange-600 hover:bg-orange-700 px-4 py-3 rounded-lg text-center transition">
+                    <div class="text-2xl mb-1">📚</div>
+                    <div class="text-sm">Documentation</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Features Comparison -->
+        <div class="glass rounded-xl p-6 text-white">
+            <h3 class="text-xl font-bold mb-4">📋 Features Comparison</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="text-left py-3 px-4">Feature</th>
+                            <th class="text-center py-3 px-4">Basic</th>
+                            <th class="text-center py-3 px-4">Enhanced</th>
+                            <th class="text-center py-3 px-4">Pro</th>
+                            <th class="text-center py-3 px-4">Positions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-white/80">
+                        <tr class="border-b border-white/10">
+                            <td class="py-2 px-4">Real-time Data</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                        </tr>
+                        <tr class="border-b border-white/10">
+                            <td class="py-2 px-4">Charts & Graphs</td>
+                            <td class="text-center">❌</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                        </tr>
+                        <tr class="border-b border-white/10">
+                            <td class="py-2 px-4">Alerts & Notifications</td>
+                            <td class="text-center">❌</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                        </tr>
+                        <tr class="border-b border-white/10">
+                            <td class="py-2 px-4">AI Analysis</td>
+                            <td class="text-center">❌</td>
+                            <td class="text-center">❌</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">❌</td>
+                        </tr>
+                        <tr class="border-b border-white/10">
+                            <td class="py-2 px-4">Risk Management</td>
+                            <td class="text-center">❌</td>
+                            <td class="text-center">⚠️</td>
+                            <td class="text-center">✅</td>
+                            <td class="text-center">✅</td>
+                        </tr>
+                        <tr class="border-b border-white/10">
+                            <td class="py-2 px-4">Position Tracking</td>
+                            <td class="text-center">❌</td>
+                            <td class="text-center">❌</td>
+                            <td class="text-center">⚠️</td>
+                            <td class="text-center">✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+
+        // Load dashboard stats
+        async function loadStats() {
+            try {
+                // Check system status
+                const healthResponse = await fetch(`${WORKER_URL}/health`);
+                const statusEl = document.getElementById('systemStatus');
+                if (healthResponse.ok) {
+                    statusEl.textContent = '✅';
+                    statusEl.title = 'System Online';
+                } else {
+                    statusEl.textContent = '❌';
+                    statusEl.title = 'System Offline';
+                }
+
+                // Load data count
+                const dataResponse = await fetch(`${WORKER_URL}/interceptor/history?limit=100`);
+                if (dataResponse.ok) {
+                    const records = await response.json();
+                    document.getElementById('dataCount').textContent = records.length;
+                    
+                    if (records.length > 0) {
+                        const latest = records[0];
+                        const timestamp = parseInt(latest.key.split(':')[2]);
+                        const age = Math.floor((Date.now() - timestamp) / 60000);
+                        document.getElementById('lastUpdate').textContent = age < 1 ? 'Now' : `${age}m`;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                document.getElementById('systemStatus').textContent = '❌';
+            }
+        }
+
+        async function refreshData() {
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="text-2xl mb-1">⏳</div><div class="text-sm">Loading...</div>';
+            
+            await loadStats();
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 500);
+        }
+
+        // Load stats on page load
+        loadStats();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>
+

@@ -58,8 +58,8 @@ async function main() {
     console.log('\n✨ Bootstrap complete!');
     console.log('\n📋 Next steps:');
     console.log('   1. Update wrangler.toml with your database_id');
-    console.log('   2. Run: npm run dev (for local development)');
-    console.log('   3. Run: npm run deploy:prod (for production)');
+    console.log('   2. Run: bun run dev (for local development)');
+    console.log('   3. Run: bun run deploy:prod (for production)');
     console.log('\n📚 Documentation: open dist/redoc.html');
     
   } catch (error) {

@@ -3,7 +3,7 @@
  * Alert threshold: > 60
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach } from "bun:test";
 import { getSharpScore } from '../../src/tools/intelligence/getSharpScore';
 
 describe('Sharp Score Calculations', () => {
@@ -42,7 +42,7 @@ describe('Sharp Score Calculations', () => {
     mockRequest = new Request('https://test.com/getSharpScore?cid=test-customer-1');
   });
 
-  it('should calculate sharp score for regular customer', async () => {
+  test('should calculate sharp score for regular customer', async () => {
     const response = await getSharpScore(mockRequest, mockEnv);
     const data = await response.json();
 
@@ -51,7 +51,7 @@ describe('Sharp Score Calculations', () => {
     expect(data.sharpScore).toBeLessThanOrEqual(100);
   });
 
-  it('should alert when sharp score > 60', async () => {
+  test('should alert when sharp score > 60', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => ({
@@ -84,7 +84,7 @@ describe('Sharp Score Calculations', () => {
     expect(data.sharpScore).toBeGreaterThanOrEqual(60);
   });
 
-  it('should handle customer with low activity', async () => {
+  test('should handle customer with low activity', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => ({
@@ -112,14 +112,14 @@ describe('Sharp Score Calculations', () => {
     expect(data.sharpScore).toBeLessThan(60);
   });
 
-  it('should only process top-100 customers', async () => {
+  test('should only process top-100 customers', async () => {
     // This would be enforced in the hourly calculation
     // Test ensures the API returns data correctly
     const response = await getSharpScore(mockRequest, mockEnv);
     expect(response.status).toBe(200);
   });
 
-  it('should handle customer with no sharp data', async () => {
+  test('should handle customer with no sharp data', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,

@@ -231,7 +231,7 @@ bun test:ci         # Run tests with coverage
 
 **Test Health:** ⚠️ **68/100** - Needs Attention  
 - ✅ 249/249 tests passing
-- 🚨 89 TypeScript errors (see [URGENT_TEST_FIXES.md](URGENT_TEST_FIXES.md))
+- 🚨 89 TypeScript errors (see [URGENT_TEST_FIXES.md](docs/URGENT_TEST_FIXES.md))
 - ⚠️ Slow integration tests (99s, should be <20s)
 
 **Documentation:**
@@ -263,26 +263,56 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 
 ## 📊 Dashboards & Tools
 
-### **Quick Access**
-- **Position Tracker:** `dashboards/dashboard-positions.html` - Real-time risk analysis
-- **Enhanced Analytics:** `dashboards/dashboard-enhanced.html` - Charts and alerts
-- **AI Intelligence Hub:** `dashboards/dashboard-pro.html` - AI-powered insights
-- **Data Capture:** `tools/capture-live-data.html` - Get fresh betting data
+### **🎯 Quick Start**
+- **[📊 Dashboards Hub](dashboards/index.html)** - All betting intelligence dashboards in one place
+- **[🛠️ Testing Tools Hub](tools/index.html)** - Complete diagnostic and testing suite
+
+### **Recommended Dashboards**
+- **[Enhanced Analytics](dashboards/dashboard-enhanced.html)** ⭐ - Charts, alerts, and deep analytics (RECOMMENDED)
+- **[AI Intelligence Hub](dashboards/dashboard-pro.html)** - AI-powered insights with Claude integration
+- **[Position & Risk Tracker](dashboards/dashboard-positions.html)** - Real-time risk analysis
+- **[Basic Monitoring](dashboards/dashboard.html)** - Simple, clean monitoring interface
+
+### **Essential Tools**
+- **[System Health Monitor](tools/system-health-monitor.html)** - Real-time system diagnostics
+- **[Extension Test Suite](tools/extension-test-suite.html)** - Automated extension testing
+- **[Flow Tester](tools/flow-tester.html)** - End-to-end data flow validation
+- **[Troubleshooting Guide](tools/troubleshooting-guide.html)** - Intelligent problem diagnosis
 
 ### **Documentation**
 - **[Dashboard Collection](docs/dashboards/README.md)** - Complete dashboard overview
-- **[Tools & Utilities](tools/README.md)** - HTML tools and utilities
+- **[Tools & Utilities](tools/README.md)** - HTML tools and utilities  
+- **[Testing Guide](docs/testing/TESTING_GUIDE.md)** - Extension testing and deployment
 - **[Agent Risk Guide](docs/guides/AGENT_RISK_GUIDE.md)** - Risk analysis guide
 - **[Start Here Guide](docs/guides/START_HERE.md)** - Complete setup guide
+- **[🔧 Debugging Data Capture](docs/guides/DEBUGGING_DATA_CAPTURE.md)** - Fix data capture issues
 
 ## 📚 Additional Documentation
 
+### Core Documentation
 - **[Quick Start Guide](docs/QUICKSTART.md)** - 15-second setup
-- **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
 - **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical overview
-- **[Build Report](docs/BUILD_REPORT.md)** - Statistics and checklist
-- **[Review & Gaps](docs/REVIEW_AND_GAPS.md)** - Quality assessment
-- **[Fixes Applied](docs/FIXES_APPLIED.md)** - Recent improvements
+- **[Automation Guide](docs/AUTOMATION_GUIDE.md)** - Testing workflows
+
+### MCP Integration ✨ NEW
+- **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status & overview
+- **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API docs for 13 tools
+- **[MCP Testing Guide](docs/MCP_TESTING_GUIDE.md)** - Comprehensive testing procedures
+
+### System Integration
+- **[Endpoint & Dashboard Integration](docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete integration guide
+- **[System Integration Map](docs/SYSTEM_INTEGRATION_MAP.md)** - Visual architecture diagrams
+- **[Database & Cron Verification](docs/DATABASE_CRON_VERIFICATION.md)** - System verification
+
+### Quality & Testing
+- **[Test Audit Report](docs/TEST_AUDIT_REPORT.md)** - Quality score: 100/100
+- **[Code Quality Audit](docs/CODE_QUALITY_AUDIT.md)** - Comprehensive review
+- **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
+
+### Developer Resources
+- **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules guide (8 rules)
+- **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
+- **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
 
 ## 📞 Support
 

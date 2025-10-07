@@ -31,10 +31,33 @@ queue = "steam-webhook"
 max_batch_size = 5
 max_batch_timeout = 10
 
+# MCP Event-Driven Queues (from fantasy402-mcp)
+[[queues.producers]]
+binding = "STEAM_QUEUE"
+queue = "steam-processor"
+
+[[queues.consumers]]
+queue = "steam-processor"
+max_batch_size = 10
+max_batch_timeout = 2
+max_retries = 2
+
+[[queues.producers]]
+binding = "EXPOSURE_QUEUE"
+queue = "exposure-calculator"
+
+[[queues.consumers]]
+queue = "exposure-calculator"
+max_batch_size = 50
+max_batch_timeout = 10
+max_retries = 3
+
 [triggers]
 crons = [
   "0 * * * *",  # hourly sharp calculation
-  "* * * * *"  # every minute exposure calculation (closest to 30s possible)
+  "* * * * *",  # every minute exposure calculation (closest to 30s possible)
+  "*/1 * * * *",  # every minute - MCP cache warming
+  "0 3 * * *"  # daily at 3 AM UTC - MCP cleanup old data
 ]
 
 [[analytics_engine_datasets]]
@@ -46,6 +69,34 @@ dataset = "betting-metrics"
 binding = "BET_TICKER_RAW"
 id = "8b9618cb00c647f18ad83458e0061018"
 preview_id = "0d4410da8b824c70834a0f105654029e"
+
+# MCP Token Management KV Namespaces (from fantasy402-mcp)
+[[kv_namespaces]]
+binding = "TOKEN_STORE"
+id = "a231da86fa4a499e8345f29c65d56486"
+
+[[kv_namespaces]]
+binding = "USER_STORE"
+id = "75794b21e31b41019f610ae315052506"
+
+[[kv_namespaces]]
+binding = "SESSION_STORE"
+id = "3af49b62d1684c5b964bd5e5a5517f6f"
+
+[[kv_namespaces]]
+binding = "REFRESH_STORE"
+id = "48dd351a4b3f49dab2b3bd0d765a15db"
+
+[[kv_namespaces]]
+binding = "LIVEBETS_STORE"
+id = "e9c62c6cfe494e51a2ab55be824202e3"
+preview_id = "d001dd9a718e468daf67d37a7c6c44c1"
+
+# MCP Raw Feed Database (from fantasy402-mcp)
+[[d1_databases]]
+binding = "RAW_FEED_DB"
+database_name = "fantasy42-raw-feed"
+database_id = "c97ea06a-af2e-49e1-b083-ba1b649a9596"
 
 [limits]
 cpu_ms = 50

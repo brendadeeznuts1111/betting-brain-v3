@@ -3,7 +3,7 @@
  * Alert threshold: > $50k or > 60%
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach } from "bun:test";
 import { getBettingExposure } from '../../src/tools/intelligence/getBettingExposure';
 
 describe('Exposure Tracking', () => {
@@ -38,7 +38,7 @@ describe('Exposure Tracking', () => {
     mockRequest = new Request('https://test.com/getBettingExposure?eid=nba_123');
   });
 
-  it('should calculate total exposure within limits', async () => {
+  test('should calculate total exposure within limits', async () => {
     const response = await getBettingExposure(mockRequest, mockEnv);
     const data = await response.json();
 
@@ -48,7 +48,7 @@ describe('Exposure Tracking', () => {
     expect(data.sides.length).toBe(2);
   });
 
-  it('should alert when exposure > $50k', async () => {
+  test('should alert when exposure > $50k', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,
@@ -73,7 +73,7 @@ describe('Exposure Tracking', () => {
     expect(data.alertThreshold.maxAmount).toBe(50000);
   });
 
-  it('should alert when exposure > 60% of risk', async () => {
+  test('should alert when exposure > 60% of risk', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,
@@ -98,7 +98,7 @@ describe('Exposure Tracking', () => {
     expect(data.alertThreshold.maxPercentage).toBe(60);
   });
 
-  it('should respect max 50 rows constraint', async () => {
+  test('should respect max 50 rows constraint', async () => {
     const manyRows = Array.from({ length: 100 }, (_, i) => ({
       side: i % 2 === 0 ? 'HOME' : 'AWAY',
       risk: 1000,
@@ -120,7 +120,7 @@ describe('Exposure Tracking', () => {
     expect(response.status).toBe(200);
   });
 
-  it('should handle event with no exposure data', async () => {
+  test('should handle event with no exposure data', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,

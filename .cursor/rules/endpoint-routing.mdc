@@ -1,0 +1,496 @@
+---
+description: Endpoint routing patterns and request handling conventions
+globs: src/index.ts,src/**/*.ts
+---
+
+# Endpoint Routing Rules
+
+## Main Entry Point
+
+All HTTP requests are handled in [src/index.ts](mdc:src/index.ts) via the `fetch()` handler.
+
+## Request Flow Pattern
+
+```typescript
+1. Generate requestId: Date.now().toString(36)
+2. Parse URL: new URL(request.url)
+3. Log request details with requestId
+4. Handle CORS preflight (OPTIONS)
+5. Route by pathname
+6. Return response with CORS headers
+```
+
+## Endpoint Categories
+
+### Core System Endpoints (4)
+
+**Pattern:** Exact pathname match
+
+```typescript
+if (url.pathname === '/health') {
+  // Health check - used by all dashboards
+  // Returns: { status, version, timestamp, requestId, duration }
+}
+
+if (url.pathname === '/logs') {
+  // Centralized logging - used by browser extension
+  // POST: Receives log batches from extension
+}
+
+if (url.pathname === '/diagnostics') {
+  // System diagnostics - used by setup wizard, health monitor
+  // Returns: bindings status, KV status, last checks
+}
+
+if (url.pathname === '/system-status') {
+  // Detailed status - used by dashboard stats
+  // Returns: uptime, memory, KV records, health indicators
+}
+```
+
+**Used By:** All dashboards, monitoring tools, browser extension
+
+---
+
+### BetTicker Endpoints (3+)
+
+**Pattern:** Exact pathname or prefix match
+
+```typescript
+if (url.pathname === '/cloud/api/Manager/getBetTicker') {
+  // Transparent proxy + KV interception
+  // Handler: handleBetTickerInterception()
+  // Location: src/interceptors/bet-ticker-sniffer.ts
+  // Returns: Original API response (with side-effect KV storage)
+}
+
+if (url.pathname.startsWith('/interceptor/')) {
+  // BetTicker history/analysis API
+  // Handler: handleInterceptorAPI()
+  // Routes:
+  //   - /interceptor/history?limit=100
+  //   - /interceptor/response?key=...
+  //   - /interceptor/stats
+}
+```
+
+**Used By:** Browser extension, all dashboards
+
+**Documentation:** [docs/BET_TICKER_SNIFFER.md](mdc:docs/BET_TICKER_SNIFFER.md)
+
+---
+
+### MCP Protocol Endpoints (2+)
+
+**Pattern:** Exact pathname or prefix match
+
+```typescript
+if (url.pathname === '/mcp') {
+  // JSON-RPC 2.0 MCP protocol endpoint
+  // Handler: handleMCPRequest()
+  // Location: src/mcp/server.ts
+  // Methods: initialize, tools/list, tools/call
+}
+
+if (url.pathname.startsWith('/tools/')) {
+  // Intelligence tools API (13 tools)
+  // Handler: handleMCPTools()
+  // Routes:
+  //   - /tools/getBettingExposure
+  //   - /tools/getCLV
+  //   - /tools/getSharpScore
+  //   - /tools/getHoldPercentage
+}
+```
+
+**Used By:** Claude Desktop, AI assistants, Dashboard Pro
+
+**Documentation:** [docs/MCP_ENDPOINTS.md](mdc:docs/MCP_ENDPOINTS.md)
+
+---
+
+## Required Patterns
+
+### 1. Request ID Tracking
+
+**ALWAYS generate and use a request ID:**
+
+```typescript
+const requestId = Date.now().toString(36);
+console.log(`[${requestId}] 📥 Incoming request:`, { method, url });
+```
+
+**Use in responses:**
+```typescript
+return new Response(JSON.stringify({ requestId, ...data }), {
+  headers: { 'Content-Type': 'application/json' }
+});
+```
+
+---
+
+### 2. CORS Headers
+
+**ALWAYS include CORS headers for dashboard access:**
+
+```typescript
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+```
+
+**Handle OPTIONS preflight:**
+```typescript
+if (request.method === 'OPTIONS') {
+  return new Response(null, { headers: corsHeaders });
+}
+```
+
+---
+
+### 3. Error Handling
+
+**Standardized error response:**
+
+```typescript
+try {
+  // Handler logic
+} catch (error) {
+  console.error(`[${requestId}] ❌ Error:`, error);
+  return new Response(JSON.stringify({
+    error: 'Error type',
+    message: error instanceof Error ? error.message : 'Unknown error',
+    requestId,
+  }), {
+    status: 500,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+  });
+}
+```
+
+---
+
+### 4. Performance Logging
+
+**Log request duration:**
+
+```typescript
+const startTime = Date.now();
+// ... handle request
+const duration = Date.now() - startTime;
+console.log(`[${requestId}] ✅ Completed in ${duration}ms`);
+```
+
+---
+
+## Handler Functions
+
+### Pattern: Separate Functions for Complex Routes
+
+```typescript
+// In main fetch handler:
+if (url.pathname === '/diagnostics') {
+  return handleDiagnostics(request, env, ctx);
+}
+
+// Separate handler function:
+async function handleDiagnostics(
+  request: Request, 
+  env: Env, 
+  ctx: ExecutionContext
+): Promise<Response> {
+  const corsHeaders = { /* CORS headers */ };
+  try {
+    // Handler logic
+    return new Response(JSON.stringify(data), { headers: corsHeaders });
+  } catch (error) {
+    // Error handling
+  }
+}
+```
+
+**Current handlers in [src/index.ts](mdc:src/index.ts):**
+- `handleMCPTools()` - Routes to intelligence tools
+- `handleDiagnostics()` - System diagnostics
+- `handleLogs()` - Log retrieval
+- `handleSystemStatus()` - Detailed status
+- `handleInterceptorAPI()` - BetTicker history/analysis
+
+---
+
+## Integration Points
+
+### Dashboard Hub Integration
+
+**Location:** [dashboards/index.html](mdc:dashboards/index.html)
+
+**Connected Endpoints:**
+```javascript
+const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+
+// System status
+fetch(`${WORKER_URL}/health`)
+
+// Data count and last update
+fetch(`${WORKER_URL}/interceptor/history?limit=100`)
+```
+
+**Auto-refresh:** 30 seconds
+
+---
+
+### Browser Extension Integration
+
+**Location:** [browser-extension/](mdc:browser-extension/)
+
+**Connected Endpoints:**
+```javascript
+// Log forwarding (background.js)
+fetch(`${WORKER_URL}/logs`, {
+  method: 'POST',
+  body: JSON.stringify({ logs, sessionId })
+})
+
+// BetTicker interception (content.js)
+fetch(`${WORKER_URL}/cloud/api/Manager/getBetTicker`, {
+  method: 'POST',
+  body: originalRequestBody
+})
+```
+
+---
+
+## Queue & Cron Integration
+
+### Queue Consumers
+
+**Handler:** `async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext)`
+
+**Routes:**
+```typescript
+if (batch.queue === 'line-ingress') {
+  await handleLineIngress(message, env, ctx);
+}
+if (batch.queue === 'steam-webhook') {
+  await handleSteamWebhook(message, env, ctx);
+}
+```
+
+**Location:** [src/queues/](mdc:src/queues/)
+
+---
+
+### Scheduled Jobs
+
+**Handler:** `async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext)`
+
+**Routes:**
+```typescript
+if (event.cron === '0 * * * *') {
+  // Hourly sharp calculation
+  await handleSharpCalculation(env, ctx);
+}
+if (event.cron === '*/30 * * * * *') {
+  // 30-second exposure calculation (actually every minute due to CF limitations)
+  await handleExposureCalculation(env, ctx);
+}
+```
+
+**Location:** [src/schedules/](mdc:src/schedules/)
+
+**Documentation:** [docs/DATABASE_CRON_VERIFICATION.md](mdc:docs/DATABASE_CRON_VERIFICATION.md)
+
+---
+
+## Adding New Endpoints
+
+### 1. Core/System Endpoint
+
+**Add to main fetch handler:**
+```typescript
+if (url.pathname === '/my-endpoint') {
+  console.log(`[${requestId}] 🎯 My endpoint accessed`);
+  return handleMyEndpoint(request, env, ctx);
+}
+```
+
+**Create handler function:**
+```typescript
+async function handleMyEndpoint(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
+
+  try {
+    // Your logic here
+    return new Response(JSON.stringify({ data }), { headers: corsHeaders });
+  } catch (error) {
+    console.error('My endpoint error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }), {
+      status: 500,
+      headers: corsHeaders
+    });
+  }
+}
+```
+
+---
+
+### 2. Intelligence Tool Endpoint
+
+**Add to handleMCPTools switch:**
+```typescript
+case 'getMyTool':
+  return getMyTool(request, env);
+```
+
+**Create tool file:**
+- Location: [src/tools/intelligence/getMyTool.ts](mdc:src/tools/intelligence/)
+- Export: `export async function getMyTool(request: Request, env: Env): Promise<Response>`
+
+**Add to MCP tools list:**
+- Location: [src/mcp/tools.ts](mdc:src/mcp/tools.ts)
+- Add tool definition with schema
+
+---
+
+### 3. MCP Handler
+
+**Create handler:**
+- Location: [src/mcp/handlers/myHandler.ts](mdc:src/mcp/handlers/)
+- Export function matching tool name
+
+**Register in toolRegistry:**
+- Location: [src/mcp/toolRegistry.ts](mdc:src/mcp/toolRegistry.ts)
+- Add case statement
+
+**Documentation:** [docs/MCP_ENDPOINTS.md](mdc:docs/MCP_ENDPOINTS.md)
+
+---
+
+## Performance Expectations
+
+| Endpoint Type | Expected Response Time | Complexity |
+|--------------|----------------------|------------|
+| `/health` | 5-20ms | Low |
+| `/interceptor/history` | 50-300ms | Medium |
+| `/mcp` (tools/list) | 20-100ms | Low |
+| `/mcp` (tools/call) | 100-500ms | High |
+| `/tools/*` | 50-150ms | Low-Medium |
+
+**CPU Limit:** 50ms per request (from wrangler.toml)
+
+---
+
+## Testing Endpoints
+
+### Local Development
+
+```bash
+# Start worker
+bun run dev
+
+# Test health
+curl http://localhost:8787/health
+
+# Test with request ID
+curl -H "X-Request-ID: test123" http://localhost:8787/diagnostics
+
+# Test MCP
+curl -X POST http://localhost:8787/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+### Production
+
+```bash
+# Deploy
+wrangler deploy --env production
+
+# Test
+curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
+
+# Monitor
+wrangler tail --env production
+```
+
+---
+
+## Common Pitfalls
+
+### ❌ DON'T
+
+```typescript
+// No CORS headers
+return new Response(JSON.stringify(data));
+
+// No request ID tracking
+console.log('Request received');
+
+// No error handling
+const result = await riskyOperation();
+return new Response(JSON.stringify(result));
+
+// Duplicate endpoint handling
+if (url.pathname === '/logs') { /* handler 1 */ }
+// ... later ...
+if (url.pathname === '/logs') { /* handler 2 - DUPLICATE! */ }
+```
+
+### ✅ DO
+
+```typescript
+// With CORS headers
+return new Response(JSON.stringify(data), {
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+});
+
+// With request ID
+const requestId = Date.now().toString(36);
+console.log(`[${requestId}] Request received`);
+
+// With error handling
+try {
+  const result = await riskyOperation();
+  return new Response(JSON.stringify({ requestId, result }), {
+    headers: { ...corsHeaders }
+  });
+} catch (error) {
+  console.error(`[${requestId}] Error:`, error);
+  return new Response(JSON.stringify({ 
+    error: 'Failed',
+    requestId,
+    message: error instanceof Error ? error.message : 'Unknown'
+  }), {
+    status: 500,
+    headers: { ...corsHeaders }
+  });
+}
+```
+
+---
+
+## Related Documentation
+
+- **[Cloudflare Workers Rules](.cursor/rules/cloudflare-workers.mdc)** - Workers patterns
+- **[MCP Integration Rules](.cursor/rules/mcp-integration.mdc)** - MCP patterns
+- **[docs/ENDPOINT_DASHBOARD_INTEGRATION.md](mdc:docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete endpoint guide
+- **[docs/SYSTEM_INTEGRATION_MAP.md](mdc:docs/SYSTEM_INTEGRATION_MAP.md)** - System architecture
+
+---
+
+**Total Endpoints:** 10+ core endpoints + 13 MCP tools  
+**Status:** Production-ready with full CORS, error handling, and logging

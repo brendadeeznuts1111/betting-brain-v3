@@ -3,7 +3,7 @@
  * Configures environment for production testing
  */
 
-import { beforeAll, afterAll } from 'vitest';
+import { beforeAll, afterAll } from 'bun:test';
 
 // Production environment configuration
 const productionEnv = {

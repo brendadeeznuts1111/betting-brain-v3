@@ -2,8 +2,9 @@
  * Test utility functions for common testing patterns
  */
 
-import { vi } from 'vitest';
+import { vi } from 'bun:test';
 import type { Env } from '../../src/types/api';
+import type { ExecutionContext } from '@cloudflare/workers-types';
 
 /**
  * Creates a mock D1 database with realistic behavior

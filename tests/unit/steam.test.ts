@@ -3,7 +3,7 @@
  * Alert threshold: ≥ 3σ in ≤ 60s
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach } from "bun:test";
 import { handleSteamWebhook } from '../../src/queues/steamWebhook';
 
 describe('Steam Move Detection', () => {
@@ -55,13 +55,13 @@ describe('Steam Move Detection', () => {
     };
   });
 
-  it('should detect steam move when line changes ≥ 3σ', async () => {
+  test('should detect steam move when line changes ≥ 3σ', async () => {
     await handleSteamWebhook(mockMessage, mockEnv, {} as any);
     // Should process without error
     expect(true).toBe(true);
   });
 
-  it('should apply 5-minute deduplication', async () => {
+  test('should apply 5-minute deduplication', async () => {
     mockEnv.ANALYTICS.prepare = (query: string) => {
       if (query.includes('steam_dedupe')) {
         return {
@@ -79,7 +79,7 @@ describe('Steam Move Detection', () => {
     expect(true).toBe(true);
   });
 
-  it('should detect rapid line movement within 60s', async () => {
+  test('should detect rapid line movement within 60s', async () => {
     const recentTimestamp = new Date(Date.now() - 30000).toISOString(); // 30 seconds ago
     mockMessage.body = JSON.stringify({
       eid: 'nba_456',
@@ -95,7 +95,7 @@ describe('Steam Move Detection', () => {
     expect(true).toBe(true);
   });
 
-  it('should ignore small line movements', async () => {
+  test('should ignore small line movements', async () => {
     mockMessage.body = JSON.stringify({
       eid: 'nba_789',
       mt: 'SPREAD',
@@ -110,7 +110,7 @@ describe('Steam Move Detection', () => {
     expect(true).toBe(true);
   });
 
-  it('should handle invalid steam move data', async () => {
+  test('should handle invalid steam move data', async () => {
     mockMessage.body = JSON.stringify({
       eid: '',
       mt: 'INVALID'

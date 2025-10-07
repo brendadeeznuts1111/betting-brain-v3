@@ -3,18 +3,15 @@
  * Runs before all tests to configure the testing environment
  */
 
-import { vi } from 'vitest';
+import { vi, beforeAll, beforeEach, afterEach } from 'bun:test';
 
 // Global test configuration
 beforeAll(() => {
   // Set up global test environment
   process.env.NODE_ENV = 'test';
   
-  vi.setConfig({
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    teardownTimeout: 10000
-  });
+  // Note: Bun test doesn't need vi.setConfig
+  // Test timeouts are configured in bunfig.toml
 });
 
 beforeEach(() => {

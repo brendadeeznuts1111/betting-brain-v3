@@ -49,12 +49,12 @@ async function main() {
     
     // Step 1: Run tests
     console.log('🧪 Running tests...');
-    await exec('npm', ['test']);
+    await exec('bun', ['test']);
     console.log('✅ Tests passed\n');
     
     // Step 2: Build
     console.log('🔨 Building...');
-    await exec('npm', ['run', 'build']);
+    await exec('bun', ['run', 'build']);
     console.log('✅ Build complete\n');
     
     // Step 3: Apply migrations to production
@@ -88,7 +88,7 @@ async function main() {
     console.log('   Docs: https://betting-brain-v3-prod.your-domain.workers.dev/.redoc');
     console.log('   Dashboard: https://dash.cloudflare.com');
     console.log('\n🔄 Rollback command:');
-    console.log(`   npm run rollback ${rollbackTag}`);
+    console.log(`   bun run rollback ${rollbackTag}`);
     
   } catch (error) {
     console.error('\n❌ Deployment failed:', error);
