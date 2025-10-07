@@ -2,6 +2,7 @@ id: durable-object-alarm
 language: TypeScript
 severity: warning
 rule:
+  kind: class_declaration
   pattern: class $NAME implements DurableObject
 message: |
   Durable Object should implement alarm() for cleanup tasks.

@@ -2,7 +2,11 @@ id: no-ip-leak
 language: TypeScript
 severity: error
 rule:
-  pattern: console.log($$$)
+  any:
+    - pattern: console.log($$$, request.headers.get('CF-Connecting-IP'), $$$)
+    - pattern: console.log($$$, req.ip, $$$)
+    - pattern: console.log($$$, request.ip, $$$)
+    - pattern: console.log($$$, $VAR.ip, $$$)
 message: |
   Never log real IP addresses to console (GDPR violation).
   
