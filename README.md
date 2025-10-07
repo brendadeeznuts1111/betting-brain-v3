@@ -231,7 +231,7 @@ bun test:ci         # Run tests with coverage
 
 **Test Health:** ⚠️ **68/100** - Needs Attention  
 - ✅ 249/249 tests passing
-- 🚨 89 TypeScript errors (see [URGENT_TEST_FIXES.md](URGENT_TEST_FIXES.md))
+- 🚨 89 TypeScript errors (see [URGENT_TEST_FIXES.md](docs/URGENT_TEST_FIXES.md))
 - ⚠️ Slow integration tests (99s, should be <20s)
 
 **Documentation:**
@@ -282,7 +282,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 ### **Documentation**
 - **[Dashboard Collection](docs/dashboards/README.md)** - Complete dashboard overview
 - **[Tools & Utilities](tools/README.md)** - HTML tools and utilities  
-- **[Testing Guide](TESTING_GUIDE.md)** - Extension testing and deployment
+- **[Testing Guide](docs/testing/TESTING_GUIDE.md)** - Extension testing and deployment
 - **[Agent Risk Guide](docs/guides/AGENT_RISK_GUIDE.md)** - Risk analysis guide
 - **[Start Here Guide](docs/guides/START_HERE.md)** - Complete setup guide
 - **[🔧 Debugging Data Capture](docs/guides/DEBUGGING_DATA_CAPTURE.md)** - Fix data capture issues
