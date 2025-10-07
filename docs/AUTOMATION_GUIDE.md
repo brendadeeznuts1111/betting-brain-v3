@@ -246,10 +246,10 @@ ls -la browser-extension/
 
 ## 📚 Additional Resources
 
-- [Extension Development Guide](docs/guides/EXTENSION_DEVELOPMENT.md)
-- [Worker Deployment Guide](docs/deployment/DEPLOYMENT.md)
-- [Testing Best Practices](docs/testing/TESTING_GUIDE.md)
-- [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
+- [Worker Deployment Guide](DEPLOYMENT.md)
+- [Testing Best Practices](testing/TESTING_GUIDE.md)
+- [Troubleshooting Guide](TROUBLESHOOTING.md)
+- [MCP Testing Guide](MCP_TESTING_GUIDE.md)
 
 ## 🤝 Contributing
 

@@ -500,8 +500,8 @@ bun scripts/test-handlers-direct.ts
 
 **Key Documentation:**
 - [README.md](../README.md) - Main documentation
-- [MCP_INTEGRATION_STATUS.md](../MCP_INTEGRATION_STATUS.md) - MCP status
-- [TESTING_STATUS.md](../TESTING_STATUS.md) - Testing status
+- [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) - MCP status
+- [TESTING_STATUS.md](TESTING_STATUS.md) - Testing status
 - [CLAUDE.md](../CLAUDE.md) - AI assistant guidance
 
 ---

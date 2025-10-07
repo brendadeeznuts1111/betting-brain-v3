@@ -389,7 +389,7 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
 - **[docs/ROOT_STRUCTURE.md](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[docs/CODEBASE_REVIEW.md](docs/CODEBASE_REVIEW.md)** - Comprehensive codebase review
 - **[docs/MCP_ENDPOINTS.md](docs/MCP_ENDPOINTS.md)** - Complete MCP API reference (13 tools) ✨ NEW
-- **[.cursor/rules/](/.cursor/rules/)** - Active Cursor rules (850 lines):
+- **[.cursor/rules/](.cursor/rules/)** - Active Cursor rules (1,346 lines):
   - `root-organization.mdc` - Root directory policy (CRITICAL)
   - `bun-runtime.mdc` - Bun usage requirements
   - `documentation.mdc` - Documentation placement

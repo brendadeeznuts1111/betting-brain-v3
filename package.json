@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@types/bun": "^1.0.0",
+    "glob": "^10.3.10",
     "typescript": "^5.3.0"
   },
   "engines": {
