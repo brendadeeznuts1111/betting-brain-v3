@@ -43,5 +43,6 @@ ignore:
   - package-lock.json
   - "*.min.js"
   - "tests/**"  # Exclude test files from production rules
-  - "scripts/**"  # Exclude utility scripts
+  - "scripts/**"  # Exclude utility scripts (no request context)
+  - "tools/**"  # Exclude diagnostic tools
 

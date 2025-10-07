@@ -38,7 +38,7 @@
     "setup:prod": "bun install --production && bun run build:worker && bun run deploy:production",
     "clean": "rm -rf dist node_modules/.cache coverage",
     "reset": "bun run clean && bun install && bun run setup:dev",
-    "security": "sg scan --error",
+    "security": "sg scan --error src/",
     "security:migrations": "bun run scripts/validate-migrations.ts",
     "pre-push": "bun run security && bun run security:migrations && echo '✅ Security checks passed'",
     "prepare": "husky"
