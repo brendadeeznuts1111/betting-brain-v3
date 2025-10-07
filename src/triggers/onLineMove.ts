@@ -118,11 +118,7 @@ async function updateRealTimeMetrics(row: LineMovement, env: Env): Promise<void>
   // Write metrics to analytics engine
   await env.ANALYTICS_ENGINE.writeDataPoint({
     blobs: [row.eid, row.mt, 'line_movement'],
-    doubles: {
-      line_change: metrics.lineChange,
-      volume_change: metrics.volumeChange,
-      change_percentage: metrics.changePercentage
-    },
+    doubles: [metrics.lineChange, metrics.volumeChange, metrics.changePercentage],
     indexes: ['line_movement_trigger']
   });
 }

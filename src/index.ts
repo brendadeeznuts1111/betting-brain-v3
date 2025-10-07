@@ -69,7 +69,7 @@ export default {
       console.log(`[${requestId}] 📝 Extension logs received`);
       
       try {
-        const body = await request.json();
+        const body = await request.json() as { logs?: Array<{ level?: string; timestamp?: string | number; message?: string; url?: string; extensionId?: string }> };
         const sessionId = request.headers.get('X-Session-ID') || 'unknown';
         const extensionId = request.headers.get('X-Extension-ID') || 'unknown';
         
@@ -78,19 +78,20 @@ export default {
         
         // Process and display logs
         if (body.logs && body.logs.length > 0) {
-          body.logs.forEach((log: any, index: number) => {
+          body.logs.forEach((log, index: number) => {
             const level = log.level?.toUpperCase() || 'LOG';
-            const timestamp = new Date(log.timestamp).toLocaleTimeString();
+            const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString();
             const message = log.message || 'No message';
             
             // Color code by level
-            const levelEmoji = {
+            const levelEmojiMap: Record<string, string> = {
               'ERROR': '❌',
               'WARN': '⚠️',
               'INFO': 'ℹ️',
               'DEBUG': '🔍',
               'LOG': '📝'
-            }[level] || '📝';
+            };
+            const levelEmoji = levelEmojiMap[level] || '📝';
             
             console.log(`[${requestId}] ${levelEmoji} [${timestamp}] ${level}: ${message}`);
             

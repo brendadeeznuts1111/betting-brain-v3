@@ -54,9 +54,10 @@ async function getActiveCustomers(env: Env): Promise<string[]> {
     WHERE upd > datetime('now', '-24 hours')
     ORDER BY upd DESC
     LIMIT 1000
-  `).all() as Array<{ cid: string }>;
+  `).all();
   
-  return result.map(row => row.cid);
+  const customers = result.results as unknown as Array<{ cid: string }>;
+  return customers.map(row => row.cid);
 }
 
 async function processBatchSharpCalculation(customerIds: string[], env: Env): Promise<void> {

@@ -48,18 +48,21 @@ async function getActiveEvents(env: Env): Promise<string[]> {
     WHERE ing > datetime('now', '-5 minutes')
     ORDER BY ing DESC
     LIMIT 50
-  `).all() as Array<{ eid: string }>;
+  `).all();
   
-  return result.map(row => row.eid);
+  const events = result.results as unknown as Array<{ eid: string }>;
+  return events.map(row => row.eid);
 }
 
 async function calculateEventExposure(eventId: string, env: Env): Promise<ExposureMetrics> {
   // Get current exposure data for this event
-  const exposureData = await env.ANALYTICS.prepare(`
+  const exposureDataResult = await env.ANALYTICS.prepare(`
     SELECT side, risk, net
     FROM exposure_tracking
     WHERE eid = ?
-  `).bind(eventId).all() as Array<{
+  `).bind(eventId).all();
+  
+  const exposureData = exposureDataResult.results as unknown as Array<{
     side: string;
     risk: number;
     net: number;

@@ -167,14 +167,16 @@ async function calculateSteamMoveMetrics(data: SteamMoveData, env: Env): Promise
 
 async function calculateSigma(eventId: string, marketType: string, env: Env): Promise<number> {
   // Get recent line movements for this event/market to calculate sigma
-  const recentMovements = await env.ANALYTICS.prepare(`
+  const recentMovementsResult = await env.ANALYTICS.prepare(`
     SELECT lb, la, ts
     FROM line_movements 
     WHERE eid = ? AND mt = ? 
     AND ts > datetime('now', '-1 hour')
     ORDER BY ts DESC
     LIMIT 100
-  `).bind(eventId, marketType).all() as Array<{
+  `).bind(eventId, marketType).all();
+  
+  const recentMovements = recentMovementsResult.results as unknown as Array<{
     lb: number | null;
     la: number | null;
     ts: string;

@@ -36,7 +36,7 @@ export class DatabaseHelper {
           timeoutPromise
         ]);
         
-        return result as T[];
+        return result as unknown as T[];
       } catch (error) {
         if (attempt === retry - 1) {
           console.error(`Query failed after ${retry} attempts:`, error);
