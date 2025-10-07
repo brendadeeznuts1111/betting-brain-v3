@@ -292,9 +292,8 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Quick Start Guide](docs/QUICKSTART.md)** - 15-second setup
 - **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
 - **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical overview
-- **[Build Report](docs/BUILD_REPORT.md)** - Statistics and checklist
-- **[Review & Gaps](docs/REVIEW_AND_GAPS.md)** - Quality assessment
-- **[Fixes Applied](docs/FIXES_APPLIED.md)** - Recent improvements
+- **[Automation Guide](docs/AUTOMATION_GUIDE.md)** - Testing workflows
+- **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status
 
 ## 📞 Support
 

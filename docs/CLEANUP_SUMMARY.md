@@ -49,13 +49,13 @@ docs/archive/SANITY_CHECK.md
 
 ## 📝 Files Added/Staged
 
-### Root Documentation (4 new files)
+### Root Documentation (5 new files)
 ```
-✅ AUTOMATION_GUIDE.md        # Testing workflows
-✅ CLAUDE.md                  # AI assistant guidance
-✅ CODEBASE_REVIEW.md         # This review session
-✅ MCP_INTEGRATION_STATUS.md  # MCP integration status
-✅ TESTING_STATUS.md          # Testing status
+✅ CLAUDE.md                      # AI assistant guidance (root)
+✅ docs/AUTOMATION_GUIDE.md       # Testing workflows
+✅ docs/CODEBASE_REVIEW.md        # This review session
+✅ docs/MCP_INTEGRATION_STATUS.md # MCP integration status
+✅ docs/TESTING_STATUS.md         # Testing status
 ```
 
 ### Browser Extension (5 new files)
@@ -131,12 +131,8 @@ tools/organize-files.sh
 
 ### Root Files (Clean ✅)
 ```
-AUTOMATION_GUIDE.md      # New - Testing workflows
 CLAUDE.md                # New - AI guidance
-CODEBASE_REVIEW.md       # New - This review
-MCP_INTEGRATION_STATUS.md # New - MCP status
 README.md                # Updated - Main docs
-TESTING_STATUS.md        # New - Test status
 LICENSE                  # Unchanged
 ```
 

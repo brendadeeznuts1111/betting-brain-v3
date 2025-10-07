@@ -57,8 +57,8 @@ src/mcp/
 ```
 
 **Documentation:**
-- ✅ MCP_INTEGRATION_STATUS.md
-- ✅ TESTING_STATUS.md
+- ✅ docs/MCP_INTEGRATION_STATUS.md
+- ✅ docs/TESTING_STATUS.md
 - ✅ docs/MCP_TESTING_GUIDE.md
 - ✅ CLAUDE.md (updated with MCP info)
 
@@ -237,10 +237,10 @@ URGENT_TEST_FIXES.md → docs/URGENT_TEST_FIXES.md
 **Untracked Files:**
 ```
 ✅ KEEP & COMMIT:
-- AUTOMATION_GUIDE.md (testing workflows)
+- docs/AUTOMATION_GUIDE.md (testing workflows)
 - CLAUDE.md (AI assistant guidance)
-- MCP_INTEGRATION_STATUS.md (integration status)
-- TESTING_STATUS.md (testing status)
+- docs/MCP_INTEGRATION_STATUS.md (integration status)
+- docs/TESTING_STATUS.md (testing status)
 
 ✅ KEEP & COMMIT (New Features):
 - browser-extension/content.js
@@ -350,7 +350,7 @@ docs/archive/
 ### TypeScript Errors (89)
 **Status:** Non-blocking (tests pass)  
 **Location:** Various test files  
-**Plan:** See `TESTING_STATUS.md` for detailed breakdown
+**Plan:** See `docs/TESTING_STATUS.md` for detailed breakdown
 
 ### Slow Integration Tests
 **Current:** 99 seconds  

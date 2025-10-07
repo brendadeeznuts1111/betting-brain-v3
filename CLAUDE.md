@@ -374,14 +374,14 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
 - **[docs/INDEX.md](docs/INDEX.md)** - Documentation map
 - **[docs/QUICKSTART.md](docs/QUICKSTART.md)** - Quick setup
 - **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Deployment guide
-- **[AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md)** - Testing workflows
+- **[docs/AUTOMATION_GUIDE.md](docs/AUTOMATION_GUIDE.md)** - Testing workflows
 - **[docs/IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md)** - Technical deep-dive
 - **[docs/BET_TICKER_SNIFFER.md](docs/BET_TICKER_SNIFFER.md)** - API interception
 - **[docs/MCP_TESTING_GUIDE.md](docs/MCP_TESTING_GUIDE.md)** - MCP testing guide ✨ **NEW**
 
 ### MCP Integration Docs (Current) ✨ **NEW**
-- **[MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md)** - Current MCP status
-- **[TESTING_STATUS.md](TESTING_STATUS.md)** - Testing status and next steps
+- **[docs/MCP_INTEGRATION_STATUS.md](docs/MCP_INTEGRATION_STATUS.md)** - Current MCP status
+- **[docs/TESTING_STATUS.md](docs/TESTING_STATUS.md)** - Testing status and next steps
 - **[docs/MCP_TESTING_GUIDE.md](docs/MCP_TESTING_GUIDE.md)** - Comprehensive testing guide
 
 ### Archived Documentation
