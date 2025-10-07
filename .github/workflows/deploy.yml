@@ -17,17 +17,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '18'
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       - name: Check for broken links
-        run: node scripts/link-check.js
+        run: bun scripts/link-check.js
 
   test:
     name: Run Tests
@@ -37,23 +36,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '18'
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       - name: Run linting
-        run: npm run lint || echo "Lint not configured"
+        run: bun run lint || echo "Lint not configured"
 
       - name: Run type check
-        run: npx tsc --noEmit
+        run: bun x tsc --noEmit
 
       - name: Run tests
-        run: npm test
+        run: bun test
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -70,25 +68,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '18'
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       - name: Build
-        run: npm run build
+        run: bun run build
 
       - name: Apply migrations
-        run: npx wrangler d1 migrations apply betting-analytics --local
+        run: bun x wrangler d1 migrations apply betting-analytics --local
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Deploy to Cloudflare
-        run: npx wrangler deploy --env staging
+        run: bun x wrangler deploy --env staging
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
@@ -102,31 +99,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '18'
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       - name: Build
-        run: npm run build
+        run: bun run build
 
       - name: Apply migrations
-        run: npx wrangler d1 migrations apply betting-analytics --env production
+        run: bun x wrangler d1 migrations apply betting-analytics --env production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Deploy to Cloudflare
-        run: npx wrangler deploy --env production
+        run: bun x wrangler deploy --env production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Create release tag
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(bun x --silent node -p "require('./package.json').version")
           SHA=$(git rev-parse --short HEAD)
           TAG="v${VERSION}-${SHA}"
           git config user.name "GitHub Actions"
@@ -139,5 +135,5 @@ jobs:
       - name: Notify deployment
         run: |
           echo "✅ Deployed to production"
-          echo "🔖 Rollback tag: v$(node -p "require('./package.json').version")-$(git rev-parse --short HEAD)"
+          echo "🔖 Rollback tag: v$(bun x --silent node -p "require('./package.json').version")-$(git rev-parse --short HEAD)"
           echo "📊 Dashboard: https://dash.cloudflare.com"
