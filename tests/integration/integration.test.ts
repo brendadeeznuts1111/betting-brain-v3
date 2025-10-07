@@ -3,7 +3,7 @@
  * Tests the main entry point, queue handlers, and scheduled jobs
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
 
 // Mock the imported modules
@@ -52,7 +52,7 @@ import { getCLV } from '../../src/tools/intelligence/getCLV';
 // Import the main module after mocking
 import worker from '../../src/index';
 
-describe('Integration Tests - Main Entry Point', () => {
+describe.concurrent('Integration Tests - Main Entry Point', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
@@ -90,8 +90,8 @@ describe('Integration Tests - Main Entry Point', () => {
     } as any;
   });
 
-  describe('Health Check Endpoint', () => {
-    it('should return healthy status for /health endpoint', async () => {
+  describe.concurrent('Health Check Endpoint', () => {
+    test('should return healthy status for /health endpoint', async () => {
       const request = new Request('https://example.com/health');
       const response = await worker.fetch(request, mockEnv, mockCtx);
       
@@ -104,7 +104,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(body.timestamp).toBeDefined();
     });
 
-    it('should return valid timestamp in health check', async () => {
+    test('should return valid timestamp in health check', async () => {
       const request = new Request('https://example.com/health');
       const response = await worker.fetch(request, mockEnv, mockCtx);
       const body = await response.json();
@@ -115,8 +115,8 @@ describe('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe('MCP Tools API Routes', () => {
-    it('should route to getBettingExposure tool', async () => {
+  describe.concurrent('MCP Tools API Routes', () => {
+    test('should route to getBettingExposure tool', async () => {
       const mockResponse = new Response(JSON.stringify({ exposure: 1000 }), { status: 200 });
       (getBettingExposure as any).mockResolvedValue(mockResponse);
 
@@ -127,7 +127,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(response).toBe(mockResponse);
     });
 
-    it('should route to getSharpScore tool', async () => {
+    test('should route to getSharpScore tool', async () => {
       const mockResponse = new Response(JSON.stringify({ score: 45 }), { status: 200 });
       (getSharpScore as any).mockResolvedValue(mockResponse);
 
@@ -138,7 +138,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(response).toBe(mockResponse);
     });
 
-    it('should route to getHoldPercentage tool', async () => {
+    test('should route to getHoldPercentage tool', async () => {
       const mockResponse = new Response(JSON.stringify({ hold: 5.2 }), { status: 200 });
       (getHoldPercentage as any).mockResolvedValue(mockResponse);
 
@@ -149,7 +149,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(response).toBe(mockResponse);
     });
 
-    it('should route to getCLV tool', async () => {
+    test('should route to getCLV tool', async () => {
       const mockResponse = new Response(JSON.stringify({ clv: 2.5 }), { status: 200 });
       (getCLV as any).mockResolvedValue(mockResponse);
 
@@ -160,7 +160,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(response).toBe(mockResponse);
     });
 
-    it('should return 404 for unknown tool', async () => {
+    test('should return 404 for unknown tool', async () => {
       const request = new Request('https://example.com/tools/unknownTool');
       const response = await worker.fetch(request, mockEnv, mockCtx);
       
@@ -172,8 +172,8 @@ describe('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe('Default Response', () => {
-    it('should return default response for unknown paths', async () => {
+  describe.concurrent('Default Response', () => {
+    test('should return default response for unknown paths', async () => {
       const request = new Request('https://example.com/unknown');
       const response = await worker.fetch(request, mockEnv, mockCtx);
       
@@ -185,8 +185,8 @@ describe('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe('Queue Processing', () => {
-    it('should process line-ingress queue messages', async () => {
+  describe.concurrent('Queue Processing', () => {
+    test('should process line-ingress queue messages', async () => {
       const mockMessage = {
         id: 'msg-1',
         body: JSON.stringify({ eid: 'nba_123', mt: 'SPREAD', lb: -110, la: -108, vb: 10000, va: 15000, ts: new Date().toISOString() })
@@ -200,7 +200,7 @@ describe('Integration Tests - Main Entry Point', () => {
       // Cloudflare Workers automatically handle ack/retry based on exceptions
     });
 
-    it('should process steam-webhook queue messages', async () => {
+    test('should process steam-webhook queue messages', async () => {
       const mockMessage = {
         id: 'msg-2',
         body: JSON.stringify({ eid: 'nba_456', mt: 'SPREAD', lb: -110, la: -100, vb: 10000, va: 20000, ts: new Date().toISOString() })
@@ -214,7 +214,7 @@ describe('Integration Tests - Main Entry Point', () => {
       // Cloudflare Workers automatically handle ack/retry based on exceptions
     });
 
-    it('should handle queue processing errors', async () => {
+    test('should handle queue processing errors', async () => {
       const mockMessage = {
         id: 'msg-3',
         body: JSON.stringify({ invalid: 'data' })
@@ -230,8 +230,8 @@ describe('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe('Scheduled Jobs', () => {
-    it('should execute sharp calculation on hourly cron', async () => {
+  describe.concurrent('Scheduled Jobs', () => {
+    test('should execute sharp calculation on hourly cron', async () => {
       const event = {
         cron: '0 * * * *',
         scheduledTime: Date.now()
@@ -243,7 +243,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(handleExposureCalculation).not.toHaveBeenCalled();
     });
 
-    it('should execute exposure calculation on 30-second cron', async () => {
+    test('should execute exposure calculation on 30-second cron', async () => {
       const event = {
         cron: '*/30 * * * * *',
         scheduledTime: Date.now()
@@ -255,7 +255,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(handleSharpCalculation).not.toHaveBeenCalled();
     });
 
-    it('should handle unknown cron schedules', async () => {
+    test('should handle unknown cron schedules', async () => {
       const event = {
         cron: '0 0 1 1 *', // Unknown schedule
         scheduledTime: Date.now()
@@ -267,7 +267,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(handleExposureCalculation).not.toHaveBeenCalled();
     });
 
-    it('should handle scheduled job errors', async () => {
+    test('should handle scheduled job errors', async () => {
       const event = {
         cron: '0 * * * *',
         scheduledTime: Date.now()
@@ -280,8 +280,8 @@ describe('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle malformed URLs', async () => {
+  describe.concurrent('Edge Cases', () => {
+    test('should handle malformed URLs', async () => {
       // Use a valid URL but test error handling
       const request = new Request('https://example.com/unknown');
       const response = await worker.fetch(request, mockEnv, mockCtx);
@@ -291,7 +291,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(body).toBe('Betting-Brain v3 - Edge Intelligence Layer');
     });
 
-    it('should handle empty queue batches', async () => {
+    test('should handle empty queue batches', async () => {
       const batch = { messages: [] } as any;
       
       await worker.queue(batch, mockEnv, mockCtx);
@@ -300,7 +300,7 @@ describe('Integration Tests - Main Entry Point', () => {
       expect(handleSteamWebhook).not.toHaveBeenCalled();
     });
 
-    it('should handle requests with query parameters', async () => {
+    test('should handle requests with query parameters', async () => {
       const request = new Request('https://example.com/tools/getBettingExposure?eventId=nba_123');
       const mockResponse = new Response(JSON.stringify({ exposure: 1000 }), { status: 200 });
       (getBettingExposure as any).mockResolvedValue(mockResponse);

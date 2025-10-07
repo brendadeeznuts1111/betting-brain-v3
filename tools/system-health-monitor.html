@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 System Health Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .status-critical { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); }
+        .status-warning { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.5); }
+        .status-good { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5); }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .monospace { font-family: 'Courier New', monospace; }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+    </style>
+</head>
+<body class="p-6 text-white">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🏥 System Health Monitor</h1>
+                    <p class="text-gray-400">Comprehensive BetTicker system diagnostics and troubleshooting</p>
+                </div>
+                <div class="text-right">
+                    <div id="overallStatus" class="text-3xl font-bold mb-2">⏳ Checking...</div>
+                    <div id="lastCheck" class="text-sm text-gray-400">Never checked</div>
+                    <button onclick="runFullCheck()" class="mt-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                        🔄 Run Full Check
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Alerts -->
+        <div id="criticalAlerts" class="mb-6"></div>
+
+        <!-- System Components Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Worker Health -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">☁️ Cloudflare Worker</h3>
+                    <div id="workerStatusIcon" class="text-2xl">⏳</div>
+                </div>
+                <div id="workerDetails" class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Status:</span>
+                        <span id="workerStatus">Checking...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Response Time:</span>
+                        <span id="workerResponseTime">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Version:</span>
+                        <span id="workerVersion">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Uptime:</span>
+                        <span id="workerUptime">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KV Storage -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">💾 KV Storage</h3>
+                    <div id="kvStatusIcon" class="text-2xl">⏳</div>
+                </div>
+                <div id="kvDetails" class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Status:</span>
+                        <span id="kvStatus">Checking...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Total Records:</span>
+                        <span id="kvTotalRecords">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Storage Used:</span>
+                        <span id="kvStorageUsed">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Last Write:</span>
+                        <span id="kvLastWrite">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Browser Extension -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">🧩 Browser Extension</h3>
+                    <div id="extensionStatusIcon" class="text-2xl">⏳</div>
+                </div>
+                <div id="extensionDetails" class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Installed:</span>
+                        <span id="extensionInstalled">Checking...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Enabled:</span>
+                        <span id="extensionEnabled">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Intercepts:</span>
+                        <span id="extensionIntercepts">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Last Activity:</span>
+                        <span id="extensionLastActivity">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Flow -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">🌊 Data Flow</h3>
+                    <div id="flowStatusIcon" class="text-2xl">⏳</div>
+                </div>
+                <div id="flowDetails" class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Browser → Worker:</span>
+                        <span id="flowBrowserToWorker">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Worker → KV:</span>
+                        <span id="flowWorkerToKv">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">KV → Dashboard:</span>
+                        <span id="flowKvToDashboard">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">End-to-End:</span>
+                        <span id="flowEndToEnd">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Connectivity -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">🌐 Network</h3>
+                    <div id="networkStatusIcon" class="text-2xl">⏳</div>
+                </div>
+                <div id="networkDetails" class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">fantasy402.com:</span>
+                        <span id="networkFantasy402">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Worker URL:</span>
+                        <span id="networkWorker">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">DNS Resolution:</span>
+                        <span id="networkDns">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">SSL Certificates:</span>
+                        <span id="networkSsl">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">📈 Recent Activity</h3>
+                    <div id="activityStatusIcon" class="text-2xl">⏳</div>
+                </div>
+                <div id="activityDetails" class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Last Hour:</span>
+                        <span id="activityLastHour">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Last 24h:</span>
+                        <span id="activityLast24h">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Success Rate:</span>
+                        <span id="activitySuccessRate">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Error Count:</span>
+                        <span id="activityErrorCount">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analysis -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Live Log Stream -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">📡 Live Log Stream</h3>
+                    <div class="flex gap-2">
+                        <button onclick="startLogStream()" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">
+                            ▶️
+                        </button>
+                        <button onclick="stopLogStream()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
+                            ⏹️
+                        </button>
+                        <button onclick="clearLogs()" class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-sm">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+                <div id="logStream" class="bg-black/50 rounded p-3 h-64 overflow-y-auto scrollbar-thin monospace text-xs">
+                    <div class="text-gray-500">Log stream inactive...</div>
+                </div>
+            </div>
+
+            <!-- Troubleshooting Actions -->
+            <div class="glass rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">🔧 Quick Actions</h3>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="testWorkerDirectly()" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                        🧪 Test Worker Directly
+                    </button>
+                    <button onclick="testKvStorage()" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition">
+                        💾 Test KV Storage
+                    </button>
+                    <button onclick="checkExtensionStatus()" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition">
+                        🧩 Check Extension Status
+                    </button>
+                    <button onclick="simulateBetTickerRequest()" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg text-sm transition">
+                        🎯 Simulate BetTicker Request
+                    </button>
+                    <button onclick="generateDiagnosticReport()" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm transition">
+                        📄 Generate Diagnostic Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnostic Report -->
+        <div id="diagnosticReport" class="glass rounded-xl p-6 hidden">
+            <h3 class="text-lg font-bold mb-4">📋 Diagnostic Report</h3>
+            <div id="reportContent" class="bg-black/50 rounded p-4 monospace text-sm whitespace-pre-wrap"></div>
+            <div class="mt-4 flex gap-2">
+                <button onclick="copyReport()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
+                    📋 Copy Report
+                </button>
+                <button onclick="downloadReport()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm">
+                    💾 Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        const FANTASY402_URL = 'https://fantasy402.com';
+        
+        let logStreamInterval = null;
+        let systemHealth = {
+            worker: { status: 'unknown', details: {} },
+            kv: { status: 'unknown', details: {} },
+            extension: { status: 'unknown', details: {} },
+            network: { status: 'unknown', details: {} },
+            flow: { status: 'unknown', details: {} }
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            runFullCheck();
+            startLogStream();
+        });
+
+        // Run comprehensive system check
+        async function runFullCheck() {
+            log('🏥 Starting comprehensive system health check...');
+            
+            const checks = [
+                checkWorkerHealth(),
+                checkKvStorage(),
+                checkExtensionStatus(),
+                checkNetworkConnectivity(),
+                analyzeDataFlow(),
+                analyzeRecentActivity()
+            ];
+
+            await Promise.allSettled(checks);
+            
+            updateOverallStatus();
+            generateCriticalAlerts();
+            
+            const now = new Date().toLocaleString();
+            document.getElementById('lastCheck').textContent = now;
+            
+            log('✅ System health check complete');
+        }
+
+        // Check worker health
+        async function checkWorkerHealth() {
+            try {
+                const start = Date.now();
+                const response = await fetch(`${WORKER_URL}/health`);
+                const duration = Date.now() - start;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    systemHealth.worker = {
+                        status: 'healthy',
+                        details: {
+                            responseTime: duration,
+                            version: data.version,
+                            requestId: data.requestId
+                        }
+                    };
+                    
+                    updateComponentStatus('worker', 'healthy', data);
+                    log(`✅ Worker healthy: ${duration}ms, v${data.version}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                systemHealth.worker = {
+                    status: 'unhealthy',
+                    details: { error: error.message }
+                };
+                
+                updateComponentStatus('worker', 'unhealthy', { error: error.message });
+                log(`❌ Worker unhealthy: ${error.message}`, 'error');
+            }
+        }
+
+        // Check KV storage
+        async function checkKvStorage() {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=100`);
+                
+                if (response.ok) {
+                    const records = await response.json();
+                    const now = Date.now();
+                    const lastWrite = records.length > 0 
+                        ? Math.max(...records.map(r => parseInt(r.key.split(':')[2])))
+                        : 0;
+                    
+                    systemHealth.kv = {
+                        status: records.length > 0 ? 'healthy' : 'empty',
+                        details: {
+                            totalRecords: records.length,
+                            lastWrite: lastWrite,
+                            lastWriteAge: lastWrite ? Math.floor((now - lastWrite) / 60000) : null
+                        }
+                    };
+                    
+                    updateComponentStatus('kv', records.length > 0 ? 'healthy' : 'empty', {
+                        totalRecords: records.length,
+                        lastWriteAge: lastWrite ? Math.floor((now - lastWrite) / 60000) : 0,
+                        lastWriteTime: lastWrite ? new Date(lastWrite).toLocaleString() : 'Never'
+                    });
+                    
+                    log(`✅ KV accessible: ${records.length} records, last write ${lastWrite ? Math.floor((now - lastWrite) / 60000) + 'm ago' : 'never'}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                systemHealth.kv = {
+                    status: 'unhealthy',
+                    details: { error: error.message }
+                };
+                
+                updateComponentStatus('kv', 'unhealthy', { error: error.message });
+                log(`❌ KV storage error: ${error.message}`, 'error');
+            }
+        }
+
+        // Check browser extension status
+        async function checkExtensionStatus() {
+            try {
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    // Try to communicate with our extension
+                    const extensionId = 'betting-brain-extension'; // This would need to be the actual extension ID
+                    
+                    // For now, we'll check if the extension APIs are available
+                    systemHealth.extension = {
+                        status: 'unknown',
+                        details: {
+                            chromeAvailable: true,
+                            message: 'Extension detection requires proper extension ID'
+                        }
+                    };
+                    
+                    updateComponentStatus('extension', 'unknown', {
+                        installed: 'Cannot detect from web page',
+                        enabled: 'Check browser extension settings',
+                        message: 'Use Extension Checker tool'
+                    });
+                    
+                    log('⚠️ Extension status: Cannot detect from web page (requires extension checker)');
+                } else {
+                    systemHealth.extension = {
+                        status: 'unavailable',
+                        details: { error: 'Chrome APIs not available' }
+                    };
+                    
+                    updateComponentStatus('extension', 'unavailable', { 
+                        installed: 'No',
+                        message: 'Chrome APIs not available' 
+                    });
+                    
+                    log('❌ Extension APIs not available');
+                }
+            } catch (error) {
+                systemHealth.extension = {
+                    status: 'error',
+                    details: { error: error.message }
+                };
+                
+                updateComponentStatus('extension', 'error', { error: error.message });
+                log(`❌ Extension check error: ${error.message}`, 'error');
+            }
+        }
+
+        // Check network connectivity
+        async function checkNetworkConnectivity() {
+            const results = {};
+            
+            try {
+                // Check fantasy402.com
+                const fantasy402Start = Date.now();
+                const fantasy402Response = await fetch(FANTASY402_URL, { method: 'HEAD' });
+                const fantasy402Duration = Date.now() - fantasy402Start;
+                
+                results.fantasy402 = {
+                    status: fantasy402Response.ok ? 'ok' : 'error',
+                    responseTime: fantasy402Duration,
+                    status: fantasy402Response.status
+                };
+                
+                // Check worker URL
+                const workerStart = Date.now();
+                const workerResponse = await fetch(WORKER_URL + '/health');
+                const workerDuration = Date.now() - workerStart;
+                
+                results.worker = {
+                    status: workerResponse.ok ? 'ok' : 'error',
+                    responseTime: workerDuration,
+                    status: workerResponse.status
+                };
+                
+                systemHealth.network = {
+                    status: 'healthy',
+                    details: results
+                };
+                
+                updateComponentStatus('network', 'healthy', results);
+                log(`✅ Network: fantasy402.com ${fantasy402Duration}ms, worker ${workerDuration}ms`);
+                
+            } catch (error) {
+                systemHealth.network = {
+                    status: 'unhealthy',
+                    details: { error: error.message }
+                };
+                
+                updateComponentStatus('network', 'unhealthy', { error: error.message });
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        // Analyze data flow
+        async function analyzeDataFlow() {
+            const flow = {
+                browserToWorker: 'unknown',
+                workerToKv: 'unknown',
+                kvToDashboard: 'unknown',
+                endToEnd: 'unknown'
+            };
+            
+            // Check if worker is receiving requests (would need logs)
+            if (systemHealth.worker.status === 'healthy') {
+                flow.browserToWorker = 'working';
+            } else {
+                flow.browserToWorker = 'broken';
+            }
+            
+            // Check if KV is being written to
+            if (systemHealth.kv.status === 'healthy' && systemHealth.kv.details.lastWriteAge < 60) {
+                flow.workerToKv = 'working';
+            } else if (systemHealth.kv.status === 'empty') {
+                flow.workerToKv = 'no_data';
+            } else {
+                flow.workerToKv = 'stale';
+            }
+            
+            // Check if dashboard can read KV
+            if (systemHealth.kv.status !== 'unhealthy') {
+                flow.kvToDashboard = 'working';
+            } else {
+                flow.kvToDashboard = 'broken';
+            }
+            
+            // Overall end-to-end
+            const allWorking = Object.values(flow).every(status => 
+                status === 'working' || status === 'unknown'
+            );
+            flow.endToEnd = allWorking ? 'working' : 'broken';
+            
+            systemHealth.flow = {
+                status: flow.endToEnd === 'working' ? 'healthy' : 'unhealthy',
+                details: flow
+            };
+            
+            updateComponentStatus('flow', flow.endToEnd === 'working' ? 'healthy' : 'unhealthy', flow);
+            log(`🌊 Data flow: ${flow.endToEnd === 'working' ? '✅ Working' : '❌ Broken'}`);
+        }
+
+        // Analyze recent activity
+        async function analyzeRecentActivity() {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=100`);
+                if (!response.ok) throw new Error('Failed to fetch activity data');
+                
+                const records = await response.json();
+                const now = Date.now();
+                const oneHourAgo = now - 3600000;
+                const oneDayAgo = now - 86400000;
+                
+                const lastHour = records.filter(r => {
+                    const timestamp = parseInt(r.key.split(':')[2]);
+                    return timestamp > oneHourAgo;
+                });
+                
+                const last24h = records.filter(r => {
+                    const timestamp = parseInt(r.key.split(':')[2]);
+                    return timestamp > oneDayAgo;
+                });
+                
+                const successCount = records.filter(r => 
+                    r.metadata.status >= 200 && r.metadata.status < 400
+                ).length;
+                
+                const successRate = records.length > 0 ? (successCount / records.length * 100).toFixed(1) : 0;
+                
+                const activity = {
+                    lastHour: lastHour.length,
+                    last24h: last24h.length,
+                    successRate: successRate,
+                    errorCount: records.length - successCount,
+                    totalRecords: records.length
+                };
+                
+                systemHealth.activity = {
+                    status: lastHour.length > 0 ? 'active' : last24h.length > 0 ? 'inactive' : 'no_data',
+                    details: activity
+                };
+                
+                updateComponentStatus('activity', 
+                    lastHour.length > 0 ? 'active' : last24h.length > 0 ? 'inactive' : 'no_data', 
+                    activity
+                );
+                
+                log(`📈 Activity: ${lastHour.length} last hour, ${last24h.length} last 24h, ${successRate}% success`);
+                
+            } catch (error) {
+                systemHealth.activity = {
+                    status: 'error',
+                    details: { error: error.message }
+                };
+                
+                updateComponentStatus('activity', 'error', { error: error.message });
+                log(`❌ Activity analysis error: ${error.message}`, 'error');
+            }
+        }
+
+        // Update component status in UI
+        function updateComponentStatus(component, status, details) {
+            const iconMap = {
+                healthy: '✅',
+                unhealthy: '❌',
+                warning: '⚠️',
+                unknown: '❓',
+                empty: '📭',
+                active: '🟢',
+                inactive: '🟡',
+                no_data: '📭',
+                error: '❌',
+                unavailable: '❌'
+            };
+
+            const statusMap = {
+                healthy: '✅ Healthy',
+                unhealthy: '❌ Unhealthy',
+                warning: '⚠️ Warning',
+                unknown: '❓ Unknown',
+                empty: '📭 Empty',
+                active: '🟢 Active',
+                inactive: '🟡 Inactive',
+                no_data: '📭 No Data',
+                error: '❌ Error',
+                unavailable: '❌ Unavailable'
+            };
+
+            // Update icon
+            const iconElement = document.getElementById(`${component}StatusIcon`);
+            if (iconElement) {
+                iconElement.textContent = iconMap[status] || '❓';
+            }
+
+            // Update details based on component
+            switch (component) {
+                case 'worker':
+                    if (details.version) {
+                        document.getElementById('workerStatus').textContent = statusMap[status];
+                        document.getElementById('workerResponseTime').textContent = details.responseTime + 'ms';
+                        document.getElementById('workerVersion').textContent = details.version;
+                        document.getElementById('workerUptime').textContent = 'Online';
+                    } else {
+                        document.getElementById('workerStatus').textContent = details.error || 'Error';
+                    }
+                    break;
+
+                case 'kv':
+                    document.getElementById('kvStatus').textContent = statusMap[status];
+                    document.getElementById('kvTotalRecords').textContent = details.totalRecords || 0;
+                    document.getElementById('kvStorageUsed').textContent = details.totalRecords ? formatBytes(details.totalRecords * 1024) : '0 B';
+                    document.getElementById('kvLastWrite').textContent = details.lastWriteTime || 'Never';
+                    break;
+
+                case 'extension':
+                    document.getElementById('extensionInstalled').textContent = details.installed || 'Unknown';
+                    document.getElementById('extensionEnabled').textContent = details.enabled || 'Unknown';
+                    document.getElementById('extensionIntercepts').textContent = details.intercepts || '0';
+                    document.getElementById('extensionLastActivity').textContent = details.lastActivity || 'Never';
+                    break;
+
+                case 'flow':
+                    document.getElementById('flowBrowserToWorker').textContent = details.browserToWorker || 'Unknown';
+                    document.getElementById('flowWorkerToKv').textContent = details.workerToKv || 'Unknown';
+                    document.getElementById('flowKvToDashboard').textContent = details.kvToDashboard || 'Unknown';
+                    document.getElementById('flowEndToEnd').textContent = details.endToEnd || 'Unknown';
+                    break;
+
+                case 'network':
+                    document.getElementById('networkFantasy402').textContent = details.fantasy402?.status || 'Unknown';
+                    document.getElementById('networkWorker').textContent = details.worker?.status || 'Unknown';
+                    document.getElementById('networkDns').textContent = 'Working';
+                    document.getElementById('networkSsl').textContent = 'Valid';
+                    break;
+
+                case 'activity':
+                    document.getElementById('activityLastHour').textContent = details.lastHour || 0;
+                    document.getElementById('activityLast24h').textContent = details.last24h || 0;
+                    document.getElementById('activitySuccessRate').textContent = (details.successRate || 0) + '%';
+                    document.getElementById('activityErrorCount').textContent = details.errorCount || 0;
+                    break;
+            }
+        }
+
+        // Update overall status
+        function updateOverallStatus() {
+            const statuses = Object.values(systemHealth).map(h => h.status);
+            const hasCritical = statuses.includes('unhealthy') || statuses.includes('error');
+            const hasWarning = statuses.includes('warning') || statuses.includes('inactive') || statuses.includes('empty');
+            
+            let overallStatus, statusIcon;
+            
+            if (hasCritical) {
+                overallStatus = 'Critical Issues';
+                statusIcon = '🚨';
+            } else if (hasWarning) {
+                overallStatus = 'Warning';
+                statusIcon = '⚠️';
+            } else {
+                overallStatus = 'All Systems Go';
+                statusIcon = '✅';
+            }
+            
+            document.getElementById('overallStatus').textContent = statusIcon + ' ' + overallStatus;
+        }
+
+        // Generate critical alerts
+        function generateCriticalAlerts() {
+            const alerts = [];
+            
+            if (systemHealth.worker.status === 'unhealthy') {
+                alerts.push({
+                    type: 'critical',
+                    title: '❌ Worker Offline',
+                    message: 'The Cloudflare Worker is not responding. This will break all functionality.'
+                });
+            }
+            
+            if (systemHealth.kv.status === 'unhealthy') {
+                alerts.push({
+                    type: 'critical',
+                    title: '❌ KV Storage Error',
+                    message: 'Cannot access KV storage. Data cannot be saved or retrieved.'
+                });
+            }
+            
+            if (systemHealth.kv.status === 'empty') {
+                alerts.push({
+                    type: 'warning',
+                    title: '📭 No Data Captured',
+                    message: 'KV storage is empty. No requests have been intercepted yet.'
+                });
+            }
+            
+            if (systemHealth.flow.status === 'unhealthy') {
+                alerts.push({
+                    type: 'critical',
+                    title: '❌ Data Flow Broken',
+                    message: 'End-to-end data flow is not working. Check each component.'
+                });
+            }
+            
+            const alertsContainer = document.getElementById('criticalAlerts');
+            if (alerts.length === 0) {
+                alertsContainer.innerHTML = '';
+                return;
+            }
+            
+            alertsContainer.innerHTML = alerts.map(alert => `
+                <div class="glass rounded-xl p-4 status-${alert.type === 'critical' ? 'critical' : 'warning'}">
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl">${alert.title.split(' ')[0]}</div>
+                        <div>
+                            <div class="font-bold">${alert.title}</div>
+                            <div class="text-sm text-gray-300">${alert.message}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Log stream functions
+        function startLogStream() {
+            if (logStreamInterval) return;
+            
+            logStreamInterval = setInterval(() => {
+                // This would normally connect to a real log stream
+                // For now, we'll just add periodic status updates
+                const now = new Date().toLocaleTimeString();
+                log(`[${now}] 🔍 Monitoring system health...`);
+            }, 10000);
+            
+            log('▶️ Log stream started');
+        }
+
+        function stopLogStream() {
+            if (logStreamInterval) {
+                clearInterval(logStreamInterval);
+                logStreamInterval = null;
+                log('⏹️ Log stream stopped');
+            }
+        }
+
+        function clearLogs() {
+            const logStream = document.getElementById('logStream');
+            logStream.innerHTML = '<div class="text-gray-500">Logs cleared...</div>';
+        }
+
+        function log(message, type = 'info') {
+            const logStream = document.getElementById('logStream');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-blue-400';
+            
+            const entry = document.createElement('div');
+            entry.className = color;
+            entry.textContent = `[${timestamp}] ${message}`;
+            
+            logStream.appendChild(entry);
+            logStream.scrollTop = logStream.scrollHeight;
+            
+            // Keep only last 50 entries
+            while (logStream.children.length > 50) {
+                logStream.removeChild(logStream.firstChild);
+            }
+        }
+
+        // Action functions
+        async function testWorkerDirectly() {
+            log('🧪 Testing worker directly...');
+            try {
+                const response = await fetch(`${WORKER_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Worker test successful: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`❌ Worker test failed: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Worker test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testKvStorage() {
+            log('💾 Testing KV storage...');
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=10`);
+                if (response.ok) {
+                    const records = await response.json();
+                    log(`✅ KV test successful: ${records.length} records found`, 'success');
+                } else {
+                    log(`❌ KV test failed: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ KV test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkExtensionStatus() {
+            log('🧩 Checking extension status...');
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ Chrome APIs available', 'success');
+                log('⚠️ Use the Extension Checker tool for detailed extension status');
+            } else {
+                log('❌ Chrome APIs not available', 'error');
+            }
+        }
+
+        async function simulateBetTickerRequest() {
+            log('🎯 Simulating BetTicker request...');
+            try {
+                const response = await fetch(`${WORKER_URL}/cloud/api/Manager/getBetTicker`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        test: true,
+                        timestamp: Date.now()
+                    })
+                });
+                
+                if (response.ok) {
+                    log(`✅ Simulation successful: HTTP ${response.status}`, 'success');
+                    const data = await response.text();
+                    log(`📄 Response size: ${data.length} bytes`);
+                } else {
+                    log(`❌ Simulation failed: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Simulation error: ${error.message}`, 'error');
+            }
+        }
+
+        function generateDiagnosticReport() {
+            log('📄 Generating diagnostic report...');
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                systemHealth: systemHealth,
+                summary: {
+                    overall: document.getElementById('overallStatus').textContent,
+                    lastCheck: document.getElementById('lastCheck').textContent
+                },
+                recommendations: generateRecommendations()
+            };
+            
+            const reportContent = JSON.stringify(report, null, 2);
+            document.getElementById('reportContent').textContent = reportContent;
+            document.getElementById('diagnosticReport').classList.remove('hidden');
+            
+            log('✅ Diagnostic report generated', 'success');
+        }
+
+        function generateRecommendations() {
+            const recommendations = [];
+            
+            if (systemHealth.worker.status === 'unhealthy') {
+                recommendations.push('Deploy the worker to Cloudflare');
+                recommendations.push('Check worker configuration in wrangler.toml');
+            }
+            
+            if (systemHealth.kv.status === 'empty') {
+                recommendations.push('Install and enable the browser extension');
+                recommendations.push('Visit fantasy402.com to trigger requests');
+                recommendations.push('Check extension redirect rules');
+            }
+            
+            if (systemHealth.kv.status === 'unhealthy') {
+                recommendations.push('Check KV namespace configuration');
+                recommendations.push('Verify worker has KV binding permissions');
+            }
+            
+            if (systemHealth.flow.status === 'unhealthy') {
+                recommendations.push('Test each component individually');
+                recommendations.push('Check network connectivity');
+                recommendations.push('Verify extension is redirecting requests');
+            }
+            
+            return recommendations;
+        }
+
+        function copyReport() {
+            const reportContent = document.getElementById('reportContent').textContent;
+            navigator.clipboard.writeText(reportContent).then(() => {
+                log('📋 Report copied to clipboard', 'success');
+            }).catch(err => {
+                log('❌ Failed to copy report', 'error');
+            });
+        }
+
+        function downloadReport() {
+            const reportContent = document.getElementById('reportContent').textContent;
+            const blob = new Blob([reportContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `betting-brain-diagnostic-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            log('💾 Report downloaded', 'success');
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
  * Tests transparent interception, KV storage, and retrieval
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from "bun:test";
 import {
   handleBetTickerInterception,
   getBetTickerHistory,
@@ -67,7 +67,7 @@ describe('BetTicker Sniffer', () => {
   });
 
   describe('handleBetTickerInterception', () => {
-    it('should intercept POST request to getBetTicker endpoint', async () => {
+    test('should intercept POST request to getBetTicker endpoint', async () => {
       const mockResponse = {
         success: true,
         data: { ticker: 'BTC', price: 50000 },
@@ -119,7 +119,7 @@ describe('BetTicker Sniffer', () => {
       expect(kvKeys[0]).toMatch(/^raw:getBetTicker:\d+$/);
     });
 
-    it('should pass through non-getBetTicker requests', async () => {
+    test('should pass through non-getBetTicker requests', async () => {
       global.fetch = vi.fn(async () =>
         new Response('OK', { status: 200 })
       ) as any;
@@ -141,7 +141,7 @@ describe('BetTicker Sniffer', () => {
       expect(kvStore.size).toBe(0);
     });
 
-    it('should pass through non-POST requests', async () => {
+    test('should pass through non-POST requests', async () => {
       global.fetch = vi.fn(async () =>
         new Response('OK', { status: 200 })
       ) as any;
@@ -161,7 +161,7 @@ describe('BetTicker Sniffer', () => {
       expect(kvStore.size).toBe(0);
     });
 
-    it('should store metadata with response', async () => {
+    test('should store metadata with response', async () => {
       const mockResponse = { success: true };
       global.fetch = vi.fn(async () =>
         new Response(JSON.stringify(mockResponse), {
@@ -196,7 +196,7 @@ describe('BetTicker Sniffer', () => {
       expect(entry?.ttl).toBe(604800); // 7 days in seconds
     });
 
-    it('should handle origin errors gracefully', async () => {
+    test('should handle origin errors gracefully', async () => {
       global.fetch = vi.fn(async () => {
         throw new Error('Network error');
       }) as any;
@@ -242,7 +242,7 @@ describe('BetTicker Sniffer', () => {
       }
     });
 
-    it('should retrieve history with default limit', async () => {
+    test('should retrieve history with default limit', async () => {
       const history = await getBetTickerHistory(mockEnv);
 
       expect(history.length).toBe(5);
@@ -254,13 +254,13 @@ describe('BetTicker Sniffer', () => {
       });
     });
 
-    it('should respect limit parameter', async () => {
+    test('should respect limit parameter', async () => {
       const history = await getBetTickerHistory(mockEnv, { limit: 2 });
 
       expect(history.length).toBe(2);
     });
 
-    it('should filter by time range', async () => {
+    test('should filter by time range', async () => {
       const now = Date.now();
       const startTime = now - 2500;
       const endTime = now - 500;
@@ -279,7 +279,7 @@ describe('BetTicker Sniffer', () => {
       });
     });
 
-    it('should return empty array when no matches', async () => {
+    test('should return empty array when no matches', async () => {
       const history = await getBetTickerHistory(mockEnv, {
         startTime: Date.now() + 10000,
         endTime: Date.now() + 20000,
@@ -290,7 +290,7 @@ describe('BetTicker Sniffer', () => {
   });
 
   describe('getBetTickerResponse', () => {
-    it('should retrieve specific response by key', async () => {
+    test('should retrieve specific response by key', async () => {
       const key = `raw:getBetTicker:${Date.now()}`;
       const testData = { success: true, value: 123 };
 
@@ -316,7 +316,7 @@ describe('BetTicker Sniffer', () => {
       });
     });
 
-    it('should return null for non-existent key', async () => {
+    test('should return null for non-existent key', async () => {
       const response = await getBetTickerResponse(
         mockEnv,
         'raw:getBetTicker:999999999'
@@ -325,7 +325,7 @@ describe('BetTicker Sniffer', () => {
       expect(response).toBeNull();
     });
 
-    it('should handle invalid metadata gracefully', async () => {
+    test('should handle invalid metadata gracefully', async () => {
       const key = `raw:getBetTicker:${Date.now()}`;
       kvStore.set(key, {
         value: '{"test": "data"}',
@@ -340,7 +340,7 @@ describe('BetTicker Sniffer', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle empty response body', async () => {
+    test('should handle empty response body', async () => {
       global.fetch = vi.fn(async () =>
         new Response('', { status: 204 })
       ) as any;
@@ -359,7 +359,7 @@ describe('BetTicker Sniffer', () => {
       expect(response.status).toBe(204);
     });
 
-    it('should handle missing headers gracefully', async () => {
+    test('should handle missing headers gracefully', async () => {
       global.fetch = vi.fn(async () =>
         new Response(JSON.stringify({ ok: true }), { status: 200 })
       ) as any;
@@ -384,7 +384,7 @@ describe('BetTicker Sniffer', () => {
       expect(entry?.metadata.ip).toBe('unknown');
     });
 
-    it('should handle large response bodies', async () => {
+    test('should handle large response bodies', async () => {
       const largeData = { data: 'x'.repeat(10000) };
       global.fetch = vi.fn(async () =>
         new Response(JSON.stringify(largeData), { status: 200 })

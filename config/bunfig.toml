@@ -17,3 +17,38 @@ peer = true
 # Cache settings
 cache = true
 
+# ============================================
+# Bun Test Configuration (v1.2.23+)
+# ============================================
+[test]
+# Run integration tests concurrently for faster execution
+# These tests are I/O bound (fetch, KV, database) and benefit from parallelism
+concurrentTestGlob = [
+  "**/integration/**/*.test.ts",
+  "**/integration/**/*.test.tsx",
+]
+
+# Maximum concurrent tests (default: 20)
+# Adjust based on system resources and test complexity
+maxConcurrency = 20
+
+# Preload files before running tests
+# Automatically loads test setup
+preload = ["./tests/setup/test-setup.ts"]
+
+# Coverage threshold (when using --coverage)
+# Enforces minimum coverage percentage
+coverageThreshold = 80
+
+# Coverage reporters
+# Generates multiple formats for different use cases
+coverageReporter = ["text", "json", "html"]
+
+# Test timeout (milliseconds)
+# Maximum time a single test can run
+timeout = 10000
+
+# Enable smol mode (experimental)
+# Uses less memory for large test suites
+smol = false
+

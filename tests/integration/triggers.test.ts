@@ -3,7 +3,7 @@
  * Tests the database trigger handlers for line movement processing
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
 
 // Mock the database and analytics engine
@@ -39,13 +39,13 @@ const mockCtx: ExecutionContext = {
   passThroughOnException: vi.fn()
 } as any;
 
-describe('Database Trigger Scenario Tests', () => {
+describe.concurrent('Database Trigger Scenario Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Line Movement Trigger', () => {
-    it('should process line movement events successfully', async () => {
+  describe.concurrent('Line Movement Trigger', () => {
+    test('should process line movement events successfully', async () => {
       const mockLineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -78,7 +78,7 @@ describe('Database Trigger Scenario Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should detect significant line movements', async () => {
+    test('should detect significant line movements', async () => {
       const significantMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -117,7 +117,7 @@ describe('Database Trigger Scenario Tests', () => {
       );
     });
 
-    it('should handle rapid line movements within time window', async () => {
+    test('should handle rapid line movements within time window', async () => {
       const rapidMovements = [
         {
           eid: 'nba_123',
@@ -167,7 +167,7 @@ describe('Database Trigger Scenario Tests', () => {
       );
     });
 
-    it('should handle database errors gracefully', async () => {
+    test('should handle database errors gracefully', async () => {
       const mockLineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -191,7 +191,7 @@ describe('Database Trigger Scenario Tests', () => {
       await expect(onLineMove(mockEnv, mockLineMovement)).resolves.toBeUndefined();
     });
 
-    it('should validate line movement data', async () => {
+    test('should validate line movement data', async () => {
       const invalidMovement = {
         eid: '', // Invalid empty ID
         mt: 'INVALID', // Invalid mt
@@ -208,7 +208,7 @@ describe('Database Trigger Scenario Tests', () => {
       await expect(onLineMove(mockEnv, invalidMovement)).resolves.toBeUndefined();
     });
 
-    it('should handle concurrent line movements', async () => {
+    test('should handle concurrent line movements', async () => {
       const concurrentMovements = [
         {
           eid: 'nba_123',
@@ -255,8 +255,8 @@ describe('Database Trigger Scenario Tests', () => {
     });
   });
 
-  describe('Trigger Performance and Limits', () => {
-    it('should complete within reasonable time limits', async () => {
+  describe.concurrent('Trigger Performance and Limits', () => {
+    test('should complete within reasonable time limits', async () => {
       // Set NODE_ENV to production to avoid test delay
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
@@ -287,7 +287,7 @@ describe('Database Trigger Scenario Tests', () => {
       expect(executionTime).toBeLessThan(1000);
     });
 
-    it('should handle high-frequency trigger events', async () => {
+    test('should handle high-frequency trigger events', async () => {
       const highFrequencyMovements = Array.from({ length: 100 }, (_, i) => ({
         eid: `nba_${i}`,
         mt: 'SPREAD',
@@ -322,7 +322,7 @@ describe('Database Trigger Scenario Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(100);
     });
 
-    it('should respect cost cap limits during trigger execution', async () => {
+    test('should respect cost cap limits during trigger execution', async () => {
       const mockLineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -350,8 +350,8 @@ describe('Database Trigger Scenario Tests', () => {
     });
   });
 
-  describe('Trigger Data Validation', () => {
-    it('should validate event ID format', async () => {
+  describe.concurrent('Trigger Data Validation', () => {
+    test('should validate event ID format', async () => {
       const invalidEventId = {
         eid: 'invalid-format',
         mt: 'SPREAD',
@@ -369,7 +369,7 @@ describe('Database Trigger Scenario Tests', () => {
       await expect(onLineMove(mockEnv, invalidEventId)).resolves.toBeUndefined();
     });
 
-    it('should validate mt type', async () => {
+    test('should validate mt type', async () => {
       const invalidMarket = {
         eid: 'nba_123',
         mt: 'INVALID_MARKET',
@@ -387,7 +387,7 @@ describe('Database Trigger Scenario Tests', () => {
       await expect(onLineMove(mockEnv, invalidMarket)).resolves.toBeUndefined();
     });
 
-    it('should validate line values', async () => {
+    test('should validate line values', async () => {
       const invalidLineValues = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -405,7 +405,7 @@ describe('Database Trigger Scenario Tests', () => {
       await expect(onLineMove(mockEnv, invalidLineValues)).resolves.toBeUndefined();
     });
 
-    it('should validate volume values', async () => {
+    test('should validate volume values', async () => {
       const invalidVolume = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -424,8 +424,8 @@ describe('Database Trigger Scenario Tests', () => {
     });
   });
 
-  describe('Trigger Integration', () => {
-    it('should integrate with queue system', async () => {
+  describe.concurrent('Trigger Integration', () => {
+    test('should integrate with queue system', async () => {
       const mockLineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -461,7 +461,7 @@ describe('Database Trigger Scenario Tests', () => {
       );
     });
 
-    it('should integrate with analytics engine', async () => {
+    test('should integrate with analytics engine', async () => {
       const mockLineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',

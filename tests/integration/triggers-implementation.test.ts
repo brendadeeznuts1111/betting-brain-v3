@@ -3,7 +3,7 @@
  * Tests the actual implementation of database triggers
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
 import type { LineMovement } from '../../src/types/database';
 
@@ -30,13 +30,13 @@ const mockEnv: Env = {
   } as any
 };
 
-describe('Trigger Implementation Tests', () => {
+describe.concurrent('Trigger Implementation Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Line Movement Trigger Implementation', () => {
-    it('should process line movement events successfully', async () => {
+  describe.concurrent('Line Movement Trigger Implementation', () => {
+    test('should process line movement events successfully', async () => {
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -65,7 +65,7 @@ describe('Trigger Implementation Tests', () => {
       );
     });
 
-    it('should detect significant line movements', async () => {
+    test('should detect significant line movements', async () => {
       const significantMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -94,7 +94,7 @@ describe('Trigger Implementation Tests', () => {
       );
     });
 
-    it('should detect significant percentage changes', async () => {
+    test('should detect significant percentage changes', async () => {
       const percentageChange: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -122,7 +122,7 @@ describe('Trigger Implementation Tests', () => {
       );
     });
 
-    it('should detect significant volume changes', async () => {
+    test('should detect significant volume changes', async () => {
       const volumeChange: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -149,7 +149,7 @@ describe('Trigger Implementation Tests', () => {
       );
     });
 
-    it('should handle non-significant movements', async () => {
+    test('should handle non-significant movements', async () => {
       const nonSignificant: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -169,7 +169,7 @@ describe('Trigger Implementation Tests', () => {
       expect(mockEnv.STEAM_WEBHOOK.send).not.toHaveBeenCalled();
     });
 
-    it('should handle null values gracefully', async () => {
+    test('should handle null values gracefully', async () => {
       const nullValues: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -190,7 +190,7 @@ describe('Trigger Implementation Tests', () => {
       expect(mockEnv.STEAM_WEBHOOK.send).not.toHaveBeenCalled();
     });
 
-    it('should handle zero line values', async () => {
+    test('should handle zero line values', async () => {
       const zeroValues: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -215,7 +215,7 @@ describe('Trigger Implementation Tests', () => {
       );
     });
 
-    it('should handle rapid line movements', async () => {
+    test('should handle rapid line movements', async () => {
       const rapidMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -243,7 +243,7 @@ describe('Trigger Implementation Tests', () => {
       );
     });
 
-    it('should handle errors gracefully', async () => {
+    test('should handle errors gracefully', async () => {
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -264,7 +264,7 @@ describe('Trigger Implementation Tests', () => {
       await expect(onLineMove(mockEnv, mockLineMovement)).resolves.toBeUndefined();
     });
 
-    it('should update real-time metrics', async () => {
+    test('should update real-time metrics', async () => {
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -285,8 +285,8 @@ describe('Trigger Implementation Tests', () => {
     });
   });
 
-  describe('Trigger Performance', () => {
-    it('should complete within reasonable time limits', async () => {
+  describe.concurrent('Trigger Performance', () => {
+    test('should complete within reasonable time limits', async () => {
       // Set NODE_ENV to production to avoid test delay
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
@@ -317,7 +317,7 @@ describe('Trigger Implementation Tests', () => {
       expect(executionTime).toBeLessThan(1000);
     });
 
-    it('should handle high-frequency trigger events', async () => {
+    test('should handle high-frequency trigger events', async () => {
       const highFrequencyMovements = Array.from({ length: 100 }, (_, i) => ({
         eid: `nba_${i}`,
         mt: 'SPREAD',
@@ -342,8 +342,8 @@ describe('Trigger Implementation Tests', () => {
     });
   });
 
-  describe('Trigger Integration', () => {
-    it('should integrate with steam webhook queue', async () => {
+  describe.concurrent('Trigger Integration', () => {
+    test('should integrate with steam webhook queue', async () => {
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -369,7 +369,7 @@ describe('Trigger Implementation Tests', () => {
       );
     });
 
-    it('should include metrics in queue message', async () => {
+    test('should include metrics in queue message', async () => {
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',

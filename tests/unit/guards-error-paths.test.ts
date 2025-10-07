@@ -3,7 +3,7 @@
  * Tests error handling and edge cases in cost cap and rate limit guards
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import { CostCapGuard, defaultCostCapConfig } from '../../src/guards/costCap';
 import { RateLimitGuard, defaultRateLimitConfig } from '../../src/guards/rateLimit';
 import type { Env } from '../../src/types/api';
@@ -37,7 +37,7 @@ describe('Guards Error Path Tests', () => {
       costCapGuard = new CostCapGuard(defaultCostCapConfig);
     });
 
-    it('should handle database connection errors gracefully', async () => {
+    test('should handle database connection errors gracefully', async () => {
       // Mock database error
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database connection failed')),
@@ -53,7 +53,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.metrics.d1.percentage).toBe(0);
     });
 
-    it('should handle null database results', async () => {
+    test('should handle null database results', async () => {
       // Mock null result
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
@@ -69,7 +69,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.metrics.d1.rows).toBe(0);
     });
 
-    it('should handle undefined database results', async () => {
+    test('should handle undefined database results', async () => {
       // Mock undefined result
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockResolvedValue(undefined),
@@ -85,7 +85,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.metrics.d1.rows).toBe(0);
     });
 
-    it('should handle invalid database result types', async () => {
+    test('should handle invalid database result types', async () => {
       // Mock invalid result types
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 'invalid', rows: 'invalid' }),
@@ -101,7 +101,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.metrics.d1.rows).toBe(0);
     });
 
-    it('should handle TTL cleanup errors gracefully', async () => {
+    test('should handle TTL cleanup errors gracefully', async () => {
       // Mock TTL cleanup error
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
@@ -113,21 +113,21 @@ describe('Guards Error Path Tests', () => {
       await expect(costCapGuard.applyTTLCleanup(mockEnv)).resolves.not.toThrow();
     });
 
-    it('should handle sampling with invalid data', () => {
+    test('should handle sampling with invalid data', () => {
       const invalidData = null as any;
       const result = costCapGuard.applySampling(invalidData);
       
       expect(result).toEqual([]);
     });
 
-    it('should handle sampling with empty array', () => {
+    test('should handle sampling with empty array', () => {
       const emptyData: any[] = [];
       const result = costCapGuard.applySampling(emptyData);
       
       expect(result).toEqual([]);
     });
 
-    it('should handle sampling rate of 0', () => {
+    test('should handle sampling rate of 0', () => {
       const config = { ...defaultCostCapConfig, analytics: { ...defaultCostCapConfig.analytics, samplingRate: 0 } };
       const guard = new CostCapGuard(config);
       const data = [1, 2, 3, 4, 5];
@@ -136,7 +136,7 @@ describe('Guards Error Path Tests', () => {
       expect(result).toEqual([]);
     });
 
-    it('should handle sampling rate of 1', () => {
+    test('should handle sampling rate of 1', () => {
       const config = { ...defaultCostCapConfig, analytics: { ...defaultCostCapConfig.analytics, samplingRate: 1 } };
       const guard = new CostCapGuard(config);
       const data = [1, 2, 3, 4, 5];
@@ -145,7 +145,7 @@ describe('Guards Error Path Tests', () => {
       expect(result).toEqual(data);
     });
 
-    it('should handle cost limits exceeded scenarios', async () => {
+    test('should handle cost limits exceeded scenarios', async () => {
       // Mock high usage
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockResolvedValue({ 
@@ -171,7 +171,7 @@ describe('Guards Error Path Tests', () => {
       rateLimitGuard = new RateLimitGuard(defaultRateLimitConfig);
     });
 
-    it('should handle requests with missing IP headers', async () => {
+    test('should handle requests with missing IP headers', async () => {
       const request = new Request('https://test.com');
       const result = await rateLimitGuard.checkRateLimit(request);
 
@@ -179,7 +179,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.remaining).toBeGreaterThan(0);
     });
 
-    it('should handle requests with malformed IP headers', async () => {
+    test('should handle requests with malformed IP headers', async () => {
       const request = new Request('https://test.com', {
         headers: {
           'CF-Connecting-IP': 'invalid-ip-format',
@@ -192,7 +192,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.remaining).toBeGreaterThan(0);
     });
 
-    it('should handle burst limit exceeded', async () => {
+    test('should handle burst limit exceeded', async () => {
       const request = new Request('https://test.com');
       
       // Exceed burst limit
@@ -205,7 +205,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.retryAfter).toBeDefined();
     });
 
-    it('should handle rate limit exceeded', async () => {
+    test('should handle rate limit exceeded', async () => {
       const request = new Request('https://test.com');
       
       // Simulate high rate
@@ -220,17 +220,17 @@ describe('Guards Error Path Tests', () => {
       expect(result.retryAfter).toBeDefined();
     });
 
-    it('should handle cleanup with empty store', () => {
+    test('should handle cleanup with empty store', () => {
       // Should not throw when cleaning up empty store
       expect(() => rateLimitGuard.cleanup()).not.toThrow();
     });
 
-    it('should handle getStatus with non-existent key', () => {
+    test('should handle getStatus with non-existent key', () => {
       const result = rateLimitGuard.getStatus('non-existent-key');
       expect(result).toBeNull();
     });
 
-    it('should handle concurrent rate limit checks', async () => {
+    test('should handle concurrent rate limit checks', async () => {
       const request = new Request('https://test.com');
       
       // Simulate concurrent requests
@@ -249,7 +249,7 @@ describe('Guards Error Path Tests', () => {
       });
     });
 
-    it('should handle probabilistic cleanup', async () => {
+    test('should handle probabilistic cleanup', async () => {
       const request = new Request('https://test.com');
       
       // Make many requests to trigger probabilistic cleanup
@@ -261,7 +261,7 @@ describe('Guards Error Path Tests', () => {
       expect(() => rateLimitGuard.cleanup()).not.toThrow();
     });
 
-    it('should handle custom key generator errors', async () => {
+    test('should handle custom key generator errors', async () => {
       const config = {
         ...defaultRateLimitConfig,
         keyGenerator: () => {
@@ -276,7 +276,7 @@ describe('Guards Error Path Tests', () => {
       await expect(guard.checkRateLimit(request)).rejects.toThrow('Key generator failed');
     });
 
-    it('should handle window size edge cases', async () => {
+    test('should handle window size edge cases', async () => {
       const config = {
         ...defaultRateLimitConfig,
         windowSize: 0 // Invalid window size
@@ -289,7 +289,7 @@ describe('Guards Error Path Tests', () => {
       expect(result.allowed).toBe(true);
     });
 
-    it('should handle negative request counts', async () => {
+    test('should handle negative request counts', async () => {
       const request = new Request('https://test.com');
       
       // Force negative request count scenario
@@ -304,7 +304,7 @@ describe('Guards Error Path Tests', () => {
   });
 
   describe('Guard Integration Error Paths', () => {
-    it('should handle both guards failing simultaneously', async () => {
+    test('should handle both guards failing simultaneously', async () => {
       const costCapGuard = new CostCapGuard(defaultCostCapConfig);
       const rateLimitGuard = new RateLimitGuard(defaultRateLimitConfig);
       
@@ -327,7 +327,7 @@ describe('Guards Error Path Tests', () => {
       expect(rateResult.allowed).toBe(true);
     });
 
-    it('should handle guard timeout scenarios', async () => {
+    test('should handle guard timeout scenarios', async () => {
       const costCapGuard = new CostCapGuard(defaultCostCapConfig);
       
       // Mock slow database response that never resolves

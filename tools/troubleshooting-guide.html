@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Automated Troubleshooting Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%); }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .step-completed { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5); }
+        .step-error { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); }
+        .step-warning { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.5); }
+        .step-current { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.5); }
+        .monospace { font-family: 'Courier New', monospace; }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .checklist-item { transition: all 0.3s ease; }
+        .checklist-item:hover { background: rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="p-6 text-white">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🔧 Automated Troubleshooting Guide</h1>
+                    <p class="text-gray-400">Intelligent problem diagnosis and step-by-step resolution</p>
+                </div>
+                <div class="text-right">
+                    <div id="diagnosisStatus" class="text-2xl font-bold mb-2">🔍 Ready</div>
+                    <button onclick="runDiagnosis()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                        🚀 Run Diagnosis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Problem Selector -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">🎯 What's the Problem?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="selectProblem('no-data')" class="problem-btn bg-red-900/30 hover:bg-red-800/40 border border-red-500/50 rounded-lg p-4 text-left transition">
+                    <div class="text-xl mb-2">📭 No Data</div>
+                    <div class="text-sm text-gray-300">Dashboard shows old or no data</div>
+                </button>
+                <button onclick="selectProblem('extension')" class="problem-btn bg-orange-900/30 hover:bg-orange-800/40 border border-orange-500/50 rounded-lg p-4 text-left transition">
+                    <div class="text-xl mb-2">🧩 Extension Issues</div>
+                    <div class="text-sm text-gray-300">Browser extension not working</div>
+                </button>
+                <button onclick="selectProblem('worker')" class="problem-btn bg-yellow-900/30 hover:bg-yellow-800/40 border border-yellow-500/50 rounded-lg p-4 text-left transition">
+                    <div class="text-xl mb-2">☁️ Worker Problems</div>
+                    <div class="text-sm text-gray-300">Cloudflare Worker errors</div>
+                </button>
+                <button onclick="selectProblem('kv-storage')" class="problem-btn bg-purple-900/30 hover:bg-purple-800/40 border border-purple-500/50 rounded-lg p-4 text-left transition">
+                    <div class="text-xl mb-2">💾 KV Storage</div>
+                    <div class="text-sm text-gray-300">Data storage issues</div>
+                </button>
+                <button onclick="selectProblem('network')" class="problem-btn bg-blue-900/30 hover:bg-blue-800/40 border border-blue-500/50 rounded-lg p-4 text-left transition">
+                    <div class="text-xl mb-2">🌐 Network</div>
+                    <div class="text-sm text-gray-300">Connectivity problems</div>
+                </button>
+                <button onclick="selectProblem('general')" class="problem-btn bg-gray-700/30 hover:bg-gray-600/40 border border-gray-500/50 rounded-lg p-4 text-left transition">
+                    <div class="text-xl mb-2">❓ General</div>
+                    <div class="text-sm text-gray-300">Not sure what's wrong</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Diagnosis Progress -->
+        <div id="diagnosisProgress" class="glass rounded-xl p-6 mb-6 hidden">
+            <h2 class="text-2xl font-bold mb-4">🔍 Diagnosis Progress</h2>
+            <div id="progressSteps" class="space-y-3">
+                <!-- Progress steps will be populated here -->
+            </div>
+        </div>
+
+        <!-- Troubleshooting Steps -->
+        <div id="troubleshootingSteps" class="glass rounded-xl p-6 mb-6 hidden">
+            <h2 class="text-2xl font-bold mb-4">📋 Step-by-Step Solution</h2>
+            <div id="stepsContainer" class="space-y-4">
+                <!-- Steps will be populated here -->
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="markAllCompleted()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition">
+                    ✅ Mark All Completed
+                </button>
+                <button onclick="resetProgress()" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition">
+                    🔄 Reset Progress
+                </button>
+                <button onclick="generateReport()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                    📄 Generate Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Real-time Monitoring -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">📡 Real-time System Monitor</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-black/30 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-400">Worker Status</span>
+                        <span id="workerMonitor" class="text-sm">⏳</span>
+                    </div>
+                    <div class="text-xs text-gray-500" id="workerDetails">Checking...</div>
+                </div>
+                <div class="bg-black/30 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-400">KV Storage</span>
+                        <span id="kvMonitor" class="text-sm">⏳</span>
+                    </div>
+                    <div class="text-xs text-gray-500" id="kvDetails">Checking...</div>
+                </div>
+                <div class="bg-black/30 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-400">Data Flow</span>
+                        <span id="flowMonitor" class="text-sm">⏳</span>
+                    </div>
+                    <div class="text-xs text-gray-500" id="flowDetails">Checking...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Fixes -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">⚡ Quick Fixes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="quickFixWorker()" class="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg text-left transition">
+                    <div class="font-bold">🔄 Restart Worker</div>
+                    <div class="text-sm text-gray-300">Redeploy Cloudflare Worker</div>
+                </button>
+                <button onclick="quickFixExtension()" class="bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg text-left transition">
+                    <div class="font-bold">🧩 Reset Extension</div>
+                    <div class="text-sm text-gray-300">Clear extension cache & reload</div>
+                </button>
+                <button onclick="quickFixKV()" class="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg text-left transition">
+                    <div class="font-bold">💾 Test KV Storage</div>
+                    <div class="text-sm text-gray-300">Verify KV connectivity</div>
+                </button>
+                <button onclick="quickFixNetwork()" class="bg-orange-600 hover:bg-orange-700 px-4 py-3 rounded-lg text-left transition">
+                    <div class="font-bold">🌐 Check Network</div>
+                    <div class="text-sm text-gray-300">Test all endpoints</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Help Resources -->
+        <div class="glass rounded-xl p-6">
+            <h2 class="text-2xl font-bold mb-4">📚 Help Resources</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="../system-health-monitor.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg text-center transition">
+                    🏥 System Health Monitor
+                </a>
+                <a href="../flow-tester.html" class="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg text-center transition">
+                    🌊 Flow Tester
+                </a>
+                <a href="../extension-checker.html" class="bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg text-center transition">
+                    🧩 Extension Checker
+                </a>
+                <a href="../diagnostic-suite.html" class="bg-orange-600 hover:bg-orange-700 px-4 py-3 rounded-lg text-center transition">
+                    🔬 Full Diagnostics
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        
+        let selectedProblem = null;
+        let diagnosisResults = {};
+        let troubleshootingSteps = [];
+        let monitoringInterval = null;
+
+        // Initialize monitoring on load
+        document.addEventListener('DOMContentLoaded', () => {
+            startRealTimeMonitoring();
+        });
+
+        // Select problem type
+        function selectProblem(problemType) {
+            selectedProblem = problemType;
+            
+            // Update UI
+            document.querySelectorAll('.problem-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-white');
+            });
+            event.target.classList.add('ring-2', 'ring-white');
+            
+            document.getElementById('diagnosisStatus').textContent = `🎯 ${problemType.replace('-', ' ').toUpperCase()}`;
+            
+            // Auto-run diagnosis
+            runDiagnosis();
+        }
+
+        // Run comprehensive diagnosis
+        async function runDiagnosis() {
+            if (!selectedProblem) {
+                alert('Please select a problem type first');
+                return;
+            }
+            
+            document.getElementById('diagnosisStatus').textContent = '🔄 Diagnosing...';
+            document.getElementById('diagnosisProgress').classList.remove('hidden');
+            
+            const progressSteps = document.getElementById('progressSteps');
+            progressSteps.innerHTML = '';
+            
+            // Define diagnostic steps based on problem type
+            const steps = getDiagnosticSteps(selectedProblem);
+            
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                const stepElement = createProgressStep(step.name, i);
+                progressSteps.appendChild(stepElement);
+                
+                // Update current step
+                updateProgressStep(i, 'current', 'Running...');
+                
+                try {
+                    const result = await step.diagnostic();
+                    diagnosisResults[step.key] = result;
+                    updateProgressStep(i, result.success ? 'success' : 'error', result.message);
+                    
+                    // Add delay for visual feedback
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                    diagnosisResults[step.key] = { success: false, error: error.message };
+                    updateProgressStep(i, 'error', `Error: ${error.message}`);
+                }
+            }
+            
+            // Generate troubleshooting steps
+            generateTroubleshootingSteps();
+            
+            // Update final status
+            const hasErrors = Object.values(diagnosisResults).some(result => !result.success);
+            document.getElementById('diagnosisStatus').textContent = hasErrors ? '❌ Issues Found' : '✅ System Healthy';
+        }
+
+        // Get diagnostic steps based on problem type
+        function getDiagnosticSteps(problemType) {
+            const commonSteps = [
+                {
+                    key: 'worker_health',
+                    name: 'Check Worker Health',
+                    diagnostic: async () => {
+                        const response = await fetch(`${WORKER_URL}/health`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            return { success: true, message: `Worker OK (v${data.version})`, data };
+                        } else {
+                            return { success: false, message: `Worker unreachable (${response.status})` };
+                        }
+                    }
+                },
+                {
+                    key: 'kv_storage',
+                    name: 'Test KV Storage',
+                    diagnostic: async () => {
+                        const response = await fetch(`${WORKER_URL}/interceptor/history?limit=1`);
+                        if (response.ok) {
+                            const records = await response.json();
+                            return { success: true, message: `KV OK (${records.length} records)`, records };
+                        } else {
+                            return { success: false, message: 'KV storage error' };
+                        }
+                    }
+                }
+            ];
+            
+            const problemSpecificSteps = {
+                'no-data': [
+                    ...commonSteps,
+                    {
+                        key: 'data_freshness',
+                        name: 'Check Data Freshness',
+                        diagnostic: async () => {
+                            const response = await fetch(`${WORKER_URL}/interceptor/history?limit=10`);
+                            if (response.ok) {
+                                const records = await response.json();
+                                if (records.length === 0) {
+                                    return { success: false, message: 'No data in KV storage' };
+                                }
+                                const latest = records[0];
+                                const age = Math.floor((Date.now() - parseInt(latest.key.split(':')[2])) / 60000);
+                                return { success: age < 60, message: `Latest data: ${age} minutes old`, age };
+                            }
+                            return { success: false, message: 'Cannot check data freshness' };
+                        }
+                    }
+                ],
+                'extension': [
+                    {
+                        key: 'chrome_apis',
+                        name: 'Check Chrome APIs',
+                        diagnostic: async () => {
+                            const hasChromeAPIs = typeof chrome !== 'undefined' && chrome.runtime;
+                            return { success: hasChromeAPIs, message: hasChromeAPIs ? 'Chrome APIs available' : 'Chrome APIs not available' };
+                        }
+                    },
+                    ...commonSteps
+                ],
+                'worker': commonSteps,
+                'kv-storage': commonSteps,
+                'network': [
+                    {
+                        key: 'network_connectivity',
+                        name: 'Test Network Connectivity',
+                        diagnostic: async () => {
+                            try {
+                                const workerResponse = await fetch(`${WORKER_URL}/health`);
+                                const fantasyResponse = await fetch('https://fantasy402.com', { method: 'HEAD' });
+                                return { 
+                                    success: workerResponse.ok && fantasyResponse.ok, 
+                                    message: `Worker: ${workerResponse.ok}, fantasy402: ${fantasyResponse.ok}` 
+                                };
+                            } catch (error) {
+                                return { success: false, message: `Network error: ${error.message}` };
+                            }
+                        }
+                    },
+                    ...commonSteps
+                ],
+                'general': commonSteps
+            };
+            
+            return problemSpecificSteps[problemType] || commonSteps;
+        }
+
+        // Create progress step element
+        function createProgressStep(name, index) {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-3 p-3 bg-black/30 rounded-lg';
+            div.id = `progress-step-${index}`;
+            div.innerHTML = `
+                <div class="step-indicator text-lg">⏳</div>
+                <div class="flex-1">
+                    <div class="font-medium">${name}</div>
+                    <div class="step-message text-sm text-gray-400">Waiting...</div>
+                </div>
+            `;
+            return div;
+        }
+
+        // Update progress step
+        function updateProgressStep(index, status, message) {
+            const stepElement = document.getElementById(`progress-step-${index}`);
+            if (!stepElement) return;
+            
+            const indicator = stepElement.querySelector('.step-indicator');
+            const messageDiv = stepElement.querySelector('.step-message');
+            
+            // Remove all status classes
+            stepElement.classList.remove('step-current', 'step-completed', 'step-error');
+            
+            switch (status) {
+                case 'current':
+                    stepElement.classList.add('step-current');
+                    indicator.innerHTML = '<span class="pulse">🔄</span>';
+                    break;
+                case 'success':
+                    stepElement.classList.add('step-completed');
+                    indicator.textContent = '✅';
+                    break;
+                case 'error':
+                    stepElement.classList.add('step-error');
+                    indicator.textContent = '❌';
+                    break;
+            }
+            
+            messageDiv.textContent = message;
+        }
+
+        // Generate troubleshooting steps
+        function generateTroubleshootingSteps() {
+            const container = document.getElementById('stepsContainer');
+            const stepsDiv = document.getElementById('troubleshootingSteps');
+            
+            troubleshootingSteps = getTroubleshootingSteps(selectedProblem, diagnosisResults);
+            
+            container.innerHTML = troubleshootingSteps.map((step, index) => `
+                <div class="checklist-item bg-black/30 rounded-lg p-4 border border-white/10">
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="step-${index}" class="mt-1" onchange="updateProgress()">
+                        <div class="flex-1">
+                            <label for="step-${index}" class="font-bold block mb-2 cursor-pointer">
+                                Step ${index + 1}: ${step.title}
+                            </label>
+                            <div class="text-sm text-gray-300 mb-3">${step.description}</div>
+                            ${step.details ? `
+                                <div class="bg-black/50 rounded p-3 text-xs monospace mb-3">
+                                    ${step.details}
+                                </div>
+                            ` : ''}
+                            ${step.commands ? `
+                                <div class="space-y-2">
+                                    ${step.commands.map(cmd => `
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="copyCommand('${cmd.replace(/'/g, "\\'")}')" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">
+                                                📋
+                                            </button>
+                                            <code class="text-xs bg-black/50 px-2 py-1 rounded">${cmd}</code>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            stepsDiv.classList.remove('hidden');
+        }
+
+        // Get troubleshooting steps based on diagnosis
+        function getTroubleshootingSteps(problemType, results) {
+            const steps = [];
+            
+            if (problemType === 'no-data' || !results.worker_health?.success) {
+                steps.push({
+                    title: 'Fix Worker Issues',
+                    description: 'Ensure Cloudflare Worker is deployed and accessible',
+                    details: 'Worker Status: ' + (results.worker_health?.message || 'Unknown'),
+                    commands: [
+                        'wrangler deploy',
+                        'curl https://betting-brain-v3.nolarose1968-806.workers.dev/health'
+                    ]
+                });
+            }
+            
+            if (problemType === 'no-data' || !results.kv_storage?.success) {
+                steps.push({
+                    title: 'Fix KV Storage',
+                    description: 'Check KV namespace configuration and bindings',
+                    details: 'KV Status: ' + (results.kv_storage?.message || 'Unknown'),
+                    commands: [
+                        'wrangler kv:namespace list',
+                        'Check BET_TICKER_RAW binding in wrangler.toml'
+                    ]
+                });
+            }
+            
+            if (problemType === 'extension' || !results.chrome_apis?.success) {
+                steps.push({
+                    title: 'Install Browser Extension',
+                    description: 'Install and configure the BetTicker interceptor extension',
+                    details: `
+1. Open Chrome and go to chrome://extensions/
+2. Enable "Developer mode"
+3. Click "Load unpacked"
+4. Select the browser-extension/ folder
+5. Verify extension shows "ON" badge
+                    `
+                });
+            }
+            
+            if (problemType === 'no-data' && results.data_freshness) {
+                const age = results.data_freshness.age;
+                if (age > 60) {
+                    steps.push({
+                        title: 'Generate Fresh Data',
+                        description: 'Visit fantasy402.com to trigger new data capture',
+                        details: `Latest data is ${age} minutes old. Visit the target site and navigate to betting sections.`
+                    });
+                }
+            }
+            
+            // Add general verification steps
+            steps.push({
+                title: 'Verify End-to-End Flow',
+                description: 'Test complete data flow from browser to dashboard',
+                details: `
+1. Open fantasy402.com in Chrome with extension installed
+2. Open DevTools → Network tab
+3. Look for getBetTicker requests
+4. Verify URLs show workers.dev (not fantasy402.com)
+5. Check dashboard for new data
+                `
+            });
+            
+            return steps;
+        }
+
+        // Real-time monitoring
+        function startRealTimeMonitoring() {
+            updateSystemStatus();
+            monitoringInterval = setInterval(updateSystemStatus, 10000); // Update every 10 seconds
+        }
+
+        async function updateSystemStatus() {
+            try {
+                // Check worker
+                const workerResponse = await fetch(`${WORKER_URL}/health`);
+                const workerStatus = workerResponse.ok ? '✅' : '❌';
+                document.getElementById('workerMonitor').textContent = workerStatus;
+                document.getElementById('workerDetails').textContent = workerResponse.ok ? 'Online' : 'Offline';
+                
+                // Check KV
+                const kvResponse = await fetch(`${WORKER_URL}/interceptor/history?limit=1`);
+                const kvStatus = kvResponse.ok ? '✅' : '❌';
+                document.getElementById('kvMonitor').textContent = kvStatus;
+                if (kvResponse.ok) {
+                    const records = await kvResponse.json();
+                    document.getElementById('kvDetails').textContent = `${records.length} records`;
+                } else {
+                    document.getElementById('kvDetails').textContent = 'Error';
+                }
+                
+                // Check data flow
+                const flowStatus = (workerResponse.ok && kvResponse.ok) ? '✅' : '❌';
+                document.getElementById('flowMonitor').textContent = flowStatus;
+                document.getElementById('flowDetails').textContent = flowStatus === '✅' ? 'Working' : 'Broken';
+                
+            } catch (error) {
+                document.getElementById('workerMonitor').textContent = '❌';
+                document.getElementById('kvMonitor').textContent = '❌';
+                document.getElementById('flowMonitor').textContent = '❌';
+                document.getElementById('workerDetails').textContent = 'Error';
+                document.getElementById('kvDetails').textContent = 'Error';
+                document.getElementById('flowDetails').textContent = 'Error';
+            }
+        }
+
+        // Quick fix functions
+        async function quickFixWorker() {
+            alert('To redeploy the worker, run: wrangler deploy\n\nThis requires access to the Cloudflare Workers CLI and proper authentication.');
+        }
+
+        function quickFixExtension() {
+            alert('Extension Reset Steps:\n\n1. Go to chrome://extensions/\n2. Find "BetTicker Interceptor Proxy"\n3. Click reload icon\n4. Click extension icon to verify status\n5. Visit fantasy402.com to test');
+        }
+
+        async function quickFixKV() {
+            try {
+                const response = await fetch(`${WORKER_URL}/diagnostics`);
+                const data = await response.json();
+                alert(`KV Storage Status:\n\nAvailable: ${data.kv.available}\nStatus: ${data.kv.status}\n\n${data.kv.error ? 'Error: ' + data.kv.error : 'KV storage is working correctly'}`);
+            } catch (error) {
+                alert(`KV Storage Error: ${error.message}`);
+            }
+        }
+
+        async function quickFixNetwork() {
+            try {
+                const workerResponse = await fetch(`${WORKER_URL}/health`);
+                const fantasyResponse = await fetch('https://fantasy402.com', { method: 'HEAD' });
+                
+                alert(`Network Status:\n\nWorker: ${workerResponse.ok ? '✅ OK' : '❌ Failed'}\nfantasy402.com: ${fantasyResponse.ok ? '✅ OK' : '❌ Failed'}\n\n${!workerResponse.ok || !fantasyResponse.ok ? 'Check network connectivity and DNS resolution.' : 'All endpoints accessible'}`);
+            } catch (error) {
+                alert(`Network Error: ${error.message}`);
+            }
+        }
+
+        // Utility functions
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('#stepsContainer input[type="checkbox"]');
+            const checked = document.querySelectorAll('#stepsContainer input[type="checkbox"]:checked');
+            const progress = checkboxes.length > 0 ? Math.round((checked.length / checkboxes.length) * 100) : 0;
+            
+            // You could update a progress bar here if needed
+            console.log(`Progress: ${progress}% (${checked.length}/${checkboxes.length})`);
+        }
+
+        function markAllCompleted() {
+            document.querySelectorAll('#stepsContainer input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+            updateProgress();
+        }
+
+        function resetProgress() {
+            document.querySelectorAll('#stepsContainer input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            updateProgress();
+        }
+
+        function copyCommand(command) {
+            navigator.clipboard.writeText(command).then(() => {
+                // Show temporary success message
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 1000);
+            });
+        }
+
+        function generateReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                problemType: selectedProblem,
+                diagnosisResults: diagnosisResults,
+                troubleshootingSteps: troubleshootingSteps,
+                completedSteps: Array.from(document.querySelectorAll('#stepsContainer input[type="checkbox"]:checked')).length,
+                totalSteps: document.querySelectorAll('#stepsContainer input[type="checkbox"]').length
+            };
+            
+            const reportText = JSON.stringify(report, null, 2);
+            const blob = new Blob([reportText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `troubleshooting-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

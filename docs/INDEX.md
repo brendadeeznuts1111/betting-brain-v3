@@ -17,11 +17,11 @@
 | **Database** | [../migrations/](../migrations/) | D1 schema & migrations |
 | **Tests** | [../tests/](../tests/) | Unit test suite |
 | **Scripts** | [../scripts/](../scripts/) | Automation & deployment |
-| **Deploy Scripts** | [../deploy/](../deploy/) | Production deployment tools |
-| **Dashboards** | [../grafana/dashboard.json](../grafana/dashboard.json) | Grafana monitoring |
+| **Deploy Scripts** | [../deployment/deploy/](../deployment/deploy/) | Production deployment tools |
+| **Dashboards** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | Grafana monitoring |
 | **CI/CD** | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml) | GitHub Actions |
-| **Contributing** | [../CONTRIBUTING.md](../CONTRIBUTING.md) | How to contribute |
-| **Changelog** | [../CHANGELOG.md](../CHANGELOG.md) | Version history |
+| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
+| **Changelog** | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | **License** | [../LICENSE](../LICENSE) | MIT License |
 
 ---
@@ -120,9 +120,9 @@
 ### Dashboards
 | Dashboard | Path | Description |
 |-----------|------|-------------|
-| **Grafana Config** | [../grafana/dashboard.json](../grafana/dashboard.json) | 17-panel monitoring |
-| **Dashboard Docs** | [../grafana/README.md](../grafana/README.md) | Installation & setup guide |
-| **Import Script** | [../grafana/import.sh](../grafana/import.sh) | Automated dashboard deployment |
+| **Grafana Config** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | 17-panel monitoring |
+| **Dashboard Docs** | [../monitoring/grafana/README.md](../monitoring/grafana/README.md) | Installation & setup guide |
+| **Import Script** | [../monitoring/grafana/import.sh](../monitoring/grafana/import.sh) | Automated dashboard deployment |
 | **Cost Metrics** | _Embedded in dashboard_ | 4 cost cap gauges |
 | **Performance** | _Embedded in dashboard_ | Request latency & error tracking |
 
@@ -178,7 +178,7 @@
 - docs/INDEX.md → ../migrations/
 - docs/INDEX.md → ../tests/
 - docs/INDEX.md → ../scripts/
-- docs/INDEX.md → ../grafana/dashboard.json
+- docs/INDEX.md → ../monitoring/grafana/dashboard.json
 - docs/INDEX.md → ../.github/workflows/deploy.yml
 - docs/INDEX.md → ../CONTRIBUTING.md
 - docs/INDEX.md → ../CHANGELOG.md

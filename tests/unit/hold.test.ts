@@ -3,7 +3,7 @@
  * Alert threshold: < 4% or > 8%
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach } from "bun:test";
 import { getHoldPercentage } from '../../src/tools/intelligence/getHoldPercentage';
 
 describe('Hold Percentage Calculations', () => {
@@ -42,7 +42,7 @@ describe('Hold Percentage Calculations', () => {
     mockRequest = new Request('https://test.com/getHoldPercentage?eid=nba_123&mt=SPREAD');
   });
 
-  it('should calculate hold percentage within normal range', async () => {
+  test('should calculate hold percentage within normal range', async () => {
     const response = await getHoldPercentage(mockRequest, mockEnv);
     const data = await response.json();
 
@@ -51,7 +51,7 @@ describe('Hold Percentage Calculations', () => {
     expect(data.holdPercentage).toBeLessThanOrEqual(8);
   });
 
-  it('should alert when hold percentage < 4%', async () => {
+  test('should alert when hold percentage < 4%', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,
@@ -79,7 +79,7 @@ describe('Hold Percentage Calculations', () => {
     expect(data.alertThreshold.min).toBe(4);
   });
 
-  it('should alert when hold percentage > 8%', async () => {
+  test('should alert when hold percentage > 8%', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,
@@ -107,7 +107,7 @@ describe('Hold Percentage Calculations', () => {
     expect(data.alertThreshold.max).toBe(8);
   });
 
-  it('should handle missing event data', async () => {
+  test('should handle missing event data', async () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,
@@ -123,7 +123,7 @@ describe('Hold Percentage Calculations', () => {
     expect(response.status).toBe(404);
   });
 
-  it('should validate market type', async () => {
+  test('should validate market type', async () => {
     const invalidRequest = new Request('https://test.com/getHoldPercentage?eid=nba_123&mt=INVALID');
     const response = await getHoldPercentage(invalidRequest, mockEnv);
     

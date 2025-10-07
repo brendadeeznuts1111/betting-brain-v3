@@ -3,7 +3,7 @@
  * Tests the actual implementation of sharpCalc and exposureCalc schedules
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
 
 // Mock the cost cap guard
@@ -13,7 +13,7 @@ vi.mock('../../src/guards/costCap', () => ({
   }
 }));
 
-describe('Schedule Implementation Detailed Tests', () => {
+describe.concurrent('Schedule Implementation Detailed Tests', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
@@ -48,8 +48,8 @@ describe('Schedule Implementation Detailed Tests', () => {
     } as any;
   });
 
-  describe('Sharp Calculation Schedule Detailed Tests', () => {
-    it('should process customers with valid betting history', async () => {
+  describe.concurrent('Sharp Calculation Schedule Detailed Tests', () => {
+    test('should process customers with valid betting history', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -82,7 +82,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should calculate sharp scores correctly for different customer types', async () => {
+    test('should calculate sharp scores correctly for different customer types', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -111,7 +111,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle customers with no betting history', async () => {
+    test('should handle customers with no betting history', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -140,7 +140,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should process customers in batches correctly', async () => {
+    test('should process customers in batches correctly', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -169,7 +169,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(250);
     });
 
-    it('should clean up old sharp data', async () => {
+    test('should clean up old sharp data', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -199,7 +199,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       );
     });
 
-    it('should handle database errors during customer processing', async () => {
+    test('should handle database errors during customer processing', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -225,7 +225,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       await expect(handleSharpCalculation(mockEnv, mockCtx)).resolves.not.toThrow();
     });
 
-    it('should respect cost cap limits and exit early', async () => {
+    test('should respect cost cap limits and exit early', async () => {
       // Mock cost cap to block processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -246,8 +246,8 @@ describe('Schedule Implementation Detailed Tests', () => {
     });
   });
 
-  describe('Exposure Calculation Schedule Detailed Tests', () => {
-    it('should process active events with exposure data', async () => {
+  describe.concurrent('Exposure Calculation Schedule Detailed Tests', () => {
+    test('should process active events with exposure data', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -283,7 +283,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should respect max 50 rows constraint', async () => {
+    test('should respect max 50 rows constraint', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -314,7 +314,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(50);
     });
 
-    it('should calculate exposure metrics correctly', async () => {
+    test('should calculate exposure metrics correctly', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -352,7 +352,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       );
     });
 
-    it('should trigger exposure alerts when thresholds are exceeded', async () => {
+    test('should trigger exposure alerts when thresholds are exceeded', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -390,7 +390,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       );
     });
 
-    it('should handle events with no exposure data', async () => {
+    test('should handle events with no exposure data', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -425,7 +425,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       );
     });
 
-    it('should handle database errors during exposure calculation', async () => {
+    test('should handle database errors during exposure calculation', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -451,7 +451,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       await expect(handleExposureCalculation(mockEnv, mockCtx)).resolves.not.toThrow();
     });
 
-    it('should respect cost cap limits and exit early', async () => {
+    test('should respect cost cap limits and exit early', async () => {
       // Mock cost cap to block processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -472,8 +472,8 @@ describe('Schedule Implementation Detailed Tests', () => {
     });
   });
 
-  describe('Schedule Performance and Edge Cases', () => {
-    it('should complete within reasonable time limits', async () => {
+  describe.concurrent('Schedule Performance and Edge Cases', () => {
+    test('should complete within reasonable time limits', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -505,7 +505,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(executionTime).toBeLessThan(5000);
     });
 
-    it('should handle concurrent schedule execution', async () => {
+    test('should handle concurrent schedule execution', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -540,7 +540,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should handle schedule execution with analytics engine errors', async () => {
+    test('should handle schedule execution with analytics engine errors', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
@@ -569,7 +569,7 @@ describe('Schedule Implementation Detailed Tests', () => {
       await expect(handleSharpCalculation(mockEnv, mockCtx)).resolves.not.toThrow();
     });
 
-    it('should handle schedule execution with queue producer errors', async () => {
+    test('should handle schedule execution with queue producer errors', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({

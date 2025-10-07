@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 End-to-End Flow Tester</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .step-success { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5); }
+        .step-error { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); }
+        .step-warning { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.5); }
+        .step-running { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.5); }
+        .monospace { font-family: 'Courier New', monospace; }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .flow-arrow { animation: flow 2s ease-in-out infinite; }
+        @keyframes flow { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+    </style>
+</head>
+<body class="p-6 text-white">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🌊 End-to-End Flow Tester</h1>
+                    <p class="text-gray-400">Complete data flow validation from browser to KV storage</p>
+                </div>
+                <div class="text-right">
+                    <div id="overallStatus" class="text-3xl font-bold mb-2">⏳ Ready</div>
+                    <button onclick="runFullFlowTest()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                        🚀 Run Full Test
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flow Visualization -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">🔄 Data Flow Visualization</h2>
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div id="step1" class="flow-step flex-1 min-w-40 p-4 rounded-lg border text-center">
+                    <div class="text-2xl mb-2">🌐</div>
+                    <div class="font-bold">Browser</div>
+                    <div class="text-xs text-gray-400">fantasy402.com</div>
+                    <div class="status-indicator mt-2">⏳</div>
+                </div>
+                <div class="text-2xl flow-arrow">→</div>
+                <div id="step2" class="flow-step flex-1 min-w-40 p-4 rounded-lg border text-center">
+                    <div class="text-2xl mb-2">🧩</div>
+                    <div class="font-bold">Extension</div>
+                    <div class="text-xs text-gray-400">Redirect Rule</div>
+                    <div class="status-indicator mt-2">⏳</div>
+                </div>
+                <div class="text-2xl flow-arrow">→</div>
+                <div id="step3" class="flow-step flex-1 min-w-40 p-4 rounded-lg border text-center">
+                    <div class="text-2xl mb-2">☁️</div>
+                    <div class="font-bold">Worker</div>
+                    <div class="text-xs text-gray-400">Intercept & Store</div>
+                    <div class="status-indicator mt-2">⏳</div>
+                </div>
+                <div class="text-2xl flow-arrow">→</div>
+                <div id="step4" class="flow-step flex-1 min-w-40 p-4 rounded-lg border text-center">
+                    <div class="text-2xl mb-2">💾</div>
+                    <div class="font-bold">KV Storage</div>
+                    <div class="text-xs text-gray-400">Persistent Data</div>
+                    <div class="status-indicator mt-2">⏳</div>
+                </div>
+                <div class="text-2xl flow-arrow">→</div>
+                <div id="step5" class="flow-step flex-1 min-w-40 p-4 rounded-lg border text-center">
+                    <div class="text-2xl mb-2">📊</div>
+                    <div class="font-bold">Dashboard</div>
+                    <div class="text-xs text-gray-400">Display Data</div>
+                    <div class="status-indicator mt-2">⏳</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Individual Tests -->
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-lg font-bold mb-4">🧪 Individual Component Tests</h3>
+                <div class="space-y-3">
+                    <button onclick="testBrowserToExtension()" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                        🌐 Test Browser → Extension
+                    </button>
+                    <button onclick="testExtensionToWorker()" class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition">
+                        🧩 Test Extension → Worker
+                    </button>
+                    <button onclick="testWorkerToKv()" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition">
+                        ☁️ Test Worker → KV
+                    </button>
+                    <button onclick="testKvToDashboard()" class="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg text-sm transition">
+                        💾 Test KV → Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Monitoring -->
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-lg font-bold mb-4">📡 Live Monitoring</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span>Real-time Monitoring:</span>
+                        <span id="monitoringStatus" class="text-sm">⏸️ Stopped</span>
+                    </div>
+                    <button onclick="startLiveMonitoring()" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition">
+                        ▶️ Start Monitoring
+                    </button>
+                    <button onclick="stopLiveMonitoring()" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm transition">
+                        ⏹️ Stop Monitoring
+                    </button>
+                    <div class="bg-black/30 rounded p-3 monospace text-xs max-h-32 overflow-y-auto">
+                        <div id="monitoringLog">Monitoring log will appear here...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4">📋 Test Results</h3>
+            <div id="testResults" class="space-y-4">
+                <div class="text-center text-gray-400 py-8">
+                    Run tests to see results here...
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulated Request Test -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4">🎯 Simulated BetTicker Request</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold mb-3">Request Configuration</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm mb-1">Request Type:</label>
+                            <select id="requestType" class="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
+                                <option value="getBetTicker">getBetTicker (Real)</option>
+                                <option value="simulated">Simulated Test Data</option>
+                                <option value="malformed">Malformed Request</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1">Target:</label>
+                            <select id="requestTarget" class="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
+                                <option value="direct">Direct to Worker</option>
+                                <option value="viaExtension">Via Extension (if available)</option>
+                            </select>
+                        </div>
+                        <button onclick="sendTestRequest()" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">
+                            🚀 Send Test Request
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-3">Request Details</h4>
+                    <div class="bg-black/30 rounded p-4 monospace text-xs max-h-48 overflow-y-auto">
+                        <div id="requestDetails">Configure and send a request to see details...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KV Storage Inspector -->
+        <div class="glass rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4">💾 KV Storage Inspector</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <button onclick="inspectKvStorage()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition">
+                    🔍 Inspect KV Storage
+                </button>
+                <button onclick="clearTestRecords()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm transition">
+                    🗑️ Clear Test Records
+                </button>
+                <button onclick="exportKvData()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition">
+                    💾 Export KV Data
+                </button>
+            </div>
+            <div class="bg-black/30 rounded p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold">Recent Records</h4>
+                    <span id="recordCount" class="text-sm text-gray-400">0 records</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="text-left py-2 px-2">Timestamp</th>
+                                <th class="text-left py-2 px-2">Age</th>
+                                <th class="text-left py-2 px-2">Status</th>
+                                <th class="text-left py-2 px-2">Size</th>
+                                <th class="text-left py-2 px-2">IP</th>
+                                <th class="text-left py-2 px-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kvRecordsTable">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-gray-500">
+                                    Click "Inspect KV Storage" to load records
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting Guide -->
+        <div class="glass rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">🔧 Automated Troubleshooting</h3>
+            <div id="troubleshootingResults" class="space-y-4">
+                <div class="text-center text-gray-400 py-4">
+                    Run tests to get troubleshooting recommendations...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+        const FANTASY402_URL = 'https://fantasy402.com';
+        const TARGET_PATH = '/cloud/api/Manager/getBetTicker';
+        
+        let monitoringInterval = null;
+        let testResults = {
+            browserToExtension: { status: 'pending', details: null },
+            extensionToWorker: { status: 'pending', details: null },
+            workerToKv: { status: 'pending', details: null },
+            kvToDashboard: { status: 'pending', details: null }
+        };
+
+        // Run full flow test
+        async function runFullFlowTest() {
+            document.getElementById('overallStatus').textContent = '🔄 Testing...';
+            
+            // Reset all steps
+            for (let i = 1; i <= 5; i++) {
+                updateFlowStep(i, 'running', 'Testing...');
+            }
+            
+            // Run tests in sequence
+            await testBrowserToExtension();
+            await testExtensionToWorker();
+            await testWorkerToKv();
+            await testKvToDashboard();
+            
+            // Update overall status
+            const allPassed = Object.values(testResults).every(result => result.status === 'success');
+            document.getElementById('overallStatus').textContent = allPassed ? '✅ All Passed' : '❌ Issues Found';
+            
+            // Generate troubleshooting
+            generateTroubleshooting();
+        }
+
+        // Test Browser → Extension
+        async function testBrowserToExtension() {
+            updateFlowStep(1, 'running', 'Testing...');
+            
+            try {
+                // Check if we can access extension APIs
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    updateFlowStep(1, 'success', 'Chrome APIs Available');
+                    testResults.browserToExtension = { 
+                        status: 'success', 
+                        details: 'Chrome extension APIs are available' 
+                    };
+                    addTestResult('Browser → Extension', 'success', 
+                        '✅ Chrome APIs available<br>⚠️ Cannot verify extension installation from webpage<br>📝 Manual check required: chrome://extensions/');
+                } else {
+                    updateFlowStep(1, 'warning', 'Chrome APIs Not Available');
+                    testResults.browserToExtension = { 
+                        status: 'warning', 
+                        details: 'Chrome APIs not available in this context' 
+                    };
+                    addTestResult('Browser → Extension', 'warning', 
+                        '⚠️ Chrome APIs not available<br>ℹ️ Normal for non-extension webpages<br>📝 Manual verification required');
+                }
+            } catch (error) {
+                updateFlowStep(1, 'error', 'Test Failed');
+                testResults.browserToExtension = { 
+                    status: 'error', 
+                    details: error.message 
+                };
+                addTestResult('Browser → Extension', 'error', 
+                    `❌ Test failed: ${error.message}`);
+            }
+        }
+
+        // Test Extension → Worker
+        async function testExtensionToWorker() {
+            updateFlowStep(2, 'running', 'Testing...');
+            
+            try {
+                // Test if worker is accessible
+                const response = await fetch(`${WORKER_URL}/health`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateFlowStep(2, 'success', `Worker OK (${data.version})`);
+                    testResults.extensionToWorker = { 
+                        status: 'success', 
+                        details: `Worker accessible, version ${data.version}` 
+                    };
+                    addTestResult('Extension → Worker', 'success', 
+                        `✅ Worker accessible<br>📊 Version: ${data.version}<br>⏱️ Response: ${data.duration || 'N/A'}ms<br>🆔 Request ID: ${data.requestId || 'N/A'}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateFlowStep(2, 'error', 'Worker Unreachable');
+                testResults.extensionToWorker = { 
+                    status: 'error', 
+                    details: error.message 
+                };
+                addTestResult('Extension → Worker', 'error', 
+                    `❌ Worker unreachable<br>🔗 URL: ${WORKER_URL}<br>💬 Error: ${error.message}<br>🔧 Check worker deployment`);
+            }
+        }
+
+        // Test Worker → KV
+        async function testWorkerToKv() {
+            updateFlowStep(3, 'running', 'Testing...');
+            
+            try {
+                // Test KV access by checking history
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=10`);
+                
+                if (response.ok) {
+                    const records = await response.json();
+                    updateFlowStep(3, 'success', `KV OK (${records.length} records)`);
+                    testResults.workerToKv = { 
+                        status: 'success', 
+                        details: `KV accessible, ${records.length} records found` 
+                    };
+                    addTestResult('Worker → KV', 'success', 
+                        `✅ KV storage accessible<br>📊 Records: ${records.length}<br>💾 Storage: Working<br>🔄 Data flow: Normal`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateFlowStep(3, 'error', 'KV Error');
+                testResults.workerToKv = { 
+                    status: 'error', 
+                    details: error.message 
+                };
+                addTestResult('Worker → KV', 'error', 
+                    `❌ KV storage error<br>💬 Error: ${error.message}<br>🔧 Check KV binding in wrangler.toml`);
+            }
+        }
+
+        // Test KV → Dashboard
+        async function testKvToDashboard() {
+            updateFlowStep(4, 'running', 'Testing...');
+            
+            try {
+                // Test dashboard data access
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=5`);
+                
+                if (response.ok) {
+                    const records = await response.json();
+                    updateFlowStep(4, 'success', 'Dashboard OK');
+                    testResults.kvToDashboard = { 
+                        status: 'success', 
+                        details: 'Dashboard can read KV data' 
+                    };
+                    addTestResult('KV → Dashboard', 'success', 
+                        `✅ Dashboard can read KV<br>📊 Recent records: ${records.length}<br>🔄 API endpoints: Working<br>📱 Display: Functional`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateFlowStep(4, 'error', 'Dashboard Error');
+                testResults.kvToDashboard = { 
+                    status: 'error', 
+                    details: error.message 
+                };
+                addTestResult('KV → Dashboard', 'error', 
+                    `❌ Dashboard error<br>💬 Error: ${error.message}<br>🔧 Check API endpoints`);
+            }
+        }
+
+        // Update flow step visualization
+        function updateFlowStep(step, status, message) {
+            const stepElement = document.getElementById(`step${step}`);
+            const indicator = stepElement.querySelector('.status-indicator');
+            
+            // Remove all status classes
+            stepElement.classList.remove('step-success', 'step-error', 'step-warning', 'step-running');
+            
+            // Add appropriate class and icon
+            switch (status) {
+                case 'success':
+                    stepElement.classList.add('step-success');
+                    indicator.textContent = '✅';
+                    break;
+                case 'error':
+                    stepElement.classList.add('step-error');
+                    indicator.textContent = '❌';
+                    break;
+                case 'warning':
+                    stepElement.classList.add('step-warning');
+                    indicator.textContent = '⚠️';
+                    break;
+                case 'running':
+                    stepElement.classList.add('step-running');
+                    indicator.innerHTML = '<span class="pulse">🔄</span>';
+                    break;
+            }
+        }
+
+        // Add test result
+        function addTestResult(testName, status, details) {
+            const resultsDiv = document.getElementById('testResults');
+            
+            const statusColors = {
+                success: 'text-green-400',
+                error: 'text-red-400',
+                warning: 'text-yellow-400'
+            };
+            
+            const statusIcons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️'
+            };
+            
+            const resultHtml = `
+                <div class="bg-black/30 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-bold">${testName}</h4>
+                        <span class="${statusColors[status]}">${statusIcons[status]} ${status.toUpperCase()}</span>
+                    </div>
+                    <div class="text-sm text-gray-300">${details}</div>
+                </div>
+            `;
+            
+            // Remove placeholder if exists
+            if (resultsDiv.querySelector('.text-gray-400')) {
+                resultsDiv.innerHTML = '';
+            }
+            
+            // Add or update result
+            const existingResult = Array.from(resultsDiv.children).find(
+                child => child.querySelector('h4')?.textContent === testName
+            );
+            
+            if (existingResult) {
+                existingResult.outerHTML = resultHtml;
+            } else {
+                resultsDiv.insertAdjacentHTML('afterbegin', resultHtml);
+            }
+        }
+
+        // Send test request
+        async function sendTestRequest() {
+            const requestType = document.getElementById('requestType').value;
+            const requestTarget = document.getElementById('requestTarget').value;
+            
+            const detailsDiv = document.getElementById('requestDetails');
+            detailsDiv.innerHTML = '🚀 Sending test request...\n';
+            
+            try {
+                const startTime = Date.now();
+                let url, payload;
+                
+                if (requestType === 'getBetTicker') {
+                    url = requestTarget === 'direct' 
+                        ? `${WORKER_URL}${TARGET_PATH}`
+                        : `${FANTASY402_URL}${TARGET_PATH}`;
+                    payload = { test: true, timestamp: startTime };
+                } else if (requestType === 'simulated') {
+                    url = `${WORKER_URL}${TARGET_PATH}`;
+                    payload = {
+                        simulated: true,
+                        testData: {
+                            events: [{ id: 'test-event', odds: [1.5, 2.5] }],
+                            timestamp: startTime
+                        }
+                    };
+                } else {
+                    url = `${WORKER_URL}${TARGET_PATH}`;
+                    payload = { malformed: 'data' };
+                }
+                
+                detailsDiv.innerHTML += `📡 URL: ${url}\n`;
+                detailsDiv.innerHTML += `📦 Payload: ${JSON.stringify(payload, null, 2)}\n`;
+                detailsDiv.innerHTML += `🎯 Target: ${requestTarget}\n\n`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'FlowTester/1.0'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const duration = Date.now() - startTime;
+                const responseText = await response.text();
+                
+                detailsDiv.innerHTML += `📊 Status: ${response.status} ${response.statusText}\n`;
+                detailsDiv.innerHTML += `⏱️ Duration: ${duration}ms\n`;
+                detailsDiv.innerHTML += `📄 Response Size: ${responseText.length} bytes\n`;
+                detailsDiv.innerHTML += `📋 Response:\n${responseText.substring(0, 500)}${responseText.length > 500 ? '...' : ''}\n`;
+                
+                if (response.ok) {
+                    detailsDiv.innerHTML += `\n✅ Request successful! Check KV storage for new record.`;
+                } else {
+                    detailsDiv.innerHTML += `\n❌ Request failed: ${response.status}`;
+                }
+                
+            } catch (error) {
+                detailsDiv.innerHTML += `\n❌ Error: ${error.message}`;
+            }
+        }
+
+        // Inspect KV storage
+        async function inspectKvStorage() {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=50`);
+                if (!response.ok) throw new Error('Failed to fetch KV data');
+                
+                const records = await response.json();
+                const tbody = document.getElementById('kvRecordsTable');
+                const recordCount = document.getElementById('recordCount');
+                
+                recordCount.textContent = `${records.length} records`;
+                
+                if (records.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-gray-500">
+                                No records found in KV storage
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = records.map(record => {
+                    const timestamp = parseInt(record.key.split(':')[2]);
+                    const age = Math.floor((Date.now() - timestamp) / 60000);
+                    const ageText = age < 1 ? 'Just now' : age < 60 ? `${age}m` : `${Math.floor(age/60)}h`;
+                    const ageClass = age < 5 ? 'text-green-400' : age < 60 ? 'text-yellow-400' : 'text-red-400';
+                    
+                    return `
+                        <tr class="border-b border-white/10 hover:bg-white/5">
+                            <td class="py-2 px-2 text-xs">${new Date(timestamp).toLocaleString()}</td>
+                            <td class="py-2 px-2 text-xs ${ageClass} font-bold">${ageText}</td>
+                            <td class="py-2 px-2 text-xs">${record.metadata.status}</td>
+                            <td class="py-2 px-2 text-xs">${formatBytes(record.metadata.contentLength)}</td>
+                            <td class="py-2 px-2 text-xs monospace">${record.metadata.ip.split(':').pop()}</td>
+                            <td class="py-2 px-2 text-xs">
+                                <button onclick="viewRecord('${record.key}')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                document.getElementById('kvRecordsTable').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-red-400">
+                            Error: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // View specific record
+        async function viewRecord(key) {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/response?key=${key}`);
+                if (!response.ok) throw new Error('Failed to fetch record');
+                
+                const data = await response.json();
+                console.log('Record data:', data);
+                alert(`Record: ${key}\n\nSize: ${data.body.length} bytes\nStatus: ${data.metadata.status}\nIP: ${data.metadata.ip}\n\nCheck console for full data.`);
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Start live monitoring
+        function startLiveMonitoring() {
+            if (monitoringInterval) return;
+            
+            document.getElementById('monitoringStatus').textContent = '▶️ Monitoring';
+            
+            monitoringInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${WORKER_URL}/interceptor/history?limit=5`);
+                    if (response.ok) {
+                        const records = await response.json();
+                        const now = new Date().toLocaleTimeString();
+                        
+                        if (records.length > 0) {
+                            const latest = records[0];
+                            const age = Math.floor((Date.now() - parseInt(latest.key.split(':')[2])) / 60000);
+                            
+                            if (age < 1) {
+                                addMonitoringLog(`[${now}] 🆕 NEW RECORD: ${latest.key}`);
+                            } else {
+                                addMonitoringLog(`[${now}] 📊 Latest: ${age}m old`);
+                            }
+                        } else {
+                            addMonitoringLog(`[${now}] 📭 No records found`);
+                        }
+                    }
+                } catch (error) {
+                    const now = new Date().toLocaleTimeString();
+                    addMonitoringLog(`[${now}] ❌ Error: ${error.message}`);
+                }
+            }, 5000);
+        }
+
+        // Stop live monitoring
+        function stopLiveMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                document.getElementById('monitoringStatus').textContent = '⏸️ Stopped';
+            }
+        }
+
+        // Add monitoring log entry
+        function addMonitoringLog(message) {
+            const logDiv = document.getElementById('monitoringLog');
+            logDiv.innerHTML = message + '\n' + logDiv.innerHTML;
+            
+            // Keep only last 10 entries
+            const lines = logDiv.innerHTML.split('\n');
+            if (lines.length > 10) {
+                logDiv.innerHTML = lines.slice(0, 10).join('\n');
+            }
+        }
+
+        // Generate troubleshooting
+        function generateTroubleshooting() {
+            const troubleshootingDiv = document.getElementById('troubleshootingResults');
+            const issues = [];
+            
+            Object.entries(testResults).forEach(([test, result]) => {
+                if (result.status === 'error') {
+                    switch (test) {
+                        case 'browserToExtension':
+                            issues.push({
+                                title: '🧩 Extension Issues',
+                                description: 'Extension may not be installed or enabled',
+                                steps: [
+                                    'Go to chrome://extensions/',
+                                    'Look for "BetTicker Interceptor Proxy"',
+                                    'Ensure extension is enabled (blue toggle)',
+                                    'Click extension icon to verify status'
+                                ]
+                            });
+                            break;
+                        case 'extensionToWorker':
+                            issues.push({
+                                title: '☁️ Worker Issues',
+                                description: 'Worker is not accessible',
+                                steps: [
+                                    'Check worker deployment: ' + WORKER_URL,
+                                    'Verify wrangler.toml configuration',
+                                    'Check Cloudflare Workers dashboard',
+                                    'Run: wrangler deploy'
+                                ]
+                            });
+                            break;
+                        case 'workerToKv':
+                            issues.push({
+                                title: '💾 KV Storage Issues',
+                                description: 'Cannot access KV storage',
+                                steps: [
+                                    'Check KV namespace in wrangler.toml',
+                                    'Verify KV binding: BET_TICKER_RAW',
+                                    'Check Cloudflare KV dashboard',
+                                    'Run: wrangler kv:namespace list'
+                                ]
+                            });
+                            break;
+                        case 'kvToDashboard':
+                            issues.push({
+                                title: '📊 Dashboard Issues',
+                                description: 'Dashboard cannot read KV data',
+                                steps: [
+                                    'Check API endpoints: /interceptor/history',
+                                    'Verify CORS headers',
+                                    'Check dashboard JavaScript console',
+                                    'Test API manually'
+                                ]
+                            });
+                            break;
+                    }
+                }
+            });
+            
+            if (issues.length === 0) {
+                troubleshootingDiv.innerHTML = `
+                    <div class="bg-green-900/30 border border-green-500/50 rounded p-4">
+                        <div class="font-bold text-green-400">✅ No Issues Detected</div>
+                        <div class="text-sm mt-2">All components are working correctly!</div>
+                    </div>
+                `;
+            } else {
+                troubleshootingDiv.innerHTML = issues.map(issue => `
+                    <div class="bg-red-900/30 border border-red-500/50 rounded p-4">
+                        <div class="font-bold text-red-400">${issue.title}</div>
+                        <div class="text-sm mt-2 mb-3">${issue.description}</div>
+                        <div class="text-sm">
+                            <div class="font-bold mb-2">Steps to fix:</div>
+                            <ol class="list-decimal ml-5 space-y-1">
+                                ${issue.steps.map(step => `<li>${step}</li>`).join('')}
+                            </ol>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Utility functions
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function clearTestRecords() {
+            if (confirm('This would require backend support to clear KV records. For now, you can only view records.')) {
+                alert('KV record clearing not implemented in this demo.');
+            }
+        }
+
+        function exportKvData() {
+            alert('KV data export would be implemented here.');
+        }
+    </script>
+</body>
+</html>

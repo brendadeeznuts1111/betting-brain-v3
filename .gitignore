@@ -57,3 +57,10 @@ temp/
 # Debug
 debug/
 .cache/
+
+# Test Results & CI Artifacts
+test-results.json
+*.backup
+
+# One-time scripts
+tools/organize-files.sh

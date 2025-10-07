@@ -3,7 +3,7 @@
  * Tests error handling and edge cases in validation and database utilities
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import { 
   validateRequest, 
   createErrorResponse, 
@@ -53,7 +53,7 @@ describe('Utilities Error Path Tests', () => {
   });
 
   describe('Validation Utility Error Paths', () => {
-    it('should handle invalid event ID formats', () => {
+    test('should handle invalid event ID formats', () => {
       const invalidIds = ['', 'invalid@id', 'id with spaces', 'id/with/slashes', 'id\\with\\backslashes'];
       
       invalidIds.forEach(invalidId => {
@@ -63,7 +63,7 @@ describe('Utilities Error Path Tests', () => {
       });
     });
 
-    it('should handle invalid customer ID formats', () => {
+    test('should handle invalid customer ID formats', () => {
       const invalidIds = ['', 'invalid@id', 'id with spaces', 'id/with/slashes'];
       
       invalidIds.forEach(invalidId => {
@@ -73,7 +73,7 @@ describe('Utilities Error Path Tests', () => {
       });
     });
 
-    it('should handle invalid market types', () => {
+    test('should handle invalid market types', () => {
       const invalidMarkets = ['INVALID', 'SPREADS', 'MONEY', 'TOTALS', ''];
       
       invalidMarkets.forEach(invalidMarket => {
@@ -83,7 +83,7 @@ describe('Utilities Error Path Tests', () => {
       });
     });
 
-    it('should handle malformed request data', () => {
+    test('should handle malformed request data', () => {
       const malformedRequests = [
         { eid: '' }, // Missing required fields
         { eid: 'valid', includeHistory: 'not-boolean' }, // Wrong type
@@ -101,7 +101,7 @@ describe('Utilities Error Path Tests', () => {
       });
     });
 
-    it('should handle malformed response data', () => {
+    test('should handle malformed response data', () => {
       const malformedResponses = [
         { eid: '', sides: [] }, // Invalid event ID
         { eid: 'valid', sides: 'not-array' }, // Wrong type
@@ -119,7 +119,7 @@ describe('Utilities Error Path Tests', () => {
       });
     });
 
-    it('should handle createErrorResponse with missing parameters', () => {
+    test('should handle createErrorResponse with missing parameters', () => {
       const error1 = createErrorResponse('Test error');
       const error2 = createErrorResponse('Test error', 'TEST_CODE');
       const error3 = createErrorResponse('Test error', 'TEST_CODE', { detail: 'test' });
@@ -143,14 +143,14 @@ describe('Utilities Error Path Tests', () => {
       });
     });
 
-    it('should handle createSuccessResponse with invalid data', () => {
+    test('should handle createSuccessResponse with invalid data', () => {
       const invalidData = { eid: '', sides: [] };
       
       expect(() => createSuccessResponse(invalidData, BettingExposureResponseSchema))
         .toThrow();
     });
 
-    it('should handle validation with circular references', () => {
+    test('should handle validation with circular references', () => {
       const circularData: any = { eid: 'valid' };
       circularData.self = circularData;
       
@@ -158,7 +158,7 @@ describe('Utilities Error Path Tests', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should handle validation with very large objects', () => {
+    test('should handle validation with very large objects', () => {
       const largeData = {
         eid: 'x'.repeat(1000000), // 1MB string in valid field
         includeHistory: true,
@@ -169,7 +169,7 @@ describe('Utilities Error Path Tests', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should handle validation with special characters', () => {
+    test('should handle validation with special characters', () => {
       const specialChars = ['\x00', '\x01', '\x02', '\x03', '\x04', '\x05'];
       
       specialChars.forEach(char => {
@@ -186,7 +186,7 @@ describe('Utilities Error Path Tests', () => {
       dbHelper = createDatabaseHelper(mockEnv);
     });
 
-    it('should handle database connection errors', async () => {
+    test('should handle database connection errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Connection failed')),
         run: vi.fn().mockRejectedValue(new Error('Connection failed')),
@@ -206,7 +206,7 @@ describe('Utilities Error Path Tests', () => {
       });
     });
 
-    it('should handle SQL syntax errors', async () => {
+    test('should handle SQL syntax errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('SQL syntax error')),
         run: vi.fn().mockRejectedValue(new Error('SQL syntax error')),
@@ -221,7 +221,7 @@ describe('Utilities Error Path Tests', () => {
       await expect(dbHelper.executeQuery('INVALID SQL')).rejects.toThrow('SQL syntax error');
     });
 
-    it('should handle timeout scenarios', async () => {
+    test('should handle timeout scenarios', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockImplementation(() => 
           new Promise((_, reject) => 
@@ -253,7 +253,7 @@ describe('Utilities Error Path Tests', () => {
       await expect(dbHelper.executeQuery('SELECT 1', [], { timeout: 1000 })).rejects.toThrow('Timeout');
     });
 
-    it('should handle batch operation errors', async () => {
+    test('should handle batch operation errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.batch).mockRejectedValue(new Error('Batch failed'));
 
       const operations = [
@@ -266,7 +266,7 @@ describe('Utilities Error Path Tests', () => {
       expect(result.rowsAffected).toBe(0);
     });
 
-    it('should handle table existence check errors', async () => {
+    test('should handle table existence check errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Table check failed')),
         run: vi.fn().mockResolvedValue({ success: true }),
@@ -282,7 +282,7 @@ describe('Utilities Error Path Tests', () => {
       expect(exists).toBe(false);
     });
 
-    it('should handle row count errors', async () => {
+    test('should handle row count errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Count failed')),
         run: vi.fn().mockResolvedValue({ success: true }),
@@ -298,7 +298,7 @@ describe('Utilities Error Path Tests', () => {
       expect(count).toBe(0);
     });
 
-    it('should handle database size errors', async () => {
+    test('should handle database size errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Size check failed')),
         run: vi.fn().mockResolvedValue({ success: true }),
@@ -314,7 +314,7 @@ describe('Utilities Error Path Tests', () => {
       expect(size).toEqual({ size: 0, pages: 0 });
     });
 
-    it('should handle vacuum errors', async () => {
+    test('should handle vacuum errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockRejectedValue(new Error('Vacuum failed')),
@@ -329,7 +329,7 @@ describe('Utilities Error Path Tests', () => {
       await expect(dbHelper.vacuum()).rejects.toThrow('Vacuum failed');
     });
 
-    it('should handle analyze errors', async () => {
+    test('should handle analyze errors', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockRejectedValue(new Error('Analyze failed')),
@@ -344,7 +344,7 @@ describe('Utilities Error Path Tests', () => {
       await expect(dbHelper.analyze()).rejects.toThrow('Analyze failed');
     });
 
-    it('should handle retry logic with exponential backoff', async () => {
+    test('should handle retry logic with exponential backoff', async () => {
       let attemptCount = 0;
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockImplementation(() => {
@@ -374,7 +374,7 @@ describe('Utilities Error Path Tests', () => {
       expect(attemptCount).toBe(3);
     });
 
-    it('should handle maximum retry attempts exceeded', async () => {
+    test('should handle maximum retry attempts exceeded', async () => {
       vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Persistent failure')),
         run: vi.fn().mockResolvedValue({ success: true }),
@@ -389,7 +389,7 @@ describe('Utilities Error Path Tests', () => {
       await expect(dbHelper.executeQuery('SELECT 1', [], { retry: 2 })).rejects.toThrow('Persistent failure');
     });
 
-    it('should handle null and undefined parameters', async () => {
+    test('should handle null and undefined parameters', async () => {
       const result1 = await dbHelper.executeQuery('SELECT 1', null as any);
       const result2 = await dbHelper.executeQuery('SELECT 1', undefined as any);
       
@@ -397,13 +397,13 @@ describe('Utilities Error Path Tests', () => {
       expect(result2).toEqual([]);
     });
 
-    it('should handle empty operations array in batch', async () => {
+    test('should handle empty operations array in batch', async () => {
       const result = await dbHelper.executeBatch([]);
       expect(result.success).toBe(true);
       expect(result.rowsAffected).toBe(0);
     });
 
-    it('should handle invalid table names', async () => {
+    test('should handle invalid table names', async () => {
       const invalidNames = ['', 'table with spaces', 'table; DROP TABLE users;', 'table"with"quotes'];
       
       for (const name of invalidNames) {
@@ -414,7 +414,7 @@ describe('Utilities Error Path Tests', () => {
   });
 
   describe('Utility Integration Error Paths', () => {
-    it('should handle validation and database errors together', async () => {
+    test('should handle validation and database errors together', async () => {
       const dbHelper = createDatabaseHelper(mockEnv);
       
       // Mock database error
@@ -437,7 +437,7 @@ describe('Utilities Error Path Tests', () => {
       await expect(dbHelper.executeQuery('SELECT 1')).rejects.toThrow('Database error');
     });
 
-    it('should handle memory pressure scenarios', async () => {
+    test('should handle memory pressure scenarios', async () => {
       const dbHelper = createDatabaseHelper(mockEnv);
       
       // Simulate memory pressure with large result sets

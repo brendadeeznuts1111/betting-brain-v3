@@ -85,8 +85,8 @@ wrangler login
 
 ### 3. Setup Production Environment
 ```bash
-chmod +x deploy/*.sh
-./deploy/setup-production.sh
+chmod +x deployment/deploy/*.sh
+./deployment/deploy/setup-production.sh
 ```
 
 This will:
@@ -219,11 +219,11 @@ curl https://betting-brain-v3-prod.workers.dev/health
 ### Grafana Dashboard
 
 Access your monitoring dashboard:
-1. Import `grafana/dashboard.json` to your Grafana instance
+1. Import `monitoring/grafana/dashboard.json` to your Grafana instance
 2. Configure data sources (Cloudflare Analytics Engine + Prometheus)
 3. View 17 real-time monitoring panels
 
-See `grafana/README.md` for detailed setup instructions.
+See `monitoring/grafana/README.md` for detailed setup instructions.
 
 ### Cloudflare Dashboard
 
@@ -305,7 +305,7 @@ wrangler login
 **Issue: "Database not found"**
 ```bash
 # Solution: Run setup script
-./deploy/setup-production.sh
+./deployment/deploy/setup-production.sh
 
 # Or create database manually
 wrangler d1 create betting-analytics

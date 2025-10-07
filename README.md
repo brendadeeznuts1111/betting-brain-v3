@@ -263,17 +263,29 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 
 ## 📊 Dashboards & Tools
 
-### **Quick Access**
-- **Position Tracker:** `dashboards/dashboard-positions.html` - Real-time risk analysis
-- **Enhanced Analytics:** `dashboards/dashboard-enhanced.html` - Charts and alerts
-- **AI Intelligence Hub:** `dashboards/dashboard-pro.html` - AI-powered insights
-- **Data Capture:** `tools/capture-live-data.html` - Get fresh betting data
+### **🎯 Quick Start**
+- **[📊 Dashboards Hub](dashboards/index.html)** - All betting intelligence dashboards in one place
+- **[🛠️ Testing Tools Hub](tools/index.html)** - Complete diagnostic and testing suite
+
+### **Recommended Dashboards**
+- **[Enhanced Analytics](dashboards/dashboard-enhanced.html)** ⭐ - Charts, alerts, and deep analytics (RECOMMENDED)
+- **[AI Intelligence Hub](dashboards/dashboard-pro.html)** - AI-powered insights with Claude integration
+- **[Position & Risk Tracker](dashboards/dashboard-positions.html)** - Real-time risk analysis
+- **[Basic Monitoring](dashboards/dashboard.html)** - Simple, clean monitoring interface
+
+### **Essential Tools**
+- **[System Health Monitor](tools/system-health-monitor.html)** - Real-time system diagnostics
+- **[Extension Test Suite](tools/extension-test-suite.html)** - Automated extension testing
+- **[Flow Tester](tools/flow-tester.html)** - End-to-end data flow validation
+- **[Troubleshooting Guide](tools/troubleshooting-guide.html)** - Intelligent problem diagnosis
 
 ### **Documentation**
 - **[Dashboard Collection](docs/dashboards/README.md)** - Complete dashboard overview
-- **[Tools & Utilities](tools/README.md)** - HTML tools and utilities
+- **[Tools & Utilities](tools/README.md)** - HTML tools and utilities  
+- **[Testing Guide](TESTING_GUIDE.md)** - Extension testing and deployment
 - **[Agent Risk Guide](docs/guides/AGENT_RISK_GUIDE.md)** - Risk analysis guide
 - **[Start Here Guide](docs/guides/START_HERE.md)** - Complete setup guide
+- **[🔧 Debugging Data Capture](docs/guides/DEBUGGING_DATA_CAPTURE.md)** - Fix data capture issues
 
 ## 📚 Additional Documentation
 

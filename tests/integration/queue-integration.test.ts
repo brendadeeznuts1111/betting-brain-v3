@@ -3,13 +3,13 @@
  * Tests the line ingress and steam webhook queue handlers with real-world scenarios
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import { handleLineIngress, handleBatchLineIngress } from '../../src/queues/lineIngress';
 import { handleSteamWebhook, handleBatchSteamWebhook } from '../../src/queues/steamWebhook';
 import type { Env } from '../../src/types/api';
 import type { ExecutionContext } from '@cloudflare/workers-types';
 
-describe('Queue Integration Tests', () => {
+describe.concurrent('Queue Integration Tests', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
@@ -47,8 +47,8 @@ describe('Queue Integration Tests', () => {
     } as any;
   });
 
-  describe('Line Ingress Queue Integration', () => {
-    it('should process valid line movement successfully', async () => {
+  describe.concurrent('Line Ingress Queue Integration', () => {
+    test('should process valid line movement successfully', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -68,7 +68,7 @@ describe('Queue Integration Tests', () => {
       // Message is automatically acknowledged on successful completion
     });
 
-    it('should trigger steam move detection for significant movements', async () => {
+    test('should trigger steam move detection for significant movements', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -93,7 +93,7 @@ describe('Queue Integration Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should handle invalid line movement data without retry', async () => {
+    test('should handle invalid line movement data without retry', async () => {
       const message = {
         body: JSON.stringify({
           eid: '', // Invalid empty ID
@@ -114,7 +114,7 @@ describe('Queue Integration Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
 
-    it('should handle malformed JSON in message body without retry', async () => {
+    test('should handle malformed JSON in message body without retry', async () => {
       const message = {
         body: 'invalid-json'
       } as any;
@@ -127,7 +127,7 @@ describe('Queue Integration Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
 
-    it('should retry on database connection errors', async () => {
+    test('should retry on database connection errors', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -156,7 +156,7 @@ describe('Queue Integration Tests', () => {
       await expect(handleLineIngress(message, mockEnv, mockCtx)).rejects.toThrow('Database connection timeout');
     });
 
-    it('should handle database errors gracefully', async () => {
+    test('should handle database errors gracefully', async () => {
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
         run: vi.fn().mockRejectedValue(new Error('Database error')),
@@ -184,7 +184,7 @@ describe('Queue Integration Tests', () => {
       // Message will be retried due to thrown error
     });
 
-    it('should process batch line ingress messages', async () => {
+    test('should process batch line ingress messages', async () => {
       const messages = [
         {
           body: JSON.stringify({
@@ -220,7 +220,7 @@ describe('Queue Integration Tests', () => {
       // Messages are automatically acknowledged on successful completion
     });
 
-    it('should handle mixed valid and invalid messages in batch', async () => {
+    test('should handle mixed valid and invalid messages in batch', async () => {
       const messages = [
         {
           body: JSON.stringify({
@@ -248,7 +248,7 @@ describe('Queue Integration Tests', () => {
       // Valid messages are processed, invalid ones are handled gracefully without throwing
     });
 
-    it('should respect cost cap limits', async () => {
+    test('should respect cost cap limits', async () => {
       // Mock cost cap to block processing
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
@@ -280,8 +280,8 @@ describe('Queue Integration Tests', () => {
     });
   });
 
-  describe('Steam Webhook Queue Integration', () => {
-    it('should process valid steam move successfully', async () => {
+  describe.concurrent('Steam Webhook Queue Integration', () => {
+    test('should process valid steam move successfully', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -322,7 +322,7 @@ describe('Queue Integration Tests', () => {
       // Message is automatically acknowledged on successful completion
     });
 
-    it('should detect steam move when line change exceeds 3 sigma', async () => {
+    test('should detect steam move when line change exceeds 3 sigma', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -367,7 +367,7 @@ describe('Queue Integration Tests', () => {
       );
     });
 
-    it('should apply deduplication correctly', async () => {
+    test('should apply deduplication correctly', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -398,7 +398,7 @@ describe('Queue Integration Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
 
-    it('should handle steam move with insufficient historical data', async () => {
+    test('should handle steam move with insufficient historical data', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -429,7 +429,7 @@ describe('Queue Integration Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should handle batch steam webhook messages', async () => {
+    test('should handle batch steam webhook messages', async () => {
       const messages = [
         {
           body: JSON.stringify({
@@ -465,7 +465,7 @@ describe('Queue Integration Tests', () => {
       // Messages are automatically acknowledged on successful completion
     });
 
-    it('should handle steam webhook with database errors', async () => {
+    test('should handle steam webhook with database errors', async () => {
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
         run: vi.fn().mockRejectedValue(new Error('Database error')),
@@ -493,7 +493,7 @@ describe('Queue Integration Tests', () => {
       // Message will be retried due to thrown error
     });
 
-    it('should handle steam webhook with analytics engine errors', async () => {
+    test('should handle steam webhook with analytics engine errors', async () => {
       mockEnv.ANALYTICS_ENGINE.writeDataPoint = vi.fn().mockRejectedValue(new Error('Analytics error'));
 
       const message = {
@@ -533,8 +533,8 @@ describe('Queue Integration Tests', () => {
     });
   });
 
-  describe('Queue Handler Performance', () => {
-    it('should process messages within reasonable time limits', async () => {
+  describe.concurrent('Queue Handler Performance', () => {
+    test('should process messages within reasonable time limits', async () => {
       const message = {
         body: JSON.stringify({
           eid: 'nba_123',
@@ -555,7 +555,7 @@ describe('Queue Integration Tests', () => {
       expect(executionTime).toBeLessThan(1000); // Should complete within 1 second
     });
 
-    it('should handle high-frequency message processing', async () => {
+    test('should handle high-frequency message processing', async () => {
       const messages = Array.from({ length: 100 }, (_, i) => ({
         body: JSON.stringify({
           eid: `nba_${i}`,
@@ -580,7 +580,7 @@ describe('Queue Integration Tests', () => {
       // All messages should be processed (automatically acknowledged)
     });
 
-    it('should handle concurrent queue processing', async () => {
+    test('should handle concurrent queue processing', async () => {
       const message1 = {
         body: JSON.stringify({
           eid: 'nba_123',

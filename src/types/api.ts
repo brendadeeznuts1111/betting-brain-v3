@@ -7,16 +7,49 @@ import { z } from 'zod';
 
 // Environment interface for Cloudflare Workers
 export interface Env {
+  // D1 Databases
   ANALYTICS: D1Database;
+  RAW_FEED_DB: D1Database; // MCP raw feed database
+
+  // Queues
   LINE_INGRESS: Queue;
   STEAM_WEBHOOK: Queue;
+  STEAM_QUEUE: Queue; // MCP steam processor
+  EXPOSURE_QUEUE: Queue; // MCP exposure calculator
+
+  // Analytics Engine
   ANALYTICS_ENGINE: AnalyticsEngineDataset;
+
+  // KV Namespaces
   BET_TICKER_RAW?: KVNamespace; // Optional: BetTicker interception storage
+  TOKEN_STORE?: KVNamespace; // MCP: Legacy token storage
+  USER_STORE?: KVNamespace; // MCP: User credentials
+  SESSION_STORE?: KVNamespace; // MCP: Active sessions
+  REFRESH_STORE?: KVNamespace; // MCP: Refresh tokens
+  LIVEBETS_STORE?: KVNamespace; // MCP: Live betting cache
+
+  // Environment Variables
+  FANTASY402_JWT_TOKEN?: string; // MCP: Fantasy402.com JWT token
+  FANTASY402_API_BASE?: string; // MCP: Fantasy402.com API base URL
+  ENCRYPTION_KEY?: string; // MCP: Token encryption key
 }
 
 // Extended environment for BetTicker sniffer
 export interface BetTickerSnifferEnv extends Env {
   BET_TICKER_RAW: KVNamespace; // Required for sniffer
+}
+
+// Extended environment for MCP server
+export interface MCPEnv extends Env {
+  TOKEN_STORE: KVNamespace;
+  USER_STORE: KVNamespace;
+  SESSION_STORE: KVNamespace;
+  REFRESH_STORE: KVNamespace;
+  LIVEBETS_STORE: KVNamespace;
+  RAW_FEED_DB: D1Database;
+  FANTASY402_JWT_TOKEN: string;
+  FANTASY402_API_BASE: string;
+  ENCRYPTION_KEY: string;
 }
 
 // Request schemas

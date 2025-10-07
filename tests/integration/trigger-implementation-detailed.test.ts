@@ -3,11 +3,11 @@
  * Tests the actual implementation of onLineMove trigger
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
 import type { LineMovement } from '../../src/types/database';
 
-describe('Trigger Implementation Detailed Tests', () => {
+describe.concurrent('Trigger Implementation Detailed Tests', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
@@ -42,8 +42,8 @@ describe('Trigger Implementation Detailed Tests', () => {
     } as any;
   });
 
-  describe('Line Movement Trigger Detailed Tests', () => {
-    it('should process line movement with valid data', async () => {
+  describe.concurrent('Line Movement Trigger Detailed Tests', () => {
+    test('should process line movement with valid data', async () => {
       const lineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -64,7 +64,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should detect significant line movements', async () => {
+    test('should detect significant line movements', async () => {
       const significantMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -95,7 +95,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       );
     });
 
-    it('should handle line movements with null values', async () => {
+    test('should handle line movements with null values', async () => {
       const lineMovementWithNulls: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -115,7 +115,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should calculate line movement metrics correctly', async () => {
+    test('should calculate line movement metrics correctly', async () => {
       const lineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -143,7 +143,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       );
     });
 
-    it('should handle percentage calculations with zero values', async () => {
+    test('should handle percentage calculations with zero values', async () => {
       const lineMovementWithZero: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -163,7 +163,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should trigger additional processing for significant movements', async () => {
+    test('should trigger additional processing for significant movements', async () => {
       const significantMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -186,7 +186,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should not trigger additional processing for insignificant movements', async () => {
+    test('should not trigger additional processing for insignificant movements', async () => {
       const insignificantMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -209,7 +209,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should handle database errors gracefully', async () => {
+    test('should handle database errors gracefully', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
         run: vi.fn().mockRejectedValue(new Error('Database error')),
@@ -238,7 +238,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       await expect(onLineMove(mockEnv, lineMovement)).resolves.not.toThrow();
     });
 
-    it('should handle steam webhook errors gracefully', async () => {
+    test('should handle steam webhook errors gracefully', async () => {
       (mockEnv.STEAM_WEBHOOK.send as any).mockRejectedValue(new Error('Webhook error'));
 
       const significantMovement: LineMovement = {
@@ -258,7 +258,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       await expect(onLineMove(mockEnv, significantMovement)).resolves.not.toThrow();
     });
 
-    it('should handle analytics engine errors gracefully', async () => {
+    test('should handle analytics engine errors gracefully', async () => {
       (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(new Error('Analytics error'));
 
       const lineMovement: LineMovement = {
@@ -278,7 +278,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       await expect(onLineMove(mockEnv, lineMovement)).resolves.not.toThrow();
     });
 
-    it('should handle concurrent line movements', async () => {
+    test('should handle concurrent line movements', async () => {
       const concurrentMovements: LineMovement[] = [
         {
           eid: 'nba_123',
@@ -314,7 +314,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(2);
     });
 
-    it('should handle high-frequency line movements', async () => {
+    test('should handle high-frequency line movements', async () => {
       const highFrequencyMovements: LineMovement[] = Array.from({ length: 100 }, (_, i) => ({
         eid: `nba_${i}`,
         mt: 'SPREAD',
@@ -339,7 +339,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(100);
     });
 
-    it('should handle line movements with extreme values', async () => {
+    test('should handle line movements with extreme values', async () => {
       const extremeMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -359,7 +359,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should handle line movements with invalid timestamps', async () => {
+    test('should handle line movements with invalid timestamps', async () => {
       const invalidTimestampMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -376,7 +376,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       await expect(onLineMove(mockEnv, invalidTimestampMovement)).resolves.not.toThrow();
     });
 
-    it('should handle line movements with special characters in event ID', async () => {
+    test('should handle line movements with special characters in event ID', async () => {
       const specialCharMovement: LineMovement = {
         eid: 'nba_123_special-chars',
         mt: 'SPREAD',
@@ -396,7 +396,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
 
-    it('should handle line movements with different market types', async () => {
+    test('should handle line movements with different market types', async () => {
       const marketTypes = ['SPREAD', 'MONEYLINE', 'TOTAL', 'PROP'];
       
       for (const marketType of marketTypes) {
@@ -419,7 +419,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(marketTypes.length);
     });
 
-    it('should handle line movements with NaN values', async () => {
+    test('should handle line movements with NaN values', async () => {
       const nanMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -437,7 +437,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       await expect(onLineMove(mockEnv, nanMovement)).resolves.not.toThrow();
     });
 
-    it('should handle line movements with Infinity values', async () => {
+    test('should handle line movements with Infinity values', async () => {
       const infinityMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -456,8 +456,8 @@ describe('Trigger Implementation Detailed Tests', () => {
     });
   });
 
-  describe('Trigger Performance and Limits', () => {
-    it('should complete within reasonable time limits', async () => {
+  describe.concurrent('Trigger Performance and Limits', () => {
+    test('should complete within reasonable time limits', async () => {
       // Set NODE_ENV to production to avoid test delay
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
@@ -488,7 +488,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(executionTime).toBeLessThan(1000);
     });
 
-    it('should handle memory pressure scenarios', async () => {
+    test('should handle memory pressure scenarios', async () => {
       const lineMovements: LineMovement[] = Array.from({ length: 1000 }, (_, i) => ({
         eid: `nba_${i}`,
         mt: 'SPREAD',
@@ -513,7 +513,7 @@ describe('Trigger Implementation Detailed Tests', () => {
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(1000);
     });
 
-    it('should handle trigger execution with timeout scenarios', async () => {
+    test('should handle trigger execution with timeout scenarios', async () => {
       // Set NODE_ENV to test for this specific test
       process.env.NODE_ENV = 'test';
       
