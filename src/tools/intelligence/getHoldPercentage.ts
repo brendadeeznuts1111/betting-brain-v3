@@ -4,7 +4,8 @@
  */
 
 import { Env, GetHoldPercentageRequest, HoldPercentageResponse } from '../../types/api';
-import { GetHoldPercentageRequestSchema, HoldPercentageResponseSchema, createErrorResponse } from '../../utils/validation';
+import { GetHoldPercentageRequestSchema, HoldPercentageResponseSchema } from '../../utils/validation';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';

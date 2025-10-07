@@ -4,7 +4,8 @@
  */
 
 import { Env, GetBettingExposureRequest, BettingExposureResponse } from '../../types/api';
-import { GetBettingExposureRequestSchema, BettingExposureResponseSchema, createErrorResponse } from '../../utils/validation';
+import { GetBettingExposureRequestSchema, BettingExposureResponseSchema } from '../../utils/validation';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';

@@ -4,7 +4,8 @@
  */
 
 import { Env, GetCLVRequest, CLVResponse } from '../../types/api';
-import { GetCLVRequestSchema, CLVResponseSchema, createErrorResponse } from '../../utils/validation';
+import { GetCLVRequestSchema, CLVResponseSchema } from '../../utils/validation';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';

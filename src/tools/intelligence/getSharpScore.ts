@@ -4,7 +4,8 @@
  */
 
 import { Env, GetSharpScoreRequest, SharpScoreResponse } from '../../types/api';
-import { GetSharpScoreRequestSchema, SharpScoreResponseSchema, createErrorResponse } from '../../utils/validation';
+import { GetSharpScoreRequestSchema, SharpScoreResponseSchema } from '../../utils/validation';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
