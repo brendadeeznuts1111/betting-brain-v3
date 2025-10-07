@@ -4,7 +4,6 @@
  */
 
 import { Env, GetCLVRequest, CLVResponse } from '../../types/api';
-import { GetCLVRequestSchema, CLVResponseSchema } from '../../utils/validation';
 import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
@@ -37,7 +36,7 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
       });
     }
 
-    // Parse and validate request
+    // Parse request parameters
     const url = new URL(request.url);
     const params = {
       cid: url.searchParams.get('cid') || '',
@@ -45,23 +44,19 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
       timeWindow: parseInt(url.searchParams.get('timeWindow') || '24')
     };
 
-    const validation = GetCLVRequestSchema.safeParse(params);
-    if (!validation.success) {
-      return new Response(createErrorResponse('Invalid request parameters', 'VALIDATION_ERROR', {
-        errors: validation.error.errors
-      }), {
+    // Basic validation
+    if (!params.cid) {
+      return new Response(createErrorResponse('Customer ID is required', 'VALIDATION_ERROR'), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    const validatedParams = validation.data;
-
     // Query CLV data
     const db = createDatabaseHelper(env);
     const clvData = await db.executeQueryFirst<any>(
       `SELECT cid, clv, wr, ao, nb FROM sharp_indicators WHERE cid = ?`,
-      [validatedParams.cid]
+      [params.cid]
     );
 
     if (!clvData) {
@@ -72,7 +67,7 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
     }
 
     const response: CLVResponse = {
-      cid: validatedParams.cid,
+      cid: params.cid,
       lifetimeValue: clvData.clv || 0,
       winRate: clvData.wr || 0,
       actionCount: clvData.ao || 0,
@@ -81,10 +76,7 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
       alertThreshold: -2 // Alert if CLV drops below -2%
     };
 
-    // Validate response
-    const validatedResponse = CLVResponseSchema.parse(response);
-
-    return new Response(JSON.stringify(validatedResponse), {
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
