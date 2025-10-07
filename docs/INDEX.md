@@ -77,7 +77,8 @@
 | [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide | All Devs | ✅ Complete |
 | [DASHBOARD_REFACTORING_SUMMARY.md](DASHBOARD_REFACTORING_SUMMARY.md) | Dashboard refactoring (60% reduction) 🆕 | All Devs | ✅ Complete |
 | [dashboards/README.md](../dashboards/README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
-| [.ast-grep.yml](../.ast-grep.yml) | Code searchability patterns 🆕 | All Devs | ✅ Complete |
+| [AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md) | ast-grep code search guide (WORKING!) 🆕 | All Devs | ✅ Complete |
+| [sgconfig.yml](../sgconfig.yml) | ast-grep project configuration 🆕 | All Devs | ✅ Complete |
 
 ### Archive (Historical)
 | Document | Purpose | Status |

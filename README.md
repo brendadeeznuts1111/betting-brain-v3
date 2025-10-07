@@ -316,7 +316,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules guide (10 rules)
 - **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
-- **[ast-grep Configuration](.ast-grep.yml)** - Code searchability patterns
+- **[ast-grep Quick Start](docs/AST_GREP_QUICKSTART.md)** - Code search patterns (WORKING!) 🆕
 - **[Dashboard Organization](dashboards/README.md)** - Dashboard architecture
 
 ## 📞 Support
