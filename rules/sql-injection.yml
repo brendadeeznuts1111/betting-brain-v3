@@ -1,0 +1,9 @@
+id: sql-injection-risk
+message: Potential SQL injection risk - use parameterized queries
+severity: error
+language: TypeScript
+rule:
+  pattern: env.$DB.prepare(`$$$${$VAR}$$$`)
+fix: Use parameterized queries with .bind()
+note: "Never use string interpolation in SQL queries. Use ? placeholders and .bind()"
+

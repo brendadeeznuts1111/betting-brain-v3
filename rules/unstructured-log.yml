@@ -1,0 +1,11 @@
+id: unstructured-log
+message: Unstructured log without requestId
+severity: warning
+language: TypeScript
+rule:
+  all:
+    - pattern: console.log($MSG)
+    - not:
+        pattern: console.log(`[${requestId}]$$$`)
+note: "All logs should include requestId prefix for traceability"
+

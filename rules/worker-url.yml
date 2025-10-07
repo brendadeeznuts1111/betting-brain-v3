@@ -1,0 +1,8 @@
+id: worker-url-definition
+message: WORKER_URL definition found - should use shared config
+severity: warning  
+language: JavaScript
+rule:
+  pattern: const WORKER_URL = $$$
+note: "WORKER_URL should be defined once in dashboards/shared/config.js"
+
