@@ -60,6 +60,8 @@ debug/
 
 # Test Results & CI Artifacts
 test-results.json
+test-output.log
+test-full-output.log
 *.backup
 
 # One-time scripts

@@ -1,7 +1,7 @@
 # 🧠 Betting-Brain v3
 
-[![CI](https://github.com/mybook/betting-brain-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/mybook/betting-brain-v3/actions/workflows/deploy.yml)
-[![Link Check](https://github.com/mybook/betting-brain-v3/actions/workflows/deploy.yml/badge.svg?job=linkcheck)](https://github.com/mybook/betting-brain-v3/actions/workflows/deploy.yml)
+[![CI](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
+[![Link Check](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg?job=linkcheck)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](tsconfig.json)
 
@@ -21,15 +21,16 @@
 
 ### 0. Pre-flight
 ```bash
-npm create cloudflare@latest betting-brain -- --template betting-brain-v3
+# Clone the repository
+git clone https://github.com/brendadeeznuts1111/betting-brain-v3.git
 cd betting-brain-v3
-npm i
+bun install
 wrangler login   # once per machine
 ```
 
 ### 1. Deploy
 ```bash
-npm run deploy:prod
+bun run deploy:prod
 ```
 
 **Live in 60 seconds** with auto-generated Grafana dashboard!
@@ -116,7 +117,7 @@ Auto-generated, typed intelligence APIs with:
 
 Generate tools:
 ```bash
-npm run codegen  # creates src/tools/intelligence/*.ts + types
+bun run codegen  # creates src/tools/intelligence/*.ts + types
 ```
 
 Example API call:
@@ -140,7 +141,7 @@ All enforced in `src/guards/costCap.ts`.
 
 ### Production Deploy
 ```bash
-npm run deploy:prod
+bun run deploy:prod
 ```
 
 Output:
@@ -154,7 +155,7 @@ Output:
 
 ### Rollback
 ```bash
-npm run rollback v3.0.0-<sha>
+bun run rollback v3.0.0-<sha>
 ```
 
 ## 📈 Monitoring
