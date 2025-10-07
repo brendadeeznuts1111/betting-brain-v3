@@ -1,0 +1,481 @@
+# API Patterns & Best Practices
+
+## Overview
+
+The REST API layer provides comprehensive validation, error handling, and standardized responses across all endpoints.
+
+See [docs/REST_API_REFERENCE.md](mdc:docs/REST_API_REFERENCE.md) for complete API documentation.
+
+---
+
+## Validation Patterns
+
+### Using Validators
+
+**Location:** `src/utils/validation.ts`
+
+```typescript
+import { validateQueryParams, Validators, validationErrorResponse } from '../utils/validation';
+
+// In endpoint handler
+const validation = validateQueryParams(url, [
+  Validators.agentID(true),      // Required
+  Validators.eventID(),           // Optional
+  Validators.sport(),             // Optional with enum
+  Validators.limit(500),          // Optional with max
+  Validators.offset()             // Optional, min 0
+]);
+
+if (!validation.valid) {
+  return validationErrorResponse(validation.errors, requestId);
+}
+
+const { agentID, eventID, sport, limit, offset } = validation.sanitized!;
+```
+
+### Common Validators
+
+```typescript
+// Agent ID (required, alphanumeric + underscore/hyphen)
+Validators.agentID(true)
+
+// Event ID (optional, string)
+Validators.eventID()
+
+// Market Type (enum)
+Validators.marketType()  // MONEYLINE, SPREAD, TOTAL, PROP, FUTURE, PARLAY
+
+// Sport (enum)
+Validators.sport()  // NFL, NBA, MLB, NHL, etc.
+
+// Dates (YYYY-MM-DD format)
+Validators.date('startDate')
+Validators.date('endDate')
+
+// Numeric limits
+Validators.limit(maxValue)
+Validators.offset()
+Validators.threshold(min, max)
+
+// Exposure level
+Validators.exposureLevel()  // LOW, MEDIUM, HIGH, CRITICAL
+
+// Group by
+Validators.groupBy()  // event, market, customer, sport
+```
+
+### Custom Validation
+
+```typescript
+const customRule: ValidationRule = {
+  field: 'myField',
+  required: true,
+  type: 'string',
+  minLength: 5,
+  maxLength: 100,
+  pattern: /^[A-Z0-9_-]+$/,
+  custom: (value) => {
+    if (value.startsWith('test_')) {
+      return 'Field cannot start with test_';
+    }
+    return null;
+  }
+};
+```
+
+---
+
+## Error Handling Patterns
+
+### Using Error Classes
+
+**Location:** `src/utils/error-handler.ts`
+
+```typescript
+import { Errors, createErrorResponse } from '../utils/error-handler';
+
+// In endpoint handler
+try {
+  // Validation error
+  if (!isValid) {
+    throw Errors.validationError(['Field is required']);
+  }
+  
+  // Not found
+  if (!record) {
+    throw Errors.notFound('Event');
+  }
+  
+  // Database error
+  if (queryFailed) {
+    throw Errors.databaseError('Query failed: ' + error.message);
+  }
+  
+  // Success response
+  return new Response(JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+  
+} catch (error) {
+  return createErrorResponse(error, requestId, url.pathname);
+}
+```
+
+### Error Types
+
+```typescript
+// Client errors (4xx)
+Errors.badRequest(message, details?)       // 400
+Errors.unauthorized(message?)              // 401
+Errors.forbidden(message?)                 // 403
+Errors.notFound(resource?)                 // 404
+Errors.validationError(errors[])           // 400
+Errors.rateLimit(message?)                 // 429
+
+// Server errors (5xx)
+Errors.databaseError(message)              // 500
+Errors.serviceUnavailable(message?)        // 503
+Errors.timeout(message?)                   // 504
+```
+
+### Async Handler Wrapper
+
+```typescript
+import { asyncHandler } from '../utils/error-handler';
+
+// Automatically catches and formats errors
+export const myEndpoint = asyncHandler(async (request, env, ctx) => {
+  // Your code here
+  // Any thrown errors will be caught and formatted automatically
+  return new Response(JSON.stringify(result));
+});
+```
+
+---
+
+## API Endpoint Patterns
+
+### REST API Structure
+
+**Location:** `src/api/routes.ts`
+
+```typescript
+export async function handleAPIRoute(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
+  const requestId = Date.now().toString(36);
+  const url = new URL(request.url);
+  const path = url.pathname.replace('/api', '');
+
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
+
+  // Handle OPTIONS preflight
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Route to endpoint
+    switch (path) {
+      case '/events':
+        return await getEvents(request, env, requestId);
+      // ... more routes
+      default:
+        throw Errors.notFound('API endpoint');
+    }
+  } catch (error) {
+    return createErrorResponse(error, requestId, path);
+  }
+}
+```
+
+### Endpoint Handler Pattern
+
+```typescript
+async function getMyEndpoint(
+  request: Request,
+  env: Env,
+  requestId: string
+): Promise<Response> {
+  // 1. Validate environment
+  validateEnv(env, ['ANALYTICS']);
+
+  // 2. Validate input
+  const url = new URL(request.url);
+  const validation = validateQueryParams(url, [
+    Validators.agentID(),
+    Validators.limit(500)
+  ]);
+
+  if (!validation.valid) {
+    return validationErrorResponse(validation.errors, requestId);
+  }
+
+  const { agentID, limit } = validation.sanitized!;
+
+  // 3. Query database
+  const result = await env.ANALYTICS.prepare(`
+    SELECT * FROM table WHERE aid = ? LIMIT ?
+  `).bind(agentID, limit).all();
+
+  const data = result.results as unknown as MyType[];
+
+  // 4. Log success
+  console.log(`[${requestId}] ✅ Found ${data.length} records`);
+
+  // 5. Return response
+  return new Response(JSON.stringify({
+    data,
+    total: data.length,
+    requestId,
+    timestamp: new Date().toISOString()
+  }), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
+```
+
+---
+
+## Response Patterns
+
+### Success Response
+
+```typescript
+return new Response(JSON.stringify({
+  // Your data
+  events: [...],
+  customers: [...],
+  
+  // Metadata (always include)
+  requestId: requestId,
+  timestamp: new Date().toISOString(),
+  
+  // Pagination (if applicable)
+  total: total,
+  limit: limit,
+  offset: offset
+}), {
+  headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+  }
+});
+```
+
+### Error Response (Automatic)
+
+When using `createErrorResponse()`, format is:
+
+```json
+{
+  "error": "ERROR_CODE",
+  "code": "ERROR_CODE",
+  "message": "Human-readable message",
+  "details": { /* optional */ },
+  "requestId": "abc123",
+  "timestamp": "2025-10-07T14:45:00.000Z",
+  "path": "/api/endpoint"
+}
+```
+
+---
+
+## CORS Patterns
+
+### Standard CORS Headers
+
+```typescript
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type'
+};
+
+// Handle OPTIONS preflight
+if (request.method === 'OPTIONS') {
+  return new Response(null, { headers: corsHeaders });
+}
+
+// Include in all responses
+return new Response(data, { headers: { ...corsHeaders } });
+```
+
+---
+
+## Request ID Tracking
+
+### Generate and Use
+
+```typescript
+// Generate at start of request
+const requestId = Date.now().toString(36);
+
+// Use in all logs
+console.log(`[${requestId}] 📥 Incoming request`);
+console.log(`[${requestId}] ✅ Success`);
+console.error(`[${requestId}] ❌ Error:`, error);
+
+// Include in response
+return new Response(JSON.stringify({
+  ...data,
+  requestId
+}));
+
+// Include in errors
+return createErrorResponse(error, requestId, path);
+```
+
+---
+
+## Database Query Patterns
+
+### Type-safe D1 Queries
+
+```typescript
+// Query with type conversion
+const result = await env.ANALYTICS.prepare(`
+  SELECT eid, mt, ts
+  FROM line_movements
+  WHERE eid = ?
+  LIMIT ?
+`).bind(eventID, limit).all();
+
+// Convert with unknown cast (required for D1Result type)
+const movements = result.results as unknown as Array<{
+  eid: string;
+  mt: string;
+  ts: string;
+}>;
+```
+
+### Parameterized Queries (Prevent SQL Injection)
+
+```typescript
+// ✅ CORRECT: Parameterized
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM table WHERE id = ? AND type = ?
+`).bind(id, type).all();
+
+// ❌ WRONG: String interpolation
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM table WHERE id = '${id}' AND type = '${type}'
+`).all();
+```
+
+---
+
+## Testing Patterns
+
+### Testing Endpoints
+
+```bash
+# Local testing
+bun run dev
+
+# Test with curl
+curl "http://localhost:8787/api/events?sport=NFL&limit=10"
+
+# Test with validation error
+curl "http://localhost:8787/api/events?limit=9999"
+```
+
+### Testing Validation
+
+```typescript
+import { validateInput, Validators } from './validation';
+
+const result = validateInput({ agentID: 'test_123' }, [
+  Validators.agentID(true)
+]);
+
+expect(result.valid).toBe(true);
+expect(result.sanitized.agentID).toBe('test_123');
+```
+
+---
+
+## Best Practices
+
+### 1. Always Validate Input
+
+```typescript
+// Every endpoint should validate
+const validation = validateQueryParams(url, [...]);
+if (!validation.valid) {
+  return validationErrorResponse(validation.errors, requestId);
+}
+```
+
+### 2. Always Handle Errors
+
+```typescript
+// Use try-catch or asyncHandler
+try {
+  // Your code
+} catch (error) {
+  return createErrorResponse(error, requestId, path);
+}
+```
+
+### 3. Always Include CORS
+
+```typescript
+// All responses need CORS headers
+headers: {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*'
+}
+```
+
+### 4. Always Track Requests
+
+```typescript
+// Generate requestId at start
+const requestId = Date.now().toString(36);
+
+// Use in logs
+console.log(`[${requestId}] ...`);
+
+// Include in response
+return new Response(JSON.stringify({ ...data, requestId }));
+```
+
+### 5. Always Log Appropriately
+
+```typescript
+// Start of request
+console.log(`[${requestId}] 📥 Incoming request: ${method} ${path}`);
+
+// Success
+console.log(`[${requestId}] ✅ Found ${count} records`);
+
+// Error
+console.error(`[${requestId}] ❌ Error:`, error);
+```
+
+---
+
+## Related Documentation
+
+- **[REST_API_REFERENCE.md](mdc:docs/REST_API_REFERENCE.md)** - Complete API reference
+- **[API_ENHANCEMENT_SUMMARY.md](mdc:docs/API_ENHANCEMENT_SUMMARY.md)** - Enhancement overview
+- **[error-handler.ts](mdc:src/utils/error-handler.ts)** - Error handling utilities
+- **[validation.ts](mdc:src/utils/validation.ts)** - Validation utilities
+- **[routes.ts](mdc:src/api/routes.ts)** - API route implementations
+
+---
+
+**Status:** Production patterns established  
+**Last Updated:** 2025-10-07
