@@ -1,0 +1,239 @@
+# ast-grep Configuration for BetTicker Codebase
+# https://ast-grep.github.io/
+#
+# Code searchability and pattern matching rules for TypeScript/JavaScript.
+# Use `sg scan` to run all rules, or `sg run <rule-id>` for specific rules.
+#
+# Version: 1.0.0
+# Last Updated: 2025-10-07
+
+# Language: TypeScript
+language: TypeScript
+
+# Custom Rules
+rules:
+  # Find all API endpoint definitions
+  - id: find-api-endpoints
+    message: API endpoint definition found
+    severity: info
+    language: TypeScript
+    rule:
+      pattern: |
+        const $HANDLER = async (request: Request, env: Env$$$) => {
+          $$$
+        }
+    
+  # Find all MCP tool handlers
+  - id: find-mcp-handlers
+    message: MCP tool handler found
+    severity: info
+    language: TypeScript
+    rule:
+      pattern: |
+        export async function $HANDLER(params: $PARAMS, env: Env): Promise<MCPToolResult> {
+          $$$
+        }
+  
+  # Find all database queries
+  - id: find-database-queries
+    message: Database query found
+    severity: info
+    language: TypeScript
+    rule:
+      any:
+        - pattern: env.ANALYTICS.prepare($QUERY)
+        - pattern: env.$DB.prepare($QUERY)
+  
+  # Find all validation calls
+  - id: find-validation-calls
+    message: Validation call found
+    severity: info
+    language: TypeScript
+    rule:
+      any:
+        - pattern: validateQueryParams($URL, $VALIDATORS)
+        - pattern: validateInput($DATA, $VALIDATORS)
+  
+  # Find all error throws
+  - id: find-error-throws
+    message: Error throw found
+    severity: info
+    language: TypeScript
+    rule:
+      pattern: throw Errors.$METHOD($$$)
+  
+  # Find all fetch calls
+  - id: find-fetch-calls
+    message: Fetch call found
+    severity: info
+    language: TypeScript
+    rule:
+      any:
+        - pattern: fetch($URL$$$)
+        - pattern: await fetch($URL$$$)
+  
+  # Find all console logs (for cleanup)
+  - id: find-console-logs
+    message: Console log found
+    severity: warning
+    language: TypeScript
+    rule:
+      any:
+        - pattern: console.log($$$)
+        - pattern: console.error($$$)
+        - pattern: console.warn($$$)
+        - pattern: console.debug($$$)
+  
+  # Find unstructured logs (missing requestId)
+  - id: find-unstructured-logs
+    message: Unstructured log (missing requestId)
+    severity: warning
+    language: TypeScript
+    rule:
+      all:
+        - pattern: console.log($MSG)
+        - not:
+            pattern: console.log(`[${requestId}]$$$`)
+  
+  # Find SQL injection risks (string interpolation in queries)
+  - id: find-sql-injection-risk
+    message: Potential SQL injection risk (use parameterized queries)
+    severity: error
+    language: TypeScript
+    rule:
+      pattern: env.$DB.prepare(`$$$${$VAR}$$$`)
+  
+  # Find hardcoded URLs
+  - id: find-hardcoded-urls
+    message: Hardcoded URL found (consider using config)
+    severity: warning
+    language: TypeScript
+    rule:
+      pattern: |
+        const $VAR = 'https://$$$'
+  
+  # Find missing error handling
+  - id: find-missing-error-handling
+    message: Async function without try-catch
+    severity: warning
+    language: TypeScript
+    rule:
+      all:
+        - pattern: |
+            async function $NAME($$$) {
+              $$$
+              await $CALL
+              $$$
+            }
+        - not:
+            pattern: |
+              async function $NAME($$$) {
+                try {
+                  $$$
+                } catch ($ERR) {
+                  $$$
+                }
+              }
+  
+  # Find missing CORS headers
+  - id: find-missing-cors
+    message: Response without CORS headers
+    severity: warning
+    language: TypeScript
+    rule:
+      all:
+        - pattern: |
+            return new Response($$$)
+        - not:
+            pattern: |
+              return new Response($$$, {
+                headers: {
+                  $$$
+                  'Access-Control-Allow-Origin': $$$
+                  $$$
+                }
+              })
+  
+  # Find missing requestId tracking
+  - id: find-missing-request-id
+    message: Handler without requestId tracking
+    severity: warning
+    language: TypeScript
+    rule:
+      all:
+        - pattern: |
+            async function $HANDLER(request: Request, env: Env$$$) {
+              $$$
+            }
+        - not:
+            pattern: |
+              async function $HANDLER(request: Request, env: Env$$$) {
+                const requestId = $$$
+                $$$
+              }
+  
+  # Find Chart.js usage
+  - id: find-chart-usage
+    message: Chart.js usage found
+    severity: info
+    language: JavaScript
+    rule:
+      pattern: new Chart($CTX, $$$)
+  
+  # Find WORKER_URL definitions (for dashboard refactoring)
+  - id: find-worker-url
+    message: WORKER_URL definition found (should use shared config)
+    severity: warning
+    language: JavaScript
+    rule:
+      pattern: const WORKER_URL = $$$
+
+# Search Patterns (can be used with sg search)
+patterns:
+  # Find all endpoint handlers
+  endpoint-handlers:
+    pattern: |
+      async function $NAME(request: Request, env: Env, requestId: string): Promise<Response>
+  
+  # Find all MCP handlers
+  mcp-handlers:
+    pattern: |
+      export async function $NAME(params: $PARAMS, env: Env): Promise<MCPToolResult>
+  
+  # Find all validators
+  validators:
+    pattern: |
+      Validators.$METHOD($$$)
+  
+  # Find all error responses
+  error-responses:
+    pattern: |
+      createErrorResponse($ERR, $ID, $PATH)
+  
+  # Find all database bindings
+  database-bindings:
+    pattern: |
+      env.$DB.prepare($QUERY).bind($$$)
+
+# Ignore paths
+ignore:
+  - node_modules
+  - dist
+  - coverage
+  - .git
+  - bun.lock
+  - package-lock.json
+  - "*.min.js"
+  - "*.test.ts"
+  - "*.spec.ts"
+
+# File Extensions
+extensions:
+  - ts
+  - js
+  - tsx
+  - jsx
+
+# Output format (json, compact, or detailed)
+format: detailed
+

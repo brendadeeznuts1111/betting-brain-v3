@@ -1,0 +1,337 @@
+/**
+ * Shared Styles for BetTicker Dashboards
+ * 
+ * Common CSS to avoid duplication across dashboard HTML files.
+ * Include this stylesheet in all dashboards for consistent styling.
+ * 
+ * @version 1.0.0
+ * @date 2025-10-07
+ */
+
+/* CSS Variables for Theme */
+:root {
+  --color-primary: #6366f1;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+  --color-purple: #8b5cf6;
+  --color-dark: #1e293b;
+  --color-gray: #6b7280;
+  
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-blur: blur(10px);
+  
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.5s;
+}
+
+/* Glass Morphism Effect */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes flash {
+  0%, 100% {
+    background-color: rgba(34, 197, 94, 0.2);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.6);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Utility Animation Classes */
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.pulse-live {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.flash {
+  animation: flash 1s ease-in-out;
+}
+
+.alert-flash {
+  animation: flash 1s ease-in-out;
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Status Colors */
+.status-success {
+  color: var(--color-success);
+}
+
+.status-error {
+  color: var(--color-danger);
+}
+
+.status-warning {
+  color: var(--color-warning);
+}
+
+.status-info {
+  color: var(--color-info);
+}
+
+/* Risk Colors */
+.risk-positive {
+  color: var(--color-success);
+}
+
+.risk-negative {
+  color: var(--color-danger);
+}
+
+.risk-neutral {
+  color: var(--color-gray);
+}
+
+/* Card Effects */
+.card-hover {
+  transition: all var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-card {
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.agent-card {
+  transition: all var(--transition-normal) ease;
+}
+
+.agent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.insight-card {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Scrollable Containers */
+.scrollable {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.response-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Scrollbar Styling */
+.scrollable::-webkit-scrollbar,
+.response-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable::-webkit-scrollbar-track,
+.response-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.scrollable::-webkit-scrollbar-thumb,
+.response-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover,
+.response-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Exposure Bars */
+.exposure-bar {
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.exposure-fill-home {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  float: left;
+}
+
+.exposure-fill-away {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  float: right;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.badge-recommended {
+  background: var(--color-success);
+}
+
+.badge-pro {
+  background: var(--color-purple);
+}
+
+.badge-basic {
+  background: var(--color-gray);
+}
+
+.badge-advanced {
+  background: var(--color-info);
+}
+
+.risk-badge {
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+/* Typography */
+.monospace {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .scrollable,
+  .response-content {
+    max-height: 300px;
+  }
+  
+  .glass {
+    padding: 1rem !important;
+  }
+}
+
+/* Loading State */
+.loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Alert Styles */
+.alert {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid var(--color-success);
+  color: var(--color-success);
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+}
+
+.alert-info {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid var(--color-info);
+  color: var(--color-info);
+}
+
