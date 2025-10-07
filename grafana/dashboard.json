@@ -1,17 +1,25 @@
 {
   "dashboard": {
-    "title": "Betting-Brain v3 - Intelligence Layer",
-    "tags": ["betting", "intelligence", "edge"],
+    "title": "Betting-Brain v3 - Real-Time Intelligence & Cost Monitoring",
+    "description": "Production dashboard for edge-native betting intelligence with cost cap visualization",
+    "tags": ["betting", "intelligence", "edge", "cloudflare", "cost-monitoring"],
     "timezone": "browser",
     "refresh": "30s",
+    "schemaVersion": 38,
+    "version": 1,
     "panels": [
       {
         "id": 1,
-        "title": "CLV Alert Status",
+        "title": "🚨 CLV Alerts (< -5% or > +5%)",
         "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "sum(betting_clv_alert_count)",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT count() as alert_count FROM betting_brain_analytics WHERE index1 = 'clv_alert' AND timestamp > now() - INTERVAL '1' HOUR",
             "refId": "A"
           }
         ],
@@ -24,18 +32,35 @@
                 { "value": 1, "color": "yellow" },
                 { "value": 5, "color": "red" }
               ]
-            }
+            },
+            "unit": "short",
+            "mappings": []
           }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "background"
         },
         "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 }
       },
       {
         "id": 2,
-        "title": "Hold Percentage Alerts",
+        "title": "📊 Hold % Alerts (<3% or >15%)",
         "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "sum(betting_hold_alert_count)",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT count() as alert_count FROM betting_brain_analytics WHERE index1 = 'hold_alert' AND timestamp > now() - INTERVAL '1' HOUR",
             "refId": "A"
           }
         ],
@@ -51,15 +76,24 @@
             }
           }
         },
+        "options": {
+          "colorMode": "background",
+          "textMode": "auto"
+        },
         "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 }
       },
       {
         "id": 3,
-        "title": "Exposure Alerts ($50k / 60%)",
+        "title": "💰 Exposure Alerts ($50k / 60%)",
         "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "sum(betting_exposure_alert_count)",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT count() as alert_count FROM betting_brain_analytics WHERE index1 = 'exposure_alert' AND timestamp > now() - INTERVAL '1' HOUR",
             "refId": "A"
           }
         ],
@@ -75,15 +109,23 @@
             }
           }
         },
+        "options": {
+          "colorMode": "background"
+        },
         "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 }
       },
       {
         "id": 4,
-        "title": "Sharp Score Alerts (>60)",
+        "title": "🎯 Sharp Score Alerts (>60)",
         "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "sum(betting_sharp_alert_count)",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT count() as alert_count FROM betting_brain_analytics WHERE index1 = 'sharp_alert' AND double1 > 60 AND timestamp > now() - INTERVAL '1' HOUR",
             "refId": "A"
           }
         ],
@@ -99,65 +141,178 @@
             }
           }
         },
+        "options": {
+          "colorMode": "background"
+        },
         "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 }
       },
       {
         "id": 5,
-        "title": "Total Exposure by Event",
+        "title": "💵 Total Exposure by Event (Last Hour)",
         "type": "graph",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "sum by(event_id) (betting_exposure_total_risk)",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT blob1 as event_id, sum(double1) as total_risk FROM betting_brain_analytics WHERE index1 = 'exposure_alert' AND timestamp > now() - INTERVAL '1' HOUR GROUP BY blob1 ORDER BY total_risk DESC LIMIT 10",
             "refId": "A",
             "legendFormat": "{{event_id}}"
+          }
+        },
+        "yaxes": [
+          {
+            "format": "currencyUSD",
+            "label": "Total Risk"
           }
         ],
         "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }
       },
       {
         "id": 6,
-        "title": "Steam Moves (Last Hour)",
+        "title": "🔥 Steam Moves (Last Hour)",
         "type": "table",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "betting_steam_moves",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT timestamp, blob1 as event_id, blob2 as market_type, double1 as line_change, double2 as volume_change, double3 as sigma FROM betting_brain_analytics WHERE index1 = 'steam_move' AND timestamp > now() - INTERVAL '1' HOUR ORDER BY timestamp DESC LIMIT 50",
             "refId": "A"
           }
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": {
+                "timestamp": 0,
+                "event_id": 1,
+                "market_type": 2,
+                "line_change": 3,
+                "volume_change": 4,
+                "sigma": 5
+              },
+              "renameByName": {
+                "timestamp": "Time",
+                "event_id": "Event ID",
+                "market_type": "Market",
+                "line_change": "Line Change",
+                "volume_change": "Volume Change",
+                "sigma": "Sigma (σ)"
+              }
+            }
+          }
         ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "Time",
+              "desc": true
+            }
+          ]
+        },
         "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }
       },
       {
         "id": 7,
-        "title": "Top Sharp Customers",
+        "title": "🎓 Top 10 Sharp Customers",
         "type": "table",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "topk(10, betting_sharp_score)",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT blob1 as customer_id, max(double1) as sharp_score, max(double2) as clv, max(double3) as win_rate FROM betting_brain_analytics WHERE index1 = 'sharp_score' AND timestamp > now() - INTERVAL '24' HOUR GROUP BY blob1 ORDER BY sharp_score DESC LIMIT 10",
             "refId": "A"
           }
         ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "renameByName": {
+                "customer_id": "Customer ID",
+                "sharp_score": "Sharp Score",
+                "clv": "CLV",
+                "win_rate": "Win Rate %"
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": { "id": "byName", "options": "Sharp Score" },
+              "properties": [
+                {
+                  "id": "custom.cellOptions",
+                  "value": {
+                    "type": "color-background"
+                  }
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "value": 0, "color": "green" },
+                      { "value": 50, "color": "yellow" },
+                      { "value": 70, "color": "red" }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
         "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }
       },
       {
         "id": 8,
-        "title": "Hold Percentage by Market",
+        "title": "📈 Hold Percentage by Market Type",
         "type": "graph",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
         "targets": [
           {
-            "expr": "avg by(market_type) (betting_hold_percentage)",
+            "dataset": "betting_brain_analytics",
+            "query": "SELECT timestamp, blob1 as market_type, avg(double1) as hold_pct FROM betting_brain_analytics WHERE index1 = 'hold_percentage' AND timestamp > now() - INTERVAL '6' HOUR GROUP BY timestamp, blob1 ORDER BY timestamp",
             "refId": "A",
             "legendFormat": "{{market_type}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "Hold %",
+            "min": 0,
+            "max": 20
           }
         ],
         "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }
       },
       {
         "id": 9,
-        "title": "Cost Cap Remaining",
+        "title": "💰 Cost Cap Remaining - D1 Reads",
         "type": "gauge",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
         "targets": [
           {
-            "expr": "(1 - (betting_cost_current / betting_cost_limit)) * 100",
+            "expr": "(1 - (cloudflare_d1_reads_today / 100000)) * 100",
             "refId": "A"
           }
         ],
@@ -171,60 +326,317 @@
                 { "value": 50, "color": "green" }
               ]
             },
-            "unit": "percent"
+            "unit": "percent",
+            "min": 0,
+            "max": 100
           }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
         },
         "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 }
       },
       {
         "id": 10,
-        "title": "Request Rate (req/s)",
-        "type": "graph",
+        "title": "💰 Cost Cap Remaining - D1 Writes",
+        "type": "gauge",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
         "targets": [
           {
-            "expr": "rate(betting_requests_total[1m])",
-            "refId": "A"
-          }
-        ],
-        "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 }
-      },
-      {
-        "id": 11,
-        "title": "D1 Database Size",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "betting_d1_size_bytes",
+            "expr": "(1 - (cloudflare_d1_writes_today / 50000)) * 100",
             "refId": "A"
           }
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "bytes"
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 20, "color": "orange" },
+                { "value": 50, "color": "green" }
+              ]
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 }
+      },
+      {
+        "id": 11,
+        "title": "💰 Cost Cap Remaining - Queue Messages",
+        "type": "gauge",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "targets": [
+          {
+            "expr": "(1 - (cloudflare_queue_messages_today / 1000000)) * 100",
+            "refId": "A"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 20, "color": "orange" },
+                { "value": 50, "color": "green" }
+              ]
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
           }
         },
         "gridPos": { "h": 6, "w": 6, "x": 12, "y": 20 }
       },
       {
         "id": 12,
-        "title": "Queue Operations",
-        "type": "graph",
+        "title": "💰 Cost Cap Remaining - Analytics Events",
+        "type": "gauge",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
         "targets": [
           {
-            "expr": "rate(betting_queue_operations_total[5m])",
+            "expr": "(1 - (cloudflare_analytics_events_today / 10000000)) * 100",
+            "refId": "A"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 20, "color": "orange" },
+                { "value": 50, "color": "green" }
+              ]
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 }
+      },
+      {
+        "id": 13,
+        "title": "⚡ Worker Request Rate (req/s)",
+        "type": "graph",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "targets": [
+          {
+            "expr": "rate(cloudflare_worker_requests_total[1m])",
             "refId": "A",
-            "legendFormat": "{{queue_name}}"
+            "legendFormat": "Requests/sec"
           }
         ],
-        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 }
+        "yaxes": [
+          {
+            "format": "reqps",
+            "label": "req/s"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 8, "x": 0, "y": 26 }
+      },
+      {
+        "id": 14,
+        "title": "🕐 Worker Response Time (p50, p95, p99)",
+        "type": "graph",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, cloudflare_worker_duration_seconds_bucket)",
+            "refId": "A",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, cloudflare_worker_duration_seconds_bucket)",
+            "refId": "B",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, cloudflare_worker_duration_seconds_bucket)",
+            "refId": "C",
+            "legendFormat": "p99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": "Latency"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 8, "x": 8, "y": 26 }
+      },
+      {
+        "id": 15,
+        "title": "❌ Error Rate %",
+        "type": "graph",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "targets": [
+          {
+            "expr": "rate(cloudflare_worker_errors_total[1m]) / rate(cloudflare_worker_requests_total[1m]) * 100",
+            "refId": "A",
+            "legendFormat": "Error %"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "Error %",
+            "max": 5
+          }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [1],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": ["A", "5m", "now"]
+              },
+              "reducer": {
+                "params": [],
+                "type": "avg"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "1m",
+          "handler": 1,
+          "name": "High Error Rate Alert",
+          "noDataState": "no_data",
+          "notifications": []
+        },
+        "gridPos": { "h": 6, "w": 8, "x": 16, "y": 26 }
+      },
+      {
+        "id": 16,
+        "title": "📦 Queue Depth (line-ingress)",
+        "type": "graph",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "targets": [
+          {
+            "expr": "cloudflare_queue_depth{queue_name=\"line-ingress\"}",
+            "refId": "A",
+            "legendFormat": "line-ingress"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Messages"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 12, "x": 0, "y": 32 }
+      },
+      {
+        "id": 17,
+        "title": "📦 Queue Depth (steam-webhook)",
+        "type": "graph",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "targets": [
+          {
+            "expr": "cloudflare_queue_depth{queue_name=\"steam-webhook\"}",
+            "refId": "A",
+            "legendFormat": "steam-webhook"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Messages"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 12, "x": 12, "y": 32 }
       }
     ],
+    "templating": {
+      "list": [
+        {
+          "name": "DS_ANALYTICS_ENGINE",
+          "type": "datasource",
+          "query": "cloudflare-analytics-engine",
+          "current": {
+            "text": "Cloudflare Analytics Engine",
+            "value": "cloudflare-analytics-engine"
+          }
+        },
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "prometheus"
+          }
+        }
+      ]
+    },
     "time": {
-      "from": "now-1h",
+      "from": "now-6h",
       "to": "now"
     },
     "timepicker": {
-      "refresh_intervals": ["10s", "30s", "1m", "5m"]
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "7d"]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": {
+            "type": "cloudflare-analytics-engine",
+            "uid": "${DS_ANALYTICS_ENGINE}"
+          },
+          "enable": true,
+          "iconColor": "red",
+          "name": "Steam Moves",
+          "query": "SELECT timestamp, blob1 FROM betting_brain_analytics WHERE index1 = 'steam_move'"
+        },
+        {
+          "datasource": {
+            "type": "cloudflare-analytics-engine",
+            "uid": "${DS_ANALYTICS_ENGINE}"
+          },
+          "enable": true,
+          "iconColor": "orange",
+          "name": "Exposure Alerts",
+          "query": "SELECT timestamp, blob1 FROM betting_brain_analytics WHERE index1 = 'exposure_alert'"
+        }
+      ]
     }
   }
 }

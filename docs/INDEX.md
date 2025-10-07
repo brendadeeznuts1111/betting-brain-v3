@@ -109,9 +109,11 @@
 ### Dashboards
 | Dashboard | Path | Description |
 |-----------|------|-------------|
-| **Grafana Config** | [../grafana/dashboard.json](../grafana/dashboard.json) | 12-panel monitoring |
-| **Cost Metrics** | _Embedded in dashboard_ | Cost cap tracking |
-| **Performance** | _Embedded in dashboard_ | Request latency |
+| **Grafana Config** | [../grafana/dashboard.json](../grafana/dashboard.json) | 17-panel monitoring |
+| **Dashboard Docs** | [../grafana/README.md](../grafana/README.md) | Installation & setup guide |
+| **Import Script** | [../grafana/import.sh](../grafana/import.sh) | Automated dashboard deployment |
+| **Cost Metrics** | _Embedded in dashboard_ | 4 cost cap gauges |
+| **Performance** | _Embedded in dashboard_ | Request latency & error tracking |
 
 ### Guards & Limits
 | Component | Path | Purpose |
