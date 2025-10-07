@@ -1,0 +1,230 @@
+{
+  "dashboard": {
+    "title": "Betting-Brain v3 - Intelligence Layer",
+    "tags": ["betting", "intelligence", "edge"],
+    "timezone": "browser",
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "CLV Alert Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(betting_clv_alert_count)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 1, "color": "yellow" },
+                { "value": 5, "color": "red" }
+              ]
+            }
+          }
+        },
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 }
+      },
+      {
+        "id": 2,
+        "title": "Hold Percentage Alerts",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(betting_hold_alert_count)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 1, "color": "yellow" },
+                { "value": 5, "color": "red" }
+              ]
+            }
+          }
+        },
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 }
+      },
+      {
+        "id": 3,
+        "title": "Exposure Alerts ($50k / 60%)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(betting_exposure_alert_count)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 1, "color": "orange" },
+                { "value": 3, "color": "red" }
+              ]
+            }
+          }
+        },
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 }
+      },
+      {
+        "id": 4,
+        "title": "Sharp Score Alerts (>60)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(betting_sharp_alert_count)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 1, "color": "yellow" },
+                { "value": 10, "color": "red" }
+              ]
+            }
+          }
+        },
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 }
+      },
+      {
+        "id": 5,
+        "title": "Total Exposure by Event",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by(event_id) (betting_exposure_total_risk)",
+            "refId": "A",
+            "legendFormat": "{{event_id}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }
+      },
+      {
+        "id": 6,
+        "title": "Steam Moves (Last Hour)",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "betting_steam_moves",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }
+      },
+      {
+        "id": 7,
+        "title": "Top Sharp Customers",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "topk(10, betting_sharp_score)",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }
+      },
+      {
+        "id": 8,
+        "title": "Hold Percentage by Market",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg by(market_type) (betting_hold_percentage)",
+            "refId": "A",
+            "legendFormat": "{{market_type}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }
+      },
+      {
+        "id": 9,
+        "title": "Cost Cap Remaining",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "(1 - (betting_cost_current / betting_cost_limit)) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 20, "color": "orange" },
+                { "value": 50, "color": "green" }
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 }
+      },
+      {
+        "id": 10,
+        "title": "Request Rate (req/s)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(betting_requests_total[1m])",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 }
+      },
+      {
+        "id": 11,
+        "title": "D1 Database Size",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "betting_d1_size_bytes",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes"
+          }
+        },
+        "gridPos": { "h": 6, "w": 6, "x": 12, "y": 20 }
+      },
+      {
+        "id": 12,
+        "title": "Queue Operations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(betting_queue_operations_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{queue_name}}"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m"]
+    }
+  }
+}

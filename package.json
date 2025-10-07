@@ -1,0 +1,41 @@
+{
+  "name": "betting-brain-v3",
+  "version": "3.0.0",
+  "description": "Edge-native betting intelligence layer with zero-downtime deployment",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:prod": "tsx scripts/deploy.ts",
+    "build": "tsc && wrangler d1 migrations apply analytics --local",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:ci": "vitest run --coverage",
+    "codegen": "tsx scripts/codegen.ts",
+    "bootstrap": "tsx scripts/bootstrap.ts",
+    "db:apply": "wrangler d1 migrations apply betting-analytics",
+    "db:apply:prod": "wrangler d1 migrations apply betting-analytics --env production",
+    "rollback": "wrangler rollback",
+    "lint": "tsc --noEmit",
+    "link-check": "node scripts/link-check.js",
+    "install:clean": "bash scripts/install-deps.sh"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.1.0",
+    "@types/bun": "^1.2.23",
+    "@types/node": "^20.10.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "glob": "^10.3.10",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "wrangler": "^3.20.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

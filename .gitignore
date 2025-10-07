@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Lock files (keep for reproducible builds)
+# bun.lock - KEEP THIS COMMITTED
+# package-lock.json - if using npm
+
+# Testing
+coverage/
+.nyc_output
+
+# Production
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.production
+.dev.vars
+
+# Wrangler
+.wrangler/
+worker-configuration.d.ts
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Keep VS Code settings but ignore workspace files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# Cloudflare
+.cloudflare/
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Debug
+debug/
+.cache/

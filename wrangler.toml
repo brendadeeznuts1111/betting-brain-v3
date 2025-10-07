@@ -1,0 +1,44 @@
+name = "betting-brain-v3"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "betting-brain-v3-prod"
+
+[[d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics"
+database_id = "your-database-id"
+migrations_dir = "migrations"
+
+[[queues.producers]]
+binding = "LINE_INGRESS"
+queue = "line-ingress"
+
+[[queues.consumers]]
+queue = "line-ingress"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[[queues.producers]]
+binding = "STEAM_WEBHOOK"
+queue = "steam-webhook"
+
+[[queues.consumers]]
+queue = "steam-webhook"
+max_batch_size = 5
+max_batch_timeout = 10
+
+[triggers]
+crons = [
+  "0 * * * *",  # hourly sharp calculation
+  "*/30 * * * * *"  # 30-second exposure calculation
+]
+
+[analytics_engine_datasets]
+binding = "ANALYTICS_ENGINE"
+dataset = "betting-metrics"
+
+[limits]
+cpu_ms = 50

@@ -1,0 +1,19 @@
+# Betting-Brain v3 - Bun Configuration
+# Override global registry to use public npm for this project
+
+[install]
+# Use public npm registry for all packages
+registry = "https://registry.npmjs.org/"
+
+# Registry timeout
+timeout = 60000
+
+# Retry failed requests
+retries = 5
+
+# Enable peer dependency resolution
+peer = true
+
+# Cache settings
+cache = true
+
