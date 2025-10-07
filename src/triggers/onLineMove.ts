@@ -7,8 +7,10 @@ import { LineMovement } from '../types/database';
 import { Env } from '../types/api';
 
 export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> {
+  const requestId = Date.now().toString(36);
+  
   try {
-    console.log(`Processing line movement trigger for event ${newRow.eid}, market ${newRow.mt}`);
+    console.log(`[${requestId}] Processing line movement trigger for event ${newRow.eid}, market ${newRow.mt}`);
     
     // Add delay for timeout testing
     if (process.env.NODE_ENV === 'test') {
@@ -45,9 +47,9 @@ export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> 
     // Update real-time metrics
     await updateRealTimeMetrics(newRow, env);
     
-    console.log(`Line movement trigger completed for event ${newRow.eid}`);
+    console.log(`[${requestId}] Line movement trigger completed for event ${newRow.eid}`);
   } catch (error) {
-    console.error('Error in line movement trigger:', error);
+    console.error(`[${requestId}] Error in line movement trigger:`, error);
     // Re-throw timeout errors for testing
     if (error instanceof Error && error.message === 'Timeout') {
       throw error;
@@ -98,7 +100,7 @@ async function triggerAdditionalProcessing(
   // Additional processing for significant movements
   // Could include alerts, notifications, etc.
   
-  console.log(`Triggered additional processing for significant movement: ${metrics.lineChange} points`);
+  console.log(`[trigger] Additional processing for significant movement: ${metrics.lineChange} points`);
 }
 
 async function updateRealTimeMetrics(row: LineMovement, env: Env): Promise<void> {
@@ -128,7 +130,7 @@ async function updateRealTimeMetrics(row: LineMovement, env: Env): Promise<void>
 async function updateExposureForEvent(eventId: string, env: Env): Promise<void> {
   // This would update exposure tracking based on line movements
   // For now, just log that we would update exposure
-  console.log(`Would update exposure tracking for event ${eventId}`);
+  console.log(`[exposure] Would update exposure tracking for event ${eventId}`);
   
   // Simple database query to satisfy test expectations
   await env.ANALYTICS.prepare('SELECT 1').first();
@@ -137,7 +139,7 @@ async function updateExposureForEvent(eventId: string, env: Env): Promise<void> 
 async function updateHoldPercentage(eventId: string, marketType: string, env: Env): Promise<void> {
   // This would recalculate hold percentage based on new volume data
   // For now, just log that we would update hold percentage
-  console.log(`Would update hold percentage for event ${eventId}, market ${marketType}`);
+  console.log(`[hold] Would update hold percentage for event ${eventId}, market ${marketType}`);
 }
 
 // Export for use in D1 trigger configuration
