@@ -4,6 +4,7 @@
  */
 
 import { cleanString, safeParseFloat } from './helpers';
+import { CENTS_TO_DOLLARS } from './constants';
 
 export function parsePlayerInfo(response: any): {
     customerID: string;
@@ -65,14 +66,14 @@ export function parsePlayerInfo(response: any): {
 
             // Financial (amounts may be in cents, divide by 100 if needed)
             totalWagers: parseInt(player.totalWagers || player.TotalWagers || '0'),
-            totalRisk: safeParseFloat(player.totalRisk || player.TotalRisk || '0') / 100,
-            totalWin: safeParseFloat(player.totalWin || player.TotalWin || '0') / 100,
-            netIncome: safeParseFloat(player.netIncome || player.NetIncome || player.net || '0') / 100,
+            totalRisk: safeParseFloat(player.totalRisk || player.TotalRisk || '0') / CENTS_TO_DOLLARS,
+            totalWin: safeParseFloat(player.totalWin || player.TotalWin || '0') / CENTS_TO_DOLLARS,
+            netIncome: safeParseFloat(player.netIncome || player.NetIncome || player.net || '0') / CENTS_TO_DOLLARS,
             commissionRate: safeParseFloat(player.commissionRate || player.CommissionRate || '0'),
-            creditLimit: safeParseFloat(player.creditLimit || player.CreditLimit || '0') / 100,
-            availableBalance: safeParseFloat(player.availableBalance || player.AvailableBalance || '0') / 100,
-            pendingBalance: safeParseFloat(player.pendingBalance || player.PendingBalance || '0') / 100,
-            freePlayBalance: safeParseFloat(player.freePlayBalance || player.FreePlayBalance || '0') / 100,
+            creditLimit: safeParseFloat(player.creditLimit || player.CreditLimit || '0') / CENTS_TO_DOLLARS,
+            availableBalance: safeParseFloat(player.availableBalance || player.AvailableBalance || '0') / CENTS_TO_DOLLARS,
+            pendingBalance: safeParseFloat(player.pendingBalance || player.PendingBalance || '0') / CENTS_TO_DOLLARS,
+            freePlayBalance: safeParseFloat(player.freePlayBalance || player.FreePlayBalance || '0') / CENTS_TO_DOLLARS,
             currencyCode: cleanString(player.currencyCode || player.CurrencyCode || 'USD'),
 
             // Status
@@ -81,9 +82,9 @@ export function parsePlayerInfo(response: any): {
             readOnly: cleanString(player.readOnly || player.ReadOnly) === 'Y',
 
             // Limits (in cents, divide by 100 if needed)
-            wagerLimit: safeParseFloat(player.wagerLimit || player.WagerLimit || '0') / 100,
-            minimumWager: safeParseFloat(player.minimumWager || player.MinimumWager || '0') / 100,
-            maxPropPayout: safeParseFloat(player.maxPropPayout || player.MaxPropPayout || '0') / 100,
+            wagerLimit: safeParseFloat(player.wagerLimit || player.WagerLimit || '0') / CENTS_TO_DOLLARS,
+            minimumWager: safeParseFloat(player.minimumWager || player.MinimumWager || '0') / CENTS_TO_DOLLARS,
+            maxPropPayout: safeParseFloat(player.maxPropPayout || player.MaxPropPayout || '0') / CENTS_TO_DOLLARS,
 
             // Permissions and preferences
             permissions: player.permissions || player.Permissions || {},
@@ -152,8 +153,8 @@ export function parsePlayerPerformance(response: any): {
             for (const sport of response.SPORTS) {
                 sportBreakdown.push({
                     sport: cleanString(sport.Sport || sport.sport),
-                    risk: safeParseFloat(sport.Risk || sport.risk || '0') / 100,
-                    win: safeParseFloat(sport.Win || sport.win || '0') / 100,
+                    risk: safeParseFloat(sport.Risk || sport.risk || '0') / CENTS_TO_DOLLARS,
+                    win: safeParseFloat(sport.Win || sport.win || '0') / CENTS_TO_DOLLARS,
                     count: parseInt(sport.Count || sport.count || '0')
                 });
             }
@@ -167,10 +168,10 @@ export function parsePlayerPerformance(response: any): {
             type: cleanString(response.Type || response.type || 'CP'),
 
             // Financial metrics (amounts are in cents, divide by 100)
-            totalRisk: safeParseFloat(response.TotalRisk || response.totalRisk || '0') / 100,
-            totalWin: safeParseFloat(response.TotalWin || response.totalWin || '0') / 100,
-            totalCommission: safeParseFloat(response.TotalCommission || response.commission || '0') / 100,
-            netIncome: safeParseFloat(response.NetIncome || response.netIncome || response.Net || '0') / 100,
+            totalRisk: safeParseFloat(response.TotalRisk || response.totalRisk || '0') / CENTS_TO_DOLLARS,
+            totalWin: safeParseFloat(response.TotalWin || response.totalWin || '0') / CENTS_TO_DOLLARS,
+            totalCommission: safeParseFloat(response.TotalCommission || response.commission || '0') / CENTS_TO_DOLLARS,
+            netIncome: safeParseFloat(response.NetIncome || response.netIncome || response.Net || '0') / CENTS_TO_DOLLARS,
 
             // Wager counts
             totalWagers: parseInt(response.TotalWagers || response.totalCount || '0'),
@@ -178,8 +179,8 @@ export function parsePlayerPerformance(response: any): {
             settledWagers: parseInt(response.SettledWagers || response.settled || '0'),
 
             // Free play
-            freePlayUsed: safeParseFloat(response.FreePlayUsed || response.freePlay || '0') / 100,
-            freePlayWin: safeParseFloat(response.FreePlayWin || response.freePlayWin || '0') / 100,
+            freePlayUsed: safeParseFloat(response.FreePlayUsed || response.freePlay || '0') / CENTS_TO_DOLLARS,
+            freePlayWin: safeParseFloat(response.FreePlayWin || response.freePlayWin || '0') / CENTS_TO_DOLLARS,
 
             // Sport breakdown
             sportBreakdown,
@@ -229,10 +230,10 @@ export function parsePendingWagers(response: any): Array<{
             agentID: cleanString(wager.AgentID || wager.agentID),
             sport: cleanString(wager.Sport || wager.sport),
             betType: cleanString(wager.BetType || wager.betType),
-            stake: safeParseFloat(wager.Stake || wager.stake || '0') / 100,
+            stake: safeParseFloat(wager.Stake || wager.stake || '0') / CENTS_TO_DOLLARS,
             odds: safeParseFloat(wager.Odds || wager.odds || '0'),
-            risk: safeParseFloat(wager.Risk || wager.risk || '0') / 100,
-            potentialWin: safeParseFloat(wager.PotentialWin || wager.potentialWin || '0') / 100,
+            risk: safeParseFloat(wager.Risk || wager.risk || '0') / CENTS_TO_DOLLARS,
+            potentialWin: safeParseFloat(wager.PotentialWin || wager.potentialWin || '0') / CENTS_TO_DOLLARS,
             eventId: cleanString(wager.EventID || wager.eventId),
             eventName: cleanString(wager.EventName || wager.eventName),
             wagerDate: cleanString(wager.WagerDate || wager.wagerDate),
@@ -307,9 +308,9 @@ export function parsePlayerAnalysis(response: any): {
             for (const [sport, data] of Object.entries(sports)) {
                 sportsBreakdown[sport] = {
                     wagerCount: (data as any).wagerCount || (data as any).wager_count || 0,
-                    totalRisk: safeParseFloat((data as any).totalRisk || (data as any).total_risk || '0') / 100,
-                    totalWin: safeParseFloat((data as any).totalWin || (data as any).total_win || '0') / 100,
-                    netIncome: safeParseFloat((data as any).netIncome || (data as any).net_income || '0') / 100,
+                    totalRisk: safeParseFloat((data as any).totalRisk || (data as any).total_risk || '0') / CENTS_TO_DOLLARS,
+                    totalWin: safeParseFloat((data as any).totalWin || (data as any).total_win || '0') / CENTS_TO_DOLLARS,
+                    netIncome: safeParseFloat((data as any).netIncome || (data as any).net_income || '0') / CENTS_TO_DOLLARS,
                     winRate: safeParseFloat((data as any).winRate || (data as any).win_rate || '0')
                 };
             }
@@ -322,9 +323,9 @@ export function parsePlayerAnalysis(response: any): {
             for (const [betType, data] of Object.entries(betTypes)) {
                 betTypesBreakdown[betType] = {
                     wagerCount: (data as any).wagerCount || (data as any).wager_count || 0,
-                    totalRisk: safeParseFloat((data as any).totalRisk || (data as any).total_risk || '0') / 100,
-                    totalWin: safeParseFloat((data as any).totalWin || (data as any).total_win || '0') / 100,
-                    netIncome: safeParseFloat((data as any).netIncome || (data as any).net_income || '0') / 100,
+                    totalRisk: safeParseFloat((data as any).totalRisk || (data as any).total_risk || '0') / CENTS_TO_DOLLARS,
+                    totalWin: safeParseFloat((data as any).totalWin || (data as any).total_win || '0') / CENTS_TO_DOLLARS,
+                    netIncome: safeParseFloat((data as any).netIncome || (data as any).net_income || '0') / CENTS_TO_DOLLARS,
                     winRate: safeParseFloat((data as any).winRate || (data as any).win_rate || '0')
                 };
             }
@@ -337,9 +338,9 @@ export function parsePlayerAnalysis(response: any): {
             for (const [period, data] of Object.entries(time)) {
                 timeBreakdown[period] = {
                     wagerCount: (data as any).wagerCount || (data as any).wager_count || 0,
-                    totalRisk: safeParseFloat((data as any).totalRisk || (data as any).total_risk || '0') / 100,
-                    totalWin: safeParseFloat((data as any).totalWin || (data as any).total_win || '0') / 100,
-                    netIncome: safeParseFloat((data as any).netIncome || (data as any).net_income || '0') / 100,
+                    totalRisk: safeParseFloat((data as any).totalRisk || (data as any).total_risk || '0') / CENTS_TO_DOLLARS,
+                    totalWin: safeParseFloat((data as any).totalWin || (data as any).total_win || '0') / CENTS_TO_DOLLARS,
+                    netIncome: safeParseFloat((data as any).netIncome || (data as any).net_income || '0') / CENTS_TO_DOLLARS,
                     winRate: safeParseFloat((data as any).winRate || (data as any).win_rate || '0')
                 };
             }
@@ -355,9 +356,9 @@ export function parsePlayerAnalysis(response: any): {
 
             // Overall metrics (amounts may be in cents, divide by 100 if needed)
             totalWagers: parseInt(analysis.totalWagers || analysis.TotalWagers || '0'),
-            totalRisk: safeParseFloat(analysis.totalRisk || analysis.TotalRisk || '0') / 100,
-            totalWin: safeParseFloat(analysis.totalWin || analysis.TotalWin || '0') / 100,
-            netIncome: safeParseFloat(analysis.netIncome || analysis.NetIncome || '0') / 100,
+            totalRisk: safeParseFloat(analysis.totalRisk || analysis.TotalRisk || '0') / CENTS_TO_DOLLARS,
+            totalWin: safeParseFloat(analysis.totalWin || analysis.TotalWin || '0') / CENTS_TO_DOLLARS,
+            netIncome: safeParseFloat(analysis.netIncome || analysis.NetIncome || '0') / CENTS_TO_DOLLARS,
             winRate: safeParseFloat(analysis.winRate || analysis.WinRate || '0'),
             averageOdds: safeParseFloat(analysis.averageOdds || analysis.AverageOdds || '0'),
 
@@ -428,8 +429,8 @@ export function parseAgentPerformance(response: any): {
             for (const sport of response.SPORTS) {
                 sportBreakdown.push({
                     sport: cleanString(sport.Sport || sport.sport),
-                    risk: safeParseFloat(sport.Risk || sport.risk || '0') / 100,
-                    win: safeParseFloat(sport.Win || sport.win || '0') / 100,
+                    risk: safeParseFloat(sport.Risk || sport.risk || '0') / CENTS_TO_DOLLARS,
+                    win: safeParseFloat(sport.Win || sport.win || '0') / CENTS_TO_DOLLARS,
                     count: parseInt(sport.Count || sport.count || '0')
                 });
             }
@@ -443,10 +444,10 @@ export function parseAgentPerformance(response: any): {
             type: cleanString(response.Type || response.type || 'CP'),
 
             // Financial metrics (amounts are in cents, divide by 100)
-            totalRisk: safeParseFloat(response.TotalRisk || response.totalRisk || '0') / 100,
-            totalWin: safeParseFloat(response.TotalWin || response.totalWin || '0') / 100,
-            totalCommission: safeParseFloat(response.TotalCommission || response.commission || '0') / 100,
-            netIncome: safeParseFloat(response.NetIncome || response.netIncome || response.Net || '0') / 100,
+            totalRisk: safeParseFloat(response.TotalRisk || response.totalRisk || '0') / CENTS_TO_DOLLARS,
+            totalWin: safeParseFloat(response.TotalWin || response.totalWin || '0') / CENTS_TO_DOLLARS,
+            totalCommission: safeParseFloat(response.TotalCommission || response.commission || '0') / CENTS_TO_DOLLARS,
+            netIncome: safeParseFloat(response.NetIncome || response.netIncome || response.Net || '0') / CENTS_TO_DOLLARS,
 
             // Wager counts
             totalWagers: parseInt(response.TotalWagers || response.totalCount || '0'),
@@ -454,8 +455,8 @@ export function parseAgentPerformance(response: any): {
             settledWagers: parseInt(response.SettledWagers || response.settled || '0'),
 
             // Free play
-            freePlayUsed: safeParseFloat(response.FreePlayUsed || response.freePlay || '0') / 100,
-            freePlayWin: safeParseFloat(response.FreePlayWin || response.freePlayWin || '0') / 100,
+            freePlayUsed: safeParseFloat(response.FreePlayUsed || response.freePlay || '0') / CENTS_TO_DOLLARS,
+            freePlayWin: safeParseFloat(response.FreePlayWin || response.freePlayWin || '0') / CENTS_TO_DOLLARS,
 
             // Sport breakdown
             sportBreakdown,

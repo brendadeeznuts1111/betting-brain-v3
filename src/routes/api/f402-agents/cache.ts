@@ -5,6 +5,7 @@
 
 import type { Env } from '../../../types/api';
 import { CORS_HEADERS } from '../../../utils/request';
+import { PERCENTAGE_MULTIPLIER, PERCENTAGE_PRECISION, HTTP_STATUS_SERVER_ERROR } from './constants';
 
 export async function getCacheMetrics(
   request: Request,
@@ -12,8 +13,6 @@ export async function getCacheMetrics(
   requestId: string
 ): Promise<Response> {
   console.log(`[${requestId}] 📊 GET /api/f402/cache/metrics`);
-
-  const corsHeaders = CORS_HEADERS;
 
   try {
     if (!env.FANTASY_CACHE) {
@@ -51,9 +50,9 @@ export async function getCacheMetrics(
     const totalD1Skipped = metrics.agent_list_d1_writes_skipped || 0;
     const totalD1Executed = metrics.agent_list_d1_writes_executed || 0;
 
-    const cacheHitRate = totalRequests > 0 ? (totalHits / totalRequests) * 100 : 0;
+    const cacheHitRate = totalRequests > 0 ? (totalHits / totalRequests) * PERCENTAGE_MULTIPLIER : 0;
     const d1WriteReduction = (totalD1Skipped + totalD1Executed) > 0
-      ? (totalD1Skipped / (totalD1Skipped + totalD1Executed)) * 100
+      ? (totalD1Skipped / (totalD1Skipped + totalD1Executed)) * PERCENTAGE_MULTIPLIER
       : 0;
 
     const response = {
@@ -62,10 +61,10 @@ export async function getCacheMetrics(
         totalRequests,
         cacheHits: totalHits,
         cacheMisses: totalMisses,
-        cacheHitRate: parseFloat(cacheHitRate.toFixed(2)),
+        cacheHitRate: parseFloat(cacheHitRate.toFixed(PERCENTAGE_PRECISION)),
         d1WritesSkipped: totalD1Skipped,
         d1WritesExecuted: totalD1Executed,
-        d1WriteReduction: parseFloat(d1WriteReduction.toFixed(2)),
+        d1WriteReduction: parseFloat(d1WriteReduction.toFixed(PERCENTAGE_PRECISION)),
       },
       agentDetail: {
         cacheHits: metrics.agent_detail_cache_hits || 0,
@@ -79,8 +78,8 @@ export async function getCacheMetrics(
                 ((metrics.agent_detail_cache_hits || 0) /
                   ((metrics.agent_detail_cache_hits || 0) +
                     (metrics.agent_detail_cache_misses || 0))) *
-                100
-              ).toFixed(2)
+                PERCENTAGE_MULTIPLIER
+              ).toFixed(PERCENTAGE_PRECISION)
             )
             : 0,
       },
@@ -89,7 +88,7 @@ export async function getCacheMetrics(
     };
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
   } catch (error) {
     console.error(`[${requestId}] ❌ Error fetching cache metrics:`, error);
@@ -101,8 +100,8 @@ export async function getCacheMetrics(
         requestId,
       }),
       {
-        status: 500,
-        headers: corsHeaders,
+        status: HTTP_STATUS_SERVER_ERROR,
+        headers: CORS_HEADERS,
       }
     );
   }

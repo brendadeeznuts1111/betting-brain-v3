@@ -5,6 +5,13 @@
 
 import type { Env } from '../../../types/api';
 import { CORS_HEADERS } from '../../../utils/request';
+import {
+  CACHE_TTL_7_DAYS,
+  DEFAULT_AGENT_QUERY_LIMIT,
+  HTTP_STATUS_BAD_REQUEST,
+  HTTP_STATUS_NOT_FOUND,
+  HTTP_STATUS_SERVER_ERROR
+} from './constants';
 
 export async function getAgentPerformance(
   request: Request,
@@ -16,7 +23,7 @@ export async function getAgentPerformance(
 
   console.log(`[${requestId}] 🤖 GET /api/f402/agents/performance?period=${period}`);
 
-  const corsHeaders = CORS_HEADERS;
+  // Using CORS_HEADERS directly
 
   try {
     if (!env.ANALYTICS) {
@@ -66,7 +73,7 @@ export async function getAgentPerformance(
     };
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -79,8 +86,8 @@ export async function getAgentPerformance(
         requestId,
       }),
       {
-        status: 500,
-        headers: corsHeaders,
+        status: HTTP_STATUS_SERVER_ERROR,
+        headers: CORS_HEADERS,
       }
     );
   }
@@ -101,7 +108,7 @@ export async function getAgentList(
 
   console.log(`[${requestId}] 👥 GET /api/f402/agents/list?owner=${owner}&agentID=${agentID}`);
 
-  const corsHeaders = CORS_HEADERS;
+  // Using CORS_HEADERS directly
 
   try {
     if (!env.FANTASY_CACHE) {
@@ -161,14 +168,14 @@ export async function getAgentList(
             SELECT * FROM fantasy402_agents
             WHERE agent_owner = ?
             ORDER BY last_active DESC
-            LIMIT 100
+            LIMIT ${DEFAULT_AGENT_QUERY_LIMIT}
           `).bind(owner).all()
         : agentID
           ? await env.RAW_FEED_DB.prepare(`
             SELECT * FROM fantasy402_agents
             WHERE agent_id = ?
             ORDER BY last_active DESC
-            LIMIT 100
+            LIMIT ${DEFAULT_AGENT_QUERY_LIMIT}
           `).bind(agentID).all()
           : null;
 
@@ -202,7 +209,7 @@ export async function getAgentList(
         requestId,
       }),
       {
-        status: 404,
+        status: HTTP_STATUS_NOT_FOUND,
         headers: {
           ...corsHeaders,
           'X-Cache': 'MISS',
@@ -220,8 +227,8 @@ export async function getAgentList(
         requestId,
       }),
       {
-        status: 500,
-        headers: corsHeaders,
+        status: HTTP_STATUS_SERVER_ERROR,
+        headers: CORS_HEADERS,
       }
     );
   }
@@ -239,7 +246,7 @@ export async function getAgentDetail(
 ): Promise<Response> {
   console.log(`[${requestId}] 👤 GET /api/f402/agents/${agentID}`);
 
-  const corsHeaders = CORS_HEADERS;
+  // Using CORS_HEADERS directly
 
   try {
     if (!env.FANTASY_CACHE) {
@@ -312,8 +319,8 @@ export async function getAgentDetail(
         requestId,
       }),
       {
-        status: 404,
-        headers: corsHeaders,
+        status: HTTP_STATUS_NOT_FOUND,
+        headers: CORS_HEADERS,
       }
     );
 
@@ -327,8 +334,8 @@ export async function getAgentDetail(
         requestId,
       }),
       {
-        status: 500,
-        headers: corsHeaders,
+        status: HTTP_STATUS_SERVER_ERROR,
+        headers: CORS_HEADERS,
       }
     );
   }
@@ -346,7 +353,7 @@ async function incrementCacheMetric(env: Env, metricName: string): Promise<void>
     const count = current ? parseInt(current) : 0;
 
     await env.FANTASY_CACHE.put(key, String(count + 1), {
-      expirationTtl: 86400 * 7, // 7 days
+      expirationTtl: CACHE_TTL_7_DAYS, // 7 days
     });
   } catch (error) {
     // Don't fail the request if metrics fail

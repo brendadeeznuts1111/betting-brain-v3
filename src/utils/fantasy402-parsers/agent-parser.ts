@@ -4,6 +4,7 @@
  */
 
 import { cleanString, safeParseFloat } from './helpers';
+import { CENTS_TO_DOLLARS } from './constants';
 
 export function parseWeeklyFigures(response: any): {
     agentID: string;
@@ -125,11 +126,11 @@ export function parseAccountInfo(response: any): {
             store: cleanString(info.Store),
 
             // Financial (amounts are in cents, divide by 100)
-            currentBalance: safeParseFloat(info.CurrentBalance || '0') / 100,
-            availableBalance: safeParseFloat(info.AvailableBalance || '0') / 100,
-            creditLimit: safeParseFloat(info.CreditLimit || '0') / 100,
-            pendingWagerBalance: safeParseFloat(info.PendingWagerBalance || '0') / 100,
-            freePlayBalance: safeParseFloat(info.FreePlayBalance || '0') / 100,
+            currentBalance: safeParseFloat(info.CurrentBalance || '0') / CENTS_TO_DOLLARS,
+            availableBalance: safeParseFloat(info.AvailableBalance || '0') / CENTS_TO_DOLLARS,
+            creditLimit: safeParseFloat(info.CreditLimit || '0') / CENTS_TO_DOLLARS,
+            pendingWagerBalance: safeParseFloat(info.PendingWagerBalance || '0') / CENTS_TO_DOLLARS,
+            freePlayBalance: safeParseFloat(info.FreePlayBalance || '0') / CENTS_TO_DOLLARS,
             currencyCode: cleanString(info.CurrencyCode || 'USD'),
 
             // Status
@@ -141,11 +142,11 @@ export function parseAccountInfo(response: any): {
             denyLiveBetting: cleanString(info.DenyLiveBetting) === 'Y',
 
             // Limits (in cents, divide by 100)
-            wagerLimit: safeParseFloat(info.WagerLimit || '0') / 100,
-            minimumWager: safeParseFloat(info.MinimumWager || '0') / 100,
-            maxPropPayout: safeParseFloat(info.MaxPropPayout || '0') / 100,
-            parlayMaxPayout: safeParseFloat(info.ParlayMaxPayout || '0') / 100,
-            globalMaxPayout: safeParseFloat(info.GlobalMaxPayout || '0') / 100,
+            wagerLimit: safeParseFloat(info.WagerLimit || '0') / CENTS_TO_DOLLARS,
+            minimumWager: safeParseFloat(info.MinimumWager || '0') / CENTS_TO_DOLLARS,
+            maxPropPayout: safeParseFloat(info.MaxPropPayout || '0') / CENTS_TO_DOLLARS,
+            parlayMaxPayout: safeParseFloat(info.ParlayMaxPayout || '0') / CENTS_TO_DOLLARS,
+            globalMaxPayout: safeParseFloat(info.GlobalMaxPayout || '0') / CENTS_TO_DOLLARS,
 
             // Contact
             email: cleanString(info.email),

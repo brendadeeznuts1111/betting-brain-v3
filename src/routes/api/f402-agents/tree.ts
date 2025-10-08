@@ -5,6 +5,13 @@
 
 import type { Env } from '../../../types/api';
 import { CORS_HEADERS } from '../../../utils/request';
+import {
+  MAX_AGENT_QUERY_LIMIT,
+  HTTP_STATUS_BAD_REQUEST,
+  HTTP_STATUS_NOT_FOUND,
+  HTTP_STATUS_SERVICE_UNAVAILABLE,
+  HTTP_STATUS_SERVER_ERROR
+} from './constants';
 
 export async function getAgentTree(
   request: Request,
@@ -47,7 +54,7 @@ export async function getAgentTree(
         SELECT * FROM fantasy402_agents
         ${owner ? 'WHERE agent_owner = ?' : ''}
         ORDER BY agent_owner, agent_id
-        LIMIT 2000
+        LIMIT ${MAX_AGENT_QUERY_LIMIT}
       `);
 
       const result = owner ? await query.bind(owner).all() : await query.all();
@@ -63,7 +70,7 @@ export async function getAgentTree(
           requestId,
         }),
         {
-          status: 404,
+          status: HTTP_STATUS_NOT_FOUND,
           headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       );
@@ -94,7 +101,7 @@ export async function getAgentTree(
         requestId,
       }),
       {
-        status: 500,
+        status: HTTP_STATUS_SERVER_ERROR,
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );
@@ -211,7 +218,7 @@ export async function syncAgents(
   ctx: ExecutionContext
 ): Promise<Response> {
   const requestId = Date.now().toString(36);
-  const corsHeaders = CORS_HEADERS;
+  // Using CORS_HEADERS directly
 
   try {
     const body = await request.json() as { agents: any[]; source?: string; timestamp?: string };
@@ -220,7 +227,7 @@ export async function syncAgents(
     if (!Array.isArray(agents) || agents.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Invalid request: agents array required' }),
-        { status: 400, headers: corsHeaders }
+        { status: HTTP_STATUS_BAD_REQUEST, headers: CORS_HEADERS }
       );
     }
 
@@ -229,7 +236,7 @@ export async function syncAgents(
     if (!env.RAW_FEED_DB) {
       return new Response(
         JSON.stringify({ error: 'Database not available' }),
-        { status: 503, headers: corsHeaders }
+        { status: HTTP_STATUS_SERVICE_UNAVAILABLE, headers: CORS_HEADERS }
       );
     }
 
@@ -290,7 +297,7 @@ export async function syncAgents(
         requestId,
         timestamp: new Date().toISOString()
       }),
-      { headers: corsHeaders }
+      { headers: CORS_HEADERS }
     );
 
   } catch (error) {
@@ -301,7 +308,7 @@ export async function syncAgents(
         message: error instanceof Error ? error.message : 'Unknown error',
         requestId
       }),
-      { status: 500, headers: corsHeaders }
+      { status: HTTP_STATUS_SERVER_ERROR, headers: CORS_HEADERS }
     );
   }
 }
