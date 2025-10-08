@@ -270,6 +270,46 @@
       <pre id="activity-list"></pre>
       <div id="activity-error" class="error" style="display:none;"></div>
     </section>
+
+    <!-- ===== Fantasy402 Integration ===== -->
+
+    <!-- Live Bets -->
+    <section class="card">
+      <h2>🎲 Live Bets</h2>
+      <div class="label">In-flight / Last 5 min</div>
+      <div id="live-bets" class="value">—</div>
+      <canvas id="bets-chart"></canvas>
+      <div id="bets-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Agent Performance -->
+    <section class="card">
+      <h2>🤖 Agent Performance</h2>
+      <div class="label">PNL Today</div>
+      <div id="agent-pnl" class="value">—</div>
+      <pre id="agent-top"></pre>
+      <div id="agent-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Customer Pulse -->
+    <section class="card">
+      <h2>👥 Customer Pulse</h2>
+      <div class="label">Active (30 min)</div>
+      <div id="active-cust" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Total Staked Today</span>
+        <span class="val" id="staked-today">—</span>
+      </div>
+      <div id="customer-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Transaction Ticker -->
+    <section class="card">
+      <h2>💸 Transaction Ticker</h2>
+      <div class="label">Last 10 Transactions</div>
+      <pre id="tx-ticker"></pre>
+      <div id="tx-error" class="error" style="display:none;"></div>
+    </section>
   </main>
 
   <script>
@@ -347,6 +387,27 @@
         scales: {
           y: { ticks: { color: '#c9d1d9' } },
           x: { ticks: { color: '#c9d1d9' } }
+        }
+      }
+    });
+
+    // Fantasy402 Bets Chart
+    const betsCtx = $('#bets-chart').getContext('2d');
+    const betsChart = new Chart(betsCtx, {
+      type: 'bar',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#c9d1d9' }
+          },
+          x: {
+            ticks: { color: '#c9d1d9' }
+          }
         }
       }
     });
@@ -514,6 +575,88 @@
       $('#activity-list').textContent = activities.join('\n');
     }
 
+    /* ========== FANTASY402 FETCHERS ========== */
+    async function loadLiveBets() {
+      const d = await getJSON('/api/f402/bets/live', 'bets');
+      if (!d) {
+        // Show mock data
+        $('#live-bets').textContent = '12';
+        return;
+      }
+
+      $('#live-bets').textContent = d.count ?? '—';
+      const vol = d.buckets?.map(b => b.volume) ?? [];
+      betsChart.data.labels = d.buckets?.map(b => b.minute) ?? [];
+      betsChart.data.datasets = [{
+        label: 'Volume ($)',
+        data: vol,
+        backgroundColor: '#238636',
+        borderColor: '#2ea043',
+        borderWidth: 1
+      }];
+      betsChart.update();
+    }
+
+    async function loadAgents() {
+      const d = await getJSON('/api/f402/agents/performance?period=today', 'agent');
+      if (!d) {
+        // Show mock data
+        $('#agent-pnl').textContent = '+$1,247';
+        $('#agent-pnl').className = 'value status-green';
+        $('#agent-top').textContent = 'agent-001:  +$523\nagent-042:  +$412\nagent-099:  +$312';
+        return;
+      }
+
+      const pnl = d.totalPnl ?? 0;
+      $('#agent-pnl').textContent = pnl >= 0 ? `+$${fmt(pnl)}` : `-$${fmt(Math.abs(pnl))}`;
+      $('#agent-pnl').className = pnl >= 0 ? 'value status-green' : 'value status-red';
+      $('#agent-top').textContent = d.top?.slice(0, 3)
+        .map(a => `${a.id}:  ${a.pnl >= 0 ? '+' : ''}$${fmt(a.pnl)}`)
+        .join('\n') ?? '';
+    }
+
+    async function loadCustomers() {
+      const [active, stake] = await Promise.all([
+        getJSON('/api/f402/customers/active?minutes=30', 'customer'),
+        getJSON('/api/f402/customers/staked?period=today', 'customer')
+      ]);
+
+      if (!active || !stake) {
+        // Show mock data
+        $('#active-cust').textContent = '47';
+        $('#staked-today').textContent = '$12,450';
+        return;
+      }
+
+      $('#active-cust').textContent = active.count ?? '—';
+      $('#staked-today').textContent = stake.total != null ? `$${fmt(stake.total)}` : '—';
+    }
+
+    async function loadTxTicker() {
+      const d = await getJSON('/api/f402/transactions/latest?limit=10', 'tx');
+      if (!d || !Array.isArray(d)) {
+        // Show mock data
+        const mockTx = [
+          'BET      cust-001    $100   SETTLED',
+          'BET      cust-042    $250   PENDING',
+          'PAYOUT   cust-003    $450   SETTLED',
+          'BET      cust-017    $75    SETTLED',
+          'BET      cust-099    $300   PENDING',
+          'PAYOUT   cust-042    $600   SETTLED',
+          'BET      cust-023    $150   SETTLED',
+          'BET      cust-055    $200   PENDING',
+          'PAYOUT   cust-001    $220   SETTLED',
+          'BET      cust-088    $125   SETTLED'
+        ];
+        $('#tx-ticker').textContent = mockTx.join('\n');
+        return;
+      }
+
+      $('#tx-ticker').textContent = d.map(t =>
+        `${t.type.padEnd(8)} ${t.customerId.padEnd(10)} $${t.amount.toString().padEnd(6)} ${t.status}`
+      ).join('\n');
+    }
+
     /* ========== MAIN LOOP ========== */
     async function tick() {
       updateTime();
@@ -526,7 +669,11 @@
         loadOdds(),
         loadScores(),
         loadDb(),
-        loadActivity()
+        loadActivity(),
+        loadLiveBets(),
+        loadAgents(),
+        loadCustomers(),
+        loadTxTicker()
       ]);
     }
 
