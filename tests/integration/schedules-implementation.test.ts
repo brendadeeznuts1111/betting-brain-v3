@@ -19,11 +19,11 @@ const mockEnv: Env = {
     prepare: vi.fn().mockReturnValue({
       first: vi.fn().mockResolvedValue({ count: 0 }),
       run: vi.fn().mockResolvedValue({ success: true }),
-      all: vi.fn().mockResolvedValue([]),
+      all: vi.fn().mockResolvedValue({ results: [] }),
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       })
     }),
     exec: vi.fn().mockResolvedValue({ success: true })
@@ -41,12 +41,12 @@ const mockCtx: ExecutionContext = {
   passThroughOnException: vi.fn()
 } as any;
 
-describe.concurrent('Schedule Implementation Tests', () => {
+describe('Schedule Implementation Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe.concurrent('Sharp Calculation Implementation', () => {
+  describe('Sharp Calculation Implementation', () => {
     test('should execute sharp calculation successfully', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
@@ -60,21 +60,21 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 3 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockCustomers.map(id => ({ customer_id: id }))),
+        all: vi.fn().mockResolvedValue({ results: mockCustomers.map(id => ({ customer_id: id })) }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Verify cost cap check was called
       expect(costCapGuard.checkRequest).toHaveBeenCalled();
-      
+
       // Verify database interactions
       expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
@@ -89,12 +89,12 @@ describe.concurrent('Schedule Implementation Tests', () => {
       });
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Verify cost cap check was called
       expect(costCapGuard.checkRequest).toHaveBeenCalled();
-      
+
       // Verify no database operations occurred
       expect(mockEnv.ANALYTICS.prepare).not.toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
@@ -112,18 +112,24 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       // Should not throw - errors should be handled gracefully
-      await expect(handleSharpCalculation(mockEnv, mockCtx)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await handleSharpCalculation(mockEnv, mockCtx);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
 
     test('should process customers in batches', async () => {
@@ -139,24 +145,24 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 250 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockCustomers.map(id => ({ customer_id: id }))),
+        all: vi.fn().mockResolvedValue({ results: mockCustomers.map(id => ({ customer_id: id })) }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Verify all customers were processed
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(250);
     });
   });
 
-  describe.concurrent('Exposure Calculation Implementation', () => {
+  describe('Exposure Calculation Implementation', () => {
     test('should execute exposure calculation successfully', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
@@ -174,21 +180,21 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 2 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockExposureData),
+        all: vi.fn().mockResolvedValue({ results: mockExposureData }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       await handleExposureCalculation(mockEnv, mockCtx);
-      
+
       // Verify cost cap check was called
       expect(costCapGuard.checkRequest).toHaveBeenCalled();
-      
+
       // Verify database interactions
       expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
@@ -212,18 +218,18 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 75 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockExposureData),
+        all: vi.fn().mockResolvedValue({ results: mockExposureData }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       await handleExposureCalculation(mockEnv, mockCtx);
-      
+
       // Verify only 50 rows are processed
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(50);
     });
@@ -240,24 +246,24 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       await handleExposureCalculation(mockEnv, mockCtx);
-      
+
       // Should complete without errors
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
   });
 
-  describe.concurrent('Schedule Performance', () => {
+  describe('Schedule Performance', () => {
     test('should complete within reasonable time limits', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
@@ -270,22 +276,22 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 1 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([{ customer_id: 'cust_1' }]),
+        all: vi.fn().mockResolvedValue({ results: [{ customer_id: 'cust_1' }] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const startTime = Date.now();
-      
+
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       const endTime = Date.now();
       const executionTime = endTime - startTime;
-      
+
       // Should complete within 5 seconds
       expect(executionTime).toBeLessThan(5000);
     });
@@ -302,25 +308,25 @@ describe.concurrent('Schedule Implementation Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 1 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([{ customer_id: 'cust_1' }]),
+        all: vi.fn().mockResolvedValue({ results: [{ customer_id: 'cust_1' }] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       // Execute both jobs concurrently
       const promises = [
         handleSharpCalculation(mockEnv, mockCtx),
         handleExposureCalculation(mockEnv, mockCtx)
       ];
-      
+
       await Promise.all(promises);
-      
+
       // Both should complete successfully
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });

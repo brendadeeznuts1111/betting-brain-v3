@@ -1,4 +1,6 @@
 ---
+version: 4
+scope: ["*"]
 alwaysApply: true
 description: Root directory organization and file placement rules
 ---

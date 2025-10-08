@@ -4,9 +4,9 @@
  * Automates the entire build, test, and deployment pipeline
  */
 
-import { spawn } from 'bun';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import processManager from '../../tests/utils/process-cleanup';
 
 interface BuildConfig {
   projectRoot: string;
@@ -116,12 +116,17 @@ class BuildAndTestAutomation {
 
     const startTime = Date.now();
 
-    for (const step of this.steps) {
-      await this.executeStep(step);
-    }
+    try {
+      for (const step of this.steps) {
+        await this.executeStep(step);
+      }
 
-    const totalDuration = Date.now() - startTime;
-    this.generateReport(totalDuration);
+      const totalDuration = Date.now() - startTime;
+      this.generateReport(totalDuration);
+    } finally {
+      // Ensure all processes are cleaned up
+      await processManager.killAll(3000);
+    }
   }
 
   private async executeStep(step: BuildStep): Promise<void> {
@@ -193,14 +198,19 @@ class BuildAndTestAutomation {
   }
 
   private async runCommand(step: BuildStep): Promise<{ success: boolean; error?: string }> {
+    let proc;
     try {
       const timeout = step.timeout || 30000;
       
+      // Spawn and track process
+      proc = processManager.spawn(step.command, {
+        cwd: step.cwd || this.config.projectRoot,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+
+      // Race between process exit and timeout
       const result = await Promise.race([
-        Bun.spawn(step.command, {
-          cwd: step.cwd || this.config.projectRoot,
-          stdio: ['ignore', 'pipe', 'pipe']
-        }).exited,
+        proc.exited,
         new Promise<number>((_, reject) => 
           setTimeout(() => reject(new Error(`Timeout after ${timeout}ms`)), timeout)
         )
@@ -215,6 +225,15 @@ class BuildAndTestAutomation {
         };
       }
     } catch (error) {
+      // Kill the process on timeout or error
+      if (proc) {
+        try {
+          await processManager.kill(proc, 15, 2000);
+        } catch (killError) {
+          console.error('⚠️  Failed to kill process:', killError);
+        }
+      }
+      
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 

@@ -3,8 +3,8 @@
  * Returns sharp score and performance metrics for a customer
  */
 
-import { Env, GetSharpScoreRequest, SharpScoreResponse } from '../../types/api';
-import { GetSharpScoreRequestSchema, SharpScoreResponseSchema, createErrorResponse } from '../../utils/validation';
+import { Env, GetSharpScoreRequest as GetSharpScoreRequestSchema, SharpScoreResponse as SharpScoreResponseSchema } from '../../types/api';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
@@ -44,23 +44,12 @@ export async function getSharpScore(request: Request, env: Env): Promise<Respons
       timeWindow: parseInt(url.searchParams.get('timeWindow') || '24')
     };
 
-    const validation = GetSharpScoreRequestSchema.safeParse(params);
-    if (!validation.success) {
-      return new Response(createErrorResponse('Invalid request parameters', 'VALIDATION_ERROR', {
-        errors: validation.error.errors
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const validatedParams = validation.data;
 
     // Query sharp score data
     const db = createDatabaseHelper(env);
     const sharpData = await db.executeQueryFirst<any>(
       `SELECT cid, clv, wr, ao FROM sharp_indicators WHERE cid = ?`,
-      [validatedParams.cid]
+      [params.cid]
     );
 
     if (!sharpData) {
@@ -77,7 +66,7 @@ export async function getSharpScore(request: Request, env: Env): Promise<Respons
     const sharpScore = clvScore + winRateScore + volumeScore;
 
     const response: SharpScoreResponse = {
-      cid: validatedParams.cid,
+      cid: params.cid,
       sharpScore,
       clv: sharpData.clv || 0,
       winRate: sharpData.wr || 0,
@@ -87,9 +76,8 @@ export async function getSharpScore(request: Request, env: Env): Promise<Respons
     };
 
     // Validate response
-    const validatedResponse = SharpScoreResponseSchema.parse(response);
 
-    return new Response(JSON.stringify(validatedResponse), {
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

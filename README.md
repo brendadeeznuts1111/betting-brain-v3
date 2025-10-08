@@ -8,7 +8,7 @@
 
 **Zero-downtime, zero-config, zero-cost** betting intelligence layer running entirely on Cloudflare Edge.
 
-[📚 Documentation Index](docs/INDEX.md) | [🚀 Quick Start](docs/QUICKSTART.md) | [🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) | [📊 Dashboard](monitoring/grafana/dashboard.json)
+[📚 Documentation Index](docs/INDEX.md) | [🚀 Quick Start](docs/QUICKSTART.md) | [🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) | [📊 Dashboard](monitoring/grafana/dashboard.json) | [🤖 Cursor Rules](.cursorrules)
 
 ## 🎯 What Changed in v3
 
@@ -35,6 +35,30 @@ bun run deploy:prod
 ```
 
 **Live in 60 seconds** with auto-generated Grafana dashboard!
+
+## 🧪 One-Click CI
+
+Run the full CI pipeline locally before pushing:
+
+```bash
+# Full CI pipeline (security, lint, type-check, tests, build)
+bun run ci
+
+# Quick CI (skip slow checks)
+bun run ci:quick
+
+# Just run tests
+bun test
+```
+
+**Features:**
+- ✅ Zero zombie processes (automatic cleanup)
+- ✅ Timeout enforcement (10s default)
+- ✅ Signal handling (Ctrl+C cleanup)
+- ✅ Detailed reporting
+- ✅ Exit code handling
+
+See [Zombie Process Fix](docs/ZOMBIE_PROCESS_FIX.md) for details.
 
 ## 📊 Core Metrics
 
@@ -323,11 +347,14 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
 
 ### Developer Resources
-- **[Cursor Rules](docs/CURSOR_RULES.md)** - AI assistant rules guide (11 rules)
+
+#### AI Development
+- **[Cursor Rules](.cursorrules)** - AI development standards and patterns 🤖
+- **[Style Guide](docs/STYLE_GUIDE.md)** - Human-readable coding standards with examples 📚
+- **[Cursor Rules Guide](docs/CURSOR_RULES.md)** - Complete rules documentation
+- **[Code Searchability](docs/AST_GREP_QUICKSTART.md)** - ast-grep patterns for code discovery
 - **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
-- **[ast-grep Quick Start](docs/QUICKSTART.md)** - Code search patterns (WORKING!) 🆕
-- **[Dashboard Organization](README.md)** - Dashboard architecture
 - **[Production Patterns](docs/PRODUCTION_PATTERNS.md)** - Scale & security guide (NEW!)
 - **[Production Integration](docs/PRODUCTION_INTEGRATION.md)** - MCP integration guide (NEW!)
 - **[Real-Time Modules](docs/REALTIME_MODULES.md)** - WebSocket + Positions + Agents (NEW!)

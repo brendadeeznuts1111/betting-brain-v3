@@ -1,6 +1,7 @@
 /**
  * MCP Server - JSON-RPC 2.0 Handler
  * Implements Model Context Protocol for betting intelligence tools
+ * See .cursor/rules/mcp-integration.mdc for MCP patterns
  */
 
 import { MCPEnv } from '../types/api';

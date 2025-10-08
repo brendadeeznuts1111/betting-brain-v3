@@ -1,12 +1,6 @@
-# Code Searchability & Pattern Matching
-
 ---
-**Metadata:**
-- **Status:** ✅ Active
-- **Always Apply:** true
-- **Topics:** #searchability #ast-grep #patterns
+alwaysApply: true
 ---
-
 ## Overview
 
 This codebase uses **ast-grep** for structural code search and pattern matching. ast-grep provides semantic search beyond simple text matching, understanding TypeScript/JavaScript syntax.

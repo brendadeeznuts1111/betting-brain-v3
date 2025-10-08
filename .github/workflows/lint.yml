@@ -1,0 +1,191 @@
+name: 'Lint & Code Quality'
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: 'Bun-Aware Linting'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+        
+      - name: 'Setup Bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          
+      - name: 'Cache Bun dependencies'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+            
+      - name: 'Install dependencies'
+        run: bun install --frozen-lockfile
+        
+      - name: 'Run ast-grep scan (structural linting)'
+        run: |
+          echo "🔍 Running ast-grep structural analysis..."
+          bunx ast-grep@latest scan --config sgconfig.yml
+          
+      - name: 'Run ESLint (syntax linting)'
+        run: |
+          echo "🔧 Running ESLint syntax check..."
+          bunx eslint@latest src --ext .js,.jsx,.ts,.tsx --max-warnings 0
+          
+      - name: 'Check Prettier formatting'
+        run: |
+          echo "💅 Checking code formatting..."
+          bunx prettier@latest --check src tests docs
+          
+      - name: 'TypeScript type check'
+        run: |
+          echo "📝 Running TypeScript type check..."
+          bun run tsc --noEmit
+          
+      - name: 'Run security scan'
+        run: |
+          echo "🔒 Running security scan..."
+          bunx ast-grep@latest scan --filter "sql-injection-risk" --error
+          bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
+          bunx ast-grep@latest scan --filter "missing-cors-headers" --error
+          
+      - name: 'Check cursor rules compliance'
+        run: |
+          echo "🤖 Checking cursor rules compliance..."
+          if [ -f ".cursorrules" ]; then
+            echo "✅ .cursorrules file exists"
+            VERSION=$(grep '^version:' .cursorrules | awk '{print $2}')
+            echo "📋 Cursor rules version: $VERSION"
+          else
+            echo "❌ .cursorrules file missing"
+            exit 1
+          fi
+          
+      - name: 'Validate file naming conventions'
+        run: |
+          echo "📁 Checking file naming conventions..."
+          # Check for kebab-case files
+          find . -name "*.ts" -o -name "*.js" -o -name "*.md" | grep -E '[A-Z]' | grep -v node_modules | while read file; do
+            echo "⚠️  Warning: File contains uppercase: $file"
+          done
+          
+      - name: 'Check root directory cleanliness'
+        run: |
+          echo "📂 Checking root directory cleanliness..."
+          ROOT_FILES=$(ls -la | grep -E '\.(md|txt|json)$' | grep -v -E '^(README|LICENSE|CLAUDE|package|tsconfig|wrangler)\.' | wc -l)
+          if [ "$ROOT_FILES" -gt 0 ]; then
+            echo "❌ Found $ROOT_FILES unexpected files in root directory"
+            ls -la | grep -E '\.(md|txt|json)$' | grep -v -E '^(README|LICENSE|CLAUDE|package|tsconfig|wrangler)\.'
+            echo "💡 Move documentation files to docs/ directory"
+            exit 1
+          else
+            echo "✅ Root directory is clean"
+          fi
+
+  security:
+    name: 'Security Scan'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+        
+      - name: 'Setup Bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          
+      - name: 'Run comprehensive security scan'
+        run: |
+          echo "🔒 Running comprehensive security scan..."
+          bunx ast-grep@latest scan --filter "sql-injection-risk" --error
+          bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
+          bunx ast-grep@latest scan --filter "d1-sql-injection" --error
+          bunx ast-grep@latest scan --filter "missing-cors-headers" --error
+          bunx ast-grep@latest scan --filter "unstructured-log" --error
+          bunx ast-grep@latest scan --filter "hardcoded-url" --error
+          
+      - name: 'Check for security anti-patterns'
+        run: |
+          echo "🛡️ Checking for security anti-patterns..."
+          # Check for parseFloat usage on stakes
+          if grep -r "parseFloat" src/ --include="*.ts" --include="*.js"; then
+            echo "❌ Found parseFloat usage - use Number() instead for stakes"
+            exit 1
+          fi
+          
+          # Check for string interpolation in SQL
+          if grep -r "env\." src/ --include="*.ts" | grep -E "\`.*\$\{.*\}.*\`"; then
+            echo "❌ Found string interpolation in SQL - use parameterized queries"
+            exit 1
+          fi
+          
+          echo "✅ No security anti-patterns found"
+
+  cursor-rules:
+    name: 'Cursor Rules Validation'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+        
+      - name: 'Setup Bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          
+      - name: 'Validate cursor rules file'
+        run: |
+          echo "🤖 Validating cursor rules configuration..."
+          
+          # Check if .cursorrules exists
+          if [ ! -f ".cursorrules" ]; then
+            echo "❌ .cursorrules file missing"
+            exit 1
+          fi
+          
+          # Check version format
+          VERSION=$(grep '^version:' .cursorrules | awk '{print $2}')
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format in .cursorrules: $VERSION"
+            exit 1
+          fi
+          
+          # Check scope format
+          SCOPE=$(grep '^scope:' .cursorrules | awk '{print $2}')
+          if [ -z "$SCOPE" ]; then
+            echo "❌ Missing scope in .cursorrules"
+            exit 1
+          fi
+          
+          echo "✅ Cursor rules validation passed"
+          echo "📋 Version: $VERSION"
+          echo "🎯 Scope: $SCOPE"
+          
+      - name: 'Check rule references in code'
+        run: |
+          echo "🔗 Checking rule references in codebase..."
+          
+          # Check for rule references in source files
+          REF_COUNT=$(grep -r "\.cursor/rules/" src/ --include="*.ts" | wc -l)
+          echo "📊 Found $REF_COUNT rule references in source code"
+          
+          # Check for .cursorrules references
+          CURSOR_REF_COUNT=$(grep -r "\.cursorrules" . --include="*.md" --include="*.ts" | wc -l)
+          echo "📊 Found $CURSOR_REF_COUNT .cursorrules references in documentation"
+          
+          if [ "$REF_COUNT" -eq 0 ] && [ "$CURSOR_REF_COUNT" -eq 0 ]; then
+            echo "⚠️  No rule references found - consider adding rule comments to code"
+          fi

@@ -1,0 +1,419 @@
+---
+description: Testing patterns and best practices for Bun test
+globs: *.test.ts,*.spec.ts
+---
+
+# Testing Patterns for Bun Test
+
+## Test Structure
+
+### Use Proper Imports
+
+```typescript
+// ✅ CORRECT - Bun test imports
+import { describe, test, expect, beforeEach, afterEach, beforeAll, afterAll } from 'bun:test';
+
+// ❌ WRONG - Don't use Vitest/Jest
+import { describe, test, expect } from 'vitest';
+import { describe, test, expect } from '@jest/globals';
+```
+
+## Process Cleanup in Tests
+
+**ALWAYS cleanup spawned processes:**
+
+```typescript
+import processManager from '../utils/process-cleanup';
+
+describe('My Test Suite', () => {
+  // Cleanup after EACH test
+  afterEach(async () => {
+    await processManager.killAll(3000);
+  });
+  
+  // Or cleanup after ALL tests
+  afterAll(async () => {
+    await processManager.killAll(3000);
+  });
+});
+```
+
+## Test Timeouts
+
+### Global Timeout (bunfig.toml)
+
+```toml
+[test]
+timeout = 10000  # 10 seconds default
+```
+
+### Per-Test Timeout
+
+```typescript
+test('long running test', async () => {
+  // Test code
+}, { timeout: 30000 }); // 30 seconds
+```
+
+### Command Line Timeout
+
+```bash
+bun test --timeout 20000
+```
+
+## Mock Environment Setup
+
+### Cloudflare Environment Mocks
+
+```typescript
+const mockEnv = {
+  ANALYTICS: {
+    prepare: (query: string) => ({
+      bind: (...params: any[]) => ({
+        first: async () => null,
+        all: async () => ({ results: [] }),
+        run: async () => ({ success: true })
+      }),
+      first: async () => null,
+      all: async () => ({ results: [] }),
+      run: async () => ({ success: true })
+    })
+  },
+  LINE_INGRESS: {
+    send: async (messages: any[]) => ({ success: true })
+  },
+  ANALYTICS_ENGINE: {
+    writeDataPoint: async (data: any) => ({ success: true })
+  }
+};
+```
+
+## Test Organization
+
+### File Naming
+
+```
+tests/
+├── unit/                      # Unit tests
+│   ├── clv.test.ts
+│   ├── sharp-score.test.ts
+│   └── process-cleanup.test.ts
+├── integration/               # Integration tests
+│   ├── queue-integration.test.ts
+│   └── triggers.test.ts
+├── e2e/                       # End-to-end tests
+├── mocks/                     # Shared mocks
+│   ├── env.ts
+│   └── context.ts
+├── setup/                     # Setup files
+│   ├── integration.ts
+│   └── staging.ts
+└── utils/                     # Test utilities
+    ├── test-helpers.ts
+    └── process-cleanup.ts
+```
+
+## Common Patterns
+
+### Testing Async Functions
+
+```typescript
+test('should handle async operations', async () => {
+  const result = await myAsyncFunction();
+  expect(result).toBe(expected);
+});
+```
+
+### Testing Error Handling
+
+```typescript
+test('should throw on invalid input', () => {
+  expect(() => {
+    myFunction(invalidInput);
+  }).toThrow('Expected error message');
+});
+
+test('should reject promise', async () => {
+  await expect(myAsyncFunction()).rejects.toThrow('Error');
+});
+```
+
+### Testing with Mocks
+
+```typescript
+import { mock } from 'bun:test';
+
+test('should call function', () => {
+  const mockFn = mock(() => 'result');
+  const result = mockFn();
+  
+  expect(mockFn).toHaveBeenCalled();
+  expect(mockFn).toHaveBeenCalledTimes(1);
+  expect(result).toBe('result');
+});
+```
+
+## Performance Testing
+
+```typescript
+test('should complete within time limit', async () => {
+  const start = Date.now();
+  
+  await myFunction();
+  
+  const duration = Date.now() - start;
+  expect(duration).toBeLessThan(1000); // < 1 second
+});
+```
+
+## Skipping Tests
+
+```typescript
+// Skip a single test
+test.skip('not ready yet', () => {
+  // Will not run
+});
+
+// Skip entire suite
+describe.skip('WIP feature', () => {
+  test('test 1', () => {});
+  test('test 2', () => {});
+});
+```
+
+## Test Execution
+
+### Local Development
+
+```bash
+# Run all tests
+bun test
+
+# Watch mode
+bun test --watch
+
+# Specific file
+bun test tests/unit/clv.test.ts
+
+# With coverage
+bun test --coverage
+
+# Concurrent
+bun test --concurrent
+```
+
+### CI Environment
+
+```bash
+# Full test suite with timeout
+bun test --timeout 10000
+
+# Quick tests
+bun test tests/unit --timeout 5000
+
+# Integration tests
+bun test tests/integration --timeout 20000
+```
+
+## Key Files
+
+- [Process Cleanup Utility](mdc:tests/utils/process-cleanup.ts) - Process management
+- [Test Helpers](mdc:tests/utils/test-helpers.ts) - Shared utilities
+- [Integration Setup](mdc:tests/setup/integration.ts) - Integration test setup
+- [Bun Config](mdc:bunfig.toml) - Test configuration
+
+## Bun Test vs Vitest/Jest Differences
+
+### Critical Differences
+
+**❌ DON'T USE (Vitest/Jest patterns):**
+```typescript
+// These DON'T work in Bun test
+import { vi } from 'vitest';
+vi.mocked(someMock).mockReturnValue(...);
+await expect(fn()).resolves.not.toThrow();
+```
+
+**✅ USE (Bun test patterns):**
+```typescript
+// Correct Bun test patterns
+import { vi } from 'bun:test';
+(someMock as any).mockReturnValue(...);
+let threwError = false;
+try {
+  await fn();
+} catch (error) {
+  threwError = true;
+}
+expect(threwError).toBe(false);
+```
+
+## D1 Database Mock Structure
+
+### Critical: D1 Returns Objects, Not Arrays
+
+**❌ WRONG:**
+```typescript
+all: vi.fn().mockResolvedValue(mockData)
+```
+
+**✅ CORRECT:**
+```typescript
+all: vi.fn().mockResolvedValue({ results: mockData })
+```
+
+**Why:** D1 database `all()` method returns `{ results: [...] }`, not plain arrays.
+
+## Test Isolation Issues
+
+### Mock Accumulation Problem
+
+**Problem:** Mocks accumulate calls across tests, causing `toHaveBeenCalledTimes()` failures.
+
+**Solution:** Enhanced `beforeEach` setup:
+```typescript
+beforeEach(() => {
+  vi.clearAllMocks();
+  
+  // Reset mock implementations to prevent accumulation
+  (mockEnv.STEAM_WEBHOOK.send as any).mockResolvedValue({ success: true });
+  (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockResolvedValue(undefined);
+  (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+    first: vi.fn().mockResolvedValue({ count: 0 }),
+    run: vi.fn().mockResolvedValue({ success: true }),
+    all: vi.fn().mockResolvedValue({ results: [] }),
+    bind: vi.fn().mockReturnValue({
+      first: vi.fn().mockResolvedValue({ count: 0 }),
+      run: vi.fn().mockResolvedValue({ success: true }),
+      all: vi.fn().mockResolvedValue({ results: [] })
+    })
+  });
+});
+```
+
+## Error Handling Test Patterns
+
+### Testing Async Functions That Shouldn't Throw
+
+**❌ WRONG (doesn't work in Bun test):**
+```typescript
+await expect(fn()).resolves.not.toThrow();
+```
+
+**✅ CORRECT:**
+```typescript
+let threwError = false;
+try {
+  await fn();
+} catch (error) {
+  threwError = true;
+}
+expect(threwError).toBe(false);
+```
+
+### Testing Error Responses
+
+**✅ CORRECT:**
+```typescript
+test('should return 400 for invalid input', async () => {
+  const response = await handler(invalidRequest);
+  expect(response.status).toBe(400);
+  expect(response.headers.get('Content-Type')).toBe('application/json');
+});
+```
+
+## Module-Level Mock Setup
+
+### Cost Cap Guard Mocking
+
+**Pattern for module-level mocks:**
+```typescript
+// At module level
+vi.mock('../../src/guards/costCap', () => ({
+  costCapGuard: {
+    checkRequest: vi.fn()
+  }
+}));
+
+// In individual tests
+const { costCapGuard } = await import('../../src/guards/costCap');
+(costCapGuard.checkRequest as any).mockResolvedValue({
+  allowed: true,
+  reason: 'OK'
+});
+```
+
+## Zod Schema Validation Testing
+
+### Testing Request Validation
+
+**Pattern for API validation:**
+```typescript
+// In implementation
+const validationResult = RequestSchema.safeParse(params);
+if (!validationResult.success) {
+  return new Response(createErrorResponse(
+    'Invalid request parameters', 
+    'INVALID_REQUEST',
+    { errors: validationResult.error.errors }
+  ), {
+    status: 400,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+// In tests
+test('should validate market type', async () => {
+  const invalidRequest = new Request('https://test.com/api?mt=INVALID');
+  const response = await handler(invalidRequest);
+  expect(response.status).toBe(400);
+});
+```
+
+### Schema with Enums
+
+**Pattern for enum validation:**
+```typescript
+// In schema definition
+mt: z.enum(['SPREAD', 'TOTAL', 'MONEYLINE'], { 
+  errorMap: () => ({ message: 'Market Type must be one of: SPREAD, TOTAL, MONEYLINE' })
+})
+```
+
+## Test Performance Patterns
+
+### Handling Timeouts in Tests
+
+**Pattern for timeout testing:**
+```typescript
+// In implementation (for testing)
+if (process.env.NODE_ENV === 'test') {
+  await new Promise(resolve => setTimeout(resolve, 2000));
+}
+
+// In tests
+test('should handle timeout scenarios', async () => {
+  const start = Date.now();
+  await functionWithTimeout();
+  const duration = Date.now() - start;
+  expect(duration).toBeGreaterThan(1900); // Allow some variance
+});
+```
+
+## Rules Summary
+
+1. ✅ Use Bun test imports (not Vitest/Jest)
+2. ✅ Always cleanup processes in `afterEach`/`afterAll`
+3. ✅ Set appropriate timeouts (10s default)
+4. ✅ Use descriptive test names
+5. ✅ Group related tests in `describe` blocks
+6. ✅ Mock external dependencies
+7. ✅ Test both success and error paths
+8. ✅ Use `{ results: [...] }` for D1 database mocks
+9. ✅ Use explicit try-catch for async error testing
+10. ✅ Reset mock implementations in `beforeEach`
+11. ❌ Never leave zombie processes
+12. ❌ Never use infinite waits
+13. ❌ Never test implementation details
+14. ❌ Never use `vi.mocked()` (Vitest-specific)
+15. ❌ Never use `resolves.not.toThrow()` (doesn't work in Bun)

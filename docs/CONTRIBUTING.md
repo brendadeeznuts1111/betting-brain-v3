@@ -6,9 +6,70 @@ Thank you for your interest in contributing! 🎉
 
 1. Fork the repository
 2. Clone your fork
-3. Install dependencies: `npm install`
-4. Run bootstrap: `npm run bootstrap`
-5. Start development: `npm run dev`
+3. Install dependencies: `bun install`
+4. Run bootstrap: `bun run bootstrap`
+5. Start development: `bun run dev`
+
+## AI Development Standards
+
+AI code must follow [.cursorrules](https://github.com/nolarose1968/ffffff/blob/main/.cursorrules).
+
+Run `bun run ci` or read [.cursorrules](.cursorrules) before pushing.
+
+## Coding Standards
+
+This project follows a strict set of coding standards to maintain quality and consistency. Please review our official [Style Guide](../STYLE_GUIDE.md) before contributing.
+
+The style guide explains the "why" behind our coding standards and provides clear examples for each rule. Our rules are enforced automatically via [.cursorrules](.cursorrules).
+
+## Making Changes to the Style Guide (`.cursorrules`)
+
+Our `.cursorrules` file is a living document that defines the coding standards for this project. To ensure changes are tracked properly and communicated clearly, we use Semantic Versioning.
+
+### The Versioning Process
+
+When you make a change to the `.cursorrules` file, you **must** increment its version number. We have an automated script to handle this for you.
+
+#### Step 1: Make Your Changes
+Edit the `.cursorrules` file to add, remove, or modify rules as needed.
+
+#### Step 2: Determine the Type of Change
+Before bumping the version, identify the impact of your change:
+
+* **PATCH**: For small, non-breaking changes.
+    * *Example*: Adding a new, non-conflicting rule.
+* **MINOR**: For backward-compatible but significant changes.
+    * *Example*: Making an existing rule more strict, but without breaking existing compliant code.
+* **MAJOR**: For backward-incompatible changes that will require existing code to be refactored.
+    * *Example*: Changing the naming convention from `camelCase` to `snake_case`.
+
+#### Step 3: Run the Version Bump Script
+Instead of manually editing the version, committing, and tagging, run the helper script from the root of the repository:
+
+```bash
+# Usage: ./scripts/bump-version.sh <major|minor|patch> "Your commit message"
+
+# For a patch change:
+./scripts/bump-version.sh patch "fix(rules): Corrected typo in regex"
+
+# For a minor change:
+./scripts/bump-version.sh minor "feat(rules): Add new rules for async/await"
+
+# For a major change:
+./scripts/bump-version.sh major "feat(rules): Restructure rule organization"
+```
+
+The script will automatically update the version in the file, create a commit, and add a Git tag.
+
+#### Step 4: Push and Create a Pull Request
+
+Push your commit and the new tag to the repository:
+
+```bash
+git push origin <your-branch-name> --tags
+```
+
+Then, open a Pull Request. The CI checks will verify that you have correctly incremented the version. Be sure to fill out the `.cursorrules` section in the PR template!
 
 ## Development Workflow
 

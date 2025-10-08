@@ -1,6 +1,7 @@
 /**
  * Centralized Error Handling
  * Provides consistent error responses across all endpoints
+ * See .cursor/rules/api-patterns.mdc for error handling patterns
  */
 
 export enum ErrorCode {
@@ -162,6 +163,27 @@ export function asyncHandler(
       return createErrorResponse(error, requestId, url.pathname);
     }
   };
+}
+
+/**
+ * Create success response
+ */
+export function createSuccessResponse(data: any, schema?: any): Response {
+  // Validate data against schema if provided
+  if (schema) {
+    const result = schema.safeParse(data);
+    if (!result.success) {
+      throw new Error(`Invalid response data: ${result.error.errors.map(e => e.message).join(', ')}`);
+    }
+  }
+
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
 }
 
 /**

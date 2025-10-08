@@ -1,0 +1,339 @@
+---
+globs: src/**/*.ts,scripts/**/*.ts
+description: Security patterns and vulnerability prevention
+---
+
+# Security Patterns
+
+## Input Validation
+
+### Parameter Validation
+
+```typescript
+// ✅ CORRECT: Validate all inputs
+function validateInput(input: unknown): boolean {
+  if (typeof input !== 'string') return false;
+  if (input.length === 0) return false;
+  if (input.length > 1000) return false;
+  return true;
+}
+
+// ❌ WRONG: No validation
+function processInput(input: unknown) {
+  // Direct use without validation
+  return input.toString();
+}
+```
+
+### SQL Injection Prevention
+
+```typescript
+// ✅ CORRECT: Parameterized queries
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM users WHERE id = ? AND status = ?
+`).bind(userId, status).all();
+
+// ❌ WRONG: String interpolation
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM users WHERE id = '${userId}' AND status = '${status}'
+`).all();
+```
+
+### XSS Prevention
+
+```typescript
+// ✅ CORRECT: Sanitize output
+function sanitizeOutput(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+// ❌ WRONG: Direct output
+function displayUserInput(input: string) {
+  return `<div>${input}</div>`; // XSS risk
+}
+```
+
+## Authentication & Authorization
+
+### Token Validation
+
+```typescript
+// ✅ CORRECT: Validate JWT tokens
+async function validateToken(token: string): Promise<boolean> {
+  try {
+    const payload = await Bun.jwt.verify(token, secret);
+    return payload.exp > Date.now() / 1000;
+  } catch (error) {
+    console.error('Token validation failed:', error);
+    return false;
+  }
+}
+
+// ❌ WRONG: No token validation
+function processRequest(token: string) {
+  // Direct use without validation
+  return { user: 'authenticated' };
+}
+```
+
+### Rate Limiting
+
+```typescript
+// ✅ CORRECT: Implement rate limiting
+const rateLimits = new Map<string, number>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const lastRequest = rateLimits.get(ip);
+  
+  if (!lastRequest || now - lastRequest > 1000) {
+    rateLimits.set(ip, now);
+    return true;
+  }
+  
+  return false;
+}
+
+// ❌ WRONG: No rate limiting
+function handleRequest(request: Request) {
+  // Process without rate limiting
+  return processRequest(request);
+}
+```
+
+## Data Protection
+
+### Sensitive Data Handling
+
+```typescript
+// ✅ CORRECT: Hash sensitive data
+async function hashPassword(password: string): Promise<string> {
+  return await Bun.password.hash(password, {
+    algorithm: 'bcrypt',
+    cost: 12
+  });
+}
+
+// ❌ WRONG: Store plain text
+function storePassword(password: string) {
+  // Never store plain text passwords
+  return password;
+}
+```
+
+### Data Encryption
+
+```typescript
+// ✅ CORRECT: Encrypt sensitive data
+async function encryptData(data: string): Promise<string> {
+  const key = await crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  );
+  
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    new TextEncoder().encode(data)
+  );
+  
+  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+}
+```
+
+## Error Handling
+
+### Secure Error Messages
+
+```typescript
+// ✅ CORRECT: Generic error messages
+function handleError(error: Error): Response {
+  console.error('Internal error:', error);
+  return new Response(JSON.stringify({
+    error: 'Internal Server Error',
+    requestId: generateRequestId()
+  }), {
+    status: 500,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+// ❌ WRONG: Expose internal details
+function handleError(error: Error): Response {
+  return new Response(JSON.stringify({
+    error: error.message,
+    stack: error.stack,
+    details: error.toString()
+  }), { status: 500 });
+}
+```
+
+### Logging Security
+
+```typescript
+// ✅ CORRECT: Sanitize logs
+function logRequest(request: Request, data: any) {
+  const sanitizedData = {
+    ...data,
+    password: '[REDACTED]',
+    token: '[REDACTED]',
+    apiKey: '[REDACTED]'
+  };
+  
+  console.log(`[${requestId}] Request:`, sanitizedData);
+}
+
+// ❌ WRONG: Log sensitive data
+function logRequest(request: Request, data: any) {
+  console.log('Request data:', data); // May contain sensitive info
+}
+```
+
+## CORS Security
+
+### CORS Configuration
+
+```typescript
+// ✅ CORRECT: Restrictive CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://trusted-domain.com',
+  'Access-Control-Allow-Methods': 'GET, POST',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400'
+};
+
+// ❌ WRONG: Overly permissive CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': '*',
+  'Access-Control-Allow-Headers': '*'
+};
+```
+
+## Environment Security
+
+### Environment Variables
+
+```typescript
+// ✅ CORRECT: Validate environment variables
+function validateEnv(env: Env): boolean {
+  const required = ['ANALYTICS', 'SECRET_KEY', 'API_URL'];
+  
+  for (const key of required) {
+    if (!env[key]) {
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+  }
+  
+  return true;
+}
+
+// ❌ WRONG: Use without validation
+function processRequest(env: Env) {
+  // Direct use without checking if variables exist
+  return env.SECRET_KEY;
+}
+```
+
+### Secret Management
+
+```typescript
+// ✅ CORRECT: Use environment for secrets
+const secretKey = env.SECRET_KEY;
+if (!secretKey) {
+  throw new Error('SECRET_KEY not configured');
+}
+
+// ❌ WRONG: Hardcode secrets
+const secretKey = 'hardcoded-secret-key'; // Never do this
+```
+
+## File Security
+
+### File Upload Validation
+
+```typescript
+// ✅ CORRECT: Validate file uploads
+function validateFile(file: File): boolean {
+  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  
+  if (!allowedTypes.includes(file.type)) {
+    return false;
+  }
+  
+  if (file.size > maxSize) {
+    return false;
+  }
+  
+  return true;
+}
+```
+
+### Path Traversal Prevention
+
+```typescript
+// ✅ CORRECT: Validate file paths
+function validateFilePath(path: string): boolean {
+  const normalizedPath = path.normalize(path);
+  return !normalizedPath.includes('..') && 
+         !normalizedPath.startsWith('/') &&
+         normalizedPath.length < 100;
+}
+
+// ❌ WRONG: Direct path usage
+function readFile(path: string) {
+  // No validation - path traversal risk
+  return Bun.file(path);
+}
+```
+
+## Security Headers
+
+### Response Headers
+
+```typescript
+// ✅ CORRECT: Security headers
+const securityHeaders = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Content-Security-Policy': "default-src 'self'"
+};
+
+return new Response(data, {
+  headers: { ...securityHeaders, ...corsHeaders }
+});
+```
+
+## Key Files
+
+- [Security Rules](mdc:rules/) - ast-grep security rules
+- [Production Security](mdc:.cursor/rules/production-security.mdc) - Production security patterns
+- [Error Handler](mdc:src/utils/error-handler.ts) - Error handling patterns
+- [Validation](mdc:src/utils/validation.ts) - Input validation
+
+## Rules Summary
+
+1. ✅ **Always** validate all inputs
+2. ✅ **Always** use parameterized queries
+3. ✅ **Always** sanitize output
+4. ✅ **Always** validate tokens
+5. ✅ **Always** implement rate limiting
+6. ✅ **Always** hash sensitive data
+7. ✅ **Always** use secure error messages
+8. ✅ **Always** sanitize logs
+9. ✅ **Always** use restrictive CORS
+10. ✅ **Always** validate environment variables
+11. ❌ **Never** expose internal details
+12. ❌ **Never** hardcode secrets
+13. ❌ **Never** use string interpolation in SQL
+14. ❌ **Never** ignore security headers

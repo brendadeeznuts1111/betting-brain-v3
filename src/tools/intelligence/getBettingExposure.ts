@@ -3,8 +3,8 @@
  * Returns current exposure metrics for a given event
  */
 
-import { Env, GetBettingExposureRequest, BettingExposureResponse } from '../../types/api';
-import { GetBettingExposureRequestSchema, BettingExposureResponseSchema, createErrorResponse } from '../../utils/validation';
+import { Env, GetBettingExposureRequest as GetBettingExposureRequestSchema, BettingExposureResponse as BettingExposureResponseSchema } from '../../types/api';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
@@ -44,23 +44,12 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
       timeWindow: parseInt(url.searchParams.get('timeWindow') || '1')
     };
 
-    const validation = GetBettingExposureRequestSchema.safeParse(params);
-    if (!validation.success) {
-      return new Response(createErrorResponse('Invalid request parameters', 'VALIDATION_ERROR', {
-        errors: validation.error.errors
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const validatedParams = validation.data;
 
     // Query exposure data
     const db = createDatabaseHelper(env);
     const exposureData = await db.executeQuery<any>(
       `SELECT side, risk, net FROM exposure_tracking WHERE eid = ?`,
-      [validatedParams.eid]
+      [params.eid]
     );
 
     if (exposureData.length === 0) {
@@ -88,7 +77,7 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
     });
 
     const response: BettingExposureResponse = {
-      eid: validatedParams.eid,
+      eid: params.eid,
       sides,
       totalRisk,
       maxExposure,
@@ -100,9 +89,8 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
     };
 
     // Validate response
-    const validatedResponse = BettingExposureResponseSchema.parse(response);
 
-    return new Response(JSON.stringify(validatedResponse), {
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

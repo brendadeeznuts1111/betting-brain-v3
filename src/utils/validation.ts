@@ -305,3 +305,77 @@ export function validationErrorResponse(errors: string[], requestId?: string): R
     }
   });
 }
+
+/**
+ * Zod schemas for validation
+ */
+import { z } from 'zod';
+
+export const EventIdSchema = z.string().min(1, 'Event ID is required').regex(/^[a-zA-Z0-9_-]+$/, 'Event ID contains invalid characters');
+export const CustomerIdSchema = z.string().min(1, 'Customer ID is required').regex(/^[a-zA-Z0-9_-]+$/, 'Customer ID contains invalid characters');
+export const MarketTypeSchema = z.enum(['MONEYLINE', 'SPREAD', 'TOTAL', 'PROP', 'FUTURE', 'PARLAY']);
+
+/**
+ * Validate request data against a schema
+ */
+export function validateRequest(schema: z.ZodSchema, data: any): { success: boolean; error?: any; data?: any } {
+  try {
+    // Check for circular references
+    if (hasCircularReference(data)) {
+      return { success: false, error: 'Circular reference detected' };
+    }
+    
+    // Check for very large objects
+    if (JSON.stringify(data).length > 1000000) { // 1MB limit
+      return { success: false, error: 'Object too large' };
+    }
+    
+    const result = schema.safeParse(data);
+    if (result.success) {
+      return { success: true, data: result.data };
+    } else {
+      // Convert Zod errors to a more testable format
+      const errorMessages = result.error.errors.map(e => e.message).join(', ');
+      return { success: false, error: errorMessages };
+    }
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Check for circular references in an object
+ */
+function hasCircularReference(obj: any, seen = new WeakSet()): boolean {
+  if (obj === null || typeof obj !== 'object') {
+    return false;
+  }
+  
+  if (seen.has(obj)) {
+    return true;
+  }
+  
+  seen.add(obj);
+  
+  for (const key in obj) {
+    if (hasCircularReference(obj[key], seen)) {
+      return true;
+    }
+  }
+  
+  seen.delete(obj);
+  return false;
+}
+
+// Re-export schemas from api.ts for backward compatibility
+export { 
+  GetBettingExposureRequest as GetBettingExposureRequestSchema,
+  BettingExposureResponse as BettingExposureResponseSchema,
+  GetSharpScoreRequest as GetSharpScoreRequestSchema,
+  SharpScoreResponse as SharpScoreResponseSchema,
+  GetHoldPercentageRequest as GetHoldPercentageRequestSchema,
+  HoldPercentageResponse as HoldPercentageResponseSchema,
+  GetCLVRequest as GetCLVRequestSchema,
+  CLVResponse as CLVResponseSchema,
+  ErrorResponse as ErrorResponseSchema
+} from '../types/api';

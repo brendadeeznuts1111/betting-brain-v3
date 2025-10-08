@@ -3,8 +3,8 @@
  * Returns CLV metrics and betting performance for a customer
  */
 
-import { Env, GetCLVRequest, CLVResponse } from '../../types/api';
-import { GetCLVRequestSchema, CLVResponseSchema, createErrorResponse } from '../../utils/validation';
+import { Env, GetCLVRequest as GetCLVRequestSchema, CLVResponse as CLVResponseSchema } from '../../types/api';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';

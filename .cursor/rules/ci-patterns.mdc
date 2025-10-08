@@ -1,0 +1,317 @@
+---
+description: CI/CD patterns and automation best practices
+---
+
+# CI/CD Patterns
+
+## Local CI Execution
+
+### One-Click Commands
+
+```bash
+# Full CI pipeline
+bun run ci
+
+# Quick CI (skip slow checks)
+bun run ci:quick
+
+# Interactive CI with reporting
+bun run ci:local
+
+# Just tests
+bun test
+```
+
+## CI Script Structure
+
+### Standard CI Pipeline
+
+```typescript
+const steps = [
+  {
+    name: 'Security Scan',
+    command: ['sg', 'scan', 'src/'],
+    timeout: 30000,
+    required: true
+  },
+  {
+    name: 'SQL Migration Validation',
+    command: ['bun', 'run', 'scripts/validate-migrations.ts'],
+    timeout: 10000,
+    required: true
+  },
+  {
+    name: 'Lint Code',
+    command: ['bun', 'run', 'lint'],
+    timeout: 30000,
+    required: false
+  },
+  {
+    name: 'Type Check',
+    command: ['bun', 'x', 'tsc', '--noEmit'],
+    timeout: 60000,
+    required: false
+  },
+  {
+    name: 'Unit Tests',
+    command: ['bun', 'test', 'tests/unit'],
+    timeout: 120000,
+    required: true
+  },
+  {
+    name: 'Integration Tests',
+    command: ['bun', 'test', 'tests/integration'],
+    timeout: 180000,
+    required: true
+  },
+  {
+    name: 'Build',
+    command: ['bun', 'run', 'build:worker'],
+    timeout: 60000,
+    required: true
+  }
+];
+```
+
+## GitHub Actions Patterns
+
+### Workflow Structure
+
+```yaml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+# Cancel outdated runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+      - run: sg scan src/
+
+  test:
+    name: Tests
+    needs: security  # Block on security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun test
+
+  build:
+    name: Build
+    needs: [security, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run build:worker
+```
+
+## CI Best Practices
+
+### Job Dependencies
+
+```yaml
+# Sequential execution
+jobs:
+  security:
+    # Runs first
+  
+  test:
+    needs: security  # Waits for security
+  
+  build:
+    needs: [security, test]  # Waits for both
+  
+  deploy:
+    needs: build  # Final step
+```
+
+### Caching
+
+```yaml
+- name: Cache Bun dependencies
+  uses: actions/cache@v4
+  with:
+    path: ~/.bun/install/cache
+    key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+    restore-keys: |
+      ${{ runner.os }}-bun-
+```
+
+### Timeouts
+
+```yaml
+jobs:
+  test:
+    timeout-minutes: 15  # Job-level timeout
+    steps:
+      - run: bun test --timeout 10000  # Command-level timeout
+```
+
+### Artifact Upload
+
+```yaml
+- name: Upload build artifacts
+  uses: actions/upload-artifact@v4
+  with:
+    name: build-artifacts
+    path: dist/
+    retention-days: 7
+```
+
+## Error Handling
+
+### Required vs Optional Steps
+
+```typescript
+interface CIStep {
+  name: string;
+  command: string[];
+  required: boolean;  // Fail CI if this fails
+  timeout?: number;
+}
+
+async function executeStep(step: CIStep) {
+  try {
+    await runCommand(step.command, step.timeout);
+  } catch (error) {
+    if (step.required) {
+      throw error;  // Fail CI
+    } else {
+      console.warn(`Optional step failed: ${step.name}`);
+    }
+  }
+}
+```
+
+### Retry Logic
+
+```typescript
+async function runWithRetry(
+  command: string[],
+  maxRetries: number = 3
+): Promise<boolean> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await runCommand(command);
+      return true;
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      console.log(`Retry ${i + 1}/${maxRetries}...`);
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+  return false;
+}
+```
+
+## Reporting
+
+### CI Report Structure
+
+```typescript
+interface CIReport {
+  timestamp: string;
+  duration: number;
+  summary: {
+    passed: number;
+    failed: number;
+    skipped: number;
+    total: number;
+  };
+  results: Array<{
+    step: string;
+    status: 'pass' | 'fail' | 'skip';
+    duration: number;
+    error?: string;
+  }>;
+}
+```
+
+### Console Output
+
+```typescript
+function printReport(report: CIReport) {
+  console.log('\n' + '═'.repeat(70));
+  console.log('📊 CI PIPELINE REPORT');
+  console.log('═'.repeat(70));
+  console.log(`\n📈 Results: ${report.summary.passed} passed, ${report.summary.failed} failed`);
+  console.log(`⏱️  Duration: ${(report.duration / 1000).toFixed(2)}s`);
+  
+  if (report.summary.failed > 0) {
+    console.log('\n❌ Failed Steps:');
+    report.results
+      .filter(r => r.status === 'fail')
+      .forEach(r => console.log(`   • ${r.step}: ${r.error}`));
+  }
+}
+```
+
+## Package.json Scripts
+
+### CI Scripts Pattern
+
+```json
+{
+  "scripts": {
+    "ci": "bun run ci:full",
+    "ci:full": "bun run security && bun run lint && bun run type-check && bun run test && bun run build",
+    "ci:quick": "bun run security && bun run test:fast",
+    "ci:local": "bun run scripts/ci-local.ts",
+    
+    "security": "sg scan src/",
+    "security:migrations": "bun run scripts/validate-migrations.ts",
+    
+    "test": "bun test",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
+    "test:fast": "bun test --concurrent --randomize",
+    
+    "lint": "bun run scripts/lint.ts",
+    "format": "bun run scripts/format.ts",
+    "type-check": "tsc --noEmit",
+    
+    "build": "bun build src/index.ts --outdir dist",
+    "build:worker": "bun build src/index.ts --outdir dist --minify"
+  }
+}
+```
+
+## Key Files
+
+- [CI Local Script](mdc:scripts/ci-local.ts) - Local CI implementation
+- [GitHub Actions](mdc:.github/workflows/ci.yml) - CI workflow
+- [Build Automation](mdc:scripts/automation/build-and-test.ts) - Build pipeline
+- [Package Scripts](mdc:package.json) - NPM scripts
+
+## Rules Summary
+
+1. ✅ Always use timeouts (job and command level)
+2. ✅ Block on security gate (required)
+3. ✅ Cache dependencies for speed
+4. ✅ Use concurrency control
+5. ✅ Report results clearly
+6. ✅ Separate required vs optional steps
+7. ✅ Cleanup processes after CI
+8. ✅ Version pin critical tools
+9. ❌ Never skip security checks
+10. ❌ Never run CI without timeouts

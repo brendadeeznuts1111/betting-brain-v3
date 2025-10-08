@@ -15,10 +15,12 @@ describe('BetTicker Sniffer', () => {
   let mockEnv: BetTickerSnifferEnv;
   let mockContext: ExecutionContext;
   let kvStore: Map<string, { value: string; metadata: any; ttl: number }>;
+  let waitUntilPromises: Promise<any>[];
 
   beforeEach(() => {
     // Mock KV storage
     kvStore = new Map();
+    waitUntilPromises = [];
 
     mockEnv = {
       ANALYTICS: {} as any,
@@ -61,7 +63,11 @@ describe('BetTicker Sniffer', () => {
     };
 
     mockContext = {
-      waitUntil: vi.fn((promise: Promise<any>) => promise),
+      waitUntil: vi.fn((promise: Promise<any>) => {
+        // Store the promise so tests can await it
+        waitUntilPromises.push(promise);
+        return promise;
+      }),
       passThroughOnException: vi.fn(),
     } as any;
   });
@@ -82,7 +88,7 @@ describe('BetTicker Sniffer', () => {
       ) as any;
 
       const request = new Request(
-        'https://brain.mybook.com/cloud/api/Manager/getBetTicker',
+        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
         {
           method: 'POST',
           headers: {
@@ -110,8 +116,8 @@ describe('BetTicker Sniffer', () => {
         expect.any(Object)
       );
 
-      // Wait for KV storage
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for all waitUntil promises to complete
+      await Promise.all(waitUntilPromises);
 
       // Verify data was stored in KV
       const kvKeys = Array.from(kvStore.keys());
@@ -124,7 +130,7 @@ describe('BetTicker Sniffer', () => {
         new Response('OK', { status: 200 })
       ) as any;
 
-      const request = new Request('https://brain.mybook.com/other/endpoint', {
+      const request = new Request('https://fantasy402.com/other/endpoint', {
         method: 'GET',
       });
 
@@ -147,7 +153,7 @@ describe('BetTicker Sniffer', () => {
       ) as any;
 
       const request = new Request(
-        'https://brain.mybook.com/cloud/api/Manager/getBetTicker',
+        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
         { method: 'GET' }
       );
 
@@ -166,11 +172,12 @@ describe('BetTicker Sniffer', () => {
       global.fetch = vi.fn(async () =>
         new Response(JSON.stringify(mockResponse), {
           status: 200,
+          headers: { 'Content-Type': 'application/json' },
         })
       ) as any;
 
       const request = new Request(
-        'https://brain.mybook.com/cloud/api/Manager/getBetTicker',
+        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
         {
           method: 'POST',
           headers: {
@@ -181,7 +188,9 @@ describe('BetTicker Sniffer', () => {
       );
 
       await handleBetTickerInterception(request, mockEnv, mockContext);
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      
+      // Wait for all waitUntil promises to complete
+      await Promise.all(waitUntilPromises);
 
       const keys = Array.from(kvStore.keys());
       expect(keys.length).toBe(1);
@@ -202,7 +211,7 @@ describe('BetTicker Sniffer', () => {
       }) as any;
 
       const request = new Request(
-        'https://brain.mybook.com/cloud/api/Manager/getBetTicker',
+        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
         { method: 'POST' }
       );
 
@@ -212,9 +221,9 @@ describe('BetTicker Sniffer', () => {
         mockContext
       );
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(502); // Bad Gateway for proxy errors
       const data = await response.json();
-      expect(data.error).toBe('Interception failed');
+      expect(data.error).toBe('Worker interception failed');
       expect(data.message).toContain('Network error');
     });
   });
@@ -346,7 +355,7 @@ describe('BetTicker Sniffer', () => {
       ) as any;
 
       const request = new Request(
-        'https://brain.mybook.com/cloud/api/Manager/getBetTicker',
+        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
         { method: 'POST' }
       );
 
@@ -361,11 +370,14 @@ describe('BetTicker Sniffer', () => {
 
     test('should handle missing headers gracefully', async () => {
       global.fetch = vi.fn(async () =>
-        new Response(JSON.stringify({ ok: true }), { status: 200 })
+        new Response(JSON.stringify({ ok: true }), { 
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
       ) as any;
 
       const request = new Request(
-        'https://brain.mybook.com/cloud/api/Manager/getBetTicker',
+        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
         { method: 'POST' }
       );
 
@@ -376,7 +388,9 @@ describe('BetTicker Sniffer', () => {
       );
 
       expect(response.status).toBe(200);
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      
+      // Wait for all waitUntil promises to complete
+      await Promise.all(waitUntilPromises);
 
       const keys = Array.from(kvStore.keys());
       const entry = kvStore.get(keys[0]);
@@ -391,7 +405,7 @@ describe('BetTicker Sniffer', () => {
       ) as any;
 
       const request = new Request(
-        'https://brain.mybook.com/cloud/api/Manager/getBetTicker',
+        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
         { method: 'POST' }
       );
 

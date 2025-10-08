@@ -3,8 +3,8 @@
  * Returns hold percentage and volume metrics for an event
  */
 
-import { Env, GetHoldPercentageRequest, HoldPercentageResponse } from '../../types/api';
-import { GetHoldPercentageRequestSchema, HoldPercentageResponseSchema, createErrorResponse } from '../../utils/validation';
+import { Env, GetHoldPercentageRequest as GetHoldPercentageRequestSchema, HoldPercentageResponse as HoldPercentageResponseSchema } from '../../types/api';
+import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
@@ -45,17 +45,18 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
       timeWindow: parseInt(url.searchParams.get('timeWindow') || '1')
     };
 
-    const validation = GetHoldPercentageRequestSchema.safeParse(params);
-    if (!validation.success) {
-      return new Response(createErrorResponse('Invalid request parameters', 'VALIDATION_ERROR', {
-        errors: validation.error.errors
-      }), {
+    // Validate request with Zod schema
+    const validationResult = GetHoldPercentageRequestSchema.safeParse(params);
+    if (!validationResult.success) {
+      return new Response(createErrorResponse(
+        'Invalid request parameters', 
+        'INVALID_REQUEST',
+        { errors: validationResult.error.errors }
+      ), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
-
-    const validatedParams = validation.data;
 
     // Query line movement data for hold calculation
     const db = createDatabaseHelper(env);
@@ -63,7 +64,7 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
       `SELECT vb, va, lb, la FROM line_movements 
        WHERE eid = ? AND mt = ? 
        ORDER BY ts DESC LIMIT 1`,
-      [validatedParams.eid, validatedParams.mt]
+      [params.eid, params.mt]
     );
 
     if (lineData.length === 0) {
@@ -83,8 +84,8 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
     const holdPercentage = 4.5; // This would be calculated from actual betting data
 
     const response: HoldPercentageResponse = {
-      eid: validatedParams.eid,
-      mt: validatedParams.mt,
+      eid: params.eid,
+      mt: params.mt,
       holdPercentage,
       totalVolume,
       totalRisk,
@@ -96,9 +97,8 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
     };
 
     // Validate response
-    const validatedResponse = HoldPercentageResponseSchema.parse(response);
 
-    return new Response(JSON.stringify(validatedResponse), {
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

@@ -17,7 +17,7 @@ describe('Guards Error Path Tests', () => {
         prepare: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         }),
         exec: vi.fn().mockResolvedValue({ success: true })
       } as any,
@@ -39,10 +39,10 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle database connection errors gracefully', async () => {
       // Mock database error
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database connection failed')),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       } as any);
 
       const request = new Request('https://test.com');
@@ -55,10 +55,10 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle null database results', async () => {
       // Mock null result
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       } as any);
 
       const request = new Request('https://test.com');
@@ -71,10 +71,10 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle undefined database results', async () => {
       // Mock undefined result
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue(undefined),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       } as any);
 
       const request = new Request('https://test.com');
@@ -87,10 +87,10 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle invalid database result types', async () => {
       // Mock invalid result types
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 'invalid', rows: 'invalid' }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       } as any);
 
       const request = new Request('https://test.com');
@@ -102,15 +102,23 @@ describe('Guards Error Path Tests', () => {
     });
 
     test('should handle TTL cleanup errors gracefully', async () => {
-      // Mock TTL cleanup error
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      // Create a mock that rejects when run() is called
+      const mockPrepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
         run: vi.fn().mockRejectedValue(new Error('TTL cleanup failed')),
-        all: vi.fn().mockResolvedValue([])
-      } as any);
+        all: vi.fn().mockResolvedValue({ results: [] })
+      });
+      
+      mockEnv.ANALYTICS.prepare = mockPrepare as any;
 
       // Should not throw
-      await expect(costCapGuard.applyTTLCleanup(mockEnv)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await costCapGuard.applyTTLCleanup(mockEnv);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
 
     test('should handle sampling with invalid data', () => {
@@ -147,13 +155,13 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle cost limits exceeded scenarios', async () => {
       // Mock high usage
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ 
           size: defaultCostCapConfig.d1.maxSize * 0.95, // 95% of limit
           rows: defaultCostCapConfig.d1.maxRows * 0.95 
         }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       } as any);
 
       const request = new Request('https://test.com');
@@ -309,7 +317,7 @@ describe('Guards Error Path Tests', () => {
       const rateLimitGuard = new RateLimitGuard(defaultRateLimitConfig);
       
       // Mock both guards to fail
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
         run: vi.fn().mockRejectedValue(new Error('Database error')),
         all: vi.fn().mockRejectedValue(new Error('Database error'))
@@ -331,12 +339,12 @@ describe('Guards Error Path Tests', () => {
       const costCapGuard = new CostCapGuard(defaultCostCapConfig);
       
       // Mock slow database response that never resolves
-      vi.mocked(mockEnv.ANALYTICS.prepare).mockReturnValue({
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockImplementation(() => 
           new Promise(() => {}) // Never resolves
         ),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       } as any);
 
       const request = new Request('https://test.com');
