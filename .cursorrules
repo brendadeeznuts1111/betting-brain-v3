@@ -131,6 +131,28 @@ This `.cursorrules` file is the **single source of truth** for all AI-generated 
 - Test with `bun scripts/test-handlers-direct.ts`
 - HTTP testing via `/mcp` endpoint
 
+## Sports API Integration
+
+### Data Fetching
+- Use MCP `live-odds` tool for odds (never hard-code API calls)
+- Aggregate ≥ 2 bookmakers for accuracy (Pinnacle + Bet365)
+- Cache live data ≤ 30s in SPORTS_CACHE KV
+- Sports enum: nba, nfl, mlb, nhl only
+- Markets enum: moneyline, spread, total only
+
+### Data Ingestion
+- Push via `push-sports-data` MCP tool after every fetch
+- Ingest endpoint requires JWT signed with JWT_SECRET
+- Rate limit: 100 req/min per IP on `/ingest`
+- Validate eventId, timestamp, odds (required fields)
+- Include source and volume in metadata
+
+### API Key Rotation
+- Use rotateSecret() for daily key rotation
+- Pattern: PINNACLE_KEY_1, PINNACLE_KEY_2, PINNACLE_KEY_3
+- Rotation based on day of year % 3 + 1
+- Never commit actual keys to repo
+
 ## Browser Extension
 
 ### Manifest v3

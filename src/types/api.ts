@@ -204,3 +204,74 @@ export interface CostCapConfig {
     hardStop: boolean;
   };
 }
+
+// ============================================================================
+// Sports API Types
+// ============================================================================
+
+export type Sport = 'nba' | 'nfl' | 'mlb' | 'nhl';
+export type Market = 'moneyline' | 'spread' | 'total';
+
+export interface OddsSource {
+  source: string; // 'pinnacle', 'bet365', etc.
+  data: {
+    home: number;
+    away: number;
+    timestamp: string;
+  } | null;
+  error?: string;
+}
+
+export interface AggregatedOdds {
+  sport: Sport;
+  market: Market;
+  sources: OddsSource[];
+  aggregatedAt: string;
+  cacheHit?: boolean;
+}
+
+export interface IngestDataPoint {
+  eventId: string;
+  timestamp: string;
+  odds: number;
+  market?: string;
+  volume?: number;
+  source?: string;
+}
+
+export interface IngestResponse {
+  received: number;
+  written: number;
+  errors?: string[];
+  rateLimit?: {
+    remaining: number;
+    reset: number;
+  };
+  timestamp: string;
+}
+
+// ============================================================================
+// Extended Env for Sports & Rate Limiting
+// ============================================================================
+
+export interface SportsEnv extends Env {
+  RATE_LIMITER: KVNamespace;
+  SPORTS_CACHE: KVNamespace;
+  JWT_SECRET: string;
+
+  // Optional API keys (with rotation)
+  PINNACLE_KEY?: string;
+  PINNACLE_KEY_1?: string;
+  PINNACLE_KEY_2?: string;
+  PINNACLE_KEY_3?: string;
+
+  BET365_KEY?: string;
+  BET365_KEY_1?: string;
+  BET365_KEY_2?: string;
+  BET365_KEY_3?: string;
+
+  SPORTSDATA_KEY?: string;
+  SPORTSDATA_KEY_1?: string;
+  SPORTSDATA_KEY_2?: string;
+  SPORTSDATA_KEY_3?: string;
+}

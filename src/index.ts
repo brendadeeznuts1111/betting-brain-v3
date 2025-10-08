@@ -5,7 +5,7 @@
  * Runs entirely on Cloudflare Edge (D1, Workers, Queues, Analytics Engine)
  */
 
-import { Env, BetTickerSnifferEnv, MCPEnv } from './types/api';
+import { Env, BetTickerSnifferEnv, MCPEnv, SportsEnv } from './types/api';
 import { handleLineIngress } from './queues/lineIngress';
 import { handleSteamWebhook } from './queues/steamWebhook';
 import { handleSharpCalculation } from './schedules/sharpCalc';
@@ -78,7 +78,14 @@ export default {
     // Data ingestion endpoint (MCP)
     if (url.pathname === '/ingest' && request.method === 'POST') {
       console.log(`[${requestId}] 📊 Data ingestion from MCP`);
-      return handleIngest(request, env);
+      return handleIngest(request, env as SportsEnv);
+    }
+
+    // Live odds API endpoint
+    if (url.pathname === '/api/live-odds' && request.method === 'GET') {
+      console.log(`[${requestId}] 🎲 Live odds API`);
+      const { handleLiveOdds } = await import('./routes/api/live-odds');
+      return handleLiveOdds(request, env as SportsEnv);
     }
 
     // Extension logs endpoint
