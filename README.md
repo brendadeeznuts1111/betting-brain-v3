@@ -251,6 +251,7 @@ betting-brain-v3/
 
 ## 🧪 Testing
 
+### Basic Testing
 ```bash
 bun test            # Run all tests
 bun test:unit       # Run unit tests only
@@ -259,6 +260,37 @@ bun test:e2e        # Run end-to-end tests
 bun test:watch      # Run tests in watch mode
 bun test:ci         # Run tests with coverage
 ```
+
+### 🤖 AI-Friendly Testing (NEW!)
+
+**Optimized for AI coding assistants with quiet output:**
+
+```bash
+# Dedicated AI command (recommended)
+bun run test:ai
+
+# Environment variable approach
+CLAUDECODE=1 bun test
+CLAUDECODE=1 bun test tests/unit
+CLAUDECODE=1 bun test --coverage
+
+# Auto-detected in AI environments
+bun run ci:local    # ✅ Auto-detects Claude Code
+bun run ci:bun      # ✅ Auto-detects Replit AI
+```
+
+**Benefits:**
+- ✅ Shows only test failures (not passing tests)
+- ✅ 90% reduction in output verbosity for AI context windows
+- ✅ Preserves failure details and summaries
+- ✅ Improves readability in AI-assisted development
+
+**Environment Variables:**
+- `CLAUDECODE=1` - Claude Code sessions
+- `REPL_ID=1` - Replit AI environments  
+- `AGENT=1` - Generic AI agent flag
+
+📖 **[Complete AI-Friendly Testing Guide](docs/testing/AI_FRIENDLY_TESTING.md)**
 
 **Test Health:** ⚠️ **85/100** - Improving
 - ✅ Test infrastructure fixed (timeout, zombie processes killed)
@@ -344,12 +376,14 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 ### Quality & Testing
 - **[Test Audit Report](docs/TEST_AUDIT_REPORT.md)** - Quality score: 100/100
 - **[Code Quality Audit](docs/CODE_QUALITY_AUDIT.md)** - Comprehensive review
+- **[AI-Friendly Testing Guide](docs/testing/AI_FRIENDLY_TESTING.md)** - AI-optimized test patterns 🤖
 - **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
 
 ### Developer Resources
 
 #### AI Development
 - **[Cursor Rules](.cursorrules)** - AI development standards and patterns 🤖
+- **[AI-Friendly Testing](.cursor/rules/ai-friendly-testing.mdc)** - AI-optimized test patterns 🤖
 - **[Style Guide](docs/STYLE_GUIDE.md)** - Human-readable coding standards with examples 📚
 - **[Cursor Rules Guide](docs/CURSOR_RULES.md)** - Complete rules documentation
 - **[Code Searchability](docs/AST_GREP_QUICKSTART.md)** - ast-grep patterns for code discovery
