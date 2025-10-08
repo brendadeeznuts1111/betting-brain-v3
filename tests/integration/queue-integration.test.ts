@@ -14,7 +14,7 @@ describe('Queue Integration Tests', () => {
   let mockCtx: ExecutionContext;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     
     mockEnv = {
       ANALYTICS: {

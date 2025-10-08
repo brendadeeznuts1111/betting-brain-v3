@@ -18,7 +18,7 @@ describe('Schedule Implementation Detailed Tests', () => {
   let mockCtx: ExecutionContext;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
 
     mockEnv = {
       ANALYTICS: {

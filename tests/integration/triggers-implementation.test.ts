@@ -32,7 +32,7 @@ const mockEnv: Env = {
 
 describe('Trigger Implementation Tests', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
 
     // Reset mock implementations to prevent accumulation
     (mockEnv.STEAM_WEBHOOK.send as any).mockClear().mockResolvedValue({ success: true });

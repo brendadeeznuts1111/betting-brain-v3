@@ -13,26 +13,36 @@ describe('CLV Calculations', () => {
   beforeEach(() => {
     mockEnv = {
       ANALYTICS: {
-        prepare: (query: string) => ({
-          bind: (...params: any[]) => ({
-            first: async () => ({
-              cid: 'test-customer-1',
-              clv: 1500,
-              wr: 55,
-              ao: 100,
-              nb: 1500
-            })
-          }),
-          first: async () => ({
-            size: 1000000,
-            rows: 1000
-          }),
-          run: async () => ({ success: true }),
-          all: async () => []
-        })
+        prepare: (query: string) => {
+          // Handle cost cap queries (dbstat)
+          if (query.includes('dbstat') || query.includes('SUM(pgsize)')) {
+            return {
+              first: async () => ({ size: 1000000, rows: 1000 }),
+              bind: () => ({ first: async () => ({ size: 1000000, rows: 1000 }) }),
+              run: async () => ({ success: true }),
+              all: async () => []
+            };
+          }
+
+          // Handle regular queries
+          return {
+            bind: (...params: any[]) => ({
+              first: async () => ({
+                cid: 'test-customer-1',
+                clv: 1500,
+                wr: 55,
+                ao: 100,
+                nb: 1500
+              })
+            }),
+            first: async () => null,
+            run: async () => ({ success: true }),
+            all: async () => []
+          };
+        }
       },
       ANALYTICS_ENGINE: {
-        writeDataPoint: async () => {}
+        writeDataPoint: async () => { }
       }
     };
 
@@ -83,7 +93,7 @@ describe('CLV Calculations', () => {
   test('should validate customer ID format', async () => {
     const invalidRequest = new Request('https://test.com/getCLV?cid=');
     const response = await getCLV(invalidRequest, mockEnv);
-    
+
     expect(response.status).toBe(400);
   });
 

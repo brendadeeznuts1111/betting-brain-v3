@@ -77,6 +77,29 @@ bun test:staging
 bun test:prod
 ```
 
+### AI-Friendly Test Output 🤖
+
+**NEW:** Tests automatically run in quiet mode when AI environments are detected:
+
+```bash
+# Dedicated AI command (explicit)
+bun run test:ai
+
+# Or set environment variable
+CLAUDECODE=1 bun test
+
+# Auto-detected in Claude Code, Replit, etc.
+bun run ci:local  # Automatically enables quiet mode
+```
+
+**Benefits:**
+- ✅ Shows only test failures (not passing tests)
+- ✅ Reduces output verbosity for AI context windows
+- ✅ Preserves failure details and summaries
+- ✅ Improves readability in AI sessions
+
+**See:** [AI-Friendly Testing Guide](AI_FRIENDLY_TESTING.md) for complete details.
+
 ## Test Categories
 
 ### 1. Unit Tests (`tests/unit/`)

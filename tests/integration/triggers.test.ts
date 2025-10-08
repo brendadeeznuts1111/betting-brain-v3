@@ -41,7 +41,7 @@ const mockCtx: ExecutionContext = {
 
 describe('Database Trigger Scenario Tests', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('Line Movement Trigger', () => {

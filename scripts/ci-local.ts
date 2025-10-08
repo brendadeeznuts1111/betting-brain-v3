@@ -36,11 +36,27 @@ class LocalCI {
     this.quickMode = quickMode;
   }
 
+  private isAIEnvironment(): boolean {
+    // Detect AI coding assistant environments
+    return !!(
+      process.env.CLAUDECODE ||
+      process.env.REPL_ID ||
+      process.env.AGENT
+    );
+  }
+
   async run(): Promise<boolean> {
     console.log('\n' + '═'.repeat(70));
     console.log('🚀 LOCAL CI PIPELINE');
     console.log('═'.repeat(70));
     console.log(`Mode: ${this.quickMode ? '⚡ Quick' : '🔍 Full'}`);
+
+    // Enable AI-friendly output if in AI environment
+    if (this.isAIEnvironment()) {
+      console.log('🤖 AI Environment: Quiet test output enabled');
+      process.env.CLAUDECODE = '1';
+    }
+
     console.log('═'.repeat(70) + '\n');
 
     this.startTime = Date.now();
@@ -218,14 +234,14 @@ class LocalCI {
     } catch (error) {
       // Kill process on timeout/error
       if (proc) {
-        await processManager.kill(proc, 15, 2000).catch(() => {});
+        await processManager.kill(proc, 15, 2000).catch(() => { });
       }
 
       const duration = Date.now() - startTime;
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      
+
       console.log(`❌ ${step.name}: FAIL (${errorMsg}, ${duration}ms)`);
-      
+
       return {
         step: step.name,
         status: 'fail',
@@ -237,7 +253,7 @@ class LocalCI {
 
   private async checkZombieProcesses(): Promise<void> {
     console.log('\n🧹 Checking for zombie processes...');
-    
+
     const count = processManager.count();
     if (count > 0) {
       console.log(`⚠️  Found ${count} tracked process(es), cleaning up...`);
@@ -250,7 +266,7 @@ class LocalCI {
 
   private printReport(): void {
     const duration = Date.now() - this.startTime;
-    
+
     console.log('\n' + '═'.repeat(70));
     console.log('📊 CI PIPELINE REPORT');
     console.log('═'.repeat(70));

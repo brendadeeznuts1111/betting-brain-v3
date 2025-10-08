@@ -15,8 +15,8 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  // Clear all mocks before each test
-  vi.clearAllMocks();
+  // Reset all mocks before each test (clears implementations AND call history)
+  vi.resetAllMocks();
   
   // Reset console methods to avoid test pollution
   vi.spyOn(console, 'log').mockImplementation(() => {});

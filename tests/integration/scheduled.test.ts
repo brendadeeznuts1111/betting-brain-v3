@@ -43,7 +43,7 @@ const mockCtx: ExecutionContext = {
 
 describe('Scheduled Job Execution Tests', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('Sharp Calculation Job', () => {
@@ -462,7 +462,7 @@ describe('Scheduled Job Execution Tests', () => {
       const timezones = ['UTC', 'America/New_York', 'Europe/London'];
 
       for (const timezone of timezones) {
-        vi.clearAllMocks();
+        vi.resetAllMocks();
 
         // Mock exposure data for each timezone test
         const mockEvents = [{ eid: 'nba_123' }];

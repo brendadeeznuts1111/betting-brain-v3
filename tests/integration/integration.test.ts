@@ -57,7 +57,7 @@ describe('Integration Tests - Main Entry Point', () => {
   let mockCtx: ExecutionContext;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     
     mockEnv = {
       ANALYTICS: {

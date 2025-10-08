@@ -43,7 +43,7 @@ const mockCtx: ExecutionContext = {
 
 describe('Schedule Implementation Tests', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('Sharp Calculation Implementation', () => {
