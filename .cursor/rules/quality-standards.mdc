@@ -1,0 +1,460 @@
+---
+alwaysApply: true
+description: Code quality standards and anti-pattern prevention
+version: "1.0.0"
+lastUpdated: "2025-10-08"
+dependencies: ["api-patterns", "bun-runtime", "database-patterns"]
+---
+
+# Quality Standards Rules
+
+## 🎯 Overview
+
+These rules enforce the quality standards defined in [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md).
+
+**Zero Tolerance:**
+- ❌ No `as any` type assertions
+- ❌ No `console.log/error` (use StructuredLogger)
+- ❌ No magic numbers (use constants)
+- ❌ No code duplication (use utilities)
+- ❌ No empty catch blocks
+
+---
+
+## 1. Type Safety - No 'as any'
+
+### ❌ WRONG
+
+```typescript
+const result = (await query.all()) as any;
+const data = result.results || [];
+
+const metrics = { ...testData } as any;
+```
+
+### ✅ CORRECT
+
+```typescript
+// Use type guards
+function isQueryResult(val: unknown): val is QueryResult {
+  return typeof val === 'object' && val !== null && 'results' in val;
+}
+
+const result = await query.all();
+const data = isQueryResult(result) ? result.results : [];
+
+// Use utilities
+import { normalizeD1Result } from '../utils/request';
+const data = normalizeD1Result<MyType>(await query.all());
+
+// Proper type definition
+const metrics: CostCapMetrics = {
+  requests: { current: 0, limit: TEST_LIMITS.REQUESTS, percentage: 0 },
+  // ... all fields typed
+};
+```
+
+### Rule: Type Assertions
+
+```typescript
+// NEVER:
+as any
+
+// INSTEAD:
+import { normalizeD1Result, normalizeD1First } from '../utils/request';
+```
+
+---
+
+## 2. Constants - No Magic Numbers
+
+### ❌ WRONG
+
+```typescript
+if (percentage > 90) { ... }
+if (size > 5000000000) { ... }
+const timeout = 5000;
+const requestId = Date.now().toString(36);
+```
+
+### ✅ CORRECT
+
+```typescript
+import {
+  COST_CAP_THRESHOLDS,
+  TIMEOUTS,
+  generateRequestId
+} from '../shared/constants';
+
+if (percentage > COST_CAP_THRESHOLDS.WARNING_PERCENTAGE) { ... }
+if (size > COST_CAP_THRESHOLDS.D1_SIZE_LIMIT) { ... }
+const timeout = TIMEOUTS.DATABASE_QUERY;
+const requestId = generateRequestId();
+```
+
+### Rule: All Configuration in Constants
+
+**File:** `src/shared/constants.ts`
+
+**Categories:**
+- `TEST_LIMITS` - Test bypass values
+- `COST_CAP_THRESHOLDS` - Cost cap percentages & limits
+- `RATE_LIMITS` - Rate limiting configuration
+- `TIMEOUTS` - All timeout values
+- `RETRY_CONFIG` - Retry logic settings
+- `TTL` - Time-to-live settings
+- `STEAM_THRESHOLDS` - Steam detection thresholds
+- `SHARP_SCORE_THRESHOLDS` - Sharp score classifications
+- `ANOMALY_DETECTION` - Anomaly detection config
+- `PAGINATION` - Pagination defaults
+- `REQUEST_ID` - Request ID generation config
+- `HTTP_STATUS` - HTTP status codes
+
+---
+
+## 3. Logging - Use StructuredLogger
+
+### ❌ WRONG
+
+```typescript
+console.log(`[${requestId}] Processing...`);
+console.error('Error:', error);
+console.log('DEBUG:', variable);
+```
+
+### ✅ CORRECT
+
+```typescript
+import { createLogger, performanceTimer } from '../utils/logger';
+
+const logger = createLogger(request);
+logger.info('processing_started', { requestId, operation: 'handler' });
+logger.error('processing_failed', { requestId, errorCode }, error);
+logger.debug('variable_state', { variable, otherData });
+
+// Performance timing
+const timer = performanceTimer(logger, 'db_query');
+const result = await db.query(...);
+timer.end({ rows: result.length });
+```
+
+### Rule: Structured Logging Only
+
+```typescript
+// NEVER:
+console.log(...)
+console.error(...)
+
+// ALWAYS:
+import { createLogger } from '../utils/logger';
+const logger = createLogger(request);
+logger.info(...) / logger.error(...) / logger.warn(...) / logger.debug(...)
+```
+
+---
+
+## 4. Utilities - No Code Duplication
+
+### ❌ WRONG
+
+```typescript
+// Repeated 26 times
+const requestId = Date.now().toString(36);
+
+// Repeated 5+ times
+const data = Array.isArray(result) ? result : result?.results || [];
+
+// Repeated 10+ times
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Content-Type': 'application/json'
+};
+```
+
+### ✅ CORRECT
+
+```typescript
+import {
+  generateRequestId,
+  normalizeD1Result,
+  normalizeD1First,
+  CORS_HEADERS,
+  createJSONResponse,
+  createErrorResponse,
+  createOPTIONSResponse,
+  getQueryParam,
+  getQueryParamNumber,
+  getQueryParamBoolean,
+  extractPath,
+} from '../utils/request';
+
+// Request ID
+const requestId = generateRequestId();
+
+// D1 normalization
+const rows = normalizeD1Result<MyType>(await stmt.all());
+const row = normalizeD1First<MyType>(await stmt.first());
+
+// CORS response
+if (request.method === 'OPTIONS') {
+  return createOPTIONSResponse();
+}
+
+// JSON response with CORS
+return createJSONResponse({ success: true, data });
+
+// Error response with CORS
+return createErrorResponse(error, requestId, request.url);
+
+// Query parameters
+const limit = getQueryParamNumber(request, 'limit', 20);
+const includeHistory = getQueryParamBoolean(request, 'includeHistory', false);
+```
+
+### Rule: Use Utilities
+
+**File:** `src/utils/request.ts`
+
+**Available utilities:**
+- `generateRequestId()` - Unique request ID
+- `getRequestId(request)` - Extract or generate request ID
+- `normalizeD1Result<T>(result)` - Normalize D1 .all() results
+- `normalizeD1First<T>(result)` - Normalize D1 .first() results
+- `CORS_HEADERS` - Standard CORS headers
+- `createCORSHeaders(origin)` - Custom CORS headers
+- `createOPTIONSResponse()` - CORS preflight response
+- `createJSONResponse(data, status, headers)` - JSON response with CORS
+- `createErrorResponse(message, status, code, requestId)` - Error response
+- `extractPath(request, basePath)` - Extract clean path
+- `parseQueryParams(request)` - Get URLSearchParams
+- `getQueryParam(request, key, default)` - Get query param as string
+- `getQueryParamNumber(request, key, default)` - Get as number
+- `getQueryParamBoolean(request, key, default)` - Get as boolean
+
+---
+
+## 5. Error Handling - No Silent Failures
+
+### ❌ WRONG
+
+```typescript
+// Empty catch block
+try {
+  await operation();
+} catch (error) {
+  // Silent failure
+}
+
+// Generic error
+try {
+  await operation();
+} catch (error) {
+  console.error('Error:', error);
+  return null;
+}
+```
+
+### ✅ CORRECT
+
+```typescript
+import { createErrorResponse, APIError, ErrorCode } from '../utils/error-handler';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger(request);
+
+try {
+  await riskyOperation();
+} catch (error) {
+  logger.error('operation_failed', {
+    operation: 'processData',
+    requestId
+  }, error as Error);
+
+  return createErrorResponse(
+    error as Error,
+    requestId,
+    request.url
+  );
+}
+
+// Specific error types
+if (!params.eid) {
+  throw new APIError(
+    ErrorCode.VALIDATION_ERROR,
+    'Event ID is required',
+    400,
+    { field: 'eid' }
+  );
+}
+
+// Retryable classification
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof Error) {
+    // Don't retry validation errors
+    if (error.name === 'ZodError') return false;
+    // Retry network errors
+    if (error.message.includes('timeout')) return true;
+  }
+  return true;
+}
+```
+
+### Rule: Explicit Error Handling
+
+1. **Never swallow errors** - Always log or propagate
+2. **Use typed errors** - Use `APIError` for known errors
+3. **Provide context** - Include operation name, parameters
+4. **Classify errors** - Retryable vs non-retryable
+5. **User-friendly messages** - Don't expose internal details
+
+---
+
+## 6. Database Patterns
+
+### ❌ WRONG
+
+```typescript
+// No error handling
+const result = await env.ANALYTICS.prepare(query).all();
+const data = result.results;
+
+// No timeout
+const result = await stmt.bind(...params).first();
+
+// SQL injection risk
+const query = `SELECT * FROM users WHERE id = ${userId}`;
+```
+
+### ✅ CORRECT
+
+```typescript
+import { createDatabaseHelper } from '../utils/database';
+import { normalizeD1Result, normalizeD1First } from '../utils/request';
+import { TIMEOUTS, RETRY_CONFIG } from '../shared/constants';
+
+// Use DatabaseHelper
+const db = createDatabaseHelper(env);
+const data = await db.executeQuery<MyType>(
+  'SELECT * FROM table WHERE id = ?',
+  [userId],
+  { retry: RETRY_CONFIG.MAX_ATTEMPTS, timeout: TIMEOUTS.DATABASE_QUERY }
+);
+
+// Normalize results
+const rows = normalizeD1Result<MyType>(await stmt.all());
+const row = normalizeD1First<MyType>(await stmt.first());
+
+// Batch operations
+const result = await db.executeBatch([
+  { query: 'INSERT INTO table VALUES (?, ?)', params: [1, 'a'] },
+  { query: 'INSERT INTO table VALUES (?, ?)', params: [2, 'b'] },
+]);
+```
+
+### Rule: Database Best Practices
+
+1. **Always parameterize** - Never string concatenation
+2. **Always handle errors** - Wrap in try/catch
+3. **Always set timeouts** - Use `TIMEOUTS.DATABASE_QUERY`
+4. **Always normalize** - Use `normalizeD1Result()`
+5. **Use DatabaseHelper** - For retry & error handling
+
+---
+
+## Quick Reference
+
+### Import Map
+
+```typescript
+// Constants
+import {
+  TEST_LIMITS,
+  COST_CAP_THRESHOLDS,
+  RATE_LIMITS,
+  TIMEOUTS,
+  RETRY_CONFIG,
+  TTL,
+  STEAM_THRESHOLDS,
+  SHARP_SCORE_THRESHOLDS,
+  ANOMALY_DETECTION,
+  PAGINATION,
+  REQUEST_ID,
+  HTTP_STATUS,
+} from '../shared/constants';
+
+// Request utilities
+import {
+  generateRequestId,
+  getRequestId,
+  normalizeD1Result,
+  normalizeD1First,
+  CORS_HEADERS,
+  createCORSHeaders,
+  createOPTIONSResponse,
+  createJSONResponse,
+  createErrorResponse,
+  extractPath,
+  parseQueryParams,
+  getQueryParam,
+  getQueryParamNumber,
+  getQueryParamBoolean,
+} from '../utils/request';
+
+// Logging
+import {
+  StructuredLogger,
+  createLogger,
+  performanceTimer,
+  logMetric,
+} from '../utils/logger';
+
+// Error handling
+import {
+  ErrorCode,
+  APIError,
+  createErrorResponse,
+} from '../utils/error-handler';
+
+// Database
+import {
+  DatabaseHelper,
+  createDatabaseHelper,
+} from '../utils/database';
+```
+
+### Checklist for New Code
+
+- [ ] No `as any` type assertions
+- [ ] No `console.log/error` (use StructuredLogger)
+- [ ] No magic numbers (use constants from `shared/constants.ts`)
+- [ ] No duplicate code (use utilities from `utils/request.ts`)
+- [ ] All errors handled explicitly (no empty catch)
+- [ ] Request ID generated with `generateRequestId()`
+- [ ] D1 results normalized with `normalizeD1Result()`
+- [ ] CORS headers from `CORS_HEADERS` constant
+- [ ] Database queries use `DatabaseHelper` with timeout
+- [ ] All functions have JSDoc comments
+- [ ] All code has ≥80% test coverage
+
+---
+
+## Related Rules
+
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API design patterns
+- [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - Database best practices
+- [Testing Patterns](mdc:.cursor/rules/testing-patterns.mdc) - Testing standards
+
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide
+- [docs/CURSOR_RULES.md](mdc:docs/CURSOR_RULES.md) - Cursor rules documentation
+- [src/shared/constants.ts](mdc:src/shared/constants.ts) - All constants
+- [src/utils/request.ts](mdc:src/utils/request.ts) - Request utilities
+- [src/utils/logger.ts](mdc:src/utils/logger.ts) - Logging utilities
+
+---
+
+**Status:** Production Ready ✅
+**Last Updated:** 2025-10-08
+**Enforcement:** CI/CD Required

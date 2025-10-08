@@ -1,6 +1,9 @@
 ---
+version: "2.0.0"
 globs: src/**/*.ts,migrations/*.sql
 description: Database patterns and D1 query best practices
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "api-patterns"]
 ---
 
 # Database Patterns
@@ -38,6 +41,8 @@ const result = await env.ANALYTICS.prepare(`
 #### Type Safety
 
 ```typescript
+import { normalizeD1Result } from '../utils/request';
+
 // Query with type conversion
 const result = await env.ANALYTICS.prepare(`
   SELECT eid, mt, ts, old_line, new_line
@@ -47,14 +52,16 @@ const result = await env.ANALYTICS.prepare(`
   LIMIT ?
 `).bind(eventID, limit).all();
 
-// Convert with unknown cast (required for D1Result type)
-const movements = result.results as unknown as Array<{
+// Normalize with proper typing
+type Movement = {
   eid: string;
   mt: string;
   ts: string;
   old_line: number;
   new_line: number;
-}>;
+};
+
+const movements = normalizeD1Result<Movement>(result);
 ```
 
 ### Database Tables
@@ -167,12 +174,21 @@ for (const movement of movements) {
 #### Database Error Patterns
 
 ```typescript
+import { createLogger } from '../utils/logger';
+import { normalizeD1Result } from '../utils/request';
+
+const logger = createLogger(request);
+
 try {
   const result = await env.ANALYTICS.prepare(query).bind(...params).all();
-  return result.results;
+  return normalizeD1Result(result);
 } catch (error) {
-  console.error(`[${requestId}] Database error:`, error);
-  throw new Error(`Database query failed: ${error.message}`);
+  logger.error('database_query_failed', {
+    query: query.substring(0, 100), // Truncate for logging
+    errorType: error instanceof Error ? error.name : 'Unknown'
+  }, error as Error);
+
+  throw new Error(`Database query failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
 }
 ```
 
@@ -229,12 +245,29 @@ const testMovements = [
 ## Rules Summary
 
 1. ✅ **Always** use parameterized queries (`.bind()`)
-2. ✅ **Always** cast D1 results with `as unknown as`
+2. ✅ **Always** normalize D1 results with `normalizeD1Result()` ⭐ **UPDATED**
 3. ✅ **Always** use indexes for performance
 4. ✅ **Always** limit query results
-5. ✅ **Always** handle database errors
+5. ✅ **Always** handle database errors with StructuredLogger ⭐ **UPDATED**
 6. ✅ **Always** use proper migration naming
 7. ❌ **Never** use string interpolation in SQL
-8. ❌ **Never** forget to bind parameters
+8. ❌ **Never** use `as unknown as` (use `normalizeD1Result()` instead) ⭐ **UPDATED**
 9. ❌ **Never** ignore database errors
 10. ❌ **Never** create tables without indexes
+
+## Related Rules
+
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API validation & error handling
+
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide ⭐ **NEW**
+- [src/utils/request.ts](mdc:src/utils/request.ts) - Request & D1 utilities ⭐ **NEW**
+- [src/utils/logger.ts](mdc:src/utils/logger.ts) - Logging utilities ⭐ **NEW**
+- [src/shared/constants.ts](mdc:src/shared/constants.ts) - All constants ⭐ **NEW**
+
+---
+
+**Status:** Production patterns established
+**Last Updated:** 2025-10-08

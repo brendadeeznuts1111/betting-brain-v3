@@ -1,6 +1,9 @@
 ---
+version: "2.0.0"
 description: Endpoint routing patterns and request handling conventions
 globs: src/index.ts,src/**/*.ts
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "api-patterns"]
 ---
 
 # Endpoint Routing Rules
@@ -12,12 +15,15 @@ All HTTP requests are handled in [src/index.ts](mdc:src/index.ts) via the `fetch
 ## Request Flow Pattern
 
 ```typescript
-1. Generate requestId: Date.now().toString(36)
+import { generateRequestId, createOPTIONSResponse, createJSONResponse } from '../utils/request';
+import { createLogger } from '../utils/logger';
+
+1. Generate requestId: generateRequestId()
 2. Parse URL: new URL(request.url)
-3. Log request details with requestId
-4. Handle CORS preflight (OPTIONS)
+3. Log request details with StructuredLogger
+4. Handle CORS preflight: createOPTIONSResponse()
 5. Route by pathname
-6. Return response with CORS headers
+6. Return response: createJSONResponse() (includes CORS)
 ```
 
 ## Endpoint Categories
@@ -116,15 +122,19 @@ if (url.pathname.startsWith('/tools/')) {
 **ALWAYS generate and use a request ID:**
 
 ```typescript
-const requestId = Date.now().toString(36);
-console.log(`[${requestId}] 📥 Incoming request:`, { method, url });
+import { generateRequestId } from '../utils/request';
+import { createLogger } from '../utils/logger';
+
+const requestId = generateRequestId();
+const logger = createLogger(request);
+logger.info('request_received', { method, url });
 ```
 
 **Use in responses:**
 ```typescript
-return new Response(JSON.stringify({ requestId, ...data }), {
-  headers: { 'Content-Type': 'application/json' }
-});
+import { createJSONResponse } from '../utils/request';
+
+return createJSONResponse({ requestId, ...data });
 ```
 
 ---
@@ -134,18 +144,26 @@ return new Response(JSON.stringify({ requestId, ...data }), {
 **ALWAYS include CORS headers for dashboard access:**
 
 ```typescript
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+import { CORS_HEADERS, createOPTIONSResponse, createJSONResponse } from '../utils/request';
+
+// CORS headers available as constant
+// No need to define inline
 ```
 
 **Handle OPTIONS preflight:**
 ```typescript
 if (request.method === 'OPTIONS') {
-  return new Response(null, { headers: corsHeaders });
+  return createOPTIONSResponse();
 }
+```
+
+**Use in responses:**
+```typescript
+// Automatic with createJSONResponse
+return createJSONResponse({ data });
+
+// Or manually
+return new Response(data, { headers: { ...CORS_HEADERS } });
 ```
 
 ---
@@ -155,18 +173,24 @@ if (request.method === 'OPTIONS') {
 **Standardized error response:**
 
 ```typescript
+import { createErrorResponse } from '../utils/request';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger(request);
+
 try {
   // Handler logic
 } catch (error) {
-  console.error(`[${requestId}] ❌ Error:`, error);
-  return new Response(JSON.stringify({
-    error: 'Error type',
-    message: error instanceof Error ? error.message : 'Unknown error',
-    requestId,
-  }), {
-    status: 500,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders }
-  });
+  logger.error('handler_failed', {
+    errorType: error instanceof Error ? error.name : 'Unknown'
+  }, error as Error);
+
+  return createErrorResponse(
+    error instanceof Error ? error.message : 'Unknown error',
+    500,
+    'HANDLER_ERROR',
+    requestId
+  );
 }
 ```
 
@@ -177,10 +201,14 @@ try {
 **Log request duration:**
 
 ```typescript
-const startTime = Date.now();
+import { performanceTimer } from '../utils/logger';
+
+const logger = createLogger(request);
+const timer = performanceTimer(logger, 'request_handler');
+
 // ... handle request
-const duration = Date.now() - startTime;
-console.log(`[${requestId}] ✅ Completed in ${duration}ms`);
+
+timer.end({ requestId, statusCode: 200 });
 ```
 
 ---
@@ -190,6 +218,9 @@ console.log(`[${requestId}] ✅ Completed in ${duration}ms`);
 ### Pattern: Separate Functions for Complex Routes
 
 ```typescript
+import { createJSONResponse, createErrorResponse, generateRequestId } from '../utils/request';
+import { createLogger } from '../utils/logger';
+
 // In main fetch handler:
 if (url.pathname === '/diagnostics') {
   return handleDiagnostics(request, env, ctx);
@@ -197,16 +228,20 @@ if (url.pathname === '/diagnostics') {
 
 // Separate handler function:
 async function handleDiagnostics(
-  request: Request, 
-  env: Env, 
+  request: Request,
+  env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
-  const corsHeaders = { /* CORS headers */ };
+  const requestId = generateRequestId();
+  const logger = createLogger(request);
+
   try {
+    logger.info('diagnostics_started', { requestId });
     // Handler logic
-    return new Response(JSON.stringify(data), { headers: corsHeaders });
+    return createJSONResponse({ data, requestId });
   } catch (error) {
-    // Error handling
+    logger.error('diagnostics_failed', { requestId }, error as Error);
+    return createErrorResponse('Diagnostics failed', 500, 'DIAGNOSTICS_ERROR', requestId);
   }
 }
 ```
@@ -310,38 +345,47 @@ if (event.cron === '*/30 * * * * *') {
 
 **Add to main fetch handler:**
 ```typescript
+import { generateRequestId } from '../utils/request';
+import { createLogger } from '../utils/logger';
+
+const requestId = generateRequestId();
+const logger = createLogger(request);
+
 if (url.pathname === '/my-endpoint') {
-  console.log(`[${requestId}] 🎯 My endpoint accessed`);
+  logger.info('endpoint_accessed', { endpoint: '/my-endpoint', requestId });
   return handleMyEndpoint(request, env, ctx);
 }
 ```
 
 **Create handler function:**
 ```typescript
+import {
+  generateRequestId,
+  createJSONResponse,
+  createErrorResponse
+} from '../utils/request';
+import { createLogger } from '../utils/logger';
+
 async function handleMyEndpoint(
   request: Request,
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
+  const requestId = generateRequestId();
+  const logger = createLogger(request);
 
   try {
+    logger.info('handler_started', { requestId });
     // Your logic here
-    return new Response(JSON.stringify({ data }), { headers: corsHeaders });
+    return createJSONResponse({ data, requestId });
   } catch (error) {
-    console.error('My endpoint error:', error);
-    return new Response(JSON.stringify({ 
-      error: 'Failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: corsHeaders
-    });
+    logger.error('handler_failed', { requestId }, error as Error);
+    return createErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error',
+      500,
+      'HANDLER_ERROR',
+      requestId
+    );
   }
 }
 ```
@@ -440,57 +484,68 @@ return new Response(JSON.stringify(data));
 // No request ID tracking
 console.log('Request received');
 
+// Inline CORS headers
+const corsHeaders = { 'Access-Control-Allow-Origin': '*' };
+
+// Manual request ID
+const requestId = Date.now().toString(36);
+
 // No error handling
 const result = await riskyOperation();
 return new Response(JSON.stringify(result));
-
-// Duplicate endpoint handling
-if (url.pathname === '/logs') { /* handler 1 */ }
-// ... later ...
-if (url.pathname === '/logs') { /* handler 2 - DUPLICATE! */ }
 ```
 
 ### ✅ DO
 
 ```typescript
-// With CORS headers
-return new Response(JSON.stringify(data), {
-  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-});
+import {
+  generateRequestId,
+  createJSONResponse,
+  createErrorResponse,
+  CORS_HEADERS
+} from '../utils/request';
+import { createLogger } from '../utils/logger';
 
-// With request ID
-const requestId = Date.now().toString(36);
-console.log(`[${requestId}] Request received`);
+// With proper utilities
+const requestId = generateRequestId();
+const logger = createLogger(request);
+logger.info('request_received', { requestId });
 
 // With error handling
 try {
   const result = await riskyOperation();
-  return new Response(JSON.stringify({ requestId, result }), {
-    headers: { ...corsHeaders }
-  });
+  return createJSONResponse({ requestId, result });
 } catch (error) {
-  console.error(`[${requestId}] Error:`, error);
-  return new Response(JSON.stringify({ 
-    error: 'Failed',
-    requestId,
-    message: error instanceof Error ? error.message : 'Unknown'
-  }), {
-    status: 500,
-    headers: { ...corsHeaders }
-  });
+  logger.error('operation_failed', { requestId }, error as Error);
+  return createErrorResponse(
+    error instanceof Error ? error.message : 'Unknown',
+    500,
+    'OPERATION_ERROR',
+    requestId
+  );
 }
 ```
 
 ---
 
+## Related Rules
+
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API validation & error handling
+- [Cloudflare Workers](mdc:.cursor/rules/cloudflare-workers.mdc) - Workers patterns
+- [MCP Integration](mdc:.cursor/rules/mcp-integration.mdc) - MCP patterns
+
 ## Related Documentation
 
-- **[Cloudflare Workers Rules](.cursor/rules/cloudflare-workers.mdc)** - Workers patterns
-- **[MCP Integration Rules](.cursor/rules/mcp-integration.mdc)** - MCP patterns
+- **[docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md)** - Complete quality guide ⭐ **NEW**
+- **[src/utils/request.ts](mdc:src/utils/request.ts)** - Request utilities ⭐ **NEW**
+- **[src/utils/logger.ts](mdc:src/utils/logger.ts)** - Logging utilities ⭐ **NEW**
+- **[src/shared/constants.ts](mdc:src/shared/constants.ts)** - All constants ⭐ **NEW**
 - **[docs/ENDPOINT_DASHBOARD_INTEGRATION.md](mdc:docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete endpoint guide
 - **[docs/SYSTEM_INTEGRATION_MAP.md](mdc:docs/SYSTEM_INTEGRATION_MAP.md)** - System architecture
 
 ---
 
-**Total Endpoints:** 10+ core endpoints + 13 MCP tools  
+**Total Endpoints:** 10+ core endpoints + 13 MCP tools
 **Status:** Production-ready with full CORS, error handling, and logging
+**Last Updated:** 2025-10-08

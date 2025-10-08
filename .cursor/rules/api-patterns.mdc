@@ -1,7 +1,9 @@
 ---
-version: 4
+version: "5.0.0"
 scope: ["typescript", "javascript"]
 alwaysApply: true
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "database-patterns", "endpoint-routing"]
 ---
 ## Error Handling Patterns
 
@@ -78,26 +80,20 @@ export const myEndpoint = asyncHandler(async (request, env, ctx) => {
 **Location:** `src/api/routes.ts`
 
 ```typescript
+import { generateRequestId, CORS_HEADERS, createOPTIONSResponse } from '../utils/request';
+
 export async function handleAPIRoute(
   request: Request,
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
-  const requestId = Date.now().toString(36);
+  const requestId = generateRequestId();
   const url = new URL(request.url);
   const path = url.pathname.replace('/api', '');
 
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
-
   // Handle OPTIONS preflight
   if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createOPTIONSResponse();
   }
 
   try {
@@ -118,16 +114,24 @@ export async function handleAPIRoute(
 ### Endpoint Handler Pattern
 
 ```typescript
+import {
+  normalizeD1Result,
+  createJSONResponse,
+  getQueryParamNumber
+} from '../utils/request';
+import { createLogger } from '../utils/logger';
+
 async function getMyEndpoint(
   request: Request,
   env: Env,
   requestId: string
 ): Promise<Response> {
+  const logger = createLogger(request);
+
   // 1. Validate environment
   validateEnv(env, ['ANALYTICS']);
 
   // 2. Validate input
-  const url = new URL(request.url);
   const validation = validateQueryParams(url, [
     Validators.agentID(),
     Validators.limit(500)
@@ -144,22 +148,20 @@ async function getMyEndpoint(
     SELECT * FROM table WHERE aid = ? LIMIT ?
   `).bind(agentID, limit).all();
 
-  const data = result.results as unknown as MyType[];
+  const data = normalizeD1Result<MyType>(result);
 
   // 4. Log success
-  console.log(`[${requestId}] ✅ Found ${data.length} records`);
+  logger.info('query_completed', {
+    requestId,
+    recordCount: data.length
+  });
 
   // 5. Return response
-  return new Response(JSON.stringify({
+  return createJSONResponse({
     data,
     total: data.length,
     requestId,
     timestamp: new Date().toISOString()
-  }), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
   });
 }
 ```
@@ -215,19 +217,18 @@ When using `createErrorResponse()`, format is:
 ### Standard CORS Headers
 
 ```typescript
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type'
-};
+import { CORS_HEADERS, createOPTIONSResponse, createJSONResponse } from '../utils/request';
 
 // Handle OPTIONS preflight
 if (request.method === 'OPTIONS') {
-  return new Response(null, { headers: corsHeaders });
+  return createOPTIONSResponse();
 }
 
-// Include in all responses
-return new Response(data, { headers: { ...corsHeaders } });
+// Include in all responses (automatic with createJSONResponse)
+return createJSONResponse({ data });
+
+// Or manually
+return new Response(data, { headers: { ...CORS_HEADERS } });
 ```
 
 ---
@@ -237,22 +238,29 @@ return new Response(data, { headers: { ...corsHeaders } });
 ### Generate and Use
 
 ```typescript
+import { generateRequestId, getRequestId } from '../utils/request';
+import { createLogger } from '../utils/logger';
+
 // Generate at start of request
-const requestId = Date.now().toString(36);
+const requestId = generateRequestId();
 
-// Use in all logs
-console.log(`[${requestId}] 📥 Incoming request`);
-console.log(`[${requestId}] ✅ Success`);
-console.error(`[${requestId}] ❌ Error:`, error);
+// Or extract from headers
+const requestId = getRequestId(request);
 
-// Include in response
-return new Response(JSON.stringify({
+// Use structured logging
+const logger = createLogger(request);
+logger.info('request_received', { requestId });
+logger.info('request_completed', { requestId });
+logger.error('request_failed', { requestId }, error);
+
+// Include in response (automatic with createJSONResponse)
+return createJSONResponse({
   ...data,
   requestId
-}));
+});
 
 // Include in errors
-return createErrorResponse(error, requestId, path);
+return createErrorResponse('Error message', 500, 'ERROR_CODE', requestId);
 ```
 
 ---
@@ -262,6 +270,8 @@ return createErrorResponse(error, requestId, path);
 ### Type-safe D1 Queries
 
 ```typescript
+import { normalizeD1Result } from '../utils/request';
+
 // Query with type conversion
 const result = await env.ANALYTICS.prepare(`
   SELECT eid, mt, ts
@@ -270,12 +280,14 @@ const result = await env.ANALYTICS.prepare(`
   LIMIT ?
 `).bind(eventID, limit).all();
 
-// Convert with unknown cast (required for D1Result type)
-const movements = result.results as unknown as Array<{
+// Normalize results with proper typing
+type Movement = {
   eid: string;
   mt: string;
   ts: string;
-}>;
+};
+
+const movements = normalizeD1Result<Movement>(result);
 ```
 
 ### Parameterized Queries (Prevent SQL Injection)
@@ -350,37 +362,42 @@ try {
 ### 3. Always Include CORS
 
 ```typescript
-// All responses need CORS headers
-headers: {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*'
-}
+import { CORS_HEADERS, createJSONResponse } from '../utils/request';
+
+// Use createJSONResponse (includes CORS automatically)
+return createJSONResponse({ data });
+
+// Or manually
+headers: { ...CORS_HEADERS }
 ```
 
 ### 4. Always Track Requests
 
 ```typescript
+import { generateRequestId } from '../utils/request';
+
 // Generate requestId at start
-const requestId = Date.now().toString(36);
+const requestId = generateRequestId();
 
-// Use in logs
-console.log(`[${requestId}] ...`);
-
-// Include in response
-return new Response(JSON.stringify({ ...data, requestId }));
+// Include in response (automatic with createJSONResponse)
+return createJSONResponse({ ...data, requestId });
 ```
 
 ### 5. Always Log Appropriately
 
 ```typescript
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger(request);
+
 // Start of request
-console.log(`[${requestId}] 📥 Incoming request: ${method} ${path}`);
+logger.info('request_received', { method, path });
 
 // Success
-console.log(`[${requestId}] ✅ Found ${count} records`);
+logger.info('query_completed', { recordCount: count });
 
 // Error
-console.error(`[${requestId}] ❌ Error:`, error);
+logger.error('query_failed', { errorCode: error.code }, error);
 ```
 
 ---
@@ -395,12 +412,20 @@ console.error(`[${requestId}] ❌ Error:`, error);
 
 ## Related Rules
 
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
 - [Endpoint Routing](mdc:.cursor/rules/endpoint-routing.mdc) - Endpoint patterns
 - [Security Patterns](mdc:.cursor/rules/security-patterns.mdc) - Security considerations
 - [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - Database query patterns
 - [Cloudflare Workers](mdc:.cursor/rules/cloudflare-workers.mdc) - Workers-specific patterns
 
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide ⭐ **NEW**
+- [src/shared/constants.ts](mdc:src/shared/constants.ts) - All constants ⭐ **NEW**
+- [src/utils/request.ts](mdc:src/utils/request.ts) - Request utilities ⭐ **NEW**
+- [src/utils/logger.ts](mdc:src/utils/logger.ts) - Logging utilities ⭐ **NEW**
+
 ---
 
-**Status:** Production patterns established  
-**Last Updated:** 2025-10-07
+**Status:** Production patterns established
+**Last Updated:** 2025-10-08
