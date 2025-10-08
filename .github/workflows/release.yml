@@ -24,6 +24,12 @@ jobs:
       - name: 'Install dependencies'
         run: bun install
 
+      - name: '🏷️  Create release (semver + changelog)'
+        run: bun run scripts/release.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: 'true'
+
       - name: '🎨 Deploy Dashboards'
         run: bun run scripts/deploy-dashboards.ts
 

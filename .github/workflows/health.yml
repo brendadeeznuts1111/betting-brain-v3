@@ -1,0 +1,66 @@
+name: 'Health Monitoring'
+
+on:
+  schedule:
+    # Every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  health-ping:
+    name: 'Worker Health Check'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+
+      - name: 'Setup Bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+
+      - name: 'Install dependencies'
+        run: bun install
+
+      - name: 'Ping worker health endpoint'
+        env:
+          WORKER_URL: https://betting-brain-v3.nolarose1968-806.workers.dev
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          HEALTH_TIMEOUT: 10000
+        run: |
+          echo "🏥 Checking worker health..."
+          bun run scripts/health-ping.ts
+
+      - name: 'Health check passed'
+        if: success()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ WORKER IS HEALTHY"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "✓ Worker is responding"
+          echo "✓ Health endpoint is accessible"
+          if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+            echo "✓ Slack notification sent"
+          fi
+          echo ""
+
+      - name: 'Health check failed'
+        if: failure()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "❌ WORKER HEALTH CHECK FAILED"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "✗ Worker is not responding"
+          echo "✗ Health endpoint is not accessible"
+          if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+            echo "✗ Slack alert sent"
+          else
+            echo "⚠️  Slack webhook not configured - no alert sent"
+          fi
+          echo ""
+          echo "🔍 Check worker logs:"
+          echo "   wrangler tail --format pretty"
+          echo ""
