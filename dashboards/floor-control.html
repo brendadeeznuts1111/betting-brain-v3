@@ -70,6 +70,21 @@
       cursor: pointer;
     }
 
+    .config-box a {
+      color: var(--accent);
+      text-decoration: none;
+      padding: 0.25rem 0.75rem;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .config-box a:hover {
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+    }
+
     .config-box button:hover {
       opacity: 0.8;
     }
@@ -232,6 +247,7 @@
       <span id="status-badge" class="badge">●</span>
     </h1>
     <div class="config-box">
+      <a href="hierarchy-enhanced.html" title="Agent Hierarchy 2.0">🌳 Hierarchy</a>
       <input type="text" id="worker-url" placeholder="https://your-worker.workers.dev" value="http://localhost:8787" />
       <button onclick="saveConfig()">Save</button>
       <span id="last-update" style="opacity: 0.7;">—</span>

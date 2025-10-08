@@ -83,6 +83,13 @@ The BetTicker Dashboards provide real-time betting intelligence and analytics vi
 - **Size:** ~500 lines
 - **Badge:** `SPORTS`
 
+### 11. **🌳 Agent Hierarchy Enhanced** ([`hierarchy-enhanced.html`](hierarchy-enhanced.html)) ⭐ **NEW**
+- **Purpose:** Searchable, sortable agent hierarchy with analytics
+- **Features:** Type-ahead search (<20ms), column sorting, micro-analytics drawer, keyboard shortcuts (/ to search, Esc to clear), persistent expand/collapse state
+- **Use Case:** Agent management, risk tracking, steam monitoring
+- **Size:** ~400 lines
+- **Badge:** `NEW ⚡ SEARCHABLE`
+
 ---
 
 ## 📂 Directory Structure
@@ -91,6 +98,7 @@ The BetTicker Dashboards provide real-time betting intelligence and analytics vi
 dashboards/
 ├── index.html                      # Dashboard hub (entry point)
 ├── floor-control.html              # Floor Control Dashboard ⭐ NEW RECOMMENDED
+├── hierarchy-enhanced.html         # Agent Hierarchy Enhanced ⭐ NEW
 ├── dashboard-enhanced.html          # Enhanced analytics
 ├── dashboard-pro.html              # AI Intelligence Hub
 ├── dashboard-positions.html        # Position & Risk Tracker
@@ -202,21 +210,25 @@ addChartDataPoint(chart, 'Apr', [175], 50);
 
 ## 📊 Features Comparison
 
-| Feature | Floor Control | Enhanced | Pro | Positions | Basic |
-|---------|-------------|----------|-----|-----------|-------|
-| Real-time Data | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Charts & Graphs | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Alerts & Notifications | ✅ | ✅ | ✅ | ✅ | ❌ |
-| AI Analysis | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Risk Management | ✅ | ⚠️ | ✅ | ✅ | ❌ |
-| Position Tracking | ✅ | ❌ | ⚠️ | ✅ | ❌ |
-| Auto-refresh | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Floor Health | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Forest Grove | ✅ | ❌ | ❌ | ❌ | ❌ |
-| MCP Tools | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Fantasy402 Integration | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Agent Tree Visualization | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Cache Performance | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Feature | Floor Control | Hierarchy | Enhanced | Pro | Positions | Basic |
+|---------|-------------|-----------|----------|-----|-----------|-------|
+| Real-time Data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Charts & Graphs | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| Alerts & Notifications | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| AI Analysis | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Risk Management | ✅ | ✅ | ⚠️ | ✅ | ✅ | ❌ |
+| Position Tracking | ✅ | ❌ | ❌ | ⚠️ | ✅ | ❌ |
+| Auto-refresh | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Floor Health | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Forest Grove | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| MCP Tools | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Fantasy402 Integration | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Agent Tree Visualization | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Cache Performance | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Fuzzy Search | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Column Sorting | ❌ | ✅ | ❌ | ❌ | ⚠️ | ❌ |
+| Keyboard Shortcuts | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Analytics Drawer | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 ---
 

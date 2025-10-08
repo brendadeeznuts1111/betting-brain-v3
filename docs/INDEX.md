@@ -148,6 +148,7 @@
 |----------|---------|----------|--------|
 | **[ENHANCED_ANALYTICS_ARCHITECTURE.md](ENHANCED_ANALYTICS_ARCHITECTURE.md)** | **📊 Complete analytics architecture (6 modules)** 🆕⭐ | All Teams | ✅ Complete |
 | **[ENHANCED_ANALYTICS_DEPLOYMENT.md](ENHANCED_ANALYTICS_DEPLOYMENT.md)** | **🚀 Deployment summary & checklist** 🆕🔥 | DevOps, All Teams | ✅ Complete |
+| **[HIERARCHY_ENHANCED.md](HIERARCHY_ENHANCED.md)** | **🌳 Agent hierarchy dashboard with search & analytics** 🆕 | Frontend, Product | ✅ Complete |
 
 ### Developer UX System 🚀 NEW
 | Document | Purpose | Audience | Status |

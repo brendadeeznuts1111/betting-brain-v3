@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Hierarchy Enhanced | Betting-Brain v3</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+  <style>
+    :root {
+      --primary: #9b4dca;
+      --risk-critical: #e41a1c;
+      --risk-high: #ff7f00;
+      --risk-medium: #ffed6f;
+      --risk-low: #4daf4a;
+      --bg-drawer: #ffffff;
+      --shadow: rgba(0, 0, 0, 0.2);
+    }
+
+    body {
+      padding: 1rem;
+      background: #f4f5f7;
+    }
+
+    .container {
+      max-width: 1400px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    header h4 {
+      margin: 0;
+    }
+
+    header small {
+      color: #606c76;
+    }
+
+    .nav-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 1.4rem;
+    }
+
+    .nav-link:hover {
+      text-decoration: underline;
+    }
+
+    .search-box {
+      width: 100%;
+      margin-bottom: 2rem;
+      padding: 1.2rem;
+      font-size: 1.6rem;
+      border-radius: 8px;
+      border: 2px solid #d1d1d1;
+      transition: border-color 0.3s;
+    }
+
+    .search-box:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .metrics-table {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px var(--shadow);
+      overflow: hidden;
+    }
+
+    .metrics-table th {
+      background: #f4f5f7;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 1.2rem;
+      letter-spacing: 0.5px;
+      padding: 1.5rem 1rem;
+    }
+
+    .metrics-table th[data-sort] {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .metrics-table th[data-sort]:hover {
+      background: #e1e4e8;
+    }
+
+    .metrics-table td {
+      padding: 1rem;
+      vertical-align: middle;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .risk-critical {
+      background: var(--risk-critical);
+    }
+
+    .risk-high {
+      background: var(--risk-high);
+    }
+
+    .risk-medium {
+      background: var(--risk-medium);
+      color: #333;
+    }
+
+    .risk-low {
+      background: var(--risk-low);
+    }
+
+    .steam-badge {
+      background: #0366d6;
+    }
+
+    .button-small {
+      padding: 0.5rem 1rem;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    /* Tree View Styles */
+    #tree-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px var(--shadow);
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+
+    ul.tree {
+      list-style: none;
+      padding-left: 1.5rem;
+    }
+
+    ul.tree li {
+      margin: 0.5rem 0;
+    }
+
+    ul.tree label {
+      cursor: pointer;
+      font-weight: 500;
+      display: inline-block;
+      padding: 0.3rem 0;
+    }
+
+    ul.tree label:hover {
+      color: var(--primary);
+    }
+
+    /* Side Drawer */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -450px;
+      width: 450px;
+      height: 100%;
+      background: var(--bg-drawer);
+      box-shadow: -4px 0 12px var(--shadow);
+      transition: right 0.3s ease-in-out;
+      z-index: 1000;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .sidebar[open] {
+      right: 0;
+    }
+
+    .sidebar summary {
+      cursor: pointer;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      list-style: none;
+    }
+
+    .sidebar summary::before {
+      content: "✕ ";
+      color: var(--risk-critical);
+    }
+
+    .sidebar pre {
+      background: #f6f8fa;
+      padding: 1rem;
+      border-radius: 4px;
+      font-size: 1.2rem;
+      overflow-x: auto;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .analytics-card {
+      background: #f6f8fa;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .analytics-card h5 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.3rem;
+      color: #606c76;
+    }
+
+    .analytics-card .value {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #606c76;
+    }
+
+    .empty-state h5 {
+      margin-bottom: 1rem;
+    }
+
+    .kbd {
+      background: #f6f8fa;
+      border: 1px solid #d1d1d1;
+      border-radius: 3px;
+      padding: 0.2rem 0.5rem;
+      font-family: monospace;
+      font-size: 1.2rem;
+    }
+
+    .help-text {
+      font-size: 1.2rem;
+      color: #606c76;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        right: -100%;
+      }
+
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h4>🌳 Agent Hierarchy Enhanced</h4>
+        <small>Real-time risk, steam, and activity tracking</small>
+      </div>
+      <a href="floor-control.html" class="nav-link">← Mission Control</a>
+    </header>
+
+    <input
+      id="search"
+      class="search-box"
+      type="text"
+      placeholder="Type to filter agents… (press / to focus)"
+      autocomplete="off"
+      aria-label="Search agents">
+
+    <div class="help-text">
+      Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear
+    </div>
+
+    <table class="metrics-table" id="metrics-table">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th data-sort="risk" title="Click to sort">Risk ▼</th>
+          <th data-sort="steam" title="Click to sort">Steam % ▲</th>
+          <th data-sort="lastBet" title="Click to sort">Last Activity ▼</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr>
+          <td colspan="5" class="empty-state">
+            <h5>Loading agent data...</h5>
+            <p>Fetching hierarchy from worker</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div id="tree-container" class="hide">
+      <h5>Tree View</h5>
+      <div id="tree-content"></div>
+    </div>
+  </div>
+
+  <!-- Side Drawer for Analytics -->
+  <details class="sidebar" id="side">
+    <summary>Close</summary>
+    <div id="side-content"></div>
+  </details>
+
+  <script type="module">
+    // Configuration
+    const WORKER_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost:8787'
+      : 'https://betting-brain-v3.nola.workers.dev';
+
+    const API_ENDPOINTS = {
+      hierarchy: `${WORKER_URL}/api/f402/agents/tree`,
+      agentDetail: (id) => `${WORKER_URL}/api/f402/agents/${id}?expand=true`,
+      microAnalytics: (id) => `${WORKER_URL}/api/analytics/micro/${id}`
+    };
+
+    // State
+    let rows = [];
+    let sortCol = 'risk';
+    let sortAsc = false;
+
+    // DOM Elements
+    const searchBox = document.getElementById('search');
+    const tableBody = document.getElementById('table-body');
+    const treeContainer = document.getElementById('tree-container');
+    const treeContent = document.getElementById('tree-content');
+    const sideDrawer = document.getElementById('side');
+    const sideContent = document.getElementById('side-content');
+
+    // Mock data generator (fallback while backend is wired)
+    function generateMockData(count = 50) {
+      const agents = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta'];
+      const subAgents = ['Prime', 'Sub', 'Junior', 'Senior', 'Elite', 'Rookie'];
+
+      return Array.from({ length: count }, (_, i) => ({
+        agent: `${agents[i % agents.length]}-${subAgents[i % subAgents.length]}-${i}`,
+        parent: i > 10 ? `${agents[(i - 5) % agents.length]}-Parent` : null,
+        level: i > 10 ? 1 : 0,
+        risk: Math.random() * 100,
+        steam: Math.random() * 100,
+        lastBet: Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000 // last 3 days
+      }));
+    }
+
+    // Fetch hierarchy from worker
+    async function loadHierarchy() {
+      try {
+        const response = await fetch(API_ENDPOINTS.hierarchy);
+        if (!response.ok) throw new Error('Failed to fetch hierarchy');
+        const data = await response.json();
+        return data.tree || generateMockData();
+      } catch (error) {
+        console.warn('Using mock data:', error);
+        return generateMockData();
+      }
+    }
+
+    // Render table
+    function renderTable(data) {
+      if (data.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty-state">
+              <h5>No agents found</h5>
+              <p>Try adjusting your search</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = data.map(r => `
+        <tr>
+          <td style="padding-left: ${r.level * 30 + 10}px">
+            <strong>${r.agent}</strong>
+            ${r.parent ? `<br><small style="color: #606c76">↳ ${r.parent}</small>` : ''}
+          </td>
+          <td>
+            <span class="badge ${riskClass(r.risk)}">${r.risk.toFixed(1)}k</span>
+          </td>
+          <td>
+            <span class="badge steam-badge">${r.steam.toFixed(0)}%</span>
+          </td>
+          <td>${timeAgo(r.lastBet)}</td>
+          <td>
+            <button class="button-small" data-agent="${r.agent}">Details</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Search filter
+    function fuzzyFilter(query) {
+      if (!query) return rows;
+      const lower = query.toLowerCase();
+      return rows.filter(r => r.agent.toLowerCase().includes(lower));
+    }
+
+    // Sort rows
+    function sortRows() {
+      rows.sort((a, b) => {
+        const diff = a[sortCol] - b[sortCol];
+        return sortAsc ? diff : -diff;
+      });
+    }
+
+    // Risk classification
+    function riskClass(value) {
+      if (value > 80) return 'risk-critical';
+      if (value > 60) return 'risk-high';
+      if (value > 30) return 'risk-medium';
+      return 'risk-low';
+    }
+
+    // Time ago helper
+    function timeAgo(timestamp) {
+      const seconds = Math.floor((Date.now() - timestamp) / 1000);
+      if (seconds < 60) return 'just now';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+      return `${Math.floor(seconds / 86400)}d ago`;
+    }
+
+    // Load agent details in drawer
+    async function loadAgentDetails(agentId) {
+      sideContent.innerHTML = '<p>Loading analytics...</p>';
+      sideDrawer.open = true;
+
+      try {
+        const response = await fetch(API_ENDPOINTS.agentDetail(agentId));
+        if (!response.ok) throw new Error('Failed to fetch details');
+        const data = await response.json();
+
+        sideContent.innerHTML = `
+          <h3>${agentId}</h3>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h5>Risk Score</h5>
+              <div class="value">${data.risk?.toFixed(1) || 'N/A'}</div>
+            </div>
+            <div class="analytics-card">
+              <h5>Steam %</h5>
+              <div class="value">${data.steam?.toFixed(0) || 'N/A'}%</div>
+            </div>
+            <div class="analytics-card">
+              <h5>Velocity</h5>
+              <div class="value">${data.velocity?.toFixed(1) || 'N/A'}</div>
+            </div>
+            <div class="analytics-card">
+              <h5>Sharpness</h5>
+              <div class="value">${data.sharpness?.toFixed(0) || 'N/A'}%</div>
+            </div>
+          </div>
+
+          <h5>Full Analytics</h5>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        console.error('Error loading agent details:', error);
+        sideContent.innerHTML = `
+          <h3>${agentId}</h3>
+          <div class="empty-state">
+            <h5>Analytics Not Available</h5>
+            <p>${error.message}</p>
+            <p style="margin-top: 1rem"><small>Using mock data for demo</small></p>
+          </div>
+          <pre>${JSON.stringify({
+            risk: Math.random() * 100,
+            steam: Math.random() * 100,
+            velocity: Math.random() * 50,
+            sharpness: Math.random() * 100,
+            note: 'Mock data - backend pending'
+          }, null, 2)}</pre>
+        `;
+      }
+    }
+
+    // Event Listeners
+    searchBox.addEventListener('input', (e) => {
+      const filtered = fuzzyFilter(e.target.value);
+      renderTable(filtered);
+    });
+
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        if (sortCol === th.dataset.sort) {
+          sortAsc = !sortAsc;
+        } else {
+          sortCol = th.dataset.sort;
+          sortAsc = false;
+        }
+
+        // Update visual indicators
+        document.querySelectorAll('th[data-sort]').forEach(h => {
+          h.textContent = h.textContent.replace(/[▼▲]/g, '').trim();
+        });
+        th.textContent += sortAsc ? ' ▲' : ' ▼';
+
+        sortRows();
+        renderTable(fuzzyFilter(searchBox.value));
+      });
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchBox) {
+        e.preventDefault();
+        searchBox.focus();
+      } else if (e.key === 'Escape') {
+        searchBox.value = '';
+        searchBox.blur();
+        renderTable(rows);
+      }
+    });
+
+    // Handle button clicks with event delegation
+    tableBody.addEventListener('click', (e) => {
+      if (e.target.matches('button[data-agent]')) {
+        const agentId = e.target.dataset.agent;
+        loadAgentDetails(agentId);
+      }
+    });
+
+    // Initialize
+    (async function init() {
+      try {
+        rows = await loadHierarchy();
+        sortRows();
+        renderTable(rows);
+        console.log(`✅ Loaded ${rows.length} agents`);
+      } catch (error) {
+        console.error('Initialization error:', error);
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty-state">
+              <h5>⚠️ Failed to Load Data</h5>
+              <p>${error.message}</p>
+            </td>
+          </tr>`;
+      }
+    })();
+  </script>
+</body>
+</html>
