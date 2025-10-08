@@ -397,6 +397,9 @@ bun run floor:mcp
 ## 12. References
 
 ### Documentation
+- [Command Reference](mdc:docs/COMMAND_REFERENCE.md) - **Three-tier commands (CLI → Forest → Floor)**
+- [Floor System](mdc:docs/FLOOR_SYSTEM.md) - **Autonomous operations documentation**
+- [Floor Smoke Test](mdc:docs/FLOOR_SMOKE_TEST.md) - **60-second validation guide**
 - [MCP Integration Status](mdc:docs/MCP_INTEGRATION_STATUS.md)
 - [MCP Endpoints](mdc:docs/MCP_ENDPOINTS.md)
 - [Sports API Deployment](mdc:docs/SPORTS_API_DEPLOYMENT.md)
@@ -409,6 +412,8 @@ bun run floor:mcp
 - [Environment Template](mdc:.env.example)
 
 ### Scripts
+- [Floor Health Check](mdc:scripts/floor-health.ts) - **One-command validation & auto-fix**
+- [Floor Smoke Test](mdc:scripts/floor-smoke-test.sh) - **60-second end-to-end test**
 - [MCP Server](mdc:scripts/mcp-server.ts)
 - [JWT Test Utility](mdc:scripts/test-jwt.ts)
 - [Forest CLI](mdc:scripts/forest.ts)
