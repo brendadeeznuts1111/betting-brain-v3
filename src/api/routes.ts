@@ -12,6 +12,10 @@ import { getSharpScore } from '../tools/intelligence/getSharpScore';
 import { getHoldPercentage } from '../tools/intelligence/getHoldPercentage';
 import { handleFantasy402Ingest } from './fantasy402-ingest';
 import { getAgentPerformance, getSportPerformance, getPerformanceSummary } from './fantasy402-performance-api';
+import { getLiveBets } from '../routes/api/f402-bets';
+import { getAgentPerformance as getF402AgentPerformance } from '../routes/api/f402-agents';
+import { getActiveCustomers, getStakedTotal } from '../routes/api/f402-customers';
+import { getLatestTransactions } from '../routes/api/f402-transactions';
 
 /**
  * Handle REST API routes
@@ -85,6 +89,22 @@ export async function handleAPIRoute(
       case '/fantasy402/config':
         const { getFantasy402Config } = await import('./fantasy402-config');
         return await getFantasy402Config(request, env, requestId);
+
+      // Fantasy402 Mission Control endpoints
+      case '/f402/bets/live':
+        return await getLiveBets(request, env, requestId);
+
+      case '/f402/agents/performance':
+        return await getF402AgentPerformance(request, env, requestId);
+
+      case '/f402/customers/active':
+        return await getActiveCustomers(request, env, requestId);
+
+      case '/f402/customers/staked':
+        return await getStakedTotal(request, env, requestId);
+
+      case '/f402/transactions/latest':
+        return await getLatestTransactions(request, env, requestId);
 
       default:
         throw Errors.notFound('API endpoint');
