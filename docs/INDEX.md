@@ -68,6 +68,7 @@
 |----------|---------|----------|--------|
 | **[FLOOR_SYSTEM.md](FLOOR_SYSTEM.md)** | **🤖 AI-native autonomous operations layer** 🆕⭐ | All Teams | ✅ Complete |
 | **[FLOOR_SMOKE_TEST.md](FLOOR_SMOKE_TEST.md)** | **⚡ 60-second end-to-end validation** 🆕🔥 | All Teams | ✅ Complete |
+| **[COMMAND_REFERENCE.md](COMMAND_REFERENCE.md)** | **📋 Three-tier command guide (CLI → Forest → Floor)** 🆕🔥 | All Teams | ✅ Complete |
 | [.cursor/rules/99-floor.mdc](../.cursor/rules/99-floor.mdc) | Consolidated AI rules (highest priority) | AI Assistants | ✅ Complete |
 | [scripts/floor-health.ts](../scripts/floor-health.ts) | One-command health check & auto-fix | DevOps, AI | ✅ Complete |
 | [scripts/floor-smoke-test.sh](../scripts/floor-smoke-test.sh) | Comprehensive smoke test script | DevOps, QA | ✅ Complete |
