@@ -16,12 +16,14 @@ export interface Env {
   STEAM_WEBHOOK: Queue;
   STEAM_QUEUE: Queue; // MCP steam processor
   EXPOSURE_QUEUE: Queue; // MCP exposure calculator
+  FANTASY402_QUEUE: Queue; // Fantasy402 data ingestion queue
 
   // Analytics Engine
   ANALYTICS_ENGINE: AnalyticsEngineDataset;
 
   // KV Namespaces
   BET_TICKER_RAW?: KVNamespace; // Optional: BetTicker interception storage
+  FANTASY_CACHE: KVNamespace; // Fantasy402 data cache (1-hour TTL)
   TOKEN_STORE?: KVNamespace; // MCP: Legacy token storage
   USER_STORE?: KVNamespace; // MCP: User credentials
   SESSION_STORE?: KVNamespace; // MCP: Active sessions
@@ -67,7 +69,7 @@ export const GetSharpScoreRequest = z.object({
 
 export const GetHoldPercentageRequest = z.object({
   eid: z.string().min(1, 'Event ID is required'),
-  mt: z.enum(['SPREAD', 'TOTAL', 'MONEYLINE'], { 
+  mt: z.enum(['SPREAD', 'TOTAL', 'MONEYLINE'], {
     errorMap: () => ({ message: 'Market Type must be one of: SPREAD, TOTAL, MONEYLINE' })
   }),
   includeHistory: z.boolean().optional().default(false),

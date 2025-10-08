@@ -17,6 +17,7 @@ import { getCLV } from './tools/intelligence/getCLV';
 import { handleBetTickerInterception, getBetTickerHistory, getBetTickerResponse } from './interceptors/bet-ticker-sniffer';
 import { handleMCPRequest } from './mcp/server';
 import { handleAPIRoute } from './api/routes';
+import { handleWebSocketUpgrade } from './websocket/fantasy402-ws-handler';
 
 // See .cursor/rules/endpoint-routing.mdc for routing patterns
 // See .cursor/rules/cloudflare-workers.mdc for Workers patterns
@@ -25,40 +26,46 @@ export default {
     const requestId = Date.now().toString(36);
     const url = new URL(request.url);
     const startTime = Date.now();
-    
+
     console.log(`[${requestId}] 📥 Incoming request:`, {
       method: request.method,
       url: url.pathname + url.search,
       userAgent: request.headers.get('user-agent')?.substring(0, 50),
       cfRay: request.headers.get('cf-ray'),
     });
-    
+
     // CORS headers for dashboard
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
-    
+
     // Handle OPTIONS preflight
     if (request.method === 'OPTIONS') {
       console.log(`[${requestId}] ✅ OPTIONS preflight request`);
       return new Response(null, { headers: corsHeaders });
     }
-    
+
+    // WebSocket endpoint (must be first to check Upgrade header)
+    if (url.pathname === '/ws') {
+      console.log(`[${requestId}] 🔌 WebSocket upgrade request`);
+      return handleWebSocketUpgrade(request, env);
+    }
+
     // Health check endpoint
     if (url.pathname === '/health') {
       console.log(`[${requestId}] 💚 Health check`);
       const duration = Date.now() - startTime;
-      return new Response(JSON.stringify({ 
-        status: 'healthy', 
+      return new Response(JSON.stringify({
+        status: 'healthy',
         version: '3.0.0',
         timestamp: new Date().toISOString(),
         requestId,
         duration: `${duration}ms`,
       }), {
-        headers: { 
-          ...corsHeaders, 
+        headers: {
+          ...corsHeaders,
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -70,22 +77,22 @@ export default {
     // Extension logs endpoint
     if (url.pathname === '/logs') {
       console.log(`[${requestId}] 📝 Extension logs received`);
-      
+
       try {
         const body = await request.json() as { logs?: Array<{ level?: string; timestamp?: string | number; message?: string; url?: string; extensionId?: string }> };
         const sessionId = request.headers.get('X-Session-ID') || 'unknown';
         const extensionId = request.headers.get('X-Extension-ID') || 'unknown';
-        
+
         console.log(`[${requestId}] 📊 Log session: ${sessionId} (${extensionId})`);
         console.log(`[${requestId}] 📊 Log count: ${body.logs?.length || 0}`);
-        
+
         // Process and display logs
         if (body.logs && body.logs.length > 0) {
           body.logs.forEach((log, index: number) => {
             const level = log.level?.toUpperCase() || 'LOG';
             const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString();
             const message = log.message || 'No message';
-            
+
             // Color code by level
             const levelEmojiMap: Record<string, string> = {
               'ERROR': '❌',
@@ -95,9 +102,9 @@ export default {
               'LOG': '📝'
             };
             const levelEmoji = levelEmojiMap[level] || '📝';
-            
+
             console.log(`[${requestId}] ${levelEmoji} [${timestamp}] ${level}: ${message}`);
-            
+
             // Show metadata for important logs
             if (log.level === 'error' || message.includes('DEBUG:') || message.includes('🎯')) {
               console.log(`[${requestId}] 📍 Log details:`, {
@@ -108,30 +115,30 @@ export default {
             }
           });
         }
-        
-        return new Response(JSON.stringify({ 
-          status: 'received', 
+
+        return new Response(JSON.stringify({
+          status: 'received',
           sessionId,
           logCount: body.logs?.length || 0,
           timestamp: new Date().toISOString()
-        }), { 
-          headers: { 
+        }), {
+          headers: {
             'Content-Type': 'application/json',
-            ...corsHeaders 
-          } 
+            ...corsHeaders
+          }
         });
-        
+
       } catch (error) {
         console.error(`[${requestId}] ❌ Log processing error:`, error);
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
           error: 'Invalid log data',
           message: error instanceof Error ? error.message : 'Unknown error'
-        }), { 
+        }), {
           status: 400,
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            ...corsHeaders 
-          } 
+            ...corsHeaders
+          }
         });
       }
     }
@@ -141,7 +148,7 @@ export default {
       console.log(`[${requestId}] 🎯 BetTicker endpoint detected`);
       if (!env.BET_TICKER_RAW) {
         console.error(`[${requestId}] ❌ BET_TICKER_RAW not configured!`);
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
           error: 'BetTicker interception not configured',
           hint: 'Add BET_TICKER_RAW KV namespace to wrangler.toml',
           requestId,
@@ -218,15 +225,23 @@ export default {
 
   // Queue consumers
   async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext): Promise<void> {
+    // Route based on queue name
+    if (batch.queue === 'fantasy402-logs') {
+      // Process Fantasy402 logs in batches (efficient!)
+      const { processFantasy402Logs } = await import('./queues/fantasy402-logger');
+      await processFantasy402Logs(batch, env);
+      return;
+    }
+
+    // Handle other queues message-by-message
     for (const message of batch.messages) {
       try {
-        // Route based on queue name from batch
         if (batch.queue === 'line-ingress') {
           await handleLineIngress(message, env, ctx);
         } else if (batch.queue === 'steam-webhook') {
           await handleSteamWebhook(message, env, ctx);
         }
-        
+
         // Cloudflare Workers automatically handle ack/retry based on exceptions
         // No need for explicit message.ack() or message.retry()
       } catch (error) {
@@ -240,10 +255,14 @@ export default {
   // Scheduled triggers
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     const cron = event.cron;
-    
+
     if (cron === '0 * * * *') {
       // Hourly sharp calculation
       await handleSharpCalculation(env, ctx);
+
+      // Hourly config cache warmer
+      const { warmConfigCache } = await import('./api/fantasy402-config');
+      await warmConfigCache(env);
     } else if (cron === '*/30 * * * * *') {
       // 30-second exposure calculation
       await handleExposureCalculation(env, ctx);
@@ -267,7 +286,7 @@ async function handleMCPTools(request: Request, env: Env, ctx: ExecutionContext)
     case 'getCLV':
       return getCLV(request, env);
     default:
-      return new Response(JSON.stringify({ error: 'Tool not found' }), { 
+      return new Response(JSON.stringify({ error: 'Tool not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -327,7 +346,7 @@ async function handleDiagnostics(request: Request, env: Env, ctx: ExecutionConte
     });
   } catch (error) {
     console.error('Diagnostics error:', error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: 'Diagnostics failed',
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
@@ -353,8 +372,8 @@ async function handleLogs(request: Request, env: Env): Promise<Response> {
 
     // Since we can't access actual console logs in Workers, we'll provide recent activity
     if (!env.BET_TICKER_RAW) {
-      return new Response(JSON.stringify({ 
-        error: 'KV storage not available for log retrieval' 
+      return new Response(JSON.stringify({
+        error: 'KV storage not available for log retrieval'
       }), {
         status: 503,
         headers: corsHeaders
@@ -363,7 +382,7 @@ async function handleLogs(request: Request, env: Env): Promise<Response> {
 
     // Get recent BetTicker activity as a proxy for logs
     const history = await getBetTickerHistory(env as BetTickerSnifferEnv, { limit });
-    
+
     const logs = history.map(record => ({
       timestamp: record.metadata.timestamp,
       level: 'info',
@@ -402,7 +421,7 @@ async function handleLogs(request: Request, env: Env): Promise<Response> {
     });
   } catch (error) {
     console.error('Logs error:', error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: 'Log retrieval failed',
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
@@ -456,12 +475,12 @@ async function handleSystemStatus(request: Request, env: Env): Promise<Response>
       try {
         const history = await getBetTickerHistory(env as BetTickerSnifferEnv, { limit: 100 });
         status.kv.records = history.length;
-        
+
         if (history.length > 0) {
           const timestamps = history.map(r => parseInt(r.key.split(':')[2]));
           const latestTimestamp = Math.max(...timestamps);
           status.kv.lastWrite = new Date(latestTimestamp).toISOString();
-          
+
           // Determine data freshness
           const ageMinutes = Math.floor((now - latestTimestamp) / 60000);
           if (ageMinutes < 5) {
@@ -506,7 +525,7 @@ async function handleSystemStatus(request: Request, env: Env): Promise<Response>
     });
   } catch (error) {
     console.error('System status error:', error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: 'System status check failed',
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
@@ -526,8 +545,8 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
   };
 
   if (!env.BET_TICKER_RAW) {
-    return new Response(JSON.stringify({ 
-      error: 'BetTicker interception not configured' 
+    return new Response(JSON.stringify({
+      error: 'BetTicker interception not configured'
     }), {
       status: 503,
       headers: corsHeaders
@@ -542,7 +561,7 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
       case 'history': {
         // GET /interceptor/history?limit=100&startTime=...&endTime=...
         const limit = parseInt(url.searchParams.get('limit') || '100');
-        const startTime = url.searchParams.get('startTime') 
+        const startTime = url.searchParams.get('startTime')
           ? parseInt(url.searchParams.get('startTime')!)
           : undefined;
         const endTime = url.searchParams.get('endTime')
@@ -591,7 +610,7 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
     }
   } catch (error) {
     console.error('Interceptor API error:', error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: 'Internal error',
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {

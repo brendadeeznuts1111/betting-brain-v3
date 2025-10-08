@@ -52,6 +52,17 @@ max_batch_size = 50
 max_batch_timeout = 10
 max_retries = 3
 
+# Fantasy402 Data Ingestion Queue (NEW!)
+[[queues.producers]]
+binding = "FANTASY402_QUEUE"
+queue = "fantasy402-logs"
+
+[[queues.consumers]]
+queue = "fantasy402-logs"
+max_batch_size = 100  # Process up to 100 logs at once
+max_batch_timeout = 5  # Wait max 5 seconds before processing
+max_retries = 5  # Retry up to 5 times if processing fails
+
 [triggers]
 crons = [
   "0 * * * *",  # hourly sharp calculation
@@ -73,30 +84,34 @@ preview_id = "0d4410da8b824c70834a0f105654029e"
 # MCP Token Management KV Namespaces (from fantasy402-mcp)
 [[kv_namespaces]]
 binding = "TOKEN_STORE"
-id = "a231da86fa4a499e8345f29c65d56486"
+id = "47da877d6aab4edc91ee6f052a056769"
 
 [[kv_namespaces]]
 binding = "USER_STORE"
-id = "75794b21e31b41019f610ae315052506"
+id = "74003502667e42ae9271ec9a1591a2b0"
 
 [[kv_namespaces]]
 binding = "SESSION_STORE"
-id = "3af49b62d1684c5b964bd5e5a5517f6f"
+id = "c00d737fbf124185868c638af8ff3507"
 
 [[kv_namespaces]]
 binding = "REFRESH_STORE"
-id = "48dd351a4b3f49dab2b3bd0d765a15db"
+id = "0e4571a38a9d4c4781a982d05fd1291b"
 
 [[kv_namespaces]]
 binding = "LIVEBETS_STORE"
-id = "e9c62c6cfe494e51a2ab55be824202e3"
-preview_id = "d001dd9a718e468daf67d37a7c6c44c1"
+id = "321ecd09a5764e1cb04a3e87c37d590c"
+
+# Fantasy402 Data Cache (for intercepted API data)
+[[kv_namespaces]]
+binding = "FANTASY_CACHE"
+id = "e8ea80789b5246e58ea95798f04d0047"
 
 # MCP Raw Feed Database (from fantasy402-mcp)
 [[d1_databases]]
 binding = "RAW_FEED_DB"
 database_name = "fantasy42-raw-feed"
-database_id = "c97ea06a-af2e-49e1-b083-ba1b649a9596"
+database_id = "1b2e8ea8-a702-4cc7-9665-a8bea78b5dea"
 
 [limits]
 cpu_ms = 50

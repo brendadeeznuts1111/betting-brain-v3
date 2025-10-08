@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy402 Extension Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 0;
+            border-bottom: 1px solid #334155;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .info-box h3 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .info-box li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 Fantasy402 Extension Test</h1>
+        <div class="subtitle">Test the Fantasy402 data capture extension</div>
+
+        <div id="statusBox" class="status info">
+            🔍 Checking extension status...
+        </div>
+
+        <div class="info-box">
+            <h3>✅ What This Test Does</h3>
+            <ul>
+                <li>Checks if the extension is loaded</li>
+                <li>Verifies the Fantasy402 interceptor is active</li>
+                <li>Tests data capture and forwarding</li>
+                <li>Shows console logs from the extension</li>
+            </ul>
+        </div>
+
+        <div>
+            <button onclick="checkExtension()">🔍 Check Extension</button>
+            <button onclick="testInterceptor()">🎯 Test Interceptor</button>
+            <button onclick="clearLog()">🗑️ Clear Log</button>
+        </div>
+
+        <div class="log" id="log">
+            <div class="log-entry">📋 Console log will appear here...</div>
+        </div>
+
+        <div class="info-box" style="margin-top: 20px;">
+            <h3>📖 How to Use</h3>
+            <ol>
+                <li><strong>Load Extension:</strong> chrome://extensions/ → Load unpacked → Select browser-extension
+                    folder</li>
+                <li><strong>Click "Check Extension"</strong> to verify it's loaded</li>
+                <li><strong>Visit Fantasy402.com</strong> and login</li>
+                <li><strong>Navigate normally</strong> - all API calls will be captured automatically</li>
+                <li><strong>Check Worker Logs:</strong> <code>wrangler tail --env=""</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const statusBox = document.getElementById('statusBox');
+
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            entry.innerHTML = `<span style="opacity: 0.6">[${new Date().toLocaleTimeString()}]</span> ${icons[type]} ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function setStatus(message, type) {
+            statusBox.className = `status ${type}`;
+            statusBox.innerHTML = message;
+        }
+
+        function clearLog() {
+            log.innerHTML = '<div class="log-entry">📋 Console log cleared</div>';
+        }
+
+        function checkExtension() {
+            addLog('Checking for Fantasy402 extension...', 'info');
+
+            // Check if fantasy402-interceptor.js loaded
+            if (typeof window.fetch.toString().includes('fantasy402')) {
+                addLog('✅ Extension detected: fetch is intercepted', 'success');
+                setStatus('✅ Extension is loaded and active!', 'success');
+            } else {
+                addLog('Extension not detected in fetch wrapper', 'warning');
+                setStatus('⚠️ Extension may not be loaded. Try reloading the page.', 'warning');
+            }
+
+            // Check for interceptor debug info
+            if (window.__betTickerStats) {
+                addLog('Found BetTicker stats object (old version)', 'warning');
+            }
+
+            // Log current domain
+            addLog(`Current domain: ${window.location.hostname}`, 'info');
+            addLog(`Current URL: ${window.location.href}`, 'info');
+
+            // Check cookies
+            const cookies = document.cookie;
+            if (cookies) {
+                addLog(`Cookies available: ${cookies.length} characters`, 'success');
+            } else {
+                addLog('No cookies found (normal if not on fantasy402.com)', 'info');
+            }
+        }
+
+        function testInterceptor() {
+            addLog('Testing interceptor with mock request...', 'info');
+
+            if (window.location.hostname !== 'fantasy402.com') {
+                setStatus('⚠️ Not on fantasy402.com - open this page from fantasy402.com for real testing', 'warning');
+                addLog('For real testing, navigate to: https://fantasy402.com', 'warning');
+                return;
+            }
+
+            addLog('Making test request to Fantasy402 API...', 'info');
+
+            // This would only work if you're actually on fantasy402.com
+            fetch('/cloud/api/Manager/getAgentPerformance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                },
+                body: new URLSearchParams({
+                    start: '01/01/2025',
+                    end: '12/31/2025',
+                    agentID: 'TEST',
+                    type: 'CP',
+                    operation: 'getAgentPerformance'
+                })
+            })
+                .then(response => {
+                    addLog(`Response received: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                    return response.text();
+                })
+                .then(text => {
+                    addLog(`Response size: ${text.length} bytes`, 'info');
+                    setStatus('✅ Test request completed! Check worker logs: wrangler tail --env=""', 'success');
+                })
+                .catch(error => {
+                    addLog(`Error: ${error.message}`, 'error');
+                    setStatus('❌ Test request failed - see log for details', 'error');
+                });
+        }
+
+        // Override console.log to capture extension logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function (...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('Fantasy402')) {
+                addLog(args.join(' '), 'info');
+            }
+            originalLog.apply(console, args);
+        };
+
+        console.error = function (...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('Fantasy402')) {
+                addLog(args.join(' '), 'error');
+            }
+            originalError.apply(console, args);
+        };
+
+        console.warn = function (...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('Fantasy402')) {
+                addLog(args.join(' '), 'warning');
+            }
+            originalWarn.apply(console, args);
+        };
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkExtension, 1000);
+        });
+    </script>
+</body>
+
+</html>

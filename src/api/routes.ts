@@ -10,6 +10,8 @@ import { getBettingExposure } from '../tools/intelligence/getBettingExposure';
 import { getCLV } from '../tools/intelligence/getCLV';
 import { getSharpScore } from '../tools/intelligence/getSharpScore';
 import { getHoldPercentage } from '../tools/intelligence/getHoldPercentage';
+import { handleFantasy402Ingest } from './fantasy402-ingest';
+import { getAgentPerformance, getSportPerformance, getPerformanceSummary } from './fantasy402-performance-api';
 
 /**
  * Handle REST API routes
@@ -43,31 +45,47 @@ export async function handleAPIRoute(
     switch (path) {
       case '/events':
         return await getEvents(request, env, requestId);
-      
+
       case '/exposure':
         return await getExposureAPI(request, env, requestId);
-      
+
       case '/sharp-customers':
         return await getSharpCustomers(request, env, requestId);
-      
+
       case '/steam-moves':
         return await getSteamMovesAPI(request, env, requestId);
-      
+
       case '/clv':
         return await getCLVAPI(request, env, requestId);
-      
+
       case '/hold':
         return await getHoldAPI(request, env, requestId);
-      
+
       case '/markets':
         return await getMarkets(request, env, requestId);
-      
+
       case '/customers':
         return await getCustomers(request, env, requestId);
-      
+
       case '/stats':
         return await getStats(request, env, requestId);
-      
+
+      case '/fantasy402/ingest':
+        return await handleFantasy402Ingest(request, env, requestId);
+
+      case '/fantasy402/performance':
+        return await getAgentPerformance(request, env, requestId);
+
+      case '/fantasy402/sport-performance':
+        return await getSportPerformance(request, env, requestId);
+
+      case '/fantasy402/summary':
+        return await getPerformanceSummary(request, env, requestId);
+
+      case '/fantasy402/config':
+        const { getFantasy402Config } = await import('./fantasy402-config');
+        return await getFantasy402Config(request, env, requestId);
+
       default:
         throw Errors.notFound('API endpoint');
     }
@@ -447,19 +465,19 @@ async function getStats(request: Request, env: Env, requestId: string): Promise<
       FROM line_movements
       WHERE ing > datetime('now', '-24 hours')
     `).first(),
-    
+
     env.ANALYTICS.prepare(`
       SELECT COUNT(*) as count
       FROM steam_dedupe
       WHERE ts > datetime('now', '-1 hour')
     `).first(),
-    
+
     env.ANALYTICS.prepare(`
       SELECT COUNT(*) as count
       FROM sharp_indicators
       WHERE upd > datetime('now', '-7 days')
     `).first(),
-    
+
     env.BET_TICKER_RAW.list({ limit: 1000 })
   ]);
 
