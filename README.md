@@ -1,4 +1,4 @@
-# 🧠 Betting-Brain v1.0-cache-optimization
+# 🧠 Betting-Brain v3.2.0
 
 [![CI](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
 [![Security](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg?job=security)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
@@ -18,7 +18,7 @@
 - ❌ **Grafana**: DOWN (local development)
 - ✅ **Forest Health**: All core services operational
 - ✅ **Dependencies**: All fresh (Bun 1.2.23)
-- ✅ **Release**: Up to date (v1.0-cache-optimization)
+- ✅ **Release**: Up to date (v3.2.0)
 
 ### 🤖 **MCP Tools Available (24)**
 
@@ -70,7 +70,7 @@
 > Open [HTML dashboards](dashboards/index.html) locally or visit [Grafana setup guide](monitoring/grafana/README.md) to import the JSON.
 
 
-## 🎯 What Changed in v1.0-cache-optimization
+## 🎯 What Changed in v3.2.0
 
 ### 🌲 **Forest Grove System**
 - **Integrated Testing**: Complete Forest Grove testing system with AI-friendly output
@@ -451,6 +451,38 @@ CREATE TABLE fantasy402_player_analysis (
 
 **Note:** Fantasy402 tables are duplicated across both databases for redundancy and performance optimization.
 
+### Environment Variables & Configuration
+
+#### Required Environment Variables
+```bash
+# Security & Authentication
+JWT_SECRET=your-jwt-secret-here                    # JWT signing secret
+EXTENSION_SECRET=default-dev-secret-change-me      # Browser extension auth
+
+# External API Keys (for production)
+PINNACLE_KEY_1=your-pinnacle-api-key-1             # Pinnacle Sports API
+PINNACLE_KEY_2=your-pinnacle-api-key-2             # Rotated API key
+PINNACLE_KEY_3=your-pinnacle-api-key-3             # Rotated API key
+BET365_KEY=your-bet365-api-key                     # Bet365 API
+SPORTSDATA_KEY=your-sportsdata-api-key             # SportsData.io API
+
+# Monitoring & Alerts
+GRAFANA_API_KEY=your-grafana-api-key               # Grafana dashboard API
+SLACK_WEBHOOK_URL=https://hooks.slack.com/...      # Slack notifications
+```
+
+#### Cloudflare Account Configuration
+- **Account ID**: `80693377f3abb78e00820aa69a415ce4`
+- **Account Name**: `nolarose1968-806`
+- **Production Worker**: `betting-brain-v3-prod.nolarose1968-806.workers.dev`
+- **Staging Worker**: `betting-brain-v3-staging.nolarose1968-806.workers.dev`
+
+#### Configuration Files
+- **Worker Config**: `wrangler.toml` - Main Cloudflare Workers configuration
+- **Environment Template**: `env.example` - Environment variables template
+- **TypeScript Config**: `tsconfig.json` - TypeScript compiler configuration
+- **Bun Config**: `bunfig.toml` - Bun runtime configuration
+
 #### KV Namespaces
 - **BET_TICKER_RAW**: Raw BetTicker API responses (7-day retention)
 - **TOKEN_STORE**: JWT token management
@@ -634,8 +666,8 @@ bun run floor:mcp
 
 ### Live Endpoints (Auto-Deployed)
 
-- **Worker Health**: `GET https://betting-brain-v3.nolarose1968-806.workers.dev/health`
-- **Metrics**: `GET https://betting-brain-v3.nolarose1968-806.workers.dev/metrics` (Prometheus format)
+- **Worker Health**: `GET https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health`
+- **Metrics**: `GET https://betting-brain-v3-prod.nolarose1968-806.workers.dev/metrics` (Prometheus format)
 - **Dashboards**: [HTML Dashboards](dashboards/index.html) (local) or Cloudflare Pages (deployed)
 - **Grafana**: Import JSON from `monitoring/grafana/dashboard.json`
 
@@ -772,7 +804,7 @@ bun run ci:bun      # ✅ Auto-detects Replit AI
 ### 📊 **Current Test Status**
 
 **Test Health:** ✅ **PRODUCTION READY**
-- ✅ **Test Files**: 25 total (unit, integration, performance)
+- ✅ **Test Files**: 26 total (unit, integration, performance)
 - ✅ **Analytics Stub**: Available for testing
 - ✅ **Performance Tests**: Passing
 - ✅ **AI-Friendly Output**: Working
@@ -889,10 +921,10 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Automation Guide](docs/AUTOMATION_GUIDE.md)** - Testing workflows
 
 ### API Documentation ✨ NEW
-- **[REST API Reference](docs/REST_API_REFERENCE.md)** - Complete REST API docs (9 endpoints) 🆕
+- **[REST API Reference](docs/REST_API_REFERENCE.md)** - Complete REST API docs (15+ endpoints) 🆕
 - **[API Enhancement Summary](docs/API_ENHANCEMENT_SUMMARY.md)** - API layer overview & features 🆕
 - **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status & overview
-- **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API docs for 13 tools
+- **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API docs for 24 tools
 - **[MCP Testing Guide](docs/guides/TESTING_GUIDE.md)** - Comprehensive testing procedures
 
 ### System Integration
