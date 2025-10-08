@@ -4,8 +4,9 @@
 # Code searchability and pattern matching rules for TypeScript/JavaScript.
 # Use `sg scan` to run all rules, or `sg run <rule-id>` for specific rules.
 #
-# Version: 1.0.0
-# Last Updated: 2025-10-07
+# Version: 2.0.0
+# Last Updated: 2025-10-08
+# Quality Standards Enforcement: 8 additional rules added
 
 # Language: TypeScript
 language: TypeScript
@@ -188,6 +189,92 @@ rules:
     rule:
       pattern: const WORKER_URL = $$$
 
+  # ===== QUALITY STANDARDS ENFORCEMENT =====
+  # These rules enforce patterns from .cursor/rules/quality-standards.mdc
+
+  # 1. Detect 'as any' type assertions (BLOCKING)
+  - id: detect-type-assertion-any
+    message: "BLOCKED: 'as any' type assertion detected. Use proper types or utilities like normalizeD1Result()"
+    severity: error
+    language: TypeScript
+    rule:
+      pattern: $VAR as any
+
+  # 2. Detect manual requestId generation (should use utility)
+  - id: detect-manual-request-id
+    message: "Use generateRequestId() from src/utils/request.ts instead of Date.now().toString(36)"
+    severity: warning
+    language: TypeScript
+    rule:
+      pattern: Date.now().toString(36)
+
+  # 3. Detect inline CORS headers (should use constant)
+  - id: detect-inline-cors
+    message: "Use CORS_HEADERS from src/utils/request.ts instead of inline CORS headers"
+    severity: warning
+    language: TypeScript
+    rule:
+      pattern: |
+        const $VAR = {
+          $$$
+          'Access-Control-Allow-Origin': $$$
+          $$$
+        }
+
+  # 4. Detect magic numbers (should use constants)
+  - id: detect-magic-numbers
+    message: "Use constants from src/shared/constants.ts instead of magic numbers"
+    severity: warning
+    language: TypeScript
+    rule:
+      any:
+        - pattern: if ($VAR > 100)
+        - pattern: if ($VAR < 10)
+        - pattern: setTimeout($$$, 5000)
+        - pattern: limit = 50
+
+  # 5. Detect 'as unknown as' pattern (should use type guards)
+  - id: detect-unknown-as-pattern
+    message: "Use proper type guards or normalizeD1Result() instead of 'as unknown as' casting"
+    severity: info
+    language: TypeScript
+    rule:
+      pattern: $VAR as unknown as $TYPE
+
+  # 6. Detect console.log in source code (should use StructuredLogger)
+  - id: detect-console-in-source
+    message: "Use StructuredLogger from src/utils/logger.ts instead of console.log in source code"
+    severity: warning
+    language: TypeScript
+    rule:
+      any:
+        - pattern: console.log($$$)
+        - pattern: console.error($$$)
+        - pattern: console.warn($$$)
+
+  # 7. Detect manual OPTIONS responses (should use utility)
+  - id: detect-manual-options-response
+    message: "Use createOPTIONSResponse() from src/utils/request.ts"
+    severity: info
+    language: TypeScript
+    rule:
+      pattern: |
+        return new Response(null, {
+          status: 204,
+          headers: $$$
+        })
+
+  # 8. Detect manual JSON responses (should use utility)
+  - id: detect-manual-json-response
+    message: "Use createJSONResponse() or createErrorResponse() from src/utils/request.ts"
+    severity: info
+    language: TypeScript
+    rule:
+      pattern: |
+        return new Response(JSON.stringify($DATA), {
+          $$$
+        })
+
 # Search Patterns (can be used with sg search)
 patterns:
   # Find all endpoint handlers
@@ -226,6 +313,8 @@ ignore:
   - "*.min.js"
   - "*.test.ts"
   - "*.spec.ts"
+  - ".cursor/rules/*.mdc"  # Exclude Cursor rules (contain example anti-patterns)
+  - "docs/**/*.md"          # Exclude documentation (contains example code)
 
 # File Extensions
 extensions:
