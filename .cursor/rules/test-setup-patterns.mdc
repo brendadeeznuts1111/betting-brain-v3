@@ -1,0 +1,188 @@
+---
+globs: tests/**/*.ts,tests/**/*.js
+description: Test setup and configuration patterns
+---
+
+# Test Setup Patterns
+
+## Global Test Configuration
+
+### Test Setup File: `tests/setup/test-setup.ts`
+
+```typescript
+import { vi, beforeAll, beforeEach, afterEach, expect } from 'bun:test';
+import { createAnalyticsEngineStub } from '../utils/analytics-engine-stub';
+
+// Global analytics stub instance
+let globalAnalyticsStub: ReturnType<typeof createAnalyticsEngineStub> | null = null;
+let currentTestName: string = '';
+
+export function getGlobalAnalyticsStub() {
+  return globalAnalyticsStub;
+}
+
+export function setCurrentTestName(name: string) {
+  currentTestName = name;
+}
+```
+
+## Auto-Flush Pattern
+
+### Analytics Tests Only
+```typescript
+afterEach(function () {
+  if (currentTestName.toLowerCase().includes('analytics') && globalAnalyticsStub) {
+    globalAnalyticsStub.flush();
+  }
+  vi.restoreAllMocks();
+});
+```
+
+### Test Name Detection
+```typescript
+// In analytics tests, always set test name
+test('should track analytics calls with stub', async () => {
+  setCurrentTestName('should track analytics calls with stub');
+  // Test implementation
+});
+```
+
+## Mock Environment Pattern
+
+### Create Mock Environment
+```typescript
+import { createMockEnv } from '../utils/test-helpers';
+
+describe('My Analytics Test', () => {
+  let mockEnv: any;
+  let analytics: any;
+
+  beforeEach(() => {
+    const mock = createMockEnv();
+    mockEnv = mock.env;
+    analytics = mock.analytics;
+  });
+});
+```
+
+### Use Global Stub
+```typescript
+// ✅ CORRECT: Use global stub
+const analytics = getGlobalAnalyticsStub();
+
+// ❌ WRONG: Create duplicate stubs
+const analytics1 = createAnalyticsEngineStub();
+const analytics2 = createAnalyticsEngineStub();
+```
+
+## Test Isolation Patterns
+
+### Fresh Stub Per Test
+```typescript
+beforeEach(() => {
+  // Create fresh analytics stub for each test
+  globalAnalyticsStub = createAnalyticsEngineStub();
+});
+```
+
+### Console Mocking
+```typescript
+beforeEach(() => {
+  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'error').mockImplementation(() => {});
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+});
+```
+
+### Cleanup After Tests
+```typescript
+afterEach(() => {
+  // Auto-flush analytics on analytics tests
+  if (currentTestName.toLowerCase().includes('analytics') && globalAnalyticsStub) {
+    globalAnalyticsStub.flush();
+  }
+  
+  // Restore all mocks
+  vi.restoreAllMocks();
+});
+```
+
+## Test File Organization
+
+### Analytics Test Files
+```
+tests/unit/analytics-*.test.ts
+tests/unit/analytics-testing-example.test.ts
+tests/unit/analytics-tracking.test.ts
+```
+
+### Test Utilities
+```
+tests/utils/analytics-engine-stub.ts
+tests/utils/test-helpers.ts
+tests/setup/test-setup.ts
+```
+
+## Configuration Files
+
+### Main Test Config
+```toml
+# bunfig.toml
+[test]
+coverage = false  # coverage off by default
+coverageThreshold = 0.8   # 80% for production code
+```
+
+### Analytics Test Config
+```toml
+# bunfig.analytics.toml
+[test]
+coverage = true
+coverageThreshold = 0  # No threshold for analytics tests
+```
+
+## Best Practices
+
+### ✅ Do These
+- Use global analytics stub consistently
+- Set test name for auto-flush detection
+- Mock console methods to reduce noise
+- Use fresh stub per test
+- Clean up mocks after each test
+
+### ❌ Don't Do These
+- Create duplicate analytics stubs
+- Forget to set test name for auto-flush
+- Leave console mocks active
+- Share state between tests
+- Skip cleanup in afterEach
+
+## Error Handling
+
+### Unhandled Promise Rejections
+```typescript
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+```
+
+### Test Environment Setup
+```typescript
+beforeAll(() => {
+  process.env.NODE_ENV = 'test';
+});
+```
+
+## Related Files
+
+- [test-setup.ts](mdc:tests/setup/test-setup.ts) - Global test configuration
+- [analytics-engine-stub.ts](mdc:tests/utils/analytics-engine-stub.ts) - Analytics stub
+- [test-helpers.ts](mdc:tests/utils/test-helpers.ts) - Helper functions
+- [bunfig.toml](mdc:bunfig.toml) - Main test configuration
+- [bunfig.analytics.toml](mdc:bunfig.analytics.toml) - Analytics configuration
+
+---
+
+**Status:** Production Ready ✅  
+**Last Updated:** 2025-10-07  
+**Enforcement:** Required for all test files

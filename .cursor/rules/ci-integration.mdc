@@ -1,0 +1,196 @@
+---
+globs: scripts/**/*.ts,.github/workflows/*.yml,package.json
+description: CI/CD integration patterns and automation
+---
+
+# CI/CD Integration Rules
+
+## Analytics Testing CI Patterns
+
+### Main CI Pipeline
+```typescript
+// scripts/bun-ci.ts
+private async runTests(): Promise<boolean> {
+  console.log('🧪 Running tests...');
+  
+  // Enable AI-friendly output if in AI environment
+  if (this.isAIEnvironment()) {
+    console.log('  🤖 AI environment detected - enabling quiet mode');
+    process.env.CLAUDECODE = '1';
+  }
+
+  // Run tests with coverage and randomization for analytics testing
+  return await this.runStep(
+    'Tests',
+    'bun',
+    ['test', '--coverage', '--randomize', '--concurrent']
+  );
+}
+```
+
+### Analytics-Specific CI
+```json
+{
+  "analytics:ci": "CI=true bun run analytics:test:coverage"
+}
+```
+
+## Nightly Analytics Jobs
+
+### GitHub Actions Workflow
+```yaml
+# .github/workflows/analytics-smoke.yml
+name: analytics-smoke
+on:
+  schedule: [cron: "0 12 * * *"]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: wrangler deploy --dry-run
+      - run: bun test --test-name-pattern="analytics.*real"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          NODE_ENV: staging
+```
+
+### Nightly Test Script
+```typescript
+// scripts/nightly-analytics-test.ts
+export class NightlyAnalyticsTest {
+  async run(): Promise<boolean> {
+    console.log('🌙 Starting nightly analytics test...');
+    
+    const dryRunResult = await this.runDryRunTests();
+    const smokeTestResult = await this.runSmokeTest();
+    
+    return dryRunResult.success && smokeTestResult.success;
+  }
+}
+```
+
+## Package.json Scripts
+
+### Test Commands
+```json
+{
+  "test": "bun test --randomize",
+  "test:coverage": "bun test --coverage --randomize",
+  "analytics:test": "bun test tests/unit/analytics-testing-example.test.ts --randomize",
+  "analytics:test:coverage": "bun test --coverage --randomize tests/unit/analytics-testing-example.test.ts --config bunfig.analytics.toml",
+  "analytics:ci": "CI=true bun run analytics:test:coverage",
+  "analytics:nightly": "bun run scripts/nightly-analytics-test.ts",
+  "analytics:binding": "bun run scripts/test-analytics-binding.ts"
+}
+```
+
+## Environment Detection
+
+### AI Environment Detection
+```typescript
+private isAIEnvironment(): boolean {
+  return !!(
+    process.env.CLAUDECODE || 
+    process.env.REPL_ID || 
+    process.env.AGENT
+  );
+}
+```
+
+### Quiet Mode for AI
+```typescript
+if (this.isAIEnvironment()) {
+  console.log('  🤖 AI environment detected - enabling quiet mode');
+  process.env.CLAUDECODE = '1';
+}
+```
+
+## Coverage Integration
+
+### Dual Threshold System
+- **Main CI**: Enforces 80% coverage threshold
+- **Analytics CI**: Uses 0% coverage threshold
+- **Nightly**: Validates both dry-run and real binding
+
+### Coverage Commands
+```bash
+# Main suite - strict threshold
+bun run test:coverage
+# → exit 1 if < 80%
+
+# Analytics suite - flexible threshold  
+bun run analytics:test:coverage
+# → exit 0 (any coverage acceptable)
+```
+
+## Process Management
+
+### Process Cleanup
+```typescript
+// Always use processManager for spawning
+import processManager from './tests/utils/process-cleanup';
+
+const proc = processManager.spawn(['command'], options);
+```
+
+### Timeout Handling
+```typescript
+// Set appropriate timeouts
+const timeoutPromise = new Promise((_, reject) => {
+  setTimeout(() => reject(new Error('Timeout')), 5000);
+});
+```
+
+## Error Handling
+
+### CI Error Reporting
+```typescript
+try {
+  const result = await this.runStep('Tests', 'bun', ['test']);
+  return result;
+} catch (error) {
+  console.error('❌ Test execution failed:', error);
+  return false;
+}
+```
+
+### Exit Code Management
+```typescript
+// Analytics tests should exit 0
+// Main tests should exit 1 if coverage < 80%
+```
+
+## Best Practices
+
+### ✅ Do These
+- Use dual coverage thresholds
+- Enable AI-friendly output in CI
+- Run nightly validation jobs
+- Handle process cleanup properly
+- Set appropriate timeouts
+- Use environment detection
+
+### ❌ Don't Do These
+- Mix coverage thresholds
+- Ignore process cleanup
+- Skip nightly validation
+- Use hardcoded paths
+- Forget timeout handling
+- Skip error reporting
+
+## Related Files
+
+- [bun-ci.ts](mdc:scripts/bun-ci.ts) - Main CI pipeline
+- [nightly-analytics-test.ts](mdc:scripts/nightly-analytics-test.ts) - Nightly validation
+- [test-analytics-binding.ts](mdc:scripts/test-analytics-binding.ts) - Real binding test
+- [analytics-smoke.yml](mdc:.github/workflows/analytics-smoke.yml) - Nightly workflow
+- [package.json](mdc:package.json) - Script definitions
+
+---
+
+**Status:** Production Ready ✅  
+**Last Updated:** 2025-10-07  
+**Enforcement:** CI/CD Required

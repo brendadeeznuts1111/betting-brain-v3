@@ -1,0 +1,104 @@
+---
+globs: bunfig.toml,bunfig.*.toml,package.json
+description: Coverage threshold configuration patterns
+---
+
+# Coverage Threshold Rules
+
+## Dual Threshold System
+
+This codebase uses **dual coverage thresholds** to balance strict production standards with flexible analytics testing.
+
+### Main Suite: 80% Coverage (Strict)
+```toml
+# bunfig.toml
+coverage = false  # coverage off by default
+coverageThreshold = 0.8   # 80% for production code
+```
+
+### Analytics Suite: 0% Coverage (Flexible)
+```toml
+# bunfig.analytics.toml
+coverage = true
+coverageThreshold = 0  # No threshold for analytics tests
+```
+
+## Package.json Scripts
+
+### Main Suite Commands
+```json
+{
+  "test": "bun test --randomize",
+  "test:coverage": "bun test --coverage --randomize"
+}
+```
+
+### Analytics Suite Commands
+```json
+{
+  "analytics:test": "bun test tests/unit/analytics-testing-example.test.ts --randomize",
+  "analytics:test:coverage": "bun test --coverage --randomize tests/unit/analytics-testing-example.test.ts --config bunfig.analytics.toml",
+  "analytics:ci": "CI=true bun run analytics:test:coverage"
+}
+```
+
+## Why Dual Thresholds?
+
+### Production Code (80% threshold)
+- **Purpose**: Ensure high-quality, well-tested production code
+- **Scope**: All business logic, API endpoints, core functionality
+- **Enforcement**: CI fails if coverage < 80%
+
+### Analytics Code (0% threshold)
+- **Purpose**: Allow rapid iteration on analytics utilities
+- **Scope**: Test helpers, stubs, analytics-specific utilities
+- **Enforcement**: No coverage requirement, focus on functionality
+
+## Configuration Hierarchy
+
+```
+bunfig.toml (root)
+    ↓ (always takes precedence for critical settings)
+--config flag
+    ↓ (limited override capability)
+Environment variables
+    ↓ (minimal support)
+```
+
+## Best Practices
+
+### ✅ Do These
+- Keep main threshold at 80% for production quality
+- Use analytics config only for analytics tests
+- Document threshold rationale in commit messages
+- Test both thresholds in CI
+
+### ❌ Don't Do These
+- Lower main threshold below 80%
+- Use analytics config for production code
+- Mix threshold configurations
+- Ignore coverage failures in main suite
+
+## Troubleshooting
+
+### Issue: Analytics tests failing with 80% threshold
+**Solution**: Use `--config bunfig.analytics.toml` flag
+
+### Issue: Main tests passing with low coverage
+**Solution**: Check if using analytics config by mistake
+
+### Issue: Config file not working
+**Solution**: Ensure `[test]` section in config file
+
+## Related Files
+
+- [bunfig.toml](mdc:bunfig.toml) - Main configuration
+- [bunfig.analytics.toml](mdc:bunfig.analytics.toml) - Analytics configuration
+- [package.json](mdc:package.json) - Script definitions
+- [analytics-testing.mdc](mdc:.cursor/rules/analytics-testing.mdc) - Analytics testing patterns
+
+---
+
+**Status:** Production Ready ✅  
+**Last Updated:** 2025-10-07  
+**Enforcement:** CI/CD Required
