@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSE Live Dashboard Demo</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --accent: #238636;
+      --text: #c9d1d9;
+      --border: #30363d;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .card h2 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    .status {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff4444;
+      margin-right: 0.5rem;
+    }
+
+    .status.connected {
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    pre {
+      background: var(--bg);
+      padding: 1rem;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 300px;
+      font-size: 0.875rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .meta {
+      font-size: 0.875rem;
+      opacity: 0.7;
+      margin-top: 0.5rem;
+    }
+
+    .controls {
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    button.danger {
+      background: #da3633;
+    }
+  </style>
+</head>
+<body hx-ext="sse">
+  <h1>🌊 Server-Sent Events (SSE) Live Dashboard</h1>
+
+  <div class="controls">
+    <button onclick="location.reload()">🔄 Reconnect All</button>
+    <button class="danger" onclick="closeAll()">⏸️ Disconnect All</button>
+    <a href="floor-control.html" style="color: var(--accent); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--accent); border-radius: 4px;">← Back to Mission Control</a>
+  </div>
+
+  <div class="grid">
+    <!-- Agent Hierarchy Stream -->
+    <div class="card">
+      <h2>
+        <span class="status" id="status-hierarchy"></span>
+        🌳 Agent Hierarchy
+      </h2>
+      <div id="hierarchy-tile"
+           hx-ext="sse"
+           sse-connect="http://localhost:8787/api/f402/agents/stream"
+           sse-swap="message">
+        <p style="opacity: 0.7;">Connecting to stream...</p>
+      </div>
+    </div>
+
+    <!-- Health Stream -->
+    <div class="card">
+      <h2>
+        <span class="status" id="status-health"></span>
+        ❤️ System Health
+      </h2>
+      <div id="health-tile"
+           hx-ext="sse"
+           sse-connect="http://localhost:8787/api/health/stream"
+           sse-swap="message">
+        <p style="opacity: 0.7;">Connecting to stream...</p>
+      </div>
+    </div>
+
+    <!-- Live Bets Stream -->
+    <div class="card">
+      <h2>
+        <span class="status" id="status-bets"></span>
+        🎲 Live Bets
+      </h2>
+      <div id="bets-tile"
+           hx-ext="sse"
+           sse-connect="http://localhost:8787/api/f402/bets/stream"
+           sse-swap="message">
+        <p style="opacity: 0.7;">Connecting to stream...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="max-width: 600px;">
+    <h2>📊 Stream Statistics</h2>
+    <div id="stats-display">
+      <p style="opacity: 0.7;">Loading...</p>
+    </div>
+  </div>
+
+  <script>
+    // Track connection status
+    const connections = {
+      hierarchy: null,
+      health: null,
+      bets: null
+    };
+
+    // Update status indicators
+    function updateStatus(stream, connected) {
+      const indicator = document.getElementById(`status-${stream}`);
+      if (indicator) {
+        indicator.classList.toggle('connected', connected);
+      }
+    }
+
+    // Listen for SSE events
+    document.body.addEventListener('htmx:sseOpen', (e) => {
+      const stream = e.detail.elt.id.replace('-tile', '').replace('hierarchy', 'hierarchy');
+      console.log(`[SSE] ${stream} connected`);
+      updateStatus(stream, true);
+    });
+
+    document.body.addEventListener('htmx:sseClose', (e) => {
+      const stream = e.detail.elt.id.replace('-tile', '').replace('hierarchy', 'hierarchy');
+      console.log(`[SSE] ${stream} disconnected`);
+      updateStatus(stream, false);
+    });
+
+    document.body.addEventListener('htmx:sseError', (e) => {
+      const stream = e.detail.elt.id.replace('-tile', '').replace('hierarchy', 'hierarchy');
+      console.error(`[SSE] ${stream} error:`, e.detail.error);
+      updateStatus(stream, false);
+    });
+
+    // Render hierarchy data
+    document.body.addEventListener('htmx:sseMessage', (e) => {
+      if (e.detail.elt.id === 'hierarchy-tile') {
+        try {
+          const data = JSON.parse(e.detail.data);
+          e.detail.elt.innerHTML = `
+            <div class="badge">${data.agents?.length || 0} agents</div>
+            <div class="badge">${data.source || 'unknown'}</div>
+            <div class="meta">Last update: ${new Date(data.timestamp).toLocaleTimeString()}</div>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        } catch (err) {
+          console.error('[SSE] Failed to parse hierarchy data:', err);
+        }
+      }
+    });
+
+    // Render health data
+    document.body.addEventListener('htmx:sseMessage', (e) => {
+      if (e.detail.elt.id === 'health-tile') {
+        try {
+          const data = JSON.parse(e.detail.data);
+          e.detail.elt.innerHTML = `
+            <div class="badge">${data.status}</div>
+            <div class="badge">v${data.version}</div>
+            <div class="meta">Uptime: ${data.uptime}s</div>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        } catch (err) {
+          console.error('[SSE] Failed to parse health data:', err);
+        }
+      }
+    });
+
+    // Render bets data
+    document.body.addEventListener('htmx:sseMessage', (e) => {
+      if (e.detail.elt.id === 'bets-tile') {
+        try {
+          const data = JSON.parse(e.detail.data);
+          e.detail.elt.innerHTML = `
+            <div class="badge">${data.count || 0} bets</div>
+            <div class="badge">$${(data.volume || 0).toLocaleString()}</div>
+            <div class="meta">Source: ${data.source || 'unknown'}</div>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        } catch (err) {
+          console.error('[SSE] Failed to parse bets data:', err);
+        }
+      }
+    });
+
+    // Fetch stream stats every 5 seconds
+    async function updateStats() {
+      try {
+        const res = await fetch('http://localhost:8787/api/streams/stats');
+        const stats = await res.json();
+        document.getElementById('stats-display').innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+            <div>
+              <div style="font-size: 2rem; font-weight: 700;">${stats.total}</div>
+              <div style="opacity: 0.7;">Total Connections</div>
+            </div>
+            <div>
+              <div style="font-size: 1.25rem;">
+                Hierarchy: <strong>${stats.hierarchy}</strong><br>
+                Health: <strong>${stats.health}</strong><br>
+                Bets: <strong>${stats.bets}</strong>
+              </div>
+            </div>
+          </div>
+          <div class="meta">Last updated: ${new Date().toLocaleTimeString()}</div>
+        `;
+      } catch (err) {
+        console.error('[Stats] Failed to fetch:', err);
+      }
+    }
+
+    // Update stats immediately and every 5 seconds
+    updateStats();
+    setInterval(updateStats, 5000);
+
+    // Close all connections
+    function closeAll() {
+      document.querySelectorAll('[hx-ext="sse"]').forEach(el => {
+        htmx.trigger(el, 'htmx:sseClose');
+      });
+    }
+  </script>
+</body>
+</html>

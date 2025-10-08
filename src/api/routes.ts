@@ -109,6 +109,13 @@ export async function handleAPIRoute(
       case '/f402/agents/tree':
         return await getAgentTree(request, env, requestId);
 
+      case '/f402/agents/sync':
+        if (request.method !== 'POST') {
+          throw Errors.validationError(['Method must be POST']);
+        }
+        const { syncAgents } = await import('../routes/api/f402-agents');
+        return await syncAgents(request, env, ctx);
+
       case '/f402/cache/metrics':
         return await getCacheMetrics(request, env, requestId);
 
@@ -120,6 +127,27 @@ export async function handleAPIRoute(
 
       case '/f402/customers/active':
         return await getActiveCustomers(request, env, requestId);
+
+      // ========== SERVER-SENT EVENTS (SSE) STREAMS ==========
+      // Real-time data streams for live dashboards
+
+      case '/f402/agents/stream':
+        const { createHierarchyStream } = await import('./sse-streams');
+        return await createHierarchyStream(env);
+
+      case '/health/stream':
+        const { createHealthStream } = await import('./sse-streams');
+        return await createHealthStream(env);
+
+      case '/f402/bets/stream':
+        const { createBetsStream } = await import('./sse-streams');
+        return await createBetsStream(env);
+
+      case '/streams/stats':
+        const { getStreamStats } = await import('./sse-streams');
+        return new Response(JSON.stringify(getStreamStats()), {
+          headers: corsHeaders,
+        });
 
       case '/f402/customers/staked':
         return await getStakedTotal(request, env, requestId);
