@@ -38,7 +38,118 @@ graph TB
     W --> SD
 ```
 
-## Data Flow Architecture
+## 🎨 ASCII ANSI Color Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🌐 CLOUDFLARE EDGE NETWORK (Account: nolarose1968-806)                                  │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                         │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐                 │
+│  │ 🔵 WORKERS       │    │ 🟢 D1 DATABASES  │    │ 🟡 KV CACHE     │                 │
+│  │                  │    │                  │    │                  │                 │
+│  │ betting-brain-v3 │    │ betting-analytics│    │ BET_TICKER_RAW  │                 │
+│  │ -prod            │    │ fantasy42-raw   │    │ FANTASY_CACHE   │                 │
+│  │ -staging         │    │                 │    │ RATE_LIMITER    │                 │
+│  │                  │    │                 │    │ TOKEN_STORE     │                 │
+│  │ CPU: 50ms limit  │    │ 32 tables       │    │ USER_STORE      │                 │
+│  │ Memory: 128MB    │    │ 20 tables       │    │ SESSION_STORE   │                 │
+│  │                  │    │                 │    │ REFRESH_STORE   │                 │
+│  └─────────────────┘    └─────────────────┘    └─────────────────┘                 │
+│           │                       │                       │                          │
+│           └───────────────────────┼───────────────────────┘                          │
+│                                   │                                                   │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐                 │
+│  │ 🔴 QUEUES        │    │ 🟣 ANALYTICS     │    │ 🟠 EXTERNAL     │                 │
+│  │                  │    │                  │    │                  │                 │
+│  │ line-ingress     │    │ Analytics Engine │    │ Fantasy402 API  │                 │
+│  │ steam-webhook    │    │ betting-metrics  │    │ BetTicker API   │                 │
+│  │ steam-processor  │    │ 7-day retention │    │ SportsData.io   │                 │
+│  │ exposure-calc    │    │                  │    │                  │                 │
+│  │ fantasy402-logs  │    │                  │    │                  │                 │
+│  │                  │    │                  │    │                  │                 │
+│  └─────────────────┘    └─────────────────┘    └─────────────────┘                 │
+│                                                                                         │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 🌐 Network Architecture
+
+```mermaid
+graph TB
+    subgraph "Internet"
+        EXT[External Clients]
+        API[External APIs]
+    end
+    
+    subgraph "Cloudflare Edge Network"
+        subgraph "Account: nolarose1968-806"
+            subgraph "Workers"
+                W1[betting-brain-v3-prod<br/>🌐 prod.nolarose1968-806.workers.dev]
+                W2[betting-brain-v3-staging<br/>🌐 staging.nolarose1968-806.workers.dev]
+            end
+            
+            subgraph "D1 Databases"
+                D1A[betting-analytics<br/>📊 32 tables]
+                D1B[fantasy42-raw-feed<br/>📊 20 tables]
+            end
+            
+            subgraph "KV Namespaces"
+                KV1[BET_TICKER_RAW<br/>🗄️ 7-day retention]
+                KV2[FANTASY_CACHE<br/>🗄️ Config cache]
+                KV3[RATE_LIMITER<br/>🗄️ Rate limiting]
+                KV4[TOKEN_STORE<br/>🗄️ JWT tokens]
+                KV5[USER_STORE<br/>🗄️ User data]
+                KV6[SESSION_STORE<br/>🗄️ Sessions]
+                KV7[REFRESH_STORE<br/>🗄️ Refresh tokens]
+                KV8[LIVEBETS_STORE<br/>🗄️ Live betting]
+            end
+            
+            subgraph "Queues"
+                Q1[line-ingress<br/>📨 Line movements]
+                Q2[steam-webhook<br/>📨 Steam alerts]
+                Q3[steam-processor<br/>📨 Steam processing]
+                Q4[exposure-calculator<br/>📨 Risk calc]
+                Q5[fantasy402-logs<br/>📨 Fantasy402 data]
+            end
+            
+            subgraph "Analytics Engine"
+                AE1[betting-metrics<br/>📈 Time-series data]
+            end
+        end
+    end
+    
+    subgraph "External Services"
+        F402[Fantasy402 API<br/>🎲 fantasy402.com]
+        BT[BetTicker API<br/>📊 BetTicker service]
+        SD[SportsData.io<br/>⚽ Sports data]
+    end
+    
+    EXT --> W1
+    EXT --> W2
+    W1 --> D1A
+    W1 --> D1B
+    W1 --> KV1
+    W1 --> KV2
+    W1 --> KV3
+    W1 --> KV4
+    W1 --> KV5
+    W1 --> KV6
+    W1 --> KV7
+    W1 --> KV8
+    W1 --> Q1
+    W1 --> Q2
+    W1 --> Q3
+    W1 --> Q4
+    W1 --> Q5
+    W1 --> AE1
+    
+    W1 --> F402
+    W1 --> BT
+    W1 --> SD
+```
+
+## 🔄 Data Flow Architecture
 
 ```mermaid
 flowchart TD
@@ -51,7 +162,8 @@ flowchart TD
         W[Workers]
         Q1[Line Ingress Queue]
         Q2[Steam Webhook Queue]
-        Q3[Exposure Queue]
+        Q3[Steam Processor Queue]
+        Q4[Exposure Calculator Queue]
     end
     
     subgraph "Storage Layer"
@@ -61,7 +173,7 @@ flowchart TD
     end
     
     subgraph "Output Layer"
-        DASH[Dashboard]
+        DASH[Dashboards]
         MCP[MCP Tools]
         GRAF[Grafana]
     end
@@ -72,10 +184,12 @@ flowchart TD
     W --> Q1
     W --> Q2
     W --> Q3
+    W --> Q4
     
     Q1 --> D1
     Q2 --> D1
     Q3 --> D1
+    Q4 --> D1
     
     W --> KV
     W --> AE
@@ -89,6 +203,259 @@ flowchart TD
     AE --> MCP
     
     AE --> GRAF
+```
+
+## 🔧 Cloudflare Bindings & Variables
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🔧 CLOUDFLARE WORKER BINDINGS (Account: nolarose1968-806)                              │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                         │
+│ 📊 D1 DATABASE BINDINGS:                                                                │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ ANALYTICS            → betting-analytics (1fd6d6d3-7b0f-4488-a651-a234c61705b1)   │ │
+│ │ RAW_FEED_DB          → fantasy42-raw-feed (1b2e8ea8-a702-4cc7-9665-a8bea78b5dea) │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ 🗄️ KV NAMESPACE BINDINGS:                                                               │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ BET_TICKER_RAW       → 8b9618cb00c647f18ad83458e0061018 (7-day retention)         │ │
+│ │ FANTASY_CACHE        → [namespace-id] (Config cache)                               │ │
+│ │ RATE_LIMITER         → [namespace-id] (Rate limiting)                              │ │
+│ │ TOKEN_STORE          → [namespace-id] (JWT tokens)                                 │ │
+│ │ USER_STORE           → [namespace-id] (User data)                                  │ │
+│ │ SESSION_STORE        → [namespace-id] (Sessions)                                   │ │
+│ │ REFRESH_STORE        → [namespace-id] (Refresh tokens)                            │ │
+│ │ LIVEBETS_STORE       → [namespace-id] (Live betting)                              │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ 📨 QUEUE BINDINGS:                                                                      │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ LINE_INGRESS         → line-ingress-prod (10 msg/batch, 5s timeout)               │ │
+│ │ STEAM_WEBHOOK        → steam-webhook-prod (5 msg/batch, 10s timeout)              │ │
+│ │ STEAM_QUEUE          → steam-processor-prod (10 msg/batch, 2s timeout, 2 retries) │ │
+│ │ EXPOSURE_QUEUE       → exposure-calculator-prod (50 msg/batch, 10s timeout, 3 retries) │ │
+│ │ FANTASY402_QUEUE     → fantasy402-logs-prod (100 msg/batch, 5s timeout, 5 retries) │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ 📈 ANALYTICS ENGINE BINDINGS:                                                           │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ ANALYTICS_ENGINE     → betting-metrics-prod (7-day retention)                      │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ 🌐 ENVIRONMENT VARIABLES:                                                               │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ JWT_SECRET           → [32-char secret] (JWT signing)                              │ │
+│ │ PINNACLE_KEY_1       → [API key] (Pinnacle odds)                                   │ │
+│ │ PINNACLE_KEY_2       → [API key] (Pinnacle odds)                                   │ │
+│ │ PINNACLE_KEY_3       → [API key] (Pinnacle odds)                                   │ │
+│ │ BET365_KEY           → [API key] (Bet365 odds)                                     │ │
+│ │ SPORTSDATA_KEY       → [API key] (SportsData.io)                                   │ │
+│ │ FANTASY402_SECRET    → [secret] (Fantasy402 auth)                                  │ │
+│ │ EXTENSION_SECRET     → default-dev-secret-change-me (Extension auth)               │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 🌐 Network Topology
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🌐 CLOUDFLARE EDGE NETWORK TOPOLOGY                                                    │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                         │
+│  Internet                                                                               │
+│     │                                                                                   │
+│     ▼                                                                                   │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🔵 CLOUDFLARE EDGE (200+ locations worldwide)                                       │ │
+│ │                                                                                     │ │
+│ │ ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐                 │ │
+│ │ │ 🌍 US East      │    │ 🌍 Europe       │    │ 🌍 Asia Pacific  │                 │ │
+│ │ │                 │    │                 │    │                 │                 │ │
+│ │ │ Virginia        │    │ Amsterdam       │    │ Tokyo           │                 │ │
+│ │ │ New York        │    │ Frankfurt       │    │ Singapore       │                 │ │
+│ │ │ Miami           │    │ London          │    │ Sydney          │                 │ │
+│ │ │                 │    │                 │    │                 │                 │ │
+│ │ └─────────────────┘    └─────────────────┘    └─────────────────┘                 │ │
+│ │           │                       │                       │                      │ │
+│ │           └───────────────────────┼───────────────────────┘                      │ │
+│ │                                   │                                               │ │
+│ │ ┌─────────────────────────────────────────────────────────────────────────────────┐ │ │
+│ │ │ 🏢 ACCOUNT: nolarose1968-806                                                   │ │ │
+│ │ │                                                                                 │ │ │
+│ │ │ ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐             │ │ │
+│ │ │ │ 🔵 WORKERS       │    │ 🟢 D1 DATABASES  │    │ 🟡 KV CACHE     │             │ │ │
+│ │ │ │                  │    │                  │    │                  │             │ │ │
+│ │ │ │ betting-brain-v3 │    │ betting-analytics│    │ BET_TICKER_RAW  │             │ │ │
+│ │ │ │ -prod            │    │ fantasy42-raw   │    │ FANTASY_CACHE   │             │ │ │
+│ │ │ │ -staging         │    │                 │    │ RATE_LIMITER    │             │ │ │
+│ │ │ │                  │    │                 │    │ TOKEN_STORE     │             │ │ │
+│ │ │ │ CPU: 50ms limit  │    │ 32 tables       │    │ USER_STORE      │             │ │ │
+│ │ │ │ Memory: 128MB    │    │ 20 tables       │    │ SESSION_STORE   │             │ │ │
+│ │ │ │                  │    │                 │    │ REFRESH_STORE   │             │ │ │
+│ │ │ └─────────────────┘    └─────────────────┘    └─────────────────┘             │ │ │
+│ │ │           │                       │                       │                  │ │ │
+│ │ │           └───────────────────────┼───────────────────────┘                  │ │ │
+│ │ │                                   │                                           │ │ │
+│ │ │ ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐             │ │ │
+│ │ │ │ 🔴 QUEUES        │    │ 🟣 ANALYTICS     │    │ 🟠 EXTERNAL     │             │ │ │
+│ │ │ │                  │    │                  │    │                  │             │ │ │
+│ │ │ │ line-ingress     │    │ Analytics Engine │    │ Fantasy402 API  │             │ │ │
+│ │ │ │ steam-webhook    │    │ betting-metrics  │    │ BetTicker API   │             │ │ │
+│ │ │ │ steam-processor  │    │ 7-day retention │    │ SportsData.io   │             │ │ │
+│ │ │ │ exposure-calc    │    │                  │    │                  │             │ │ │
+│ │ │ │ fantasy402-logs  │    │                  │    │                  │             │ │ │
+│ │ │ │                  │    │                  │    │                  │             │ │ │
+│ │ │ └─────────────────┘    └─────────────────┘    └─────────────────┘             │ │ │
+│ │ └─────────────────────────────────────────────────────────────────────────────────┘ │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 🚀 Deployment Pipeline
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🚀 CLOUDFLARE DEPLOYMENT PIPELINE (Account: nolarose1968-806)                         │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                         │
+│  Local Development                                                                      │
+│     │                                                                                   │
+│     ▼                                                                                   │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🔧 WRANGLER DEV                                                                     │ │
+│ │                                                                                     │ │
+│ │ wrangler dev --local                                                                │ │
+│ │ ├── Local D1 databases                                                              │ │
+│ │ ├── Local KV storage                                                                │ │
+│ │ ├── Local queue processing                                                          │ │
+│ │ └── Hot reload enabled                                                              │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│     │                                                                                   │
+│     ▼                                                                                   │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🧪 TESTING & VALIDATION                                                             │ │
+│ │                                                                                     │ │
+│ │ bun run floor:health                                                                │ │
+│ │ ├── Lint check (0 errors)                                                           │ │
+│ │ ├── Type check (154 known issues, non-blocking)                                    │ │
+│ │ ├── Test suite (441/584, 75.5% pass rate)                                         │ │
+│ │ ├── Coverage (81%, target: 81%)                                                    │ │
+│ │ └── Security audit (99 hints, 0 errors)                                            │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│     │                                                                                   │
+│     ▼                                                                                   │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 📦 BUILD & PACKAGE                                                                   │ │
+│ │                                                                                     │ │
+│ │ bun run build                                                                       │ │
+│ │ ├── TypeScript compilation                                                          │ │
+│ │ ├── Asset bundling                                                                  │ │
+│ │ ├── Dependency optimization                                                         │ │
+│ │ └── Source map generation                                                           │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│     │                                                                                   │
+│     ▼                                                                                   │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🌐 CLOUDFLARE DEPLOYMENT                                                            │ │
+│ │                                                                                     │ │
+│ │ wrangler deploy --env production                                                    │ │
+│ │ ├── Worker deployment (betting-brain-v3-prod)                                       │ │
+│ │ ├── D1 migrations (betting-analytics, fantasy42-raw-feed)                          │ │
+│ │ ├── KV namespace sync                                                               │ │
+│ │ ├── Queue configuration                                                             │ │
+│ │ ├── Analytics Engine setup                                                         │ │
+│ │ └── Environment variables                                                           │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│     │                                                                                   │
+│     ▼                                                                                   │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ ✅ PRODUCTION VERIFICATION                                                          │ │
+│ │                                                                                     │ │
+│ │ Health Check: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health   │ │
+│ │ ├── Worker status: ✅ UP                                                            │ │
+│ │ ├── Database connectivity: ✅ UP                                                   │ │
+│ │ ├── KV access: ✅ UP                                                               │ │
+│ │ ├── Queue processing: ✅ UP                                                        │ │
+│ │ ├── Analytics Engine: ✅ UP                                                        │ │
+│ │ └── External API connectivity: ✅ UP                                               │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 🔄 Cache Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🔄 KV CACHE ARCHITECTURE (Account: nolarose1968-806)                                  │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🗄️ KV NAMESPACES OVERVIEW                                                           │ │
+│ │                                                                                     │ │
+│ │ ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐                 │ │
+│ │ │ BET_TICKER_RAW  │    │ FANTASY_CACHE   │    │ RATE_LIMITER    │                 │ │
+│ │ │                 │    │                 │    │                 │                 │ │
+│ │ │ Purpose:        │    │ Purpose:        │    │ Purpose:        │                 │ │
+│ │ │ Raw API responses│    │ Config cache    │    │ Rate limiting   │                 │ │
+│ │ │                 │    │                 │    │                 │                 │ │
+│ │ │ Retention: 7d   │    │ Retention: 24h  │    │ Retention: 1h   │                 │ │
+│ │ │ Keys: ~1000     │    │ Keys: ~50       │    │ Keys: ~10000    │                 │ │
+│ │ │ Size: ~10MB     │    │ Size: ~1MB      │    │ Size: ~5MB      │                 │ │
+│ │ └─────────────────┘    └─────────────────┘    └─────────────────┘                 │ │
+│ │                                                                                     │ │
+│ │ ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐                 │ │
+│ │ │ TOKEN_STORE     │    │ USER_STORE      │    │ SESSION_STORE   │                 │ │
+│ │ │                 │    │                 │    │                 │                 │ │
+│ │ │ Purpose:        │    │ Purpose:        │    │ Purpose:        │                 │ │
+│ │ │ JWT tokens      │    │ User data       │    │ Active sessions │                 │ │
+│ │ │                 │    │                 │    │                 │                 │ │
+│ │ │ Retention: 24h  │    │ Retention: 30d  │    │ Retention: 7d   │                 │ │
+│ │ │ Keys: ~5000     │    │ Keys: ~1000     │    │ Keys: ~500      │                 │ │
+│ │ │ Size: ~2MB      │    │ Size: ~5MB      │    │ Size: ~1MB      │                 │ │
+│ │ └─────────────────┘    └─────────────────┘    └─────────────────┘                 │ │
+│ │                                                                                     │ │
+│ │ ┌─────────────────┐    ┌─────────────────┐                                         │ │
+│ │ │ REFRESH_STORE   │    │ LIVEBETS_STORE  │                                         │ │
+│ │ │                 │    │                 │                                         │ │
+│ │ │ Purpose:        │    │ Purpose:        │                                         │ │
+│ │ │ Refresh tokens  │    │ Live betting    │                                         │ │
+│ │ │                 │    │                 │                                         │ │
+│ │ │ Retention: 30d  │    │ Retention: 1h   │                                         │ │
+│ │ │ Keys: ~2000     │    │ Keys: ~5000     │                                         │ │
+│ │ │ Size: ~1MB      │    │ Size: ~10MB     │                                         │ │
+│ │ └─────────────────┘    └─────────────────┘                                         │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🔄 CACHE FLOW DIAGRAM                                                               │ │
+│ │                                                                                     │ │
+│ │ Request → Worker → KV Check → Cache Hit/Miss → Response                             │ │
+│ │     │        │         │            │                                               │ │
+│ │     │        │         │            ▼                                               │ │
+│ │     │        │         │    ┌─────────────────┐                                    │ │
+│ │     │        │         │    │ Cache Hit        │                                    │ │
+│ │     │        │         │    │ ├── Return data  │                                    │ │
+│ │     │        │         │    │ ├── Update TTL   │                                    │ │
+│ │     │        │         │    │ └── Log metrics  │                                    │ │
+│ │     │        │         │    └─────────────────┘                                    │ │
+│ │     │        │         │            │                                               │ │
+│ │     │        │         │            ▼                                               │ │
+│ │     │        │         │    ┌─────────────────┐                                    │ │
+│ │     │        │         │    │ Cache Miss      │                                    │ │
+│ │     │        │         │    │ ├── Query D1    │                                    │ │
+│ │     │        │         │    │ ├── Store in KV │                                    │ │
+│ │     │        │         │    │ ├── Return data │                                    │ │
+│ │     │        │         │    │ └── Log metrics │                                    │ │
+│ │     │        │         │    └─────────────────┘                                    │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Database Schema
