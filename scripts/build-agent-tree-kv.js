@@ -59,6 +59,37 @@ const OUTPUT_FILE = '/tmp/fantasy402-agents-tree.json';
   const flatAgents = Object.values(agentMap);
   console.log(`✅ Built tree with ${flatAgents.length} agents`);
 
+  // Calculate rollup metrics (bottom-up: children → parents)
+  // Sort by level descending to process children before parents
+  const sortedAgents = [...flatAgents].sort((a, b) => b.level - a.level);
+
+  for (const agent of sortedAgents) {
+    // Find all direct children
+    const children = flatAgents.filter(a => a.parent_id === agent.agent_id);
+
+    if (children.length > 0) {
+      // Aggregate child metrics
+      agent.child_count = children.length;
+      agent.total_risk = agent.risk_score + children.reduce((sum, c) => sum + (c.total_risk || c.risk_score), 0);
+      agent.total_steam = agent.steam_percentage + children.reduce((sum, c) => sum + (c.total_steam || c.steam_percentage), 0);
+      agent.total_velocity = agent.velocity + children.reduce((sum, c) => sum + (c.total_velocity || c.velocity), 0);
+      agent.total_sharpness = agent.sharpness + children.reduce((sum, c) => sum + (c.total_sharpness || c.sharpness), 0);
+
+      // Count all descendants (recursive depth)
+      agent.descendant_count = children.reduce((sum, c) => sum + 1 + (c.descendant_count || 0), 0);
+    } else {
+      // Leaf node - own metrics only
+      agent.child_count = 0;
+      agent.descendant_count = 0;
+      agent.total_risk = agent.risk_score;
+      agent.total_steam = agent.steam_percentage;
+      agent.total_velocity = agent.velocity;
+      agent.total_sharpness = agent.sharpness;
+    }
+  }
+
+  console.log(`📊 Rollup complete: calculated totals for ${flatAgents.filter(a => a.child_count > 0).length} parent agents`);
+
   // Count levels
   const levelCounts = {};
   flatAgents.forEach(a => {

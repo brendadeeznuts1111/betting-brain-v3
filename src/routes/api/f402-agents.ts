@@ -537,11 +537,19 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
       office: agent.office,
       totalRequests: agent.totalRequests || agent.total_requests || 0,
       lastActive: agent.lastActive || agent.last_active,
-      // Real metrics from cached API data
+      // Real metrics from cached API data (own + children rollup)
       risk: agent.risk_score || 0,
       steam: agent.steam_percentage || 0,
       velocity: agent.velocity || 0,
       sharpness: agent.sharpness || 0,
+      // Rollup totals (includes descendants)
+      totalRisk: agent.total_risk || agent.risk_score || 0,
+      totalSteam: agent.total_steam || agent.steam_percentage || 0,
+      totalVelocity: agent.total_velocity || agent.velocity || 0,
+      totalSharpness: agent.total_sharpness || agent.sharpness || 0,
+      // Hierarchy metadata
+      childCount: agent.child_count || 0,
+      descendantCount: agent.descendant_count || 0,
       children: [],
     });
 
