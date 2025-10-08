@@ -4,7 +4,6 @@
  */
 
 import { spawn } from 'bun';
-import { glob } from 'bun';
 import { join } from 'path';
 
 interface LintResult {
@@ -37,9 +36,18 @@ class Linter {
   private async lintTypeScriptFiles(): Promise<void> {
     console.log('\n📝 Linting TypeScript files...');
     
-    const tsFiles = await glob('**/*.ts', {
-      ignore: ['node_modules/**', 'dist/**', 'coverage/**']
-    });
+    const glob = new Bun.Glob('**/*.ts');
+    const tsFiles: string[] = [];
+    
+    for await (const file of glob.scan('.')) {
+      // Skip ignored directories
+      if (file.includes('node_modules/') || 
+          file.includes('dist/') || 
+          file.includes('coverage/')) {
+        continue;
+      }
+      tsFiles.push(file);
+    }
 
     for (const file of tsFiles) {
       await this.lintFile(file, 'typescript');
@@ -49,9 +57,18 @@ class Linter {
   private async lintJavaScriptFiles(): Promise<void> {
     console.log('\n📝 Linting JavaScript files...');
     
-    const jsFiles = await glob('**/*.js', {
-      ignore: ['node_modules/**', 'dist/**', 'coverage/**']
-    });
+    const glob = new Bun.Glob('**/*.js');
+    const jsFiles: string[] = [];
+    
+    for await (const file of glob.scan('.')) {
+      // Skip ignored directories
+      if (file.includes('node_modules/') || 
+          file.includes('dist/') || 
+          file.includes('coverage/')) {
+        continue;
+      }
+      jsFiles.push(file);
+    }
 
     for (const file of jsFiles) {
       await this.lintFile(file, 'javascript');
@@ -61,9 +78,20 @@ class Linter {
   private async lintJsonFiles(): Promise<void> {
     console.log('\n📝 Linting JSON files...');
     
-    const jsonFiles = await glob('**/*.json', {
-      ignore: ['node_modules/**', 'dist/**', 'coverage/**']
-    });
+    const glob = new Bun.Glob('**/*.json');
+    const jsonFiles: string[] = [];
+    
+    for await (const file of glob.scan('.')) {
+      // Skip ignored directories and files
+      if (file.includes('node_modules/') || 
+          file.includes('dist/') || 
+          file.includes('coverage/') ||
+          file.includes('package-lock.json') ||
+          file.includes('bun.lock')) {
+        continue;
+      }
+      jsonFiles.push(file);
+    }
 
     for (const file of jsonFiles) {
       await this.lintFile(file, 'json');

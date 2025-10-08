@@ -1,233 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🔬 BetTicker System Diagnostics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%); }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .status-good { color: #10b981; }
-        .status-bad { color: #ef4444; }
-        .status-warn { color: #f59e0b; }
-        .monospace { font-family: 'Courier New', monospace; }
-        .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+      body {
+        background: linear-gradient(
+          135deg,
+          #1e3a8a 0%,
+          #7c3aed 50%,
+          #db2777 100%
+        );
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .status-good {
+        color: #10b981;
+      }
+      .status-bad {
+        color: #ef4444;
+      }
+      .status-warn {
+        color: #f59e0b;
+      }
+      .monospace {
+        font-family: "Courier New", monospace;
+      }
+      .pulse-dot {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
     </style>
-</head>
-<body class="p-6">
+  </head>
+  <body class="p-6">
     <div class="max-w-7xl mx-auto">
-        <div class="glass rounded-2xl p-6 mb-6 text-white">
-            <h1 class="text-4xl font-bold mb-2">🔬 BetTicker System Diagnostics</h1>
-            <p class="text-white/80">Real-time system health & data flow monitoring</p>
-        </div>
+      <div class="glass rounded-2xl p-6 mb-6 text-white">
+        <h1 class="text-4xl font-bold mb-2">🔬 BetTicker System Diagnostics</h1>
+        <p class="text-white/80">
+          Real-time system health & data flow monitoring
+        </p>
+      </div>
 
-        <!-- Critical Status -->
-        <div class="glass rounded-xl p-6 mb-6">
-            <h2 class="text-white font-bold text-2xl mb-4">🚨 Critical Status</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-black/30 rounded-lg p-4">
-                    <div class="text-white/60 text-sm mb-2">Worker Health</div>
-                    <div id="workerStatus" class="text-2xl font-bold">⏳ Checking...</div>
-                </div>
-                <div class="bg-black/30 rounded-lg p-4">
-                    <div class="text-white/60 text-sm mb-2">KV Storage</div>
-                    <div id="kvStatus" class="text-2xl font-bold">⏳ Checking...</div>
-                </div>
-                <div class="bg-black/30 rounded-lg p-4">
-                    <div class="text-white/60 text-sm mb-2">Data Freshness</div>
-                    <div id="freshnessStatus" class="text-2xl font-bold">⏳ Checking...</div>
-                </div>
+      <!-- Critical Status -->
+      <div class="glass rounded-xl p-6 mb-6">
+        <h2 class="text-white font-bold text-2xl mb-4">🚨 Critical Status</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-black/30 rounded-lg p-4">
+            <div class="text-white/60 text-sm mb-2">Worker Health</div>
+            <div id="workerStatus" class="text-2xl font-bold">
+              ⏳ Checking...
             </div>
-        </div>
-
-        <!-- Detailed Analysis -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- System Tests -->
-            <div class="glass rounded-xl p-6">
-                <h3 class="text-white font-bold text-xl mb-4">🧪 System Tests</h3>
-                <div id="systemTests" class="space-y-2 text-white text-sm mb-4"></div>
-                <button onclick="runFullDiagnostics()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
-                    🔄 Run Full Diagnostics
-                </button>
+          </div>
+          <div class="bg-black/30 rounded-lg p-4">
+            <div class="text-white/60 text-sm mb-2">KV Storage</div>
+            <div id="kvStatus" class="text-2xl font-bold">⏳ Checking...</div>
+          </div>
+          <div class="bg-black/30 rounded-lg p-4">
+            <div class="text-white/60 text-sm mb-2">Data Freshness</div>
+            <div id="freshnessStatus" class="text-2xl font-bold">
+              ⏳ Checking...
             </div>
-
-            <!-- Data Flow Analysis -->
-            <div class="glass rounded-xl p-6">
-                <h3 class="text-white font-bold text-xl mb-4">📊 Data Flow Analysis</h3>
-                <div id="dataFlow" class="space-y-2 text-white text-sm"></div>
-            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Live Monitoring -->
-        <div class="glass rounded-xl p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-white font-bold text-xl">📡 Live Data Stream Monitor</h3>
-                <div class="flex gap-2">
-                    <button onclick="startMonitor()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
-                        ▶️ Start
-                    </button>
-                    <button onclick="stopMonitor()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
-                        ⏹️ Stop
-                    </button>
-                </div>
-            </div>
-            <div id="liveMonitor" class="bg-black/30 rounded-lg p-4 max-h-64 overflow-y-auto text-xs text-white/90 monospace"></div>
-        </div>
-
-        <!-- Latest Records -->
-        <div class="glass rounded-xl p-6 mb-6">
-            <h3 class="text-white font-bold text-xl mb-4">📋 Latest KV Records</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-white text-sm">
-                    <thead>
-                        <tr class="border-b border-white/20">
-                            <th class="text-left py-2 px-2">Timestamp</th>
-                            <th class="text-left py-2 px-2">Age</th>
-                            <th class="text-left py-2 px-2">Status</th>
-                            <th class="text-right py-2 px-2">Size</th>
-                            <th class="text-left py-2 px-2">IP</th>
-                            <th class="text-left py-2 px-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsTable"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Troubleshooting Guide -->
+      <!-- Detailed Analysis -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- System Tests -->
         <div class="glass rounded-xl p-6">
-            <h3 class="text-white font-bold text-xl mb-4">🔧 Troubleshooting Guide</h3>
-            <div id="troubleshooting" class="space-y-4 text-white text-sm"></div>
+          <h3 class="text-white font-bold text-xl mb-4">🧪 System Tests</h3>
+          <div id="systemTests" class="space-y-2 text-white text-sm mb-4"></div>
+          <button
+            onclick="runFullDiagnostics()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+          >
+            🔄 Run Full Diagnostics
+          </button>
         </div>
+
+        <!-- Data Flow Analysis -->
+        <div class="glass rounded-xl p-6">
+          <h3 class="text-white font-bold text-xl mb-4">
+            📊 Data Flow Analysis
+          </h3>
+          <div id="dataFlow" class="space-y-2 text-white text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Live Monitoring -->
+      <div class="glass rounded-xl p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-white font-bold text-xl">
+            📡 Live Data Stream Monitor
+          </h3>
+          <div class="flex gap-2">
+            <button
+              onclick="startMonitor()"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+            >
+              ▶️ Start
+            </button>
+            <button
+              onclick="stopMonitor()"
+              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+            >
+              ⏹️ Stop
+            </button>
+          </div>
+        </div>
+        <div
+          id="liveMonitor"
+          class="bg-black/30 rounded-lg p-4 max-h-64 overflow-y-auto text-xs text-white/90 monospace"
+        ></div>
+      </div>
+
+      <!-- Latest Records -->
+      <div class="glass rounded-xl p-6 mb-6">
+        <h3 class="text-white font-bold text-xl mb-4">📋 Latest KV Records</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-white text-sm">
+            <thead>
+              <tr class="border-b border-white/20">
+                <th class="text-left py-2 px-2">Timestamp</th>
+                <th class="text-left py-2 px-2">Age</th>
+                <th class="text-left py-2 px-2">Status</th>
+                <th class="text-right py-2 px-2">Size</th>
+                <th class="text-left py-2 px-2">IP</th>
+                <th class="text-left py-2 px-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Troubleshooting Guide -->
+      <div class="glass rounded-xl p-6">
+        <h3 class="text-white font-bold text-xl mb-4">
+          🔧 Troubleshooting Guide
+        </h3>
+        <div id="troubleshooting" class="space-y-4 text-white text-sm"></div>
+      </div>
     </div>
 
     <script>
-        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
-        let monitorInterval = null;
-        let lastCheck = { recordCount: 0, newestTimestamp: 0 };
+      const WORKER_URL =
+        "https://betting-brain-v3.nolarose1968-806.workers.dev";
+      let monitorInterval = null;
+      let lastCheck = { recordCount: 0, newestTimestamp: 0 };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            runFullDiagnostics();
-            startMonitor();
-        });
+      document.addEventListener("DOMContentLoaded", () => {
+        runFullDiagnostics();
+        startMonitor();
+      });
 
-        async function runFullDiagnostics() {
-            log('🔬 Starting comprehensive diagnostics...');
-            
-            await testWorkerHealth();
-            await testKVStorage();
-            await analyzeDataFreshness();
-            await analyzeDataFlow();
-            await generateTroubleshooting();
-            
-            log('✅ Diagnostics complete!');
+      async function runFullDiagnostics() {
+        log("🔬 Starting comprehensive diagnostics...");
+
+        await testWorkerHealth();
+        await testKVStorage();
+        await analyzeDataFreshness();
+        await analyzeDataFlow();
+        await generateTroubleshooting();
+
+        log("✅ Diagnostics complete!");
+      }
+
+      async function testWorkerHealth() {
+        addTest("Worker Deployment", "⏳ Testing...");
+
+        try {
+          const start = Date.now();
+          const response = await fetch(`${WORKER_URL}/health`);
+          const duration = Date.now() - start;
+
+          if (response.ok) {
+            const data = await response.json();
+            addTest("Worker Deployment", `✅ Online (${duration}ms)`, "good");
+            document.getElementById("workerStatus").innerHTML =
+              '<span class="status-good">✅ Online</span>';
+            log(`✅ Worker healthy: ${data.version} (${duration}ms)`);
+            return true;
+          } else {
+            addTest("Worker Deployment", `❌ HTTP ${response.status}`, "bad");
+            document.getElementById("workerStatus").innerHTML =
+              '<span class="status-bad">❌ Error</span>';
+            log(`❌ Worker error: HTTP ${response.status}`);
+            return false;
+          }
+        } catch (error) {
+          addTest("Worker Deployment", `❌ Offline`, "bad");
+          document.getElementById("workerStatus").innerHTML =
+            '<span class="status-bad">❌ Offline</span>';
+          log(`❌ Worker unreachable: ${error.message}`);
+          return false;
         }
+      }
 
-        async function testWorkerHealth() {
-            addTest('Worker Deployment', '⏳ Testing...');
-            
-            try {
-                const start = Date.now();
-                const response = await fetch(`${WORKER_URL}/health`);
-                const duration = Date.now() - start;
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    addTest('Worker Deployment', `✅ Online (${duration}ms)`, 'good');
-                    document.getElementById('workerStatus').innerHTML = '<span class="status-good">✅ Online</span>';
-                    log(`✅ Worker healthy: ${data.version} (${duration}ms)`);
-                    return true;
-                } else {
-                    addTest('Worker Deployment', `❌ HTTP ${response.status}`, 'bad');
-                    document.getElementById('workerStatus').innerHTML = '<span class="status-bad">❌ Error</span>';
-                    log(`❌ Worker error: HTTP ${response.status}`);
-                    return false;
-                }
-            } catch (error) {
-                addTest('Worker Deployment', `❌ Offline`, 'bad');
-                document.getElementById('workerStatus').innerHTML = '<span class="status-bad">❌ Offline</span>';
-                log(`❌ Worker unreachable: ${error.message}`);
-                return false;
-            }
-        }
+      async function testKVStorage() {
+        addTest("KV Storage Access", "⏳ Testing...");
 
-        async function testKVStorage() {
-            addTest('KV Storage Access', '⏳ Testing...');
-            
-            try {
-                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=100`);
-                
-                if (response.ok) {
-                    const records = await response.json();
-                    lastCheck.recordCount = records.length;
-                    
-                    if (records.length > 0) {
-                        const timestamps = records.map(r => parseInt(r.key.split(':')[2]));
-                        lastCheck.newestTimestamp = Math.max(...timestamps);
-                        
-                        addTest('KV Storage Access', `✅ ${records.length} records`, 'good');
-                        document.getElementById('kvStatus').innerHTML = `<span class="status-good">✅ ${records.length} records</span>`;
-                        log(`✅ KV accessible: ${records.length} records found`);
-                        
-                        updateRecordsTable(records.slice(0, 10));
-                        return { success: true, count: records.length, records };
-                    } else {
-                        addTest('KV Storage Access', `⚠️ Empty (0 records)`, 'warn');
-                        document.getElementById('kvStatus').innerHTML = '<span class="status-warn">⚠️ Empty</span>';
-                        log(`⚠️ KV is empty - no data captured yet`);
-                        return { success: true, count: 0, records: [] };
-                    }
-                } else {
-                    addTest('KV Storage Access', `❌ HTTP ${response.status}`, 'bad');
-                    document.getElementById('kvStatus').innerHTML = '<span class="status-bad">❌ Error</span>';
-                    log(`❌ KV access failed: HTTP ${response.status}`);
-                    return { success: false };
-                }
-            } catch (error) {
-                addTest('KV Storage Access', `❌ ${error.message}`, 'bad');
-                document.getElementById('kvStatus').innerHTML = '<span class="status-bad">❌ Error</span>';
-                log(`❌ KV test failed: ${error.message}`);
-                return { success: false };
-            }
-        }
+        try {
+          const response = await fetch(
+            `${WORKER_URL}/interceptor/history?limit=100`,
+          );
 
-        async function analyzeDataFreshness() {
-            addTest('Data Freshness', '⏳ Analyzing...');
-            
-            if (lastCheck.newestTimestamp === 0) {
-                addTest('Data Freshness', '⚠️ No data', 'warn');
-                document.getElementById('freshnessStatus').innerHTML = '<span class="status-warn">⚠️ No Data</span>';
-                log('⚠️ No data to analyze freshness');
-                return;
-            }
-            
-            const now = Date.now();
-            const ageMinutes = Math.floor((now - lastCheck.newestTimestamp) / 60000);
-            
-            if (ageMinutes < 5) {
-                addTest('Data Freshness', `✅ ${ageMinutes}m old (FRESH)`, 'good');
-                document.getElementById('freshnessStatus').innerHTML = `<span class="status-good">✅ ${ageMinutes}m</span>`;
-                log(`✅ Data is FRESH: ${ageMinutes} minutes old`);
-            } else if (ageMinutes < 60) {
-                addTest('Data Freshness', `⚠️ ${ageMinutes}m old (STALE)`, 'warn');
-                document.getElementById('freshnessStatus').innerHTML = `<span class="status-warn">⚠️ ${ageMinutes}m</span>`;
-                log(`⚠️ Data is STALE: ${ageMinutes} minutes old`);
+          if (response.ok) {
+            const records = await response.json();
+            lastCheck.recordCount = records.length;
+
+            if (records.length > 0) {
+              const timestamps = records.map((r) =>
+                parseInt(r.key.split(":")[2]),
+              );
+              lastCheck.newestTimestamp = Math.max(...timestamps);
+
+              addTest(
+                "KV Storage Access",
+                `✅ ${records.length} records`,
+                "good",
+              );
+              document.getElementById("kvStatus").innerHTML =
+                `<span class="status-good">✅ ${records.length} records</span>`;
+              log(`✅ KV accessible: ${records.length} records found`);
+
+              updateRecordsTable(records.slice(0, 10));
+              return { success: true, count: records.length, records };
             } else {
-                const hours = Math.floor(ageMinutes / 60);
-                addTest('Data Freshness', `❌ ${hours}h old (OLD)`, 'bad');
-                document.getElementById('freshnessStatus').innerHTML = `<span class="status-bad">❌ ${hours}h</span>`;
-                log(`❌ Data is OLD: ${hours} hours old`);
+              addTest("KV Storage Access", `⚠️ Empty (0 records)`, "warn");
+              document.getElementById("kvStatus").innerHTML =
+                '<span class="status-warn">⚠️ Empty</span>';
+              log(`⚠️ KV is empty - no data captured yet`);
+              return { success: true, count: 0, records: [] };
             }
+          } else {
+            addTest("KV Storage Access", `❌ HTTP ${response.status}`, "bad");
+            document.getElementById("kvStatus").innerHTML =
+              '<span class="status-bad">❌ Error</span>';
+            log(`❌ KV access failed: HTTP ${response.status}`);
+            return { success: false };
+          }
+        } catch (error) {
+          addTest("KV Storage Access", `❌ ${error.message}`, "bad");
+          document.getElementById("kvStatus").innerHTML =
+            '<span class="status-bad">❌ Error</span>';
+          log(`❌ KV test failed: ${error.message}`);
+          return { success: false };
+        }
+      }
+
+      async function analyzeDataFreshness() {
+        addTest("Data Freshness", "⏳ Analyzing...");
+
+        if (lastCheck.newestTimestamp === 0) {
+          addTest("Data Freshness", "⚠️ No data", "warn");
+          document.getElementById("freshnessStatus").innerHTML =
+            '<span class="status-warn">⚠️ No Data</span>';
+          log("⚠️ No data to analyze freshness");
+          return;
         }
 
-        async function analyzeDataFlow() {
-            const flowDiv = document.getElementById('dataFlow');
-            flowDiv.innerHTML = '';
-            
-            if (lastCheck.recordCount === 0) {
-                flowDiv.innerHTML = `
+        const now = Date.now();
+        const ageMinutes = Math.floor(
+          (now - lastCheck.newestTimestamp) / 60000,
+        );
+
+        if (ageMinutes < 5) {
+          addTest("Data Freshness", `✅ ${ageMinutes}m old (FRESH)`, "good");
+          document.getElementById("freshnessStatus").innerHTML =
+            `<span class="status-good">✅ ${ageMinutes}m</span>`;
+          log(`✅ Data is FRESH: ${ageMinutes} minutes old`);
+        } else if (ageMinutes < 60) {
+          addTest("Data Freshness", `⚠️ ${ageMinutes}m old (STALE)`, "warn");
+          document.getElementById("freshnessStatus").innerHTML =
+            `<span class="status-warn">⚠️ ${ageMinutes}m</span>`;
+          log(`⚠️ Data is STALE: ${ageMinutes} minutes old`);
+        } else {
+          const hours = Math.floor(ageMinutes / 60);
+          addTest("Data Freshness", `❌ ${hours}h old (OLD)`, "bad");
+          document.getElementById("freshnessStatus").innerHTML =
+            `<span class="status-bad">❌ ${hours}h</span>`;
+          log(`❌ Data is OLD: ${hours} hours old`);
+        }
+      }
+
+      async function analyzeDataFlow() {
+        const flowDiv = document.getElementById("dataFlow");
+        flowDiv.innerHTML = "";
+
+        if (lastCheck.recordCount === 0) {
+          flowDiv.innerHTML = `
                     <div class="bg-red-900/30 border border-red-500/50 rounded p-3">
                         <div class="font-bold text-red-400 mb-2">❌ NO DATA FLOW DETECTED</div>
                         <div class="text-xs space-y-1">
@@ -237,18 +312,20 @@
                         </div>
                     </div>
                 `;
-                return;
-            }
-            
-            const ageMinutes = Math.floor((Date.now() - lastCheck.newestTimestamp) / 60000);
-            
-            flowDiv.innerHTML = `
+          return;
+        }
+
+        const ageMinutes = Math.floor(
+          (Date.now() - lastCheck.newestTimestamp) / 60000,
+        );
+
+        flowDiv.innerHTML = `
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-3 h-3 rounded-full ${ageMinutes < 5 ? 'bg-green-400' : 'bg-red-400'} pulse-dot"></div>
+                        <div class="w-3 h-3 rounded-full ${ageMinutes < 5 ? "bg-green-400" : "bg-red-400"} pulse-dot"></div>
                         <div>
                             <div class="font-bold">Browser → Worker</div>
-                            <div class="text-xs text-white/60">${ageMinutes < 5 ? 'Active' : 'Inactive'}</div>
+                            <div class="text-xs text-white/60">${ageMinutes < 5 ? "Active" : "Inactive"}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -267,7 +344,9 @@
                     </div>
                 </div>
                 
-                ${ageMinutes >= 5 ? `
+                ${
+                  ageMinutes >= 5
+                    ? `
                     <div class="mt-3 bg-yellow-900/30 border border-yellow-500/50 rounded p-3 text-xs">
                         <div class="font-bold text-yellow-400">⚠️ PROBLEM DETECTED</div>
                         <div class="mt-2">Last data capture was <strong>${ageMinutes}</strong> minutes ago.</div>
@@ -278,134 +357,156 @@
                             <li>Extension not redirecting requests</li>
                         </ul>
                     </div>
-                ` : ''}
+                `
+                    : ""
+                }
             `;
+      }
+
+      async function generateTroubleshooting() {
+        const troubleDiv = document.getElementById("troubleshooting");
+        const issues = [];
+
+        // Check for issues
+        if (lastCheck.recordCount === 0) {
+          issues.push({
+            title: "❌ No Data in KV Storage",
+            severity: "critical",
+            steps: [
+              "Check if browser extension is installed",
+              "Verify extension is enabled (should show green badge)",
+              "Visit fantasy402.com and log in",
+              "Open DevTools → Network tab",
+              "Look for requests to getBetTicker",
+              "Verify requests are redirected to worker URL",
+            ],
+          });
+        } else {
+          const ageMinutes = Math.floor(
+            (Date.now() - lastCheck.newestTimestamp) / 60000,
+          );
+
+          if (ageMinutes >= 60) {
+            issues.push({
+              title: `⚠️ Data is ${Math.floor(ageMinutes / 60)}h old`,
+              severity: "high",
+              steps: [
+                "Open browser extension popup",
+                'Check if extension shows "Enabled"',
+                "Visit fantasy402.com",
+                'Check extension "Intercepts" counter',
+                "If counter not increasing, reinstall extension",
+              ],
+            });
+          } else if (ageMinutes >= 5) {
+            issues.push({
+              title: `⚠️ No recent activity (${ageMinutes}m ago)`,
+              severity: "medium",
+              steps: [
+                "Visit fantasy402.com",
+                "Navigate to betting sections",
+                "Check extension popup for intercept count",
+                "Refresh this diagnostic page",
+              ],
+            });
+          }
         }
 
-        async function generateTroubleshooting() {
-            const troubleDiv = document.getElementById('troubleshooting');
-            const issues = [];
-            
-            // Check for issues
-            if (lastCheck.recordCount === 0) {
-                issues.push({
-                    title: '❌ No Data in KV Storage',
-                    severity: 'critical',
-                    steps: [
-                        'Check if browser extension is installed',
-                        'Verify extension is enabled (should show green badge)',
-                        'Visit fantasy402.com and log in',
-                        'Open DevTools → Network tab',
-                        'Look for requests to getBetTicker',
-                        'Verify requests are redirected to worker URL'
-                    ]
-                });
-            } else {
-                const ageMinutes = Math.floor((Date.now() - lastCheck.newestTimestamp) / 60000);
-                
-                if (ageMinutes >= 60) {
-                    issues.push({
-                        title: `⚠️ Data is ${Math.floor(ageMinutes/60)}h old`,
-                        severity: 'high',
-                        steps: [
-                            'Open browser extension popup',
-                            'Check if extension shows "Enabled"',
-                            'Visit fantasy402.com',
-                            'Check extension "Intercepts" counter',
-                            'If counter not increasing, reinstall extension'
-                        ]
-                    });
-                } else if (ageMinutes >= 5) {
-                    issues.push({
-                        title: `⚠️ No recent activity (${ageMinutes}m ago)`,
-                        severity: 'medium',
-                        steps: [
-                            'Visit fantasy402.com',
-                            'Navigate to betting sections',
-                            'Check extension popup for intercept count',
-                            'Refresh this diagnostic page'
-                        ]
-                    });
-                }
-            }
-            
-            if (issues.length === 0) {
-                troubleDiv.innerHTML = `
+        if (issues.length === 0) {
+          troubleDiv.innerHTML = `
                     <div class="bg-green-900/30 border border-green-500/50 rounded p-4">
                         <div class="font-bold text-green-400 text-lg">✅ System Working Correctly</div>
                         <div class="mt-2 text-sm">No issues detected. Data flow is normal.</div>
                     </div>
                 `;
-                return;
-            }
-            
-            troubleDiv.innerHTML = issues.map(issue => `
-                <div class="bg-${issue.severity === 'critical' ? 'red' : issue.severity === 'high' ? 'yellow' : 'blue'}-900/30 border border-${issue.severity === 'critical' ? 'red' : issue.severity === 'high' ? 'yellow' : 'blue'}-500/50 rounded p-4">
+          return;
+        }
+
+        troubleDiv.innerHTML = issues
+          .map(
+            (issue) => `
+                <div class="bg-${issue.severity === "critical" ? "red" : issue.severity === "high" ? "yellow" : "blue"}-900/30 border border-${issue.severity === "critical" ? "red" : issue.severity === "high" ? "yellow" : "blue"}-500/50 rounded p-4">
                     <div class="font-bold text-lg mb-2">${issue.title}</div>
                     <div class="text-xs text-white/80 mb-2">Follow these steps:</div>
                     <ol class="list-decimal ml-5 text-sm space-y-1">
-                        ${issue.steps.map(step => `<li>${step}</li>`).join('')}
+                        ${issue.steps.map((step) => `<li>${step}</li>`).join("")}
                     </ol>
                 </div>
-            `).join('');
-        }
+            `,
+          )
+          .join("");
+      }
 
-        async function startMonitor() {
-            log('▶️ Starting live monitor...');
-            stopMonitor();
-            
-            monitorInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(`${WORKER_URL}/interceptor/history?limit=5`);
-                    if (response.ok) {
-                        const records = await response.json();
-                        
-                        if (records.length > lastCheck.recordCount) {
-                            log(`🆕 NEW DATA! ${records.length - lastCheck.recordCount} new records`, 'good');
-                            lastCheck.recordCount = records.length;
-                            runFullDiagnostics();
-                        } else if (records.length > 0) {
-                            const timestamps = records.map(r => parseInt(r.key.split(':')[2]));
-                            const newest = Math.max(...timestamps);
-                            
-                            if (newest > lastCheck.newestTimestamp) {
-                                log(`🆕 NEW DATA! Fresh record detected`, 'good');
-                                lastCheck.newestTimestamp = newest;
-                                runFullDiagnostics();
-                            }
-                        }
-                    }
-                } catch (error) {
-                    log(`❌ Monitor error: ${error.message}`, 'bad');
+      async function startMonitor() {
+        log("▶️ Starting live monitor...");
+        stopMonitor();
+
+        monitorInterval = setInterval(async () => {
+          try {
+            const response = await fetch(
+              `${WORKER_URL}/interceptor/history?limit=5`,
+            );
+            if (response.ok) {
+              const records = await response.json();
+
+              if (records.length > lastCheck.recordCount) {
+                log(
+                  `🆕 NEW DATA! ${records.length - lastCheck.recordCount} new records`,
+                  "good",
+                );
+                lastCheck.recordCount = records.length;
+                runFullDiagnostics();
+              } else if (records.length > 0) {
+                const timestamps = records.map((r) =>
+                  parseInt(r.key.split(":")[2]),
+                );
+                const newest = Math.max(...timestamps);
+
+                if (newest > lastCheck.newestTimestamp) {
+                  log(`🆕 NEW DATA! Fresh record detected`, "good");
+                  lastCheck.newestTimestamp = newest;
+                  runFullDiagnostics();
                 }
-            }, 5000);
-        }
-
-        function stopMonitor() {
-            if (monitorInterval) {
-                clearInterval(monitorInterval);
-                monitorInterval = null;
-                log('⏹️ Monitor stopped');
+              }
             }
-        }
+          } catch (error) {
+            log(`❌ Monitor error: ${error.message}`, "bad");
+          }
+        }, 5000);
+      }
 
-        function updateRecordsTable(records) {
-            const tbody = document.getElementById('recordsTable');
-            const now = Date.now();
-            
-            tbody.innerHTML = records.map(r => {
-                const timestamp = parseInt(r.key.split(':')[2]);
-                const age = Math.floor((now - timestamp) / 60000);
-                const ageText = age < 1 ? 'Just now' : age < 60 ? `${age}m` : `${Math.floor(age/60)}h`;
-                const ageClass = age < 5 ? 'status-good' : age < 60 ? 'status-warn' : 'status-bad';
-                
-                return `
+      function stopMonitor() {
+        if (monitorInterval) {
+          clearInterval(monitorInterval);
+          monitorInterval = null;
+          log("⏹️ Monitor stopped");
+        }
+      }
+
+      function updateRecordsTable(records) {
+        const tbody = document.getElementById("recordsTable");
+        const now = Date.now();
+
+        tbody.innerHTML = records
+          .map((r) => {
+            const timestamp = parseInt(r.key.split(":")[2]);
+            const age = Math.floor((now - timestamp) / 60000);
+            const ageText =
+              age < 1
+                ? "Just now"
+                : age < 60
+                  ? `${age}m`
+                  : `${Math.floor(age / 60)}h`;
+            const ageClass =
+              age < 5 ? "status-good" : age < 60 ? "status-warn" : "status-bad";
+
+            return `
                     <tr class="border-b border-white/5 hover:bg-white/5">
                         <td class="py-2 px-2 text-xs">${new Date(timestamp).toLocaleString()}</td>
                         <td class="py-2 px-2 text-xs ${ageClass} font-bold">${ageText}</td>
                         <td class="py-2 px-2 text-xs">${r.metadata.status}</td>
                         <td class="py-2 px-2 text-xs text-right">${formatBytes(r.metadata.contentLength)}</td>
-                        <td class="py-2 px-2 text-xs monospace">${r.metadata.ip.split(':').pop()}</td>
+                        <td class="py-2 px-2 text-xs monospace">${r.metadata.ip.split(":").pop()}</td>
                         <td class="py-2 px-2 text-xs">
                             <button onclick="viewRecord('${r.key}')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">
                                 View
@@ -413,69 +514,83 @@
                         </td>
                     </tr>
                 `;
-            }).join('');
-        }
+          })
+          .join("");
+      }
 
-        async function viewRecord(key) {
-            try {
-                const response = await fetch(`${WORKER_URL}/interceptor/response?key=${key}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Record data:', data);
-                    alert(`Record ${key}\n\nSize: ${data.body.length} bytes\nStatus: ${data.metadata.status}\nIP: ${data.metadata.ip}`);
-                }
-            } catch (error) {
-                alert(`Error: ${error.message}`);
-            }
-        }
-
-        function addTest(name, result, status = 'neutral') {
-            const container = document.getElementById('systemTests');
-            const existing = Array.from(container.children).find(el => 
-                el.textContent.includes(name)
+      async function viewRecord(key) {
+        try {
+          const response = await fetch(
+            `${WORKER_URL}/interceptor/response?key=${key}`,
+          );
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Record data:", data);
+            alert(
+              `Record ${key}\n\nSize: ${data.body.length} bytes\nStatus: ${data.metadata.status}\nIP: ${data.metadata.ip}`,
             );
-            
-            const html = `
+          }
+        } catch (error) {
+          alert(`Error: ${error.message}`);
+        }
+      }
+
+      function addTest(name, result, status = "neutral") {
+        const container = document.getElementById("systemTests");
+        const existing = Array.from(container.children).find((el) =>
+          el.textContent.includes(name),
+        );
+
+        const html = `
                 <div class="flex justify-between items-center p-2 bg-white/5 rounded">
                     <span>${name}</span>
                     <span class="font-bold ${
-                        status === 'good' ? 'status-good' : 
-                        status === 'bad' ? 'status-bad' : 
-                        status === 'warn' ? 'status-warn' : ''
+                      status === "good"
+                        ? "status-good"
+                        : status === "bad"
+                          ? "status-bad"
+                          : status === "warn"
+                            ? "status-warn"
+                            : ""
                     }">${result}</span>
                 </div>
             `;
-            
-            if (existing) {
-                existing.outerHTML = html;
-            } else {
-                container.innerHTML += html;
-            }
-        }
 
-        function log(message, type = 'info') {
-            const logDiv = document.getElementById('liveMonitor');
-            const timestamp = new Date().toLocaleTimeString();
-            const color = type === 'good' ? 'text-green-400' : type === 'bad' ? 'text-red-400' : 'text-blue-400';
-            
-            const entry = document.createElement('div');
-            entry.className = color;
-            entry.textContent = `[${timestamp}] ${message}`;
-            
-            logDiv.insertBefore(entry, logDiv.firstChild);
-            
-            while (logDiv.children.length > 50) {
-                logDiv.removeChild(logDiv.lastChild);
-            }
+        if (existing) {
+          existing.outerHTML = html;
+        } else {
+          container.innerHTML += html;
         }
+      }
 
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      function log(message, type = "info") {
+        const logDiv = document.getElementById("liveMonitor");
+        const timestamp = new Date().toLocaleTimeString();
+        const color =
+          type === "good"
+            ? "text-green-400"
+            : type === "bad"
+              ? "text-red-400"
+              : "text-blue-400";
+
+        const entry = document.createElement("div");
+        entry.className = color;
+        entry.textContent = `[${timestamp}] ${message}`;
+
+        logDiv.insertBefore(entry, logDiv.firstChild);
+
+        while (logDiv.children.length > 50) {
+          logDiv.removeChild(logDiv.lastChild);
         }
+      }
+
+      function formatBytes(bytes) {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
     </script>
-</body>
+  </body>
 </html>

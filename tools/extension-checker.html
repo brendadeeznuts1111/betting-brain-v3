@@ -1,183 +1,264 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🔍 Extension Health Check</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
     </style>
-</head>
-<body class="p-6">
+  </head>
+  <body class="p-6">
     <div class="max-w-4xl mx-auto">
-        <div class="glass rounded-2xl p-8 text-white">
-            <h1 class="text-3xl font-bold mb-6">🔍 Browser Extension Health Check</h1>
-            
-            <div class="space-y-6">
-                <!-- Installation Check -->
-                <div class="bg-white/10 rounded-lg p-6">
-                    <h2 class="text-xl font-bold mb-4">📦 Installation Status</h2>
-                    <div class="bg-green-900/30 border border-green-500/50 rounded p-3 mb-4 text-sm">
-                        <strong>✅ FIXED:</strong> Icon issue resolved - extension now uses SVG icons
-                    </div>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex items-start gap-3">
-                            <span>1️⃣</span>
-                            <div>
-                                <div class="font-bold">Check Extension Installation</div>
-                                <div class="text-white/80">Go to: <code class="bg-black/30 px-2 py-1 rounded">chrome://extensions/</code></div>
-                                <div class="text-white/80 mt-1">Look for: <strong>"BetTicker Interceptor Proxy"</strong></div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start gap-3">
-                            <span>2️⃣</span>
-                            <div>
-                                <div class="font-bold">Verify Extension is Enabled</div>
-                                <div class="text-white/80">Toggle switch should be ON (blue)</div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start gap-3">
-                            <span>3️⃣</span>
-                            <div>
-                                <div class="font-bold">Check Extension Popup</div>
-                                <div class="text-white/80">Click extension icon → Should show "Status: Enabled"</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div class="glass rounded-2xl p-8 text-white">
+        <h1 class="text-3xl font-bold mb-6">
+          🔍 Browser Extension Health Check
+        </h1>
 
-                <!-- Live Test -->
-                <div class="bg-white/10 rounded-lg p-6">
-                    <h2 class="text-xl font-bold mb-4">🧪 Live Redirection Test</h2>
-                    <p class="text-sm text-white/80 mb-4">
-                        This test will check if requests are being redirected correctly.
-                    </p>
-                    
-                    <button onclick="testRedirection()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition">
-                        🚀 Test Redirection Now
-                    </button>
-                    
-                    <div id="testResult" class="mt-4 p-4 bg-black/30 rounded text-sm font-mono hidden"></div>
-                </div>
-
-                <!-- Manual Steps -->
-                <div class="bg-white/10 rounded-lg p-6">
-                    <h2 class="text-xl font-bold mb-4">👀 Manual Verification Steps</h2>
-                    <ol class="list-decimal ml-5 space-y-3 text-sm">
-                        <li>
-                            <strong>Open fantasy402.com</strong>
-                            <div class="text-white/80 mt-1">Navigate to the betting site</div>
-                        </li>
-                        <li>
-                            <strong>Open DevTools</strong>
-                            <div class="text-white/80 mt-1">Press F12 or Right-click → Inspect</div>
-                        </li>
-                        <li>
-                            <strong>Go to Network Tab</strong>
-                            <div class="text-white/80 mt-1">Click "Network" in DevTools</div>
-                        </li>
-                        <li>
-                            <strong>Filter for "getBetTicker"</strong>
-                            <div class="text-white/80 mt-1">Type in filter box: <code class="bg-black/30 px-2 py-1 rounded">getBetTicker</code></div>
-                        </li>
-                        <li>
-                            <strong>Navigate betting pages</strong>
-                            <div class="text-white/80 mt-1">Click around to trigger API calls</div>
-                        </li>
-                        <li>
-                            <strong>Check Request URLs</strong>
-                            <div class="text-white/80 mt-1">URLs should show: <code class="bg-black/30 px-2 py-1 rounded text-xs">betting-brain-v3.nolarose1968-806.workers.dev</code></div>
-                            <div class="text-white/80 mt-1">NOT: <code class="bg-black/30 px-2 py-1 rounded text-xs line-through">fantasy402.com</code></div>
-                        </li>
-                    </ol>
-                </div>
-
-                <!-- Troubleshooting -->
-                <div class="bg-red-900/30 border border-red-500/50 rounded-lg p-6">
-                    <h2 class="text-xl font-bold mb-4">🔧 If Extension Not Working</h2>
-                    <div class="space-y-3 text-sm">
-                        <div>
-                            <strong>1. Reload Extension</strong>
-                            <div class="text-white/80">Go to chrome://extensions/ → Click reload icon</div>
-                        </div>
-                        <div>
-                            <strong>2. Check Permissions</strong>
-                            <div class="text-white/80">Extension needs: declarativeNetRequest, storage</div>
-                            <div class="text-white/80">Host permissions: fantasy402.com, workers.dev</div>
-                        </div>
-                        <div>
-                            <strong>3. Reinstall Extension</strong>
-                            <div class="text-white/80">Remove → Load unpacked again from browser-extension/ folder</div>
-                        </div>
-                        <div>
-                            <strong>4. Check Browser Console</strong>
-                            <div class="text-white/80">Open extension popup → Right-click → Inspect → Look for errors</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Links -->
-                <div class="bg-white/10 rounded-lg p-6">
-                    <h2 class="text-xl font-bold mb-4">�🔗 Quick Links</h2>
-                    <div class="grid grid-cols-2 gap-3">
-                        <a href="chrome://extensions/" target="_blank" class="block bg-blue-600 hover:bg-blue-700 text-center py-3 rounded-lg font-bold transition">
-                            Chrome Extensions
-                        </a>
-                        <a href="https://fantasy402.com" target="_blank" class="block bg-purple-600 hover:bg-purple-700 text-center py-3 rounded-lg font-bold transition">
-                            Open Target Site
-                        </a>
-                        <a href="https://betting-brain-v3.nolarose1968-806.workers.dev/health" target="_blank" class="block bg-green-600 hover:bg-green-700 text-center py-3 rounded-lg font-bold transition">
-                            Worker Health
-                        </a>
-                        <a href="../diagnostic-suite.html" class="block bg-indigo-600 hover:bg-indigo-700 text-center py-3 rounded-lg font-bold transition">
-                            Full Diagnostics
-                        </a>
-                    </div>
-                </div>
+        <div class="space-y-6">
+          <!-- Installation Check -->
+          <div class="bg-white/10 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">📦 Installation Status</h2>
+            <div
+              class="bg-green-900/30 border border-green-500/50 rounded p-3 mb-4 text-sm"
+            >
+              <strong>✅ FIXED:</strong> Icon issue resolved - extension now
+              uses SVG icons
             </div>
+            <div class="space-y-3 text-sm">
+              <div class="flex items-start gap-3">
+                <span>1️⃣</span>
+                <div>
+                  <div class="font-bold">Check Extension Installation</div>
+                  <div class="text-white/80">
+                    Go to:
+                    <code class="bg-black/30 px-2 py-1 rounded"
+                      >chrome://extensions/</code
+                    >
+                  </div>
+                  <div class="text-white/80 mt-1">
+                    Look for: <strong>"BetTicker Interceptor Proxy"</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <span>2️⃣</span>
+                <div>
+                  <div class="font-bold">Verify Extension is Enabled</div>
+                  <div class="text-white/80">
+                    Toggle switch should be ON (blue)
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <span>3️⃣</span>
+                <div>
+                  <div class="font-bold">Check Extension Popup</div>
+                  <div class="text-white/80">
+                    Click extension icon → Should show "Status: Enabled"
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Test -->
+          <div class="bg-white/10 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">🧪 Live Redirection Test</h2>
+            <p class="text-sm text-white/80 mb-4">
+              This test will check if requests are being redirected correctly.
+            </p>
+
+            <button
+              onclick="testRedirection()"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition"
+            >
+              🚀 Test Redirection Now
+            </button>
+
+            <div
+              id="testResult"
+              class="mt-4 p-4 bg-black/30 rounded text-sm font-mono hidden"
+            ></div>
+          </div>
+
+          <!-- Manual Steps -->
+          <div class="bg-white/10 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">👀 Manual Verification Steps</h2>
+            <ol class="list-decimal ml-5 space-y-3 text-sm">
+              <li>
+                <strong>Open fantasy402.com</strong>
+                <div class="text-white/80 mt-1">
+                  Navigate to the betting site
+                </div>
+              </li>
+              <li>
+                <strong>Open DevTools</strong>
+                <div class="text-white/80 mt-1">
+                  Press F12 or Right-click → Inspect
+                </div>
+              </li>
+              <li>
+                <strong>Go to Network Tab</strong>
+                <div class="text-white/80 mt-1">
+                  Click "Network" in DevTools
+                </div>
+              </li>
+              <li>
+                <strong>Filter for "getBetTicker"</strong>
+                <div class="text-white/80 mt-1">
+                  Type in filter box:
+                  <code class="bg-black/30 px-2 py-1 rounded"
+                    >getBetTicker</code
+                  >
+                </div>
+              </li>
+              <li>
+                <strong>Navigate betting pages</strong>
+                <div class="text-white/80 mt-1">
+                  Click around to trigger API calls
+                </div>
+              </li>
+              <li>
+                <strong>Check Request URLs</strong>
+                <div class="text-white/80 mt-1">
+                  URLs should show:
+                  <code class="bg-black/30 px-2 py-1 rounded text-xs"
+                    >betting-brain-v3.nolarose1968-806.workers.dev</code
+                  >
+                </div>
+                <div class="text-white/80 mt-1">
+                  NOT:
+                  <code
+                    class="bg-black/30 px-2 py-1 rounded text-xs line-through"
+                    >fantasy402.com</code
+                  >
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <!-- Troubleshooting -->
+          <div class="bg-red-900/30 border border-red-500/50 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">🔧 If Extension Not Working</h2>
+            <div class="space-y-3 text-sm">
+              <div>
+                <strong>1. Reload Extension</strong>
+                <div class="text-white/80">
+                  Go to chrome://extensions/ → Click reload icon
+                </div>
+              </div>
+              <div>
+                <strong>2. Check Permissions</strong>
+                <div class="text-white/80">
+                  Extension needs: declarativeNetRequest, storage
+                </div>
+                <div class="text-white/80">
+                  Host permissions: fantasy402.com, workers.dev
+                </div>
+              </div>
+              <div>
+                <strong>3. Reinstall Extension</strong>
+                <div class="text-white/80">
+                  Remove → Load unpacked again from browser-extension/ folder
+                </div>
+              </div>
+              <div>
+                <strong>4. Check Browser Console</strong>
+                <div class="text-white/80">
+                  Open extension popup → Right-click → Inspect → Look for errors
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="bg-white/10 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">�🔗 Quick Links</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <a
+                href="chrome://extensions/"
+                target="_blank"
+                class="block bg-blue-600 hover:bg-blue-700 text-center py-3 rounded-lg font-bold transition"
+              >
+                Chrome Extensions
+              </a>
+              <a
+                href="https://fantasy402.com"
+                target="_blank"
+                class="block bg-purple-600 hover:bg-purple-700 text-center py-3 rounded-lg font-bold transition"
+              >
+                Open Target Site
+              </a>
+              <a
+                href="https://betting-brain-v3.nolarose1968-806.workers.dev/health"
+                target="_blank"
+                class="block bg-green-600 hover:bg-green-700 text-center py-3 rounded-lg font-bold transition"
+              >
+                Worker Health
+              </a>
+              <a
+                href="../diagnostic-suite.html"
+                class="block bg-indigo-600 hover:bg-indigo-700 text-center py-3 rounded-lg font-bold transition"
+              >
+                Full Diagnostics
+              </a>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <script>
-        async function testRedirection() {
-            const resultDiv = document.getElementById('testResult');
-            resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '🧪 Testing redirection...\n';
-            
-            try {
-                // Test if we can reach the worker
-                resultDiv.innerHTML += '\n📡 Step 1: Testing worker accessibility...\n';
-                const healthResponse = await fetch('https://betting-brain-v3.nolarose1968-806.workers.dev/health');
-                
-                if (healthResponse.ok) {
-                    resultDiv.innerHTML += '✅ Worker is accessible!\n';
-                    const data = await response.json();
-                    resultDiv.innerHTML += `   Version: ${data.version}\n`;
-                } else {
-                    resultDiv.innerHTML += `❌ Worker returned HTTP ${healthResponse.status}\n`;
-                }
-                
-                // Check extension presence
-                resultDiv.innerHTML += '\n🔍 Step 2: Checking extension status...\n';
-                resultDiv.innerHTML += 'ℹ️  Cannot directly detect extension from webpage\n';
-                resultDiv.innerHTML += 'ℹ️  You must manually check chrome://extensions/\n';
-                
-                // Provide next steps
-                resultDiv.innerHTML += '\n📋 Next Steps:\n';
-                resultDiv.innerHTML += '1. Open fantasy402.com\n';
-                resultDiv.innerHTML += '2. Open DevTools (F12)\n';
-                resultDiv.innerHTML += '3. Go to Network tab\n';
-                resultDiv.innerHTML += '4. Look for "getBetTicker" requests\n';
-                resultDiv.innerHTML += '5. Check if URL contains "workers.dev"\n';
-                
-            } catch (error) {
-                resultDiv.innerHTML += `\n❌ Error: ${error.message}\n`;
-            }
+      async function testRedirection() {
+        const resultDiv = document.getElementById("testResult");
+        resultDiv.classList.remove("hidden");
+        resultDiv.innerHTML = "🧪 Testing redirection...\n";
+
+        try {
+          // Test if we can reach the worker
+          resultDiv.innerHTML +=
+            "\n📡 Step 1: Testing worker accessibility...\n";
+          const healthResponse = await fetch(
+            "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+          );
+
+          if (healthResponse.ok) {
+            resultDiv.innerHTML += "✅ Worker is accessible!\n";
+            const data = await response.json();
+            resultDiv.innerHTML += `   Version: ${data.version}\n`;
+          } else {
+            resultDiv.innerHTML += `❌ Worker returned HTTP ${healthResponse.status}\n`;
+          }
+
+          // Check extension presence
+          resultDiv.innerHTML += "\n🔍 Step 2: Checking extension status...\n";
+          resultDiv.innerHTML +=
+            "ℹ️  Cannot directly detect extension from webpage\n";
+          resultDiv.innerHTML +=
+            "ℹ️  You must manually check chrome://extensions/\n";
+
+          // Provide next steps
+          resultDiv.innerHTML += "\n📋 Next Steps:\n";
+          resultDiv.innerHTML += "1. Open fantasy402.com\n";
+          resultDiv.innerHTML += "2. Open DevTools (F12)\n";
+          resultDiv.innerHTML += "3. Go to Network tab\n";
+          resultDiv.innerHTML += '4. Look for "getBetTicker" requests\n';
+          resultDiv.innerHTML += '5. Check if URL contains "workers.dev"\n';
+        } catch (error) {
+          resultDiv.innerHTML += `\n❌ Error: ${error.message}\n`;
         }
+      }
     </script>
-</body>
+  </body>
 </html>

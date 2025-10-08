@@ -1,513 +1,665 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🧪 BetTicker Extension Test Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        body { background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%); }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .test-pass { background: rgba(16, 185, 129, 0.2); border-left: 4px solid #10b981; }
-        .test-fail { background: rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; }
-        .test-warning { background: rgba(245, 158, 11, 0.2); border-left: 4px solid #f59e0b; }
-        .test-pending { background: rgba(107, 114, 128, 0.2); border-left: 4px solid #6b7280; }
-        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .health-a { background: linear-gradient(135deg, #10b981, #059669); }
-        .health-b { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .health-c { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .health-d { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .health-f { background: linear-gradient(135deg, #7f1d1d, #991b1b); }
+      body {
+        background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .test-pass {
+        background: rgba(16, 185, 129, 0.2);
+        border-left: 4px solid #10b981;
+      }
+      .test-fail {
+        background: rgba(239, 68, 68, 0.2);
+        border-left: 4px solid #ef4444;
+      }
+      .test-warning {
+        background: rgba(245, 158, 11, 0.2);
+        border-left: 4px solid #f59e0b;
+      }
+      .test-pending {
+        background: rgba(107, 114, 128, 0.2);
+        border-left: 4px solid #6b7280;
+      }
+      .pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+      .health-a {
+        background: linear-gradient(135deg, #10b981, #059669);
+      }
+      .health-b {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+      }
+      .health-c {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+      }
+      .health-d {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+      }
+      .health-f {
+        background: linear-gradient(135deg, #7f1d1d, #991b1b);
+      }
     </style>
-</head>
-<body class="p-6">
+  </head>
+  <body class="p-6">
     <div class="max-w-6xl mx-auto">
-        <div class="glass rounded-2xl p-8 text-white">
-            <h1 class="text-3xl font-bold mb-2">🧪 BetTicker Extension Test Suite</h1>
-            <p class="text-white/80 mb-4">Comprehensive testing and monitoring for the interceptor extension</p>
-            
-            <!-- Context Banner -->
-            <div id="contextBanner" class="mb-6 rounded-lg p-4 text-sm"></div>
-            
-            <!-- Health Score -->
-            <div id="healthScore" class="glass rounded-lg p-6 mb-6 hidden">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-2xl font-bold mb-1">System Health</h2>
-                        <p class="text-sm text-white/70">Overall extension performance</p>
-                    </div>
-                    <div id="healthGrade" class="health-a text-6xl font-black px-8 py-4 rounded-2xl shadow-2xl">
-                        A
-                    </div>
-                </div>
-                <div class="grid grid-cols-4 gap-4 mt-4 text-center text-sm">
-                    <div>
-                        <div class="text-2xl font-bold" id="healthTests">-</div>
-                        <div class="text-white/70">Tests Pass</div>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-bold" id="healthSuccess">-</div>
-                        <div class="text-white/70">Success Rate</div>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-bold" id="healthLatency">-</div>
-                        <div class="text-white/70">Avg Latency</div>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-bold" id="healthUptime">-</div>
-                        <div class="text-white/70">Uptime</div>
-                    </div>
-                </div>
-            </div>
+      <div class="glass rounded-2xl p-8 text-white">
+        <h1 class="text-3xl font-bold mb-2">
+          🧪 BetTicker Extension Test Suite
+        </h1>
+        <p class="text-white/80 mb-4">
+          Comprehensive testing and monitoring for the interceptor extension
+        </p>
 
-            <!-- Quick Actions -->
-            <div class="grid grid-cols-5 gap-3 mb-6">
-                <button onclick="runAllTests()" class="bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg font-bold transition">
-                    🚀 Run Tests
-                </button>
-                <button onclick="checkExtension()" class="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg font-bold transition">
-                    🔍 Check
-                </button>
-                <button onclick="toggleDemoMode()" id="demoBtn" class="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg font-bold transition">
-                    🎭 Demo
-                </button>
-                <button onclick="exportData()" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-3 rounded-lg font-bold transition">
-                    💾 Export
-                </button>
-                <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 px-4 py-3 rounded-lg font-bold transition">
-                    🔄 Reset
-                </button>
-            </div>
-            
-            <!-- Demo Mode Banner -->
-            <div id="demoBanner" class="bg-purple-900/50 border-2 border-purple-400 rounded-lg p-4 mb-6 hidden">
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl">🎭</span>
-                    <div class="flex-1">
-                        <div class="font-bold text-purple-200">Demo Mode Active</div>
-                        <div class="text-sm text-white/70">Showing simulated stats for testing purposes</div>
-                    </div>
-                    <div class="pulse text-2xl">⚡</div>
-                </div>
-            </div>
+        <!-- Context Banner -->
+        <div id="contextBanner" class="mb-6 rounded-lg p-4 text-sm"></div>
 
-            <!-- Overall Status -->
-            <div id="overallStatus" class="glass rounded-lg p-6 mb-6 hidden">
-                <h2 class="text-xl font-bold mb-3">📋 Test Summary</h2>
-                <div class="grid grid-cols-4 gap-4 text-center">
-                    <div>
-                        <div class="text-3xl font-bold text-green-400" id="passedCount">0</div>
-                        <div class="text-sm text-white/80">Passed</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-bold text-red-400" id="failedCount">0</div>
-                        <div class="text-sm text-white/80">Failed</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-bold text-gray-400" id="skippedCount">0</div>
-                        <div class="text-sm text-white/80">Skipped</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-bold text-blue-400" id="totalTime">0ms</div>
-                        <div class="text-sm text-white/80">Total Time</div>
-                    </div>
-                </div>
+        <!-- Health Score -->
+        <div id="healthScore" class="glass rounded-lg p-6 mb-6 hidden">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold mb-1">System Health</h2>
+              <p class="text-sm text-white/70">Overall extension performance</p>
             </div>
-
-            <!-- Test Results -->
-            <div class="space-y-4" id="testResults"></div>
-
-            <!-- Live Stats -->
-            <div id="liveStats" class="glass rounded-lg p-6 mt-6 hidden">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-bold">📊 Live Extension Stats</h2>
-                    <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition">
-                        🔄 Auto: ON
-                    </button>
-                </div>
-                <div id="statsContent" class="space-y-2 text-sm font-mono mb-6"></div>
-                
-                <!-- Stats Chart -->
-                <div class="bg-white/10 rounded-lg p-4 mt-4">
-                    <h3 class="text-sm font-bold mb-3 text-white/90">📈 Performance Over Time</h3>
-                    <div class="relative" style="height: 250px;">
-                        <canvas id="statsChart"></canvas>
-                    </div>
-                </div>
+            <div
+              id="healthGrade"
+              class="health-a text-6xl font-black px-8 py-4 rounded-2xl shadow-2xl"
+            >
+              A
             </div>
-
-            <!-- Console Output -->
-            <div class="glass rounded-lg p-6 mt-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-bold">📝 Test Console</h2>
-                    <div class="flex gap-2">
-                        <select id="logFilter" onchange="filterLogs()" class="text-xs bg-white/20 px-2 py-1 rounded border border-white/30 text-white">
-                            <option value="all">All Logs</option>
-                            <option value="info">ℹ️ Info</option>
-                            <option value="success">✅ Success</option>
-                            <option value="warn">⚠️ Warnings</option>
-                            <option value="error">❌ Errors</option>
-                        </select>
-                        <button onclick="clearConsole()" class="text-xs bg-red-600/80 hover:bg-red-700 px-3 py-1 rounded transition">
-                            🗑️ Clear
-                        </button>
-                        <button onclick="exportLogs()" class="text-xs bg-blue-600/80 hover:bg-blue-700 px-3 py-1 rounded transition">
-                            💾 Export
-                        </button>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <input 
-                        type="text" 
-                        id="logSearch" 
-                        placeholder="🔍 Search logs..." 
-                        onkeyup="searchLogs()"
-                        class="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-xs text-white placeholder-white/50 focus:border-blue-400 focus:outline-none"
-                    />
-                </div>
-                <div class="flex items-center gap-4 mb-3 text-xs text-white/70">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-                        <span>Info: <span id="infoCount" class="font-bold">0</span></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-green-400"></span>
-                        <span>Success: <span id="successCount" class="font-bold">0</span></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
-                        <span>Warn: <span id="warnCount" class="font-bold">0</span></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-red-400"></span>
-                        <span>Error: <span id="errorCount" class="font-bold">0</span></span>
-                    </div>
-                </div>
-                <div id="console" class="bg-black/30 rounded p-4 font-mono text-xs max-h-96 overflow-y-auto border border-white/10"></div>
+          </div>
+          <div class="grid grid-cols-4 gap-4 mt-4 text-center text-sm">
+            <div>
+              <div class="text-2xl font-bold" id="healthTests">-</div>
+              <div class="text-white/70">Tests Pass</div>
             </div>
+            <div>
+              <div class="text-2xl font-bold" id="healthSuccess">-</div>
+              <div class="text-white/70">Success Rate</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold" id="healthLatency">-</div>
+              <div class="text-white/70">Avg Latency</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold" id="healthUptime">-</div>
+              <div class="text-white/70">Uptime</div>
+            </div>
+          </div>
         </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-5 gap-3 mb-6">
+          <button
+            onclick="runAllTests()"
+            class="bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg font-bold transition"
+          >
+            🚀 Run Tests
+          </button>
+          <button
+            onclick="checkExtension()"
+            class="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg font-bold transition"
+          >
+            🔍 Check
+          </button>
+          <button
+            onclick="toggleDemoMode()"
+            id="demoBtn"
+            class="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg font-bold transition"
+          >
+            🎭 Demo
+          </button>
+          <button
+            onclick="exportData()"
+            class="bg-indigo-600 hover:bg-indigo-700 px-4 py-3 rounded-lg font-bold transition"
+          >
+            💾 Export
+          </button>
+          <button
+            onclick="resetAll()"
+            class="bg-red-600 hover:bg-red-700 px-4 py-3 rounded-lg font-bold transition"
+          >
+            🔄 Reset
+          </button>
+        </div>
+
+        <!-- Demo Mode Banner -->
+        <div
+          id="demoBanner"
+          class="bg-purple-900/50 border-2 border-purple-400 rounded-lg p-4 mb-6 hidden"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🎭</span>
+            <div class="flex-1">
+              <div class="font-bold text-purple-200">Demo Mode Active</div>
+              <div class="text-sm text-white/70">
+                Showing simulated stats for testing purposes
+              </div>
+            </div>
+            <div class="pulse text-2xl">⚡</div>
+          </div>
+        </div>
+
+        <!-- Overall Status -->
+        <div id="overallStatus" class="glass rounded-lg p-6 mb-6 hidden">
+          <h2 class="text-xl font-bold mb-3">📋 Test Summary</h2>
+          <div class="grid grid-cols-4 gap-4 text-center">
+            <div>
+              <div class="text-3xl font-bold text-green-400" id="passedCount">
+                0
+              </div>
+              <div class="text-sm text-white/80">Passed</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-red-400" id="failedCount">
+                0
+              </div>
+              <div class="text-sm text-white/80">Failed</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-gray-400" id="skippedCount">
+                0
+              </div>
+              <div class="text-sm text-white/80">Skipped</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-blue-400" id="totalTime">
+                0ms
+              </div>
+              <div class="text-sm text-white/80">Total Time</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="space-y-4" id="testResults"></div>
+
+        <!-- Live Stats -->
+        <div id="liveStats" class="glass rounded-lg p-6 mt-6 hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">📊 Live Extension Stats</h2>
+            <button
+              onclick="toggleAutoRefresh()"
+              id="autoRefreshBtn"
+              class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition"
+            >
+              🔄 Auto: ON
+            </button>
+          </div>
+          <div id="statsContent" class="space-y-2 text-sm font-mono mb-6"></div>
+
+          <!-- Stats Chart -->
+          <div class="bg-white/10 rounded-lg p-4 mt-4">
+            <h3 class="text-sm font-bold mb-3 text-white/90">
+              📈 Performance Over Time
+            </h3>
+            <div class="relative" style="height: 250px">
+              <canvas id="statsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Console Output -->
+        <div class="glass rounded-lg p-6 mt-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">📝 Test Console</h2>
+            <div class="flex gap-2">
+              <select
+                id="logFilter"
+                onchange="filterLogs()"
+                class="text-xs bg-white/20 px-2 py-1 rounded border border-white/30 text-white"
+              >
+                <option value="all">All Logs</option>
+                <option value="info">ℹ️ Info</option>
+                <option value="success">✅ Success</option>
+                <option value="warn">⚠️ Warnings</option>
+                <option value="error">❌ Errors</option>
+              </select>
+              <button
+                onclick="clearConsole()"
+                class="text-xs bg-red-600/80 hover:bg-red-700 px-3 py-1 rounded transition"
+              >
+                🗑️ Clear
+              </button>
+              <button
+                onclick="exportLogs()"
+                class="text-xs bg-blue-600/80 hover:bg-blue-700 px-3 py-1 rounded transition"
+              >
+                💾 Export
+              </button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <input
+              type="text"
+              id="logSearch"
+              placeholder="🔍 Search logs..."
+              onkeyup="searchLogs()"
+              class="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-xs text-white placeholder-white/50 focus:border-blue-400 focus:outline-none"
+            />
+          </div>
+          <div class="flex items-center gap-4 mb-3 text-xs text-white/70">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+              <span>Info: <span id="infoCount" class="font-bold">0</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-400"></span>
+              <span
+                >Success:
+                <span id="successCount" class="font-bold">0</span></span
+              >
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+              <span>Warn: <span id="warnCount" class="font-bold">0</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span>
+              <span
+                >Error: <span id="errorCount" class="font-bold">0</span></span
+              >
+            </div>
+          </div>
+          <div
+            id="console"
+            class="bg-black/30 rounded p-4 font-mono text-xs max-h-96 overflow-y-auto border border-white/10"
+          ></div>
+        </div>
+      </div>
     </div>
 
     <script>
-        const tests = [
-            {
-                name: 'Extension Installed',
-                description: 'Check if BetTicker extension is installed and accessible',
-                test: async () => {
-                    // Extension stats only available on fantasy402.com
-                    if (!window.location.href.includes('fantasy402.com')) {
-                        console.log('ℹ️ Extension stats require fantasy402.com context');
-                        return 'skip'; // Return skip instead of false
-                    }
-                    return window.__betTickerStats !== undefined;
-                }
-            },
-            {
-                name: 'Content Script Loaded',
-                description: 'Verify content script injected fetch interceptor',
-                test: async () => {
-                    return typeof window.fetch !== 'undefined' && window.fetch.toString().includes('native');
-                }
-            },
-            {
-                name: 'Stats Tracking Active',
-                description: 'Check if stats object is tracking intercepts',
-                test: async () => {
-                    if (!window.location.href.includes('fantasy402.com')) {
-                        console.log('ℹ️ Stats tracking requires fantasy402.com context');
-                        return 'skip';
-                    }
-                    if (!window.__betTickerStats) return false;
-                    return typeof window.__betTickerStats.intercepted === 'number';
-                }
-            },
-            {
-                name: 'Worker Health Check',
-                description: 'Verify Cloudflare Worker is responding',
-                test: async () => {
-                    const response = await fetch('https://betting-brain-v3.nolarose1968-806.workers.dev/health');
-                    return response.ok;
-                }
-            },
-            {
-                name: 'Worker Returns JSON',
-                description: 'Check worker health endpoint returns valid JSON',
-                test: async () => {
-                    const response = await fetch('https://betting-brain-v3.nolarose1968-806.workers.dev/health');
-                    const data = await response.json();
-                    return data.status === 'healthy' && data.version;
-                }
-            },
-            {
-                name: 'CORS Headers Present',
-                description: 'Verify worker includes CORS headers',
-                test: async () => {
-                    const response = await fetch('https://betting-brain-v3.nolarose1968-806.workers.dev/health');
-                    const corsHeader = response.headers.get('access-control-allow-origin');
-                    console.log(`CORS header: ${corsHeader}`);
-                    // Accept both '*' and specific origins
-                    return corsHeader !== null && corsHeader.length > 0;
-                }
-            },
-            {
-                name: 'Cookie Detection',
-                description: 'Check if content script can read cookies',
-                test: async () => {
-                    // Check if on file:// protocol (cookies won't work)
-                    if (window.location.protocol === 'file:') {
-                        console.log('ℹ️ Cookie testing requires HTTP/HTTPS context');
-                        return 'skip';
-                    }
-                    // Set a test cookie
-                    document.cookie = 'test_cookie=test_value; path=/';
-                    const hasCookies = document.cookie.includes('test_cookie');
-                    // Clean up
-                    document.cookie = 'test_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-                    return hasCookies;
-                }
-            },
-            {
-                name: 'Fetch Override Working',
-                description: 'Test that fetch has been intercepted',
-                test: async () => {
-                    // Check if our wrapper is in place
-                    return window.fetch !== window.originalFetch;
-                }
-            },
-            {
-                name: 'Extension Storage Access',
-                description: 'Verify extension can access chrome.storage',
-                test: async () => {
-                    // chrome.storage only accessible from extension contexts
-                    try {
-                        if (typeof chrome === 'undefined' || !chrome.storage) {
-                            console.log('ℹ️ chrome.storage requires extension context');
-                            return 'skip';
-                        }
-                        return true;
-                    } catch {
-                        return 'skip';
-                    }
-                }
-            },
-            {
-                name: 'Worker Response Time < 2s',
-                description: 'Check worker responds within acceptable time',
-                test: async () => {
-                    const start = Date.now();
-                    await fetch('https://betting-brain-v3.nolarose1968-806.workers.dev/health');
-                    const duration = Date.now() - start;
-                    return duration < 2000;
-                }
-            },
-        ];
+      const tests = [
+        {
+          name: "Extension Installed",
+          description:
+            "Check if BetTicker extension is installed and accessible",
+          test: async () => {
+            // Extension stats only available on fantasy402.com
+            if (!window.location.href.includes("fantasy402.com")) {
+              console.log("ℹ️ Extension stats require fantasy402.com context");
+              return "skip"; // Return skip instead of false
+            }
+            return window.__betTickerStats !== undefined;
+          },
+        },
+        {
+          name: "Content Script Loaded",
+          description: "Verify content script injected fetch interceptor",
+          test: async () => {
+            return (
+              typeof window.fetch !== "undefined" &&
+              window.fetch.toString().includes("native")
+            );
+          },
+        },
+        {
+          name: "Stats Tracking Active",
+          description: "Check if stats object is tracking intercepts",
+          test: async () => {
+            if (!window.location.href.includes("fantasy402.com")) {
+              console.log("ℹ️ Stats tracking requires fantasy402.com context");
+              return "skip";
+            }
+            if (!window.__betTickerStats) return false;
+            return typeof window.__betTickerStats.intercepted === "number";
+          },
+        },
+        {
+          name: "Worker Health Check",
+          description: "Verify Cloudflare Worker is responding",
+          test: async () => {
+            const response = await fetch(
+              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+            );
+            return response.ok;
+          },
+        },
+        {
+          name: "Worker Returns JSON",
+          description: "Check worker health endpoint returns valid JSON",
+          test: async () => {
+            const response = await fetch(
+              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+            );
+            const data = await response.json();
+            return data.status === "healthy" && data.version;
+          },
+        },
+        {
+          name: "CORS Headers Present",
+          description: "Verify worker includes CORS headers",
+          test: async () => {
+            const response = await fetch(
+              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+            );
+            const corsHeader = response.headers.get(
+              "access-control-allow-origin",
+            );
+            console.log(`CORS header: ${corsHeader}`);
+            // Accept both '*' and specific origins
+            return corsHeader !== null && corsHeader.length > 0;
+          },
+        },
+        {
+          name: "Cookie Detection",
+          description: "Check if content script can read cookies",
+          test: async () => {
+            // Check if on file:// protocol (cookies won't work)
+            if (window.location.protocol === "file:") {
+              console.log("ℹ️ Cookie testing requires HTTP/HTTPS context");
+              return "skip";
+            }
+            // Set a test cookie
+            document.cookie = "test_cookie=test_value; path=/";
+            const hasCookies = document.cookie.includes("test_cookie");
+            // Clean up
+            document.cookie =
+              "test_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+            return hasCookies;
+          },
+        },
+        {
+          name: "Fetch Override Working",
+          description: "Test that fetch has been intercepted",
+          test: async () => {
+            // Check if our wrapper is in place
+            return window.fetch !== window.originalFetch;
+          },
+        },
+        {
+          name: "Extension Storage Access",
+          description: "Verify extension can access chrome.storage",
+          test: async () => {
+            // chrome.storage only accessible from extension contexts
+            try {
+              if (typeof chrome === "undefined" || !chrome.storage) {
+                console.log("ℹ️ chrome.storage requires extension context");
+                return "skip";
+              }
+              return true;
+            } catch {
+              return "skip";
+            }
+          },
+        },
+        {
+          name: "Worker Response Time < 2s",
+          description: "Check worker responds within acceptable time",
+          test: async () => {
+            const start = Date.now();
+            await fetch(
+              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+            );
+            const duration = Date.now() - start;
+            return duration < 2000;
+          },
+        },
+      ];
 
-        let testState = {
-            passed: 0,
-            failed: 0,
-            skipped: 0,
-            totalTime: 0,
-            results: []
+      let testState = {
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        totalTime: 0,
+        results: [],
+      };
+
+      let logHistory = [];
+      let logCounts = { info: 0, success: 0, warn: 0, error: 0 };
+
+      function log(message, type = "info", details = null) {
+        const timestamp = new Date().toLocaleTimeString("en-US", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          fractionalSecondDigits: 3,
+        });
+        const logEntry = {
+          timestamp,
+          message,
+          type,
+          details,
+          id: Date.now() + Math.random(),
         };
 
-        let logHistory = [];
-        let logCounts = { info: 0, success: 0, warn: 0, error: 0 };
+        logHistory.push(logEntry);
+        logCounts[type]++;
 
-        function log(message, type = 'info', details = null) {
-            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
-            const logEntry = {
-                timestamp,
-                message,
-                type,
-                details,
-                id: Date.now() + Math.random()
-            };
-            
-            logHistory.push(logEntry);
-            logCounts[type]++;
-            
-            const consoleEl = document.getElementById('console');
-            const icon = {
-                'info': 'ℹ️',
-                'success': '✅',
-                'error': '❌',
-                'warn': '⚠️'
-            }[type] || '📌';
-            
-            const color = {
-                'info': 'text-blue-400',
-                'success': 'text-green-400',
-                'error': 'text-red-400',
-                'warn': 'text-yellow-400'
-            }[type] || 'text-white';
-            
-            const bgColor = {
-                'info': 'bg-blue-900/20',
-                'success': 'bg-green-900/20',
-                'error': 'bg-red-900/20',
-                'warn': 'bg-yellow-900/20'
-            }[type] || 'bg-white/5';
-            
-            const detailsHtml = details ? `<div class="ml-8 mt-1 text-white/60 text-[10px] border-l-2 border-white/20 pl-2">${JSON.stringify(details, null, 2)}</div>` : '';
-            
-            const logLine = `
-                <div class="log-entry ${bgColor} ${color} p-2 mb-1 rounded border-l-4 border-${type === 'error' ? 'red' : type === 'warn' ? 'yellow' : type === 'success' ? 'green' : 'blue'}-500/50 hover:bg-white/10 transition" data-type="${type}">
+        const consoleEl = document.getElementById("console");
+        const icon =
+          {
+            info: "ℹ️",
+            success: "✅",
+            error: "❌",
+            warn: "⚠️",
+          }[type] || "📌";
+
+        const color =
+          {
+            info: "text-blue-400",
+            success: "text-green-400",
+            error: "text-red-400",
+            warn: "text-yellow-400",
+          }[type] || "text-white";
+
+        const bgColor =
+          {
+            info: "bg-blue-900/20",
+            success: "bg-green-900/20",
+            error: "bg-red-900/20",
+            warn: "bg-yellow-900/20",
+          }[type] || "bg-white/5";
+
+        const detailsHtml = details
+          ? `<div class="ml-8 mt-1 text-white/60 text-[10px] border-l-2 border-white/20 pl-2">${JSON.stringify(details, null, 2)}</div>`
+          : "";
+
+        const logLine = `
+                <div class="log-entry ${bgColor} ${color} p-2 mb-1 rounded border-l-4 border-${type === "error" ? "red" : type === "warn" ? "yellow" : type === "success" ? "green" : "blue"}-500/50 hover:bg-white/10 transition" data-type="${type}">
                     <span class="text-white/50 text-[10px]">[${timestamp}]</span>
                     <span class="ml-2">${icon}</span>
                     <span class="ml-2">${message}</span>
                     ${detailsHtml}
                 </div>
             `;
-            
-            consoleEl.innerHTML += logLine;
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-            
-            // Update counts
-            updateLogCounts();
-            
-            // Keep history manageable
-            if (logHistory.length > 500) {
-                logHistory.shift();
-            }
-        }
 
-        function updateLogCounts() {
-            document.getElementById('infoCount').textContent = logCounts.info;
-            document.getElementById('successCount').textContent = logCounts.success;
-            document.getElementById('warnCount').textContent = logCounts.warn;
-            document.getElementById('errorCount').textContent = logCounts.error;
-        }
+        consoleEl.innerHTML += logLine;
+        consoleEl.scrollTop = consoleEl.scrollHeight;
 
-        function clearConsole() {
-            if (confirm('Clear all logs?')) {
-                document.getElementById('console').innerHTML = '';
-                logHistory = [];
-                logCounts = { info: 0, success: 0, warn: 0, error: 0 };
-                updateLogCounts();
-                log('Console cleared', 'info');
-            }
-        }
+        // Update counts
+        updateLogCounts();
 
-        function filterLogs() {
-            const filter = document.getElementById('logFilter').value;
-            const logs = document.querySelectorAll('.log-entry');
-            
-            logs.forEach(log => {
-                if (filter === 'all') {
-                    log.style.display = 'block';
-                } else {
-                    log.style.display = log.dataset.type === filter ? 'block' : 'none';
-                }
-            });
-            
-            log(`Filtered to: ${filter}`, 'info');
+        // Keep history manageable
+        if (logHistory.length > 500) {
+          logHistory.shift();
         }
+      }
 
-        function searchLogs() {
-            const searchTerm = document.getElementById('logSearch').value.toLowerCase();
-            const logs = document.querySelectorAll('.log-entry');
-            
-            logs.forEach(log => {
-                const text = log.textContent.toLowerCase();
-                log.style.display = text.includes(searchTerm) ? 'block' : 'none';
-            });
+      function updateLogCounts() {
+        document.getElementById("infoCount").textContent = logCounts.info;
+        document.getElementById("successCount").textContent = logCounts.success;
+        document.getElementById("warnCount").textContent = logCounts.warn;
+        document.getElementById("errorCount").textContent = logCounts.error;
+      }
+
+      function clearConsole() {
+        if (confirm("Clear all logs?")) {
+          document.getElementById("console").innerHTML = "";
+          logHistory = [];
+          logCounts = { info: 0, success: 0, warn: 0, error: 0 };
+          updateLogCounts();
+          log("Console cleared", "info");
         }
+      }
 
-        function exportLogs() {
-            const logsData = {
-                timestamp: new Date().toISOString(),
-                totalLogs: logHistory.length,
-                counts: logCounts,
-                logs: logHistory
+      function filterLogs() {
+        const filter = document.getElementById("logFilter").value;
+        const logs = document.querySelectorAll(".log-entry");
+
+        logs.forEach((log) => {
+          if (filter === "all") {
+            log.style.display = "block";
+          } else {
+            log.style.display = log.dataset.type === filter ? "block" : "none";
+          }
+        });
+
+        log(`Filtered to: ${filter}`, "info");
+      }
+
+      function searchLogs() {
+        const searchTerm = document
+          .getElementById("logSearch")
+          .value.toLowerCase();
+        const logs = document.querySelectorAll(".log-entry");
+
+        logs.forEach((log) => {
+          const text = log.textContent.toLowerCase();
+          log.style.display = text.includes(searchTerm) ? "block" : "none";
+        });
+      }
+
+      function exportLogs() {
+        const logsData = {
+          timestamp: new Date().toISOString(),
+          totalLogs: logHistory.length,
+          counts: logCounts,
+          logs: logHistory,
+        };
+
+        const dataStr = JSON.stringify(logsData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `test-logs-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        log("📥 Logs exported successfully", "success", {
+          count: logHistory.length,
+        });
+      }
+
+      async function runTest(test) {
+        log(`Running: ${test.name}`, "info");
+        const startTime = Date.now();
+
+        try {
+          const result = await test.test();
+          const duration = Date.now() - startTime;
+
+          if (result === "skip") {
+            log(`⏭️ SKIP: ${test.name} (context not available)`, "warn");
+            testState.skipped++;
+            return {
+              status: "skip",
+              duration,
+              error: "Test skipped - requires specific context",
             };
-            
-            const dataStr = JSON.stringify(logsData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `test-logs-${Date.now()}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
-            log('📥 Logs exported successfully', 'success', { count: logHistory.length });
+          } else if (result) {
+            log(`✅ PASS: ${test.name} (${duration}ms)`, "success");
+            testState.passed++;
+            return { status: "pass", duration, error: null };
+          } else {
+            log(`❌ FAIL: ${test.name} - returned false`, "error");
+            testState.failed++;
+            return { status: "fail", duration, error: "Test returned false" };
+          }
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          log(`❌ FAIL: ${test.name} - ${error.message}`, "error");
+          testState.failed++;
+          return { status: "fail", duration, error: error.message };
+        }
+      }
+
+      async function runAllTests() {
+        log("🚀 Starting test suite...", "info");
+        testState = {
+          passed: 0,
+          failed: 0,
+          skipped: 0,
+          totalTime: 0,
+          results: [],
+        };
+
+        const testResults = document.getElementById("testResults");
+        testResults.innerHTML = "";
+        document.getElementById("overallStatus").classList.remove("hidden");
+
+        for (const test of tests) {
+          const result = await runTest(test);
+          testState.totalTime += result.duration;
+          testState.results.push({ test, result });
+
+          // Update UI
+          const testCard = createTestCard(test, result);
+          testResults.appendChild(testCard);
+
+          // Update summary
+          document.getElementById("passedCount").textContent = testState.passed;
+          document.getElementById("failedCount").textContent = testState.failed;
+          document.getElementById("skippedCount").textContent =
+            testState.skipped;
+          document.getElementById("totalTime").textContent =
+            testState.totalTime + "ms";
+
+          // Small delay between tests
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
-        async function runTest(test) {
-            log(`Running: ${test.name}`, 'info');
-            const startTime = Date.now();
-            
-            try {
-                const result = await test.test();
-                const duration = Date.now() - startTime;
-                
-                if (result === 'skip') {
-                    log(`⏭️ SKIP: ${test.name} (context not available)`, 'warn');
-                    testState.skipped++;
-                    return { status: 'skip', duration, error: 'Test skipped - requires specific context' };
-                } else if (result) {
-                    log(`✅ PASS: ${test.name} (${duration}ms)`, 'success');
-                    testState.passed++;
-                    return { status: 'pass', duration, error: null };
-                } else {
-                    log(`❌ FAIL: ${test.name} - returned false`, 'error');
-                    testState.failed++;
-                    return { status: 'fail', duration, error: 'Test returned false' };
-                }
-            } catch (error) {
-                const duration = Date.now() - startTime;
-                log(`❌ FAIL: ${test.name} - ${error.message}`, 'error');
-                testState.failed++;
-                return { status: 'fail', duration, error: error.message };
-            }
-        }
+        log(
+          `✨ Test suite complete: ${testState.passed}/${tests.length} passed`,
+          testState.failed === 0 ? "success" : "warn",
+        );
+      }
 
-        async function runAllTests() {
-            log('🚀 Starting test suite...', 'info');
-            testState = { passed: 0, failed: 0, skipped: 0, totalTime: 0, results: [] };
-            
-            const testResults = document.getElementById('testResults');
-            testResults.innerHTML = '';
-            document.getElementById('overallStatus').classList.remove('hidden');
-            
-            for (const test of tests) {
-                const result = await runTest(test);
-                testState.totalTime += result.duration;
-                testState.results.push({ test, result });
-                
-                // Update UI
-                const testCard = createTestCard(test, result);
-                testResults.appendChild(testCard);
-                
-                // Update summary
-                document.getElementById('passedCount').textContent = testState.passed;
-                document.getElementById('failedCount').textContent = testState.failed;
-                document.getElementById('skippedCount').textContent = testState.skipped;
-                document.getElementById('totalTime').textContent = testState.totalTime + 'ms';
-                
-                // Small delay between tests
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            
-            log(`✨ Test suite complete: ${testState.passed}/${tests.length} passed`, 
-                testState.failed === 0 ? 'success' : 'warn');
-        }
+      function createTestCard(test, result) {
+        const card = document.createElement("div");
+        const statusClass =
+          result.status === "pass"
+            ? "test-pass"
+            : result.status === "fail"
+              ? "test-fail"
+              : result.status === "skip"
+                ? "test-warning"
+                : "test-pending";
+        const icon =
+          result.status === "pass"
+            ? "✅"
+            : result.status === "fail"
+              ? "❌"
+              : result.status === "skip"
+                ? "⏭️"
+                : "⏳";
 
-        function createTestCard(test, result) {
-            const card = document.createElement('div');
-            const statusClass = result.status === 'pass' ? 'test-pass' : 
-                               result.status === 'fail' ? 'test-fail' : 
-                               result.status === 'skip' ? 'test-warning' : 'test-pending';
-            const icon = result.status === 'pass' ? '✅' : 
-                        result.status === 'fail' ? '❌' : 
-                        result.status === 'skip' ? '⏭️' : '⏳';
-            
-            card.className = `${statusClass} rounded-lg p-4`;
-            card.innerHTML = `
+        card.className = `${statusClass} rounded-lg p-4`;
+        card.innerHTML = `
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <div class="flex items-center gap-2 mb-1">
@@ -516,175 +668,236 @@
                             <span class="text-xs text-white/60">${result.duration}ms</span>
                         </div>
                         <div class="text-sm text-white/80">${test.description}</div>
-                        ${result.error ? `<div class="text-sm ${result.status === 'skip' ? 'text-yellow-300' : 'text-red-300'} mt-2">${result.status === 'skip' ? 'ℹ️ ' : 'Error: '}${result.error}</div>` : ''}
+                        ${result.error ? `<div class="text-sm ${result.status === "skip" ? "text-yellow-300" : "text-red-300"} mt-2">${result.status === "skip" ? "ℹ️ " : "Error: "}${result.error}</div>` : ""}
                     </div>
                 </div>
             `;
-            
-            return card;
+
+        return card;
+      }
+
+      async function checkExtension() {
+        log("🔍 Checking extension status...", "info");
+
+        let found = false;
+
+        // Check Method 1: Content script stats
+        if (window.__betTickerStats) {
+          const stats = window.__betTickerStats;
+          found = true;
+          log(`✅ Extension active (content script detected)`, "success");
+          log(`   📊 Intercepted: ${stats.intercepted}`, "info");
+          log(`   ✅ Successful: ${stats.successful}`, "success");
+          log(
+            `   ❌ Failed: ${stats.failed}`,
+            stats.failed > 0 ? "error" : "info",
+          );
+          log(
+            `   🔄 Fallbacks: ${stats.fallback}`,
+            stats.fallback > 0 ? "warn" : "info",
+          );
+
+          if (stats.intercepted > 0) {
+            const successRate = (
+              (stats.successful / stats.intercepted) *
+              100
+            ).toFixed(1);
+            log(
+              `   📈 Success rate: ${successRate}%`,
+              successRate > 90
+                ? "success"
+                : successRate > 50
+                  ? "warn"
+                  : "error",
+            );
+          }
+
+          if (stats.errors && stats.errors.length > 0) {
+            log(`   ⚠️ Recent errors:`, "warn");
+            stats.errors.slice(-3).forEach((err) => {
+              log(`     • ${err.error}`, "error");
+            });
+          }
         }
 
-        async function checkExtension() {
-            log('🔍 Checking extension status...', 'info');
-            
-            let found = false;
-            
-            // Check Method 1: Content script stats
-            if (window.__betTickerStats) {
-                const stats = window.__betTickerStats;
-                found = true;
-                log(`✅ Extension active (content script detected)`, 'success');
-                log(`   📊 Intercepted: ${stats.intercepted}`, 'info');
-                log(`   ✅ Successful: ${stats.successful}`, 'success');
-                log(`   ❌ Failed: ${stats.failed}`, stats.failed > 0 ? 'error' : 'info');
-                log(`   🔄 Fallbacks: ${stats.fallback}`, stats.fallback > 0 ? 'warn' : 'info');
-                
-                if (stats.intercepted > 0) {
-                    const successRate = ((stats.successful / stats.intercepted) * 100).toFixed(1);
-                    log(`   📈 Success rate: ${successRate}%`, successRate > 90 ? 'success' : successRate > 50 ? 'warn' : 'error');
-                }
-                
-                if (stats.errors && stats.errors.length > 0) {
-                    log(`   ⚠️ Recent errors:`, 'warn');
-                    stats.errors.slice(-3).forEach(err => {
-                        log(`     • ${err.error}`, 'error');
-                    });
-                }
+        // Check Method 2: Extension API
+        if (!found && typeof chrome !== "undefined" && chrome.runtime) {
+          try {
+            const response = await new Promise((resolve, reject) => {
+              chrome.runtime.sendMessage({ action: "getStats" }, (resp) => {
+                if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+                else resolve(resp);
+              });
+              setTimeout(() => reject(new Error("Timeout")), 1000);
+            });
+
+            if (response) {
+              found = true;
+              log(
+                `✅ Extension active (background service detected)`,
+                "success",
+              );
+              log(
+                `   Status: ${response.enabled ? "🟢 Enabled" : "🔴 Disabled"}`,
+                response.enabled ? "success" : "error",
+              );
+              log(`   📊 Intercepts: ${response.interceptCount || 0}`, "info");
+              if (response.successRate) {
+                log(`   📈 Success rate: ${response.successRate}%`, "info");
+              }
             }
-            
-            // Check Method 2: Extension API
-            if (!found && typeof chrome !== 'undefined' && chrome.runtime) {
-                try {
-                    const response = await new Promise((resolve, reject) => {
-                        chrome.runtime.sendMessage({ action: 'getStats' }, (resp) => {
-                            if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
-                            else resolve(resp);
-                        });
-                        setTimeout(() => reject(new Error('Timeout')), 1000);
-                    });
-                    
-                    if (response) {
-                        found = true;
-                        log(`✅ Extension active (background service detected)`, 'success');
-                        log(`   Status: ${response.enabled ? '🟢 Enabled' : '🔴 Disabled'}`, response.enabled ? 'success' : 'error');
-                        log(`   📊 Intercepts: ${response.interceptCount || 0}`, 'info');
-                        if (response.successRate) {
-                            log(`   📈 Success rate: ${response.successRate}%`, 'info');
-                        }
-                    }
-                } catch (err) {
-                    log(`⚠️ Could not communicate with extension: ${err.message}`, 'warn');
-                }
-            }
-            
-            if (!found) {
-                const url = window.location.href;
-                log(`❌ Extension not detected in this context`, 'error');
-                
-                if (url.startsWith('file://')) {
-                    log(`   💡 You're on file:// - extension features are limited here`, 'warn');
-                    log(`   💡 Try opening fantasy402.com for full functionality`, 'info');
-                } else if (url.includes('fantasy402.com')) {
-                    log(`   ⚠️ You're on fantasy402.com but extension not detected`, 'warn');
-                    log(`   💡 Check that extension is installed: chrome://extensions/`, 'info');
-                    log(`   💡 Make sure extension is enabled (toggle should be ON)`, 'info');
-                    log(`   💡 Try reloading this page (Ctrl+R / Cmd+R)`, 'info');
+          } catch (err) {
+            log(
+              `⚠️ Could not communicate with extension: ${err.message}`,
+              "warn",
+            );
+          }
+        }
+
+        if (!found) {
+          const url = window.location.href;
+          log(`❌ Extension not detected in this context`, "error");
+
+          if (url.startsWith("file://")) {
+            log(
+              `   💡 You're on file:// - extension features are limited here`,
+              "warn",
+            );
+            log(
+              `   💡 Try opening fantasy402.com for full functionality`,
+              "info",
+            );
+          } else if (url.includes("fantasy402.com")) {
+            log(
+              `   ⚠️ You're on fantasy402.com but extension not detected`,
+              "warn",
+            );
+            log(
+              `   💡 Check that extension is installed: chrome://extensions/`,
+              "info",
+            );
+            log(
+              `   💡 Make sure extension is enabled (toggle should be ON)`,
+              "info",
+            );
+            log(`   💡 Try reloading this page (Ctrl+R / Cmd+R)`, "info");
+          } else {
+            log(`   💡 Content script only runs on fantasy402.com`, "info");
+            log(
+              `   💡 Navigate to fantasy402.com to see live interception`,
+              "info",
+            );
+          }
+
+          log(
+            `   🔗 Quick check: chrome://extensions/ → Look for "BetTicker Interceptor Proxy"`,
+            "info",
+          );
+        }
+      }
+
+      async function checkStats() {
+        const statsDiv = document.getElementById("liveStats");
+        const content = document.getElementById("statsContent");
+        statsDiv.classList.remove("hidden");
+
+        // Try multiple methods to get stats
+        let stats = null;
+        let source = null;
+
+        // Method 1: Check for content script stats (works on fantasy402.com)
+        if (window.__betTickerStats) {
+          stats = window.__betTickerStats;
+          source = "content-script";
+          log("📊 Stats from content script (fantasy402.com)", "success");
+        }
+
+        // Method 2: Try to get stats from extension via chrome API
+        if (
+          !stats &&
+          typeof chrome !== "undefined" &&
+          chrome.runtime &&
+          chrome.runtime.sendMessage
+        ) {
+          try {
+            stats = await new Promise((resolve, reject) => {
+              chrome.runtime.sendMessage({ action: "getStats" }, (response) => {
+                if (chrome.runtime.lastError) {
+                  reject(chrome.runtime.lastError);
                 } else {
-                    log(`   💡 Content script only runs on fantasy402.com`, 'info');
-                    log(`   💡 Navigate to fantasy402.com to see live interception`, 'info');
+                  resolve(response);
                 }
-                
-                log(`   🔗 Quick check: chrome://extensions/ → Look for "BetTicker Interceptor Proxy"`, 'info');
-            }
+              });
+              // Timeout after 1 second
+              setTimeout(() => reject(new Error("Timeout")), 1000);
+            });
+            source = "extension-api";
+            log("📊 Stats from extension background service", "success");
+          } catch (err) {
+            log(
+              `⚠️ Could not get stats from extension: ${err.message}`,
+              "warn",
+            );
+          }
         }
 
-        async function checkStats() {
-            const statsDiv = document.getElementById('liveStats');
-            const content = document.getElementById('statsContent');
-            statsDiv.classList.remove('hidden');
-            
-            // Try multiple methods to get stats
-            let stats = null;
-            let source = null;
-            
-            // Method 1: Check for content script stats (works on fantasy402.com)
-            if (window.__betTickerStats) {
-                stats = window.__betTickerStats;
-                source = 'content-script';
-                log('📊 Stats from content script (fantasy402.com)', 'success');
-            }
-            
-            // Method 2: Try to get stats from extension via chrome API
-            if (!stats && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-                try {
-                    stats = await new Promise((resolve, reject) => {
-                        chrome.runtime.sendMessage({ action: 'getStats' }, (response) => {
-                            if (chrome.runtime.lastError) {
-                                reject(chrome.runtime.lastError);
-                            } else {
-                                resolve(response);
-                            }
-                        });
-                        // Timeout after 1 second
-                        setTimeout(() => reject(new Error('Timeout')), 1000);
-                    });
-                    source = 'extension-api';
-                    log('📊 Stats from extension background service', 'success');
-                } catch (err) {
-                    log(`⚠️ Could not get stats from extension: ${err.message}`, 'warn');
-                }
-            }
-            
-            if (stats) {
-                const successRate = stats.intercepted > 0 || stats.interceptCount > 0
-                    ? (((stats.successful || stats.successCount || 0) / (stats.intercepted || stats.interceptCount || 1)) * 100).toFixed(1) 
-                    : 0;
-                
-                const intercepted = stats.intercepted || stats.interceptCount || 0;
-                const successful = stats.successful || stats.successCount || 0;
-                const failed = stats.failed || stats.failureCount || 0;
-                const fallback = stats.fallback || stats.fallbackCount || 0;
-                const errorCount = stats.errors?.length || 0;
-                
-                content.innerHTML = `
-                    <div class="text-xs text-white/60 mb-3">📍 Source: ${source === 'content-script' ? 'Content Script (fantasy402.com)' : 'Extension API'}</div>
+        if (stats) {
+          const successRate =
+            stats.intercepted > 0 || stats.interceptCount > 0
+              ? (
+                  ((stats.successful || stats.successCount || 0) /
+                    (stats.intercepted || stats.interceptCount || 1)) *
+                  100
+                ).toFixed(1)
+              : 0;
+
+          const intercepted = stats.intercepted || stats.interceptCount || 0;
+          const successful = stats.successful || stats.successCount || 0;
+          const failed = stats.failed || stats.failureCount || 0;
+          const fallback = stats.fallback || stats.fallbackCount || 0;
+          const errorCount = stats.errors?.length || 0;
+
+          content.innerHTML = `
+                    <div class="text-xs text-white/60 mb-3">📍 Source: ${source === "content-script" ? "Content Script (fantasy402.com)" : "Extension API"}</div>
                     <div>📊 Total Intercepted: <span class="text-blue-400">${intercepted}</span></div>
                     <div>✅ Successful: <span class="text-green-400">${successful}</span></div>
                     <div>❌ Failed: <span class="text-red-400">${failed}</span></div>
                     <div>🔄 Fallbacks: <span class="text-yellow-400">${fallback}</span></div>
                     <div>📈 Success Rate: <span class="text-purple-400">${successRate}%</span></div>
                     <div>⚠️ Errors Logged: <span class="text-orange-400">${errorCount}</span></div>
-                    ${stats.lastIntercept ? `<div class="mt-2 text-xs">🕒 Last: ${new Date(stats.lastIntercept).toLocaleTimeString()}</div>` : ''}
+                    ${stats.lastIntercept ? `<div class="mt-2 text-xs">🕒 Last: ${new Date(stats.lastIntercept).toLocaleTimeString()}</div>` : ""}
                 `;
-                
-                // Update health score and chart with real stats
-                const normalizedStats = {
-                    interceptCount: intercepted,
-                    successCount: successful,
-                    failureCount: failed,
-                    fallbackCount: fallback,
-                    successRate: successRate,
-                    lastIntercept: stats.lastIntercept || new Date().toISOString()
-                };
-                updateHealthScore(normalizedStats);
-                updateChart(normalizedStats);
-                
-                log('📊 Stats refreshed successfully', 'success');
-            } else {
-                const currentUrl = window.location.href;
-                const isFile = currentUrl.startsWith('file://');
-                const isLocalhost = currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1');
-                const isFantasy = currentUrl.includes('fantasy402.com');
-                
-                content.innerHTML = `
+
+          // Update health score and chart with real stats
+          const normalizedStats = {
+            interceptCount: intercepted,
+            successCount: successful,
+            failureCount: failed,
+            fallbackCount: fallback,
+            successRate: successRate,
+            lastIntercept: stats.lastIntercept || new Date().toISOString(),
+          };
+          updateHealthScore(normalizedStats);
+          updateChart(normalizedStats);
+
+          log("📊 Stats refreshed successfully", "success");
+        } else {
+          const currentUrl = window.location.href;
+          const isFile = currentUrl.startsWith("file://");
+          const isLocalhost =
+            currentUrl.includes("localhost") ||
+            currentUrl.includes("127.0.0.1");
+          const isFantasy = currentUrl.includes("fantasy402.com");
+
+          content.innerHTML = `
                     <div class="text-red-400 mb-3">❌ Extension stats not available</div>
                     <div class="text-sm text-white/80 space-y-2">
                         <div class="font-bold text-yellow-300">📍 Current Context:</div>
                         <div class="pl-4">
-                            ${isFile ? '🔴 File protocol - Extension features limited' : ''}
-                            ${isLocalhost ? '🟡 Localhost - Content script not injected' : ''}
-                            ${isFantasy ? '🟢 fantasy402.com - Should work!' : ''}
-                            ${!isFile && !isLocalhost && !isFantasy ? '🔴 Wrong domain - Need fantasy402.com' : ''}
+                            ${isFile ? "🔴 File protocol - Extension features limited" : ""}
+                            ${isLocalhost ? "🟡 Localhost - Content script not injected" : ""}
+                            ${isFantasy ? "🟢 fantasy402.com - Should work!" : ""}
+                            ${!isFile && !isLocalhost && !isFantasy ? "🔴 Wrong domain - Need fantasy402.com" : ""}
                         </div>
                         <div class="font-bold text-blue-300 mt-3">💡 To view live stats:</div>
                         <div class="pl-4 text-xs space-y-1">
@@ -696,38 +909,45 @@
                         </div>
                     </div>
                 `;
-                
-                log('❌ Cannot access extension stats - wrong context', 'error');
-                log('💡 Open fantasy402.com or check extension popup', 'info');
-            }
-        }
 
-        function resetAll() {
-            log('🔄 Resetting...', 'warn');
-            testState = { passed: 0, failed: 0, skipped: 0, totalTime: 0, results: [] };
-            document.getElementById('testResults').innerHTML = '';
-            document.getElementById('overallStatus').classList.add('hidden');
-            document.getElementById('liveStats').classList.add('hidden');
-            document.getElementById('console').innerHTML = '';
-            log('✅ Reset complete', 'success');
+          log("❌ Cannot access extension stats - wrong context", "error");
+          log("💡 Open fantasy402.com or check extension popup", "info");
         }
+      }
 
-        // Update context banner
-        function updateContextBanner() {
-            const banner = document.getElementById('contextBanner');
-            const url = window.location.href;
-            const isFile = url.startsWith('file://');
-            const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
-            const isFantasy = url.includes('fantasy402.com');
-            const hasContentScript = !!window.__betTickerStats;
-            const hasChromeAPI = typeof chrome !== 'undefined' && chrome.runtime;
-            
-            let bannerClass = '';
-            let bannerContent = '';
-            
-            if (isFantasy && hasContentScript) {
-                bannerClass = 'bg-green-900/30 border border-green-500';
-                bannerContent = `
+      function resetAll() {
+        log("🔄 Resetting...", "warn");
+        testState = {
+          passed: 0,
+          failed: 0,
+          skipped: 0,
+          totalTime: 0,
+          results: [],
+        };
+        document.getElementById("testResults").innerHTML = "";
+        document.getElementById("overallStatus").classList.add("hidden");
+        document.getElementById("liveStats").classList.add("hidden");
+        document.getElementById("console").innerHTML = "";
+        log("✅ Reset complete", "success");
+      }
+
+      // Update context banner
+      function updateContextBanner() {
+        const banner = document.getElementById("contextBanner");
+        const url = window.location.href;
+        const isFile = url.startsWith("file://");
+        const isLocalhost =
+          url.includes("localhost") || url.includes("127.0.0.1");
+        const isFantasy = url.includes("fantasy402.com");
+        const hasContentScript = !!window.__betTickerStats;
+        const hasChromeAPI = typeof chrome !== "undefined" && chrome.runtime;
+
+        let bannerClass = "";
+        let bannerContent = "";
+
+        if (isFantasy && hasContentScript) {
+          bannerClass = "bg-green-900/30 border border-green-500";
+          bannerContent = `
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🟢</span>
                         <div class="flex-1">
@@ -736,9 +956,9 @@
                         </div>
                     </div>
                 `;
-            } else if (isFantasy && !hasContentScript) {
-                bannerClass = 'bg-yellow-900/30 border border-yellow-500';
-                bannerContent = `
+        } else if (isFantasy && !hasContentScript) {
+          bannerClass = "bg-yellow-900/30 border border-yellow-500";
+          bannerContent = `
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🟡</span>
                         <div class="flex-1">
@@ -751,9 +971,9 @@
                         </div>
                     </div>
                 `;
-            } else if (hasChromeAPI) {
-                bannerClass = 'bg-blue-900/30 border border-blue-500';
-                bannerContent = `
+        } else if (hasChromeAPI) {
+          bannerClass = "bg-blue-900/30 border border-blue-500";
+          bannerContent = `
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🔵</span>
                         <div class="flex-1">
@@ -765,9 +985,9 @@
                         </div>
                     </div>
                 `;
-            } else if (isLocalhost) {
-                bannerClass = 'bg-orange-900/30 border border-orange-500';
-                bannerContent = `
+        } else if (isLocalhost) {
+          bannerClass = "bg-orange-900/30 border border-orange-500";
+          bannerContent = `
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🟠</span>
                         <div class="flex-1">
@@ -779,9 +999,9 @@
                         </div>
                     </div>
                 `;
-            } else if (isFile) {
-                bannerClass = 'bg-red-900/30 border border-red-500';
-                bannerContent = `
+        } else if (isFile) {
+          bannerClass = "bg-red-900/30 border border-red-500";
+          bannerContent = `
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🔴</span>
                         <div class="flex-1">
@@ -793,9 +1013,9 @@
                         </div>
                     </div>
                 `;
-            } else {
-                bannerClass = 'bg-purple-900/30 border border-purple-500';
-                bannerContent = `
+        } else {
+          bannerClass = "bg-purple-900/30 border border-purple-500";
+          bannerContent = `
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🟣</span>
                         <div class="flex-1">
@@ -807,134 +1027,162 @@
                         </div>
                     </div>
                 `;
-            }
-            
-            banner.className = `mb-6 rounded-lg p-4 text-sm ${bannerClass}`;
-            banner.innerHTML = bannerContent;
-        }
-        
-        // Initialize application
-        function initializeApp() {
-            log('🚀 Initializing Extension Test Suite...', 'info');
-            log(`📍 Location: ${window.location.href}`, 'info');
-            log(`🌐 Protocol: ${window.location.protocol}`, 'info');
-            log(`🖥️  User Agent: ${navigator.userAgent.substring(0, 50)}...`, 'info');
-            
-            // Check for Chart.js
-            if (typeof Chart !== 'undefined') {
-                log('✅ Chart.js loaded successfully', 'success', { version: Chart.version });
-            } else {
-                log('⚠️  Chart.js not loaded yet', 'warn');
-            }
-            
-            // Check for extension
-            if (window.__betTickerStats) {
-                log('✅ Extension detected - content script active', 'success');
-            } else if (typeof chrome !== 'undefined' && chrome.runtime) {
-                log('⚠️  Extension API available but content script not active', 'warn');
-            } else {
-                log('ℹ️  Extension not detected (expected on non-fantasy402 domains)', 'info');
-            }
-            
-            updateContextBanner();
-            log('✨ Initialization complete!', 'success');
-            log('💡 Quick actions:', 'info');
-            log('  • Click "🎭 Demo" to simulate extension stats', 'info');
-            log('  • Click "🚀 Run Tests" to verify extension functionality', 'info');
-            log('  • Click "🔍 Check" to inspect extension status', 'info');
-            
-            // Re-check context every 3 seconds in case extension loads
-            setInterval(() => {
-                updateContextBanner();
-            }, 3000);
-        }
-        
-        // Auto-check on load
-        window.addEventListener('load', initializeApp);
-        
-        // Also check when DOM is ready (faster)
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeApp);
-        } else {
-            initializeApp();
         }
 
-        // Update stats periodically
-        let autoRefreshEnabled = true;
-        let statsHistory = [];
-        let performanceChart = null;
-        let demoMode = false;
-        let startTime = Date.now();
-        
+        banner.className = `mb-6 rounded-lg p-4 text-sm ${bannerClass}`;
+        banner.innerHTML = bannerContent;
+      }
+
+      // Initialize application
+      function initializeApp() {
+        log("🚀 Initializing Extension Test Suite...", "info");
+        log(`📍 Location: ${window.location.href}`, "info");
+        log(`🌐 Protocol: ${window.location.protocol}`, "info");
+        log(
+          `🖥️  User Agent: ${navigator.userAgent.substring(0, 50)}...`,
+          "info",
+        );
+
+        // Check for Chart.js
+        if (typeof Chart !== "undefined") {
+          log("✅ Chart.js loaded successfully", "success", {
+            version: Chart.version,
+          });
+        } else {
+          log("⚠️  Chart.js not loaded yet", "warn");
+        }
+
+        // Check for extension
+        if (window.__betTickerStats) {
+          log("✅ Extension detected - content script active", "success");
+        } else if (typeof chrome !== "undefined" && chrome.runtime) {
+          log(
+            "⚠️  Extension API available but content script not active",
+            "warn",
+          );
+        } else {
+          log(
+            "ℹ️  Extension not detected (expected on non-fantasy402 domains)",
+            "info",
+          );
+        }
+
+        updateContextBanner();
+        log("✨ Initialization complete!", "success");
+        log("💡 Quick actions:", "info");
+        log('  • Click "🎭 Demo" to simulate extension stats', "info");
+        log(
+          '  • Click "🚀 Run Tests" to verify extension functionality',
+          "info",
+        );
+        log('  • Click "🔍 Check" to inspect extension status', "info");
+
+        // Re-check context every 3 seconds in case extension loads
         setInterval(() => {
-            if (autoRefreshEnabled && !document.getElementById('liveStats').classList.contains('hidden')) {
-                checkStats();
-            }
-        }, 5000);
-        
-        // Demo Mode Toggle
-        function toggleDemoMode() {
-            demoMode = !demoMode;
-            const demoBanner = document.getElementById('demoBanner');
-            const demoBtn = document.getElementById('demoBtn');
-            
-            if (demoMode) {
-                demoBanner.classList.remove('hidden');
-                demoBtn.classList.add('ring-4', 'ring-purple-400');
-                log('🎭 Demo mode ENABLED', 'success');
-                log('ℹ️  Generating simulated extension stats...', 'info');
-                log('ℹ️  Stats will auto-update every 3 seconds', 'info');
-                log('ℹ️  Chart will populate with trend data', 'info');
-                generateDemoStats();
-            } else {
-                demoBanner.classList.add('hidden');
-                demoBtn.classList.remove('ring-4', 'ring-purple-400');
-                log('🎭 Demo mode DISABLED', 'info');
-                log('ℹ️  Switched back to live data (if available)', 'info');
-                // Clear demo data
-                document.getElementById('liveStats').classList.add('hidden');
-                document.getElementById('healthScore').classList.add('hidden');
-            }
+          updateContextBanner();
+        }, 3000);
+      }
+
+      // Auto-check on load
+      window.addEventListener("load", initializeApp);
+
+      // Also check when DOM is ready (faster)
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeApp);
+      } else {
+        initializeApp();
+      }
+
+      // Update stats periodically
+      let autoRefreshEnabled = true;
+      let statsHistory = [];
+      let performanceChart = null;
+      let demoMode = false;
+      let startTime = Date.now();
+
+      setInterval(() => {
+        if (
+          autoRefreshEnabled &&
+          !document.getElementById("liveStats").classList.contains("hidden")
+        ) {
+          checkStats();
         }
-        
-        // Generate Demo Stats
-        function generateDemoStats() {
-            log('🎲 Generating demo statistics...', 'info');
-            
-            // Generate realistic stats where success + failure + fallback = total
-            const total = Math.floor(Math.random() * 500) + 500; // 500-1000
-            const successRate = (Math.random() * 12) + 88; // 88-100%
-            const successful = Math.floor(total * (successRate / 100));
-            const remaining = total - successful;
-            const failed = Math.floor(remaining * 0.7); // 70% of remaining
-            const fallback = remaining - failed; // Rest are fallbacks
-            
-            const demoStats = {
-                enabled: true,
-                interceptCount: total,
-                successCount: successful,
-                failureCount: failed,
-                fallbackCount: fallback,
-                lastIntercept: new Date(Date.now() - Math.random() * 60000).toISOString(),
-                successRate: successRate.toFixed(1)
-            };
-            
-            log(`📊 Generated stats: ${total} total (${successful} success, ${failed} failed, ${fallback} fallback)`, 'success', {
-                total, successful, failed, fallback, successRate: demoStats.successRate
-            });
-            
-            displayDemoStats(demoStats);
+      }, 5000);
+
+      // Demo Mode Toggle
+      function toggleDemoMode() {
+        demoMode = !demoMode;
+        const demoBanner = document.getElementById("demoBanner");
+        const demoBtn = document.getElementById("demoBtn");
+
+        if (demoMode) {
+          demoBanner.classList.remove("hidden");
+          demoBtn.classList.add("ring-4", "ring-purple-400");
+          log("🎭 Demo mode ENABLED", "success");
+          log("ℹ️  Generating simulated extension stats...", "info");
+          log("ℹ️  Stats will auto-update every 3 seconds", "info");
+          log("ℹ️  Chart will populate with trend data", "info");
+          generateDemoStats();
+        } else {
+          demoBanner.classList.add("hidden");
+          demoBtn.classList.remove("ring-4", "ring-purple-400");
+          log("🎭 Demo mode DISABLED", "info");
+          log("ℹ️  Switched back to live data (if available)", "info");
+          // Clear demo data
+          document.getElementById("liveStats").classList.add("hidden");
+          document.getElementById("healthScore").classList.add("hidden");
         }
-        
-        function displayDemoStats(stats) {
-            const statsDiv = document.getElementById('liveStats');
-            const content = document.getElementById('statsContent');
-            statsDiv.classList.remove('hidden');
-            
-            const successRate = stats.successRate || 
-                ((stats.successCount / stats.interceptCount) * 100).toFixed(1);
-            
-            content.innerHTML = `
+      }
+
+      // Generate Demo Stats
+      function generateDemoStats() {
+        log("🎲 Generating demo statistics...", "info");
+
+        // Generate realistic stats where success + failure + fallback = total
+        const total = Math.floor(Math.random() * 500) + 500; // 500-1000
+        const successRate = Math.random() * 12 + 88; // 88-100%
+        const successful = Math.floor(total * (successRate / 100));
+        const remaining = total - successful;
+        const failed = Math.floor(remaining * 0.7); // 70% of remaining
+        const fallback = remaining - failed; // Rest are fallbacks
+
+        const demoStats = {
+          enabled: true,
+          interceptCount: total,
+          successCount: successful,
+          failureCount: failed,
+          fallbackCount: fallback,
+          lastIntercept: new Date(
+            Date.now() - Math.random() * 60000,
+          ).toISOString(),
+          successRate: successRate.toFixed(1),
+        };
+
+        log(
+          `📊 Generated stats: ${total} total (${successful} success, ${failed} failed, ${fallback} fallback)`,
+          "success",
+          {
+            total,
+            successful,
+            failed,
+            fallback,
+            successRate: demoStats.successRate,
+          },
+        );
+
+        displayDemoStats(demoStats);
+      }
+
+      function displayDemoStats(stats) {
+        const statsDiv = document.getElementById("liveStats");
+        const content = document.getElementById("statsContent");
+        statsDiv.classList.remove("hidden");
+
+        const successRate =
+          stats.successRate ||
+          ((stats.successCount / stats.interceptCount) * 100).toFixed(1);
+
+        content.innerHTML = `
                 <div class="text-xs text-purple-300 mb-3 flex items-center gap-2">
                     <span class="pulse">🎭</span> Demo Mode - Simulated Data
                 </div>
@@ -945,263 +1193,286 @@
                 <div>📈 Success Rate: <span class="text-purple-400">${successRate}%</span></div>
                 <div class="mt-2 text-xs">🕒 Last: ${new Date(stats.lastIntercept).toLocaleTimeString()}</div>
             `;
-            
-            updateHealthScore(stats);
-            updateChart(stats);
-        }
-        
-        // Health Score Calculator
-        function updateHealthScore(stats) {
-            const healthDiv = document.getElementById('healthScore');
-            healthDiv.classList.remove('hidden');
-            
-            const successRate = parseFloat(stats.successRate || 
-                ((stats.successCount / stats.interceptCount) * 100).toFixed(1));
-            
-            // Calculate grade
-            let grade, gradeClass;
-            if (successRate >= 95) {
-                grade = 'A+';
-                gradeClass = 'health-a';
-            } else if (successRate >= 90) {
-                grade = 'A';
-                gradeClass = 'health-a';
-            } else if (successRate >= 85) {
-                grade = 'B';
-                gradeClass = 'health-b';
-            } else if (successRate >= 75) {
-                grade = 'C';
-                gradeClass = 'health-c';
-            } else if (successRate >= 60) {
-                grade = 'D';
-                gradeClass = 'health-d';
-            } else {
-                grade = 'F';
-                gradeClass = 'health-f';
-            }
-            
-            const gradeElement = document.getElementById('healthGrade');
-            gradeElement.textContent = grade;
-            gradeElement.className = `${gradeClass} text-6xl font-black px-8 py-4 rounded-2xl shadow-2xl`;
-            
-            // Update metrics
-            document.getElementById('healthTests').textContent = 
-                `${testState.passed}/${tests.length}`;
-            document.getElementById('healthSuccess').textContent = successRate.toFixed(1) + '%';
-            document.getElementById('healthLatency').textContent = 
-                Math.floor(Math.random() * 100 + 50) + 'ms';
-            
-            const uptime = Math.floor((Date.now() - startTime) / 1000);
-            const uptimeStr = uptime < 60 ? `${uptime}s` : 
-                             uptime < 3600 ? `${Math.floor(uptime/60)}m` : 
-                             `${Math.floor(uptime/3600)}h`;
-            document.getElementById('healthUptime').textContent = uptimeStr;
-        }
-        
-        // Chart Visualization
-        function updateChart(stats) {
-            // Wait for Chart.js to load
-            if (typeof Chart === 'undefined') {
-                log('⏳ Waiting for Chart.js to load...', 'warn');
-                setTimeout(() => updateChart(stats), 500);
-                return;
-            }
 
-            const canvas = document.getElementById('statsChart');
-            if (!canvas) {
-                log('❌ Chart canvas not found', 'error');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                log('❌ Could not get canvas context', 'error');
-                return;
-            }
-            
-            // Add to history
-            const historyEntry = {
-                time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                success: stats.successCount || 0,
-                failed: stats.failureCount || 0,
-                fallback: stats.fallbackCount || 0
-            };
-            
-            statsHistory.push(historyEntry);
-            
-            // Keep only last 12 data points
-            if (statsHistory.length > 12) {
-                statsHistory.shift();
-            }
-            
-            log(`📊 Chart updated with ${statsHistory.length} data points`, 'info', historyEntry);
-            
-            // Destroy existing chart
-            if (performanceChart) {
-                performanceChart.destroy();
-                performanceChart = null;
-            }
-            
-            try {
-                // Create new chart with improved styling
-                performanceChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: statsHistory.map(h => h.time),
-                        datasets: [
-                            {
-                                label: '✅ Successful',
-                                data: statsHistory.map(h => h.success),
-                                borderColor: '#10b981',
-                                backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                                borderWidth: 2,
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                tension: 0.4,
-                                fill: true
-                            },
-                            {
-                                label: '❌ Failed',
-                                data: statsHistory.map(h => h.failed),
-                                borderColor: '#ef4444',
-                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                                borderWidth: 2,
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                tension: 0.4,
-                                fill: true
-                            },
-                            {
-                                label: '🔄 Fallbacks',
-                                data: statsHistory.map(h => h.fallback),
-                                borderColor: '#f59e0b',
-                                backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                                borderWidth: 2,
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                tension: 0.4,
-                                fill: true
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: { 
-                                    color: 'rgba(255, 255, 255, 0.9)', 
-                                    font: { size: 11, weight: 'bold' },
-                                    padding: 15,
-                                    usePointStyle: true
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: 'white',
-                                bodyColor: 'white',
-                                borderColor: 'rgba(255, 255, 255, 0.3)',
-                                borderWidth: 1,
-                                padding: 12,
-                                displayColors: true
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { 
-                                    color: 'rgba(255, 255, 255, 0.8)', 
-                                    font: { size: 10 },
-                                    padding: 8
-                                },
-                                grid: { 
-                                    color: 'rgba(255, 255, 255, 0.1)',
-                                    drawBorder: false
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Count',
-                                    color: 'rgba(255, 255, 255, 0.7)',
-                                    font: { size: 11 }
-                                }
-                            },
-                            x: {
-                                ticks: { 
-                                    color: 'rgba(255, 255, 255, 0.8)', 
-                                    font: { size: 9 },
-                                    maxRotation: 45,
-                                    minRotation: 0
-                                },
-                                grid: { 
-                                    color: 'rgba(255, 255, 255, 0.05)',
-                                    drawBorder: false
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 750,
-                            easing: 'easeInOutQuart'
-                        }
-                    }
-                });
-                
-                log('✅ Chart rendered successfully', 'success');
-            } catch (error) {
-                log(`❌ Chart creation failed: ${error.message}`, 'error', { error: error.stack });
-            }
+        updateHealthScore(stats);
+        updateChart(stats);
+      }
+
+      // Health Score Calculator
+      function updateHealthScore(stats) {
+        const healthDiv = document.getElementById("healthScore");
+        healthDiv.classList.remove("hidden");
+
+        const successRate = parseFloat(
+          stats.successRate ||
+            ((stats.successCount / stats.interceptCount) * 100).toFixed(1),
+        );
+
+        // Calculate grade
+        let grade, gradeClass;
+        if (successRate >= 95) {
+          grade = "A+";
+          gradeClass = "health-a";
+        } else if (successRate >= 90) {
+          grade = "A";
+          gradeClass = "health-a";
+        } else if (successRate >= 85) {
+          grade = "B";
+          gradeClass = "health-b";
+        } else if (successRate >= 75) {
+          grade = "C";
+          gradeClass = "health-c";
+        } else if (successRate >= 60) {
+          grade = "D";
+          gradeClass = "health-d";
+        } else {
+          grade = "F";
+          gradeClass = "health-f";
         }
-        
-        // Auto-refresh Toggle
-        function toggleAutoRefresh() {
-            autoRefreshEnabled = !autoRefreshEnabled;
-            const btn = document.getElementById('autoRefreshBtn');
-            btn.textContent = autoRefreshEnabled ? '🔄 Auto: ON' : '⏸️ Auto: OFF';
-            btn.className = autoRefreshEnabled 
-                ? 'text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded transition'
-                : 'text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded transition';
-            log(autoRefreshEnabled ? '✅ Auto-refresh enabled' : '⏸️ Auto-refresh paused', 'info');
+
+        const gradeElement = document.getElementById("healthGrade");
+        gradeElement.textContent = grade;
+        gradeElement.className = `${gradeClass} text-6xl font-black px-8 py-4 rounded-2xl shadow-2xl`;
+
+        // Update metrics
+        document.getElementById("healthTests").textContent =
+          `${testState.passed}/${tests.length}`;
+        document.getElementById("healthSuccess").textContent =
+          successRate.toFixed(1) + "%";
+        document.getElementById("healthLatency").textContent =
+          Math.floor(Math.random() * 100 + 50) + "ms";
+
+        const uptime = Math.floor((Date.now() - startTime) / 1000);
+        const uptimeStr =
+          uptime < 60
+            ? `${uptime}s`
+            : uptime < 3600
+              ? `${Math.floor(uptime / 60)}m`
+              : `${Math.floor(uptime / 3600)}h`;
+        document.getElementById("healthUptime").textContent = uptimeStr;
+      }
+
+      // Chart Visualization
+      function updateChart(stats) {
+        // Wait for Chart.js to load
+        if (typeof Chart === "undefined") {
+          log("⏳ Waiting for Chart.js to load...", "warn");
+          setTimeout(() => updateChart(stats), 500);
+          return;
         }
-        
-        // Export Data
-        function exportData() {
-            const exportData = {
-                timestamp: new Date().toISOString(),
-                mode: demoMode ? 'demo' : 'live',
-                testResults: testState,
-                statsHistory: statsHistory,
-                context: {
-                    url: window.location.href,
-                    userAgent: navigator.userAgent
-                }
-            };
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `extension-test-${Date.now()}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
-            log('💾 Data exported successfully', 'success');
+
+        const canvas = document.getElementById("statsChart");
+        if (!canvas) {
+          log("❌ Chart canvas not found", "error");
+          return;
         }
-        
-        // Simulate live updates in demo mode
-        setInterval(() => {
-            if (demoMode && !document.getElementById('liveStats').classList.contains('hidden')) {
-                generateDemoStats();
-            }
-        }, 3000);
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          log("❌ Could not get canvas context", "error");
+          return;
+        }
+
+        // Add to history
+        const historyEntry = {
+          time: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+          success: stats.successCount || 0,
+          failed: stats.failureCount || 0,
+          fallback: stats.fallbackCount || 0,
+        };
+
+        statsHistory.push(historyEntry);
+
+        // Keep only last 12 data points
+        if (statsHistory.length > 12) {
+          statsHistory.shift();
+        }
+
+        log(
+          `📊 Chart updated with ${statsHistory.length} data points`,
+          "info",
+          historyEntry,
+        );
+
+        // Destroy existing chart
+        if (performanceChart) {
+          performanceChart.destroy();
+          performanceChart = null;
+        }
+
+        try {
+          // Create new chart with improved styling
+          performanceChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: statsHistory.map((h) => h.time),
+              datasets: [
+                {
+                  label: "✅ Successful",
+                  data: statsHistory.map((h) => h.success),
+                  borderColor: "#10b981",
+                  backgroundColor: "rgba(16, 185, 129, 0.2)",
+                  borderWidth: 2,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  tension: 0.4,
+                  fill: true,
+                },
+                {
+                  label: "❌ Failed",
+                  data: statsHistory.map((h) => h.failed),
+                  borderColor: "#ef4444",
+                  backgroundColor: "rgba(239, 68, 68, 0.2)",
+                  borderWidth: 2,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  tension: 0.4,
+                  fill: true,
+                },
+                {
+                  label: "🔄 Fallbacks",
+                  data: statsHistory.map((h) => h.fallback),
+                  borderColor: "#f59e0b",
+                  backgroundColor: "rgba(245, 158, 11, 0.2)",
+                  borderWidth: 2,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  tension: 0.4,
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: {
+                mode: "index",
+                intersect: false,
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "top",
+                  labels: {
+                    color: "rgba(255, 255, 255, 0.9)",
+                    font: { size: 11, weight: "bold" },
+                    padding: 15,
+                    usePointStyle: true,
+                  },
+                },
+                tooltip: {
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  titleColor: "white",
+                  bodyColor: "white",
+                  borderColor: "rgba(255, 255, 255, 0.3)",
+                  borderWidth: 1,
+                  padding: 12,
+                  displayColors: true,
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.8)",
+                    font: { size: 10 },
+                    padding: 8,
+                  },
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.1)",
+                    drawBorder: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Count",
+                    color: "rgba(255, 255, 255, 0.7)",
+                    font: { size: 11 },
+                  },
+                },
+                x: {
+                  ticks: {
+                    color: "rgba(255, 255, 255, 0.8)",
+                    font: { size: 9 },
+                    maxRotation: 45,
+                    minRotation: 0,
+                  },
+                  grid: {
+                    color: "rgba(255, 255, 255, 0.05)",
+                    drawBorder: false,
+                  },
+                },
+              },
+              animation: {
+                duration: 750,
+                easing: "easeInOutQuart",
+              },
+            },
+          });
+
+          log("✅ Chart rendered successfully", "success");
+        } catch (error) {
+          log(`❌ Chart creation failed: ${error.message}`, "error", {
+            error: error.stack,
+          });
+        }
+      }
+
+      // Auto-refresh Toggle
+      function toggleAutoRefresh() {
+        autoRefreshEnabled = !autoRefreshEnabled;
+        const btn = document.getElementById("autoRefreshBtn");
+        btn.textContent = autoRefreshEnabled ? "🔄 Auto: ON" : "⏸️ Auto: OFF";
+        btn.className = autoRefreshEnabled
+          ? "text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded transition"
+          : "text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded transition";
+        log(
+          autoRefreshEnabled
+            ? "✅ Auto-refresh enabled"
+            : "⏸️ Auto-refresh paused",
+          "info",
+        );
+      }
+
+      // Export Data
+      function exportData() {
+        const exportData = {
+          timestamp: new Date().toISOString(),
+          mode: demoMode ? "demo" : "live",
+          testResults: testState,
+          statsHistory: statsHistory,
+          context: {
+            url: window.location.href,
+            userAgent: navigator.userAgent,
+          },
+        };
+
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `extension-test-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        log("💾 Data exported successfully", "success");
+      }
+
+      // Simulate live updates in demo mode
+      setInterval(() => {
+        if (
+          demoMode &&
+          !document.getElementById("liveStats").classList.contains("hidden")
+        ) {
+          generateDemoStats();
+        }
+      }, 3000);
     </script>
-</body>
+  </body>
 </html>
-

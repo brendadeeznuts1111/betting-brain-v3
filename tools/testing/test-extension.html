@@ -1,196 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BetTicker Extension Test</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px 20px; margin: 5px; background: #007cba; color: white; border: none; border-radius: 3px; cursor: pointer; }
-        button:hover { background: #005a87; }
-        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
-        .success { color: green; }
-        .error { color: red; }
-        .warning { color: orange; }
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        background: #007cba;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #005a87;
+      }
+      .log {
+        background: #f5f5f5;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 3px;
+        font-family: monospace;
+        white-space: pre-wrap;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .warning {
+        color: orange;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🔧 BetTicker Extension Test Page</h1>
-    
+
     <div class="test-section">
-        <h2>Extension Status</h2>
-        <div id="extensionStatus">Checking...</div>
-        <button onclick="checkExtension()">Check Extension</button>
+      <h2>Extension Status</h2>
+      <div id="extensionStatus">Checking...</div>
+      <button onclick="checkExtension()">Check Extension</button>
     </div>
-    
+
     <div class="test-section">
-        <h2>Content Script Test</h2>
-        <div id="contentScriptStatus">Not detected</div>
-        <button onclick="checkContentScript()">Check Content Script</button>
+      <h2>Content Script Test</h2>
+      <div id="contentScriptStatus">Not detected</div>
+      <button onclick="checkContentScript()">Check Content Script</button>
     </div>
-    
+
     <div class="test-section">
-        <h2>Cookie Test</h2>
-        <div id="cookieStatus">No cookies</div>
-        <button onclick="checkCookies()">Check Cookies</button>
-        <button onclick="setTestCookie()">Set Test Cookie</button>
+      <h2>Cookie Test</h2>
+      <div id="cookieStatus">No cookies</div>
+      <button onclick="checkCookies()">Check Cookies</button>
+      <button onclick="setTestCookie()">Set Test Cookie</button>
     </div>
-    
+
     <div class="test-section">
-        <h2>Fetch Interception Test</h2>
-        <div id="fetchStatus">Ready to test</div>
-        <button onclick="testFetchInterception()">Test Fetch Interception</button>
-        <button onclick="testWorkerHealth()">Test Worker Health</button>
+      <h2>Fetch Interception Test</h2>
+      <div id="fetchStatus">Ready to test</div>
+      <button onclick="testFetchInterception()">Test Fetch Interception</button>
+      <button onclick="testWorkerHealth()">Test Worker Health</button>
     </div>
-    
+
     <div class="test-section">
-        <h2>Debug Logs</h2>
-        <div id="debugLogs" class="log">No logs yet...</div>
-        <button onclick="clearLogs()">Clear Logs</button>
+      <h2>Debug Logs</h2>
+      <div id="debugLogs" class="log">No logs yet...</div>
+      <button onclick="clearLogs()">Clear Logs</button>
     </div>
 
     <script>
-        let logContainer = document.getElementById('debugLogs');
-        
-        function log(message, type = 'info') {
-            const timestamp = new Date().toISOString();
-            const logEntry = `[${timestamp}] ${message}\n`;
-            logContainer.textContent += logEntry;
-            logContainer.scrollTop = logContainer.scrollHeight;
-            
-            // Also log to console
-            console.log(`[TEST] ${message}`);
+      let logContainer = document.getElementById("debugLogs");
+
+      function log(message, type = "info") {
+        const timestamp = new Date().toISOString();
+        const logEntry = `[${timestamp}] ${message}\n`;
+        logContainer.textContent += logEntry;
+        logContainer.scrollTop = logContainer.scrollHeight;
+
+        // Also log to console
+        console.log(`[TEST] ${message}`);
+      }
+
+      function clearLogs() {
+        logContainer.textContent = "Logs cleared...\n";
+      }
+
+      function checkExtension() {
+        log("Checking extension status...");
+
+        // Check if chrome.runtime is available
+        if (typeof chrome !== "undefined" && chrome.runtime) {
+          log("✅ Chrome runtime detected", "success");
+          document.getElementById("extensionStatus").innerHTML =
+            '<span class="success">✅ Extension detected</span>';
+
+          // Try to get extension info
+          try {
+            const extensionId = chrome.runtime.id;
+            log(`Extension ID: ${extensionId}`, "success");
+          } catch (error) {
+            log(`Extension ID error: ${error.message}`, "error");
+          }
+        } else {
+          log("❌ Chrome runtime not available", "error");
+          document.getElementById("extensionStatus").innerHTML =
+            '<span class="error">❌ Extension not detected</span>';
         }
-        
-        function clearLogs() {
-            logContainer.textContent = 'Logs cleared...\n';
+      }
+
+      function checkContentScript() {
+        log("Checking content script...");
+
+        // Check if our content script loaded
+        if (window.__betTickerStats) {
+          log("✅ Content script detected", "success");
+          document.getElementById("contentScriptStatus").innerHTML =
+            '<span class="success">✅ Content script loaded</span>';
+
+          // Show stats
+          const stats = window.__betTickerStats;
+          log(`Stats: ${JSON.stringify(stats, null, 2)}`);
+        } else {
+          log("❌ Content script not detected", "error");
+          document.getElementById("contentScriptStatus").innerHTML =
+            '<span class="error">❌ Content script not loaded</span>';
         }
-        
-        function checkExtension() {
-            log('Checking extension status...');
-            
-            // Check if chrome.runtime is available
-            if (typeof chrome !== 'undefined' && chrome.runtime) {
-                log('✅ Chrome runtime detected', 'success');
-                document.getElementById('extensionStatus').innerHTML = '<span class="success">✅ Extension detected</span>';
-                
-                // Try to get extension info
-                try {
-                    const extensionId = chrome.runtime.id;
-                    log(`Extension ID: ${extensionId}`, 'success');
-                } catch (error) {
-                    log(`Extension ID error: ${error.message}`, 'error');
-                }
-            } else {
-                log('❌ Chrome runtime not available', 'error');
-                document.getElementById('extensionStatus').innerHTML = '<span class="error">❌ Extension not detected</span>';
-            }
+      }
+
+      function checkCookies() {
+        log("Checking cookies...");
+        const cookies = document.cookie;
+
+        if (cookies) {
+          log(`✅ Cookies found: ${cookies.length} chars`, "success");
+          document.getElementById("cookieStatus").innerHTML =
+            `<span class="success">✅ ${cookies.length} chars</span>`;
+
+          // Show cookie names
+          const cookieNames = cookies
+            .split(";")
+            .map((c) => c.trim().split("=")[0])
+            .join(", ");
+          log(`Cookie names: ${cookieNames}`);
+        } else {
+          log("❌ No cookies found", "error");
+          document.getElementById("cookieStatus").innerHTML =
+            '<span class="error">❌ No cookies</span>';
         }
-        
-        function checkContentScript() {
-            log('Checking content script...');
-            
-            // Check if our content script loaded
-            if (window.__betTickerStats) {
-                log('✅ Content script detected', 'success');
-                document.getElementById('contentScriptStatus').innerHTML = '<span class="success">✅ Content script loaded</span>';
-                
-                // Show stats
-                const stats = window.__betTickerStats;
-                log(`Stats: ${JSON.stringify(stats, null, 2)}`);
-            } else {
-                log('❌ Content script not detected', 'error');
-                document.getElementById('contentScriptStatus').innerHTML = '<span class="error">❌ Content script not loaded</span>';
-            }
+      }
+
+      function setTestCookie() {
+        log("Setting test cookie...");
+        document.cookie = "testCookie=testValue; path=/";
+        log("✅ Test cookie set", "success");
+        checkCookies();
+      }
+
+      async function testFetchInterception() {
+        log("Testing fetch interception...");
+        document.getElementById("fetchStatus").innerHTML = "Testing...";
+
+        try {
+          // Test a request that should be intercepted
+          const response = await fetch(
+            "https://fantasy402.com/cloud/api/Manager/getBetTicker",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: "agent=&level=0&ticket=&customer=&daterange=01%2F01%2F1970+-+12%2F31%2F2026&show=&limit=200&offset=0",
+            },
+          );
+
+          log(
+            `Response status: ${response.status}`,
+            response.ok ? "success" : "error",
+          );
+          document.getElementById("fetchStatus").innerHTML =
+            `<span class="${response.ok ? "success" : "error"}">Status: ${response.status}</span>`;
+        } catch (error) {
+          log(`Fetch error: ${error.message}`, "error");
+          document.getElementById("fetchStatus").innerHTML =
+            `<span class="error">Error: ${error.message}</span>`;
         }
-        
-        function checkCookies() {
-            log('Checking cookies...');
-            const cookies = document.cookie;
-            
-            if (cookies) {
-                log(`✅ Cookies found: ${cookies.length} chars`, 'success');
-                document.getElementById('cookieStatus').innerHTML = `<span class="success">✅ ${cookies.length} chars</span>`;
-                
-                // Show cookie names
-                const cookieNames = cookies.split(';').map(c => c.trim().split('=')[0]).join(', ');
-                log(`Cookie names: ${cookieNames}`);
-            } else {
-                log('❌ No cookies found', 'error');
-                document.getElementById('cookieStatus').innerHTML = '<span class="error">❌ No cookies</span>';
-            }
+      }
+
+      async function testWorkerHealth() {
+        log("Testing worker health...");
+
+        try {
+          const response = await fetch(
+            "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+          );
+          const data = await response.json();
+
+          log(
+            `Worker health: ${data.status}`,
+            response.ok ? "success" : "error",
+          );
+          log(`Worker version: ${data.version}`);
+        } catch (error) {
+          log(`Worker health error: ${error.message}`, "error");
         }
-        
-        function setTestCookie() {
-            log('Setting test cookie...');
-            document.cookie = 'testCookie=testValue; path=/';
-            log('✅ Test cookie set', 'success');
-            checkCookies();
-        }
-        
-        async function testFetchInterception() {
-            log('Testing fetch interception...');
-            document.getElementById('fetchStatus').innerHTML = 'Testing...';
-            
-            try {
-                // Test a request that should be intercepted
-                const response = await fetch('https://fantasy402.com/cloud/api/Manager/getBetTicker', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'agent=&level=0&ticket=&customer=&daterange=01%2F01%2F1970+-+12%2F31%2F2026&show=&limit=200&offset=0'
-                });
-                
-                log(`Response status: ${response.status}`, response.ok ? 'success' : 'error');
-                document.getElementById('fetchStatus').innerHTML = `<span class="${response.ok ? 'success' : 'error'}">Status: ${response.status}</span>`;
-                
-            } catch (error) {
-                log(`Fetch error: ${error.message}`, 'error');
-                document.getElementById('fetchStatus').innerHTML = `<span class="error">Error: ${error.message}</span>`;
-            }
-        }
-        
-        async function testWorkerHealth() {
-            log('Testing worker health...');
-            
-            try {
-                const response = await fetch('https://betting-brain-v3.nolarose1968-806.workers.dev/health');
-                const data = await response.json();
-                
-                log(`Worker health: ${data.status}`, response.ok ? 'success' : 'error');
-                log(`Worker version: ${data.version}`);
-                
-            } catch (error) {
-                log(`Worker health error: ${error.message}`, 'error');
-            }
-        }
-        
-        // Auto-run checks on page load
-        window.addEventListener('load', () => {
-            log('Page loaded, running initial checks...');
-            setTimeout(() => {
-                checkExtension();
-                checkContentScript();
-                checkCookies();
-            }, 1000);
-        });
-        
-        // Monitor for content script loading
-        let checkCount = 0;
-        const maxChecks = 10;
-        const checkInterval = setInterval(() => {
-            checkCount++;
-            if (window.__betTickerStats) {
-                log('Content script detected after page load', 'success');
-                checkContentScript();
-                clearInterval(checkInterval);
-            } else if (checkCount >= maxChecks) {
-                log('Content script not detected after 10 seconds', 'error');
-                clearInterval(checkInterval);
-            }
+      }
+
+      // Auto-run checks on page load
+      window.addEventListener("load", () => {
+        log("Page loaded, running initial checks...");
+        setTimeout(() => {
+          checkExtension();
+          checkContentScript();
+          checkCookies();
         }, 1000);
+      });
+
+      // Monitor for content script loading
+      let checkCount = 0;
+      const maxChecks = 10;
+      const checkInterval = setInterval(() => {
+        checkCount++;
+        if (window.__betTickerStats) {
+          log("Content script detected after page load", "success");
+          checkContentScript();
+          clearInterval(checkInterval);
+        } else if (checkCount >= maxChecks) {
+          log("Content script not detected after 10 seconds", "error");
+          clearInterval(checkInterval);
+        }
+      }, 1000);
     </script>
-</body>
+  </body>
 </html>

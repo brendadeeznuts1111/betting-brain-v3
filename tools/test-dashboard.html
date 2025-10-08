@@ -1,135 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>🔍 Dashboard Diagnostics</title>
     <style>
-        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
-        .pass { color: #0f0; }
-        .fail { color: #f00; }
-        .warn { color: #ff0; }
-        pre { background: #000; padding: 10px; border: 1px solid #333; overflow-x: auto; }
-        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+      body {
+        font-family: monospace;
+        padding: 20px;
+        background: #1a1a1a;
+        color: #0f0;
+      }
+      .pass {
+        color: #0f0;
+      }
+      .fail {
+        color: #f00;
+      }
+      .warn {
+        color: #ff0;
+      }
+      pre {
+        background: #000;
+        padding: 10px;
+        border: 1px solid #333;
+        overflow-x: auto;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🔍 BetTicker Dashboard Diagnostics</h1>
-    
+
     <div id="results"></div>
-    
+
     <h2>Actions:</h2>
     <button onclick="runTests()">🔄 Run All Tests</button>
     <button onclick="checkAPI()">🌐 Test API Only</button>
     <button onclick="checkBrowser()">🖥️ Check Browser</button>
-    
-    <script>
-        const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
-        const resultsDiv = document.getElementById('results');
-        
-        function log(message, type = 'info') {
-            const className = type === 'pass' ? 'pass' : type === 'fail' ? 'fail' : type === 'warn' ? 'warn' : '';
-            resultsDiv.innerHTML += `<div class="${className}">${message}</div>`;
-        }
-        
-        function logPre(title, content) {
-            resultsDiv.innerHTML += `<h3>${title}</h3><pre>${content}</pre>`;
-        }
-        
-        async function runTests() {
-            resultsDiv.innerHTML = '<h2>Running diagnostics...</h2>';
-            
-            // 1. Check browser support
-            log('\n📋 Browser Checks:', 'info');
-            log(`✓ Fetch API: ${typeof fetch !== 'undefined' ? 'PASS' : 'FAIL'}`, typeof fetch !== 'undefined' ? 'pass' : 'fail');
-            log(`✓ JSON: ${typeof JSON !== 'undefined' ? 'PASS' : 'FAIL'}`, typeof JSON !== 'undefined' ? 'pass' : 'fail');
-            log(`✓ Promise: ${typeof Promise !== 'undefined' ? 'PASS' : 'FAIL'}`, typeof Promise !== 'undefined' ? 'pass' : 'fail');
-            log(`✓ Chart.js loaded: ${typeof Chart !== 'undefined' ? 'PASS' : 'FAIL (Not loaded yet)'}`, typeof Chart !== 'undefined' ? 'pass' : 'warn');
-            
-            // 2. Test health endpoint
-            log('\n🏥 Health Check:', 'info');
-            try {
-                const healthRes = await fetch(`${WORKER_URL}/health`);
-                const healthData = await healthRes.json();
-                log(`✓ Health endpoint: PASS (${healthRes.status})`, 'pass');
-                logPre('Health Response:', JSON.stringify(healthData, null, 2));
-            } catch (error) {
-                log(`✗ Health endpoint: FAIL - ${error.message}`, 'fail');
-                logPre('Error:', error.stack);
-            }
-            
-            // 3. Test history endpoint
-            log('\n📜 History API Check:', 'info');
-            try {
-                const historyRes = await fetch(`${WORKER_URL}/interceptor/history?limit=3`);
-                const historyData = await historyRes.json();
-                log(`✓ History endpoint: PASS (${historyRes.status})`, 'pass');
-                log(`  Found ${historyData.length} intercepted requests`, 'info');
-                logPre('History Response:', JSON.stringify(historyData, null, 2));
-            } catch (error) {
-                log(`✗ History endpoint: FAIL - ${error.message}`, 'fail');
-                logPre('Error:', error.stack);
-            }
-            
-            // 4. Test response endpoint
-            log('\n📄 Response API Check:', 'info');
-            try {
-                const historyRes = await fetch(`${WORKER_URL}/interceptor/history?limit=1`);
-                const historyData = await historyRes.json();
-                
-                if (historyData.length > 0) {
-                    const key = historyData[0].key;
-                    const responseRes = await fetch(`${WORKER_URL}/interceptor/response?key=${key}`);
-                    const responseData = await responseRes.json();
-                    log(`✓ Response endpoint: PASS (${responseRes.status})`, 'pass');
-                    logPre('Response Data:', JSON.stringify(responseData.metadata, null, 2));
-                } else {
-                    log(`⚠ No data to test response endpoint`, 'warn');
-                }
-            } catch (error) {
-                log(`✗ Response endpoint: FAIL - ${error.message}`, 'fail');
-                logPre('Error:', error.stack);
-            }
-            
-            // 5. CORS check
-            log('\n🔒 CORS Check:', 'info');
-            try {
-                const testRes = await fetch(`${WORKER_URL}/health`);
-                const corsHeader = testRes.headers.get('Access-Control-Allow-Origin');
-                log(`✓ CORS header: ${corsHeader || 'NOT SET'}`, corsHeader ? 'pass' : 'warn');
-            } catch (error) {
-                log(`✗ CORS check: FAIL - ${error.message}`, 'fail');
-            }
-            
-            // 6. Summary
-            log('\n📊 Summary:', 'info');
-            log('If all tests PASS, the dashboard should work!', 'info');
-            log('If you see FAIL, check the error messages above.', 'info');
-            log('\nCommon fixes:', 'info');
-            log('• CORS errors: Worker needs Access-Control-Allow-Origin header', 'info');
-            log('• Chart.js not loaded: CDN may be blocked', 'warn');
-            log('• 404 errors: Check worker URL is correct', 'info');
-        }
-        
-        async function checkAPI() {
-            resultsDiv.innerHTML = '<h2>Testing API endpoints...</h2>';
-            await runTests();
-        }
-        
-        function checkBrowser() {
-            resultsDiv.innerHTML = '<h2>Browser Information:</h2>';
-            log(`User Agent: ${navigator.userAgent}`, 'info');
-            log(`Platform: ${navigator.platform}`, 'info');
-            log(`Language: ${navigator.language}`, 'info');
-            log(`Online: ${navigator.onLine}`, 'info');
-            log(`Cookies Enabled: ${navigator.cookieEnabled}`, 'info');
-            log(`Screen: ${screen.width}x${screen.height}`, 'info');
-            log(`Viewport: ${window.innerWidth}x${window.innerHeight}`, 'info');
-        }
-        
-        // Auto-run on load
-        window.addEventListener('load', () => {
-            setTimeout(runTests, 100);
-        });
-    </script>
-</body>
-</html>
 
+    <script>
+      const WORKER_URL =
+        "https://betting-brain-v3.nolarose1968-806.workers.dev";
+      const resultsDiv = document.getElementById("results");
+
+      function log(message, type = "info") {
+        const className =
+          type === "pass"
+            ? "pass"
+            : type === "fail"
+              ? "fail"
+              : type === "warn"
+                ? "warn"
+                : "";
+        resultsDiv.innerHTML += `<div class="${className}">${message}</div>`;
+      }
+
+      function logPre(title, content) {
+        resultsDiv.innerHTML += `<h3>${title}</h3><pre>${content}</pre>`;
+      }
+
+      async function runTests() {
+        resultsDiv.innerHTML = "<h2>Running diagnostics...</h2>";
+
+        // 1. Check browser support
+        log("\n📋 Browser Checks:", "info");
+        log(
+          `✓ Fetch API: ${typeof fetch !== "undefined" ? "PASS" : "FAIL"}`,
+          typeof fetch !== "undefined" ? "pass" : "fail",
+        );
+        log(
+          `✓ JSON: ${typeof JSON !== "undefined" ? "PASS" : "FAIL"}`,
+          typeof JSON !== "undefined" ? "pass" : "fail",
+        );
+        log(
+          `✓ Promise: ${typeof Promise !== "undefined" ? "PASS" : "FAIL"}`,
+          typeof Promise !== "undefined" ? "pass" : "fail",
+        );
+        log(
+          `✓ Chart.js loaded: ${typeof Chart !== "undefined" ? "PASS" : "FAIL (Not loaded yet)"}`,
+          typeof Chart !== "undefined" ? "pass" : "warn",
+        );
+
+        // 2. Test health endpoint
+        log("\n🏥 Health Check:", "info");
+        try {
+          const healthRes = await fetch(`${WORKER_URL}/health`);
+          const healthData = await healthRes.json();
+          log(`✓ Health endpoint: PASS (${healthRes.status})`, "pass");
+          logPre("Health Response:", JSON.stringify(healthData, null, 2));
+        } catch (error) {
+          log(`✗ Health endpoint: FAIL - ${error.message}`, "fail");
+          logPre("Error:", error.stack);
+        }
+
+        // 3. Test history endpoint
+        log("\n📜 History API Check:", "info");
+        try {
+          const historyRes = await fetch(
+            `${WORKER_URL}/interceptor/history?limit=3`,
+          );
+          const historyData = await historyRes.json();
+          log(`✓ History endpoint: PASS (${historyRes.status})`, "pass");
+          log(`  Found ${historyData.length} intercepted requests`, "info");
+          logPre("History Response:", JSON.stringify(historyData, null, 2));
+        } catch (error) {
+          log(`✗ History endpoint: FAIL - ${error.message}`, "fail");
+          logPre("Error:", error.stack);
+        }
+
+        // 4. Test response endpoint
+        log("\n📄 Response API Check:", "info");
+        try {
+          const historyRes = await fetch(
+            `${WORKER_URL}/interceptor/history?limit=1`,
+          );
+          const historyData = await historyRes.json();
+
+          if (historyData.length > 0) {
+            const key = historyData[0].key;
+            const responseRes = await fetch(
+              `${WORKER_URL}/interceptor/response?key=${key}`,
+            );
+            const responseData = await responseRes.json();
+            log(`✓ Response endpoint: PASS (${responseRes.status})`, "pass");
+            logPre(
+              "Response Data:",
+              JSON.stringify(responseData.metadata, null, 2),
+            );
+          } else {
+            log(`⚠ No data to test response endpoint`, "warn");
+          }
+        } catch (error) {
+          log(`✗ Response endpoint: FAIL - ${error.message}`, "fail");
+          logPre("Error:", error.stack);
+        }
+
+        // 5. CORS check
+        log("\n🔒 CORS Check:", "info");
+        try {
+          const testRes = await fetch(`${WORKER_URL}/health`);
+          const corsHeader = testRes.headers.get("Access-Control-Allow-Origin");
+          log(
+            `✓ CORS header: ${corsHeader || "NOT SET"}`,
+            corsHeader ? "pass" : "warn",
+          );
+        } catch (error) {
+          log(`✗ CORS check: FAIL - ${error.message}`, "fail");
+        }
+
+        // 6. Summary
+        log("\n📊 Summary:", "info");
+        log("If all tests PASS, the dashboard should work!", "info");
+        log("If you see FAIL, check the error messages above.", "info");
+        log("\nCommon fixes:", "info");
+        log(
+          "• CORS errors: Worker needs Access-Control-Allow-Origin header",
+          "info",
+        );
+        log("• Chart.js not loaded: CDN may be blocked", "warn");
+        log("• 404 errors: Check worker URL is correct", "info");
+      }
+
+      async function checkAPI() {
+        resultsDiv.innerHTML = "<h2>Testing API endpoints...</h2>";
+        await runTests();
+      }
+
+      function checkBrowser() {
+        resultsDiv.innerHTML = "<h2>Browser Information:</h2>";
+        log(`User Agent: ${navigator.userAgent}`, "info");
+        log(`Platform: ${navigator.platform}`, "info");
+        log(`Language: ${navigator.language}`, "info");
+        log(`Online: ${navigator.onLine}`, "info");
+        log(`Cookies Enabled: ${navigator.cookieEnabled}`, "info");
+        log(`Screen: ${screen.width}x${screen.height}`, "info");
+        log(`Viewport: ${window.innerWidth}x${window.innerHeight}`, "info");
+      }
+
+      // Auto-run on load
+      window.addEventListener("load", () => {
+        setTimeout(runTests, 100);
+      });
+    </script>
+  </body>
+</html>
