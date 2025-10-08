@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "forest-grove": {
+      "command": "bun",
+      "args": ["run", "scripts/mcp-server.ts"],
+      "env": {
+        "WORKER_URL": "https://betting-brain-v3.nolarose1968-806.workers.dev"
+      }
+    }
+  }
+}

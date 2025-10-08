@@ -18,6 +18,7 @@ import { handleBetTickerInterception, getBetTickerHistory, getBetTickerResponse 
 import { handleMCPRequest } from './mcp/server';
 import { handleAPIRoute } from './api/routes';
 import { handleWebSocketUpgrade } from './websocket/fantasy402-ws-handler';
+import { handleIngest } from './routes/ingest';
 
 // See .cursor/rules/endpoint-routing.mdc for routing patterns
 // See .cursor/rules/cloudflare-workers.mdc for Workers patterns
@@ -72,6 +73,12 @@ export default {
           'Access-Control-Allow-Headers': 'Content-Type'
         }
       });
+    }
+
+    // Data ingestion endpoint (MCP)
+    if (url.pathname === '/ingest' && request.method === 'POST') {
+      console.log(`[${requestId}] 📊 Data ingestion from MCP`);
+      return handleIngest(request, env);
     }
 
     // Extension logs endpoint

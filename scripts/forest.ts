@@ -177,6 +177,104 @@ async function checkAnalytics(): Promise<{
 }
 
 /**
+ * Check MCP server status
+ */
+async function checkMCP(): Promise<{
+  serverOk: boolean;
+  toolCount: number;
+  error?: string;
+}> {
+  try {
+    // Test MCP server startup by running a quick test
+    const proc = Bun.spawn(['bun', 'run', 'scripts/mcp-server.ts'], {
+      stdin: 'pipe',
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    // Send initialize request
+    const initRequest = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {},
+    }) + '\n';
+
+    proc.stdin.write(initRequest);
+
+    // Wait for response (with timeout)
+    const timeoutMs = 5000;
+    const startTime = Date.now();
+    let responseText = '';
+
+    const reader = proc.stdout.getReader();
+    while (Date.now() - startTime < timeoutMs) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (value) {
+        responseText += new TextDecoder().decode(value);
+        if (responseText.includes('\n')) break;
+      }
+    }
+
+    proc.kill();
+
+    // Parse response
+    const response = JSON.parse(responseText.split('\n')[0]);
+    if (response.result?.serverInfo?.name === 'forest-grove') {
+      // Server initialized, now get tool count
+      const proc2 = Bun.spawn(['bun', 'run', 'scripts/mcp-server.ts'], {
+        stdin: 'pipe',
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
+
+      const listRequest = JSON.stringify({
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'tools/list',
+        params: {},
+      }) + '\n';
+
+      proc2.stdin.write(listRequest);
+
+      let listResponseText = '';
+      const reader2 = proc2.stdout.getReader();
+      while (Date.now() - startTime < timeoutMs) {
+        const { value, done } = await reader2.read();
+        if (done) break;
+        if (value) {
+          listResponseText += new TextDecoder().decode(value);
+          if (listResponseText.includes('\n')) break;
+        }
+      }
+
+      proc2.kill();
+
+      const listResponse = JSON.parse(listResponseText.split('\n')[0]);
+      const toolCount = listResponse.result?.tools?.length || 0;
+
+      return {
+        serverOk: true,
+        toolCount,
+      };
+    }
+
+    return {
+      serverOk: false,
+      toolCount: 0,
+      error: 'Invalid server response',
+    };
+  } catch (error) {
+    return {
+      serverOk: false,
+      toolCount: 0,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
  * Display health status
  */
 async function displayHealth() {
@@ -260,6 +358,30 @@ async function displayAnalytics() {
 }
 
 /**
+ * Display MCP status
+ */
+async function displayMCP() {
+  console.log(c.bold('\n🤖  MCP Server\n'));
+
+  const mcp = await checkMCP();
+
+  console.log(`Server status: ${mcp.serverOk ? c.green('✅ UP') : c.red('❌ DOWN')}`);
+  console.log(`Registered tools: ${mcp.toolCount > 0 ? c.blue(String(mcp.toolCount)) : c.gray('0')}`);
+
+  if (mcp.error) {
+    console.log(`\n${c.yellow('⚠️')}  Error: ${mcp.error}`);
+  }
+
+  if (mcp.serverOk) {
+    console.log(c.green('\n✅ MCP server ready for AI assistants'));
+  } else {
+    console.log(`\n${c.yellow('⚠️')}  Run ${c.bold('bun run scripts/mcp-server.ts')} to test manually`);
+  }
+
+  console.log('');
+}
+
+/**
  * Display full dashboard
  */
 async function displayDashboard() {
@@ -273,6 +395,7 @@ async function displayDashboard() {
   await displayFreshness();
   await displayRelease();
   await displayAnalytics();
+  await displayMCP();
 
   console.log(c.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(c.green('✅ Forest check complete'));
@@ -292,9 +415,10 @@ function displayHelp() {
   console.log('  fresh, f      - Dependency freshness');
   console.log('  release, r    - Release readiness');
   console.log('  analytics, a  - Analytics testing status');
+  console.log('  mcp, m        - MCP server status');
   console.log('  dashboard, d  - Full status dashboard (default)');
   console.log('');
-  console.log('Shortcuts: bun run forest h / f / r / a / d');
+  console.log('Shortcuts: bun run forest h / f / r / a / m / d');
   console.log('');
   console.log('Environment Variables:');
   console.log('  WORKER_URL   - Worker health endpoint');
@@ -331,6 +455,11 @@ async function main() {
       await displayAnalytics();
       break;
 
+    case 'mcp':
+    case 'm':
+      await displayMCP();
+      break;
+
     case 'dashboard':
     case 'd':
     case undefined:
@@ -359,4 +488,4 @@ if (import.meta.main) {
   });
 }
 
-export { checkHealth, checkFreshness, checkRelease, checkAnalytics };
+export { checkHealth, checkFreshness, checkRelease, checkAnalytics, checkMCP };

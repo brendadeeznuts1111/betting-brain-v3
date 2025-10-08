@@ -105,12 +105,26 @@ This `.cursorrules` file is the **single source of truth** for all AI-generated 
 
 ## MCP Integration
 
+### MCP Server Patterns
+- Use JSON-RPC 2.0 protocol over stdio
+- Register tools with `registerTool(name, description, inputSchema, handler)`
+- Return MCP response format: `{ content: [{ type: 'text', text: '...' }] }`
+- Use standard JSON-RPC error codes (-32700 parse, -32600 invalid, -32601 method not found, -32602 invalid params, -32603 internal)
+- Never use external MCP SDK if Bun + Zod suffices
+
 ### Tool Development
 - Create handler in `src/mcp/handlers/`
 - Register in `toolRegistry.ts`
 - Define in `tools.ts` with schema
 - Always validate args before database queries
 - Return `MCPToolResult` format
+
+### Sports API Validation
+- Validate all sports data with Zod schemas
+- Required fields: eventId, timestamp, metric, value
+- Use metadata for market, source, volume
+- Write to ANALYTICS_ENGINE with proper blobs/doubles/indexes
+- Handle CORS for cross-origin requests
 
 ### Testing MCP Tools
 - Use direct handler testing first
