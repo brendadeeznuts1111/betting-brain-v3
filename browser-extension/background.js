@@ -1,6 +1,6 @@
 // BetTicker Interceptor Proxy - Background Service Worker
 
-const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+const WORKER_URL = 'config.workerUrl';
 const TARGET_PATH = '/cloud/api/Manager/getBetTicker';
 
 // Initialize extension
@@ -70,7 +70,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
     
     // Lightweight health call (HEAD to root)
-    fetch('https://betting-brain-v3.nolarose1968-806.workers.dev/health')
+    fetch('config.workerUrl/health')
       .then(response => {
         if (response.ok && cb.state === 'half-open') {
           closeBreaker();

@@ -9,7 +9,7 @@ import { vi, beforeAll, beforeEach, afterEach } from 'bun:test';
 beforeAll(() => {
   // Set up global test environment
   process.env.NODE_ENV = 'test';
-  
+
   // Note: Bun test doesn't need vi.setConfig
   // Test timeouts are configured in bunfig.toml
 });
@@ -17,11 +17,11 @@ beforeAll(() => {
 beforeEach(() => {
   // Reset all mocks before each test (clears implementations AND call history)
   vi.resetAllMocks();
-  
+
   // Reset console methods to avoid test pollution
-  vi.spyOn(console, 'log').mockImplementation(() => {});
-  vi.spyOn(console, 'error').mockImplementation(() => {});
-  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'log').mockImplementation(() => { });
+  vi.spyOn(console, 'error').mockImplementation(() => { });
+  vi.spyOn(console, 'warn').mockImplementation(() => { });
 });
 
 afterEach(() => {

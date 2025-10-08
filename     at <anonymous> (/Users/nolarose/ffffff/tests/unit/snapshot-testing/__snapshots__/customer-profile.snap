@@ -1,0 +1,33 @@
+{
+  "title": "Customer Profile",
+  "customer": {
+    "id": "cust_12345",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "stats": {
+      "totalBets": 150,
+      "totalWagered": 10000,
+      "totalWon": 8500,
+      "holdPercentage": 0.15,
+      "edge": 0.05,
+      "sharpScore": 75,
+      "lastBet": "2025-01-07T20:30:00.000Z",
+      "created": "2024-06-01T10:00:00.000Z"
+    },
+    "preferences": {
+      "notifications": true,
+      "language": "en-US",
+      "timezone": "America/Chicago"
+    },
+    "riskFactors": {
+      "concentrationRisk": 0.12,
+      "exposureLimit": 5000,
+      "betFrequency": "high"
+    }
+  },
+  "metadata": {
+    "generated": "2025-01-08T03:00:00.000Z",
+    "version": "3.0.0",
+    "source": "analytics-database"
+  }
+}

@@ -7,7 +7,7 @@ console.log('🍪 Available cookies:', document.cookie ? document.cookie.length 
 console.log('📄 Page URL:', window.location.href);
 console.log('🔧 Extension ID:', chrome.runtime.id);
 
-const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+const WORKER_URL = 'config.workerUrl';
 const TARGET_PATH = '/cloud/api/Manager/getBetTicker';
 const ORIGIN_URL = 'https://fantasy402.com';
 const MAX_RETRIES = 3;

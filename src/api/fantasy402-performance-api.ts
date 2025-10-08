@@ -32,14 +32,8 @@ export async function getAgentPerformance(
         }
 
         // Build date filter
-        let dateFilter = '';
-        if (period !== 'all') {
-            const daysAgo = parseInt(period);
-            dateFilter = `AND captured_at >= datetime('now', '-${daysAgo} days')`;
-        }
-
-        // Query performance data
-        const result = await env.RAW_FEED_DB.prepare(`
+        // Build query with proper parameterization
+        let query = `
             SELECT 
                 agent_id,
                 agent_owner,
@@ -58,10 +52,19 @@ export async function getAgentPerformance(
                 captured_at
             FROM fantasy402_agent_performance
             WHERE agent_id = ?
-            ${dateFilter}
-            ORDER BY captured_at DESC
-            LIMIT 100
-        `).bind(agentID).all();
+        `;
+
+        let bindParams: any[] = [agentID];
+
+        if (period !== 'all') {
+            const daysAgo = parseInt(period);
+            query += ` AND captured_at >= datetime('now', '-${daysAgo} days')`;
+        }
+
+        query += ` ORDER BY captured_at DESC LIMIT 100`;
+
+        // Query performance data
+        const result = await env.RAW_FEED_DB.prepare(query).bind(...bindParams).all();
 
         const performance = result.results as unknown as Array<{
             agent_id: string;
@@ -127,15 +130,8 @@ export async function getSportPerformance(
             throw Errors.serviceUnavailable('Database not available');
         }
 
-        // Build date filter
-        let dateFilter = '';
-        if (period !== 'all') {
-            const daysAgo = parseInt(period);
-            dateFilter = `AND captured_at >= datetime('now', '-${daysAgo} days')`;
-        }
-
-        // Query sport breakdown
-        const result = await env.RAW_FEED_DB.prepare(`
+        // Build query with proper parameterization
+        let query = `
             SELECT 
                 sport,
                 SUM(risk) as total_risk,
@@ -145,10 +141,19 @@ export async function getSportPerformance(
                 COUNT(*) as report_count
             FROM fantasy402_sport_performance
             WHERE agent_id = ?
-            ${dateFilter}
-            GROUP BY sport
-            ORDER BY total_risk DESC
-        `).bind(agentID).all();
+        `;
+
+        let bindParams: any[] = [agentID];
+
+        if (period !== 'all') {
+            const daysAgo = parseInt(period);
+            query += ` AND captured_at >= datetime('now', '-${daysAgo} days')`;
+        }
+
+        query += ` GROUP BY sport ORDER BY total_risk DESC`;
+
+        // Query sport breakdown
+        const result = await env.RAW_FEED_DB.prepare(query).bind(...bindParams).all();
 
         const sports = result.results as unknown as Array<{
             sport: string;

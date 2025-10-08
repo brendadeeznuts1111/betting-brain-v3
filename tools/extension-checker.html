@@ -201,7 +201,7 @@
                 Open Target Site
               </a>
               <a
-                href="https://betting-brain-v3.nolarose1968-806.workers.dev/health"
+                href="config.workerUrl/health"
                 target="_blank"
                 class="block bg-green-600 hover:bg-green-700 text-center py-3 rounded-lg font-bold transition"
               >
@@ -230,7 +230,7 @@
           resultDiv.innerHTML +=
             "\n📡 Step 1: Testing worker accessibility...\n";
           const healthResponse = await fetch(
-            "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+            "config.workerUrl/health",
           );
 
           if (healthResponse.ok) {

@@ -6,11 +6,9 @@
   "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.suggest.autoImports": true,
   "typescript.updateImportsOnFileMove.enabled": "always",
-  
   // Bun-specific settings
   "typescript.preferences.includePackageJsonAutoImports": "auto",
   "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
-  
   // Linting configuration
   "eslint.enable": true,
   "eslint.validate": [
@@ -25,13 +23,11 @@
       "mode": "auto"
     }
   ],
-  
   // File associations
   "files.associations": {
     "*.mdc": "markdown",
     "*.cursorrules": "yaml"
   },
-  
   // Bun file patterns
   "files.exclude": {
     "**/node_modules": true,
@@ -39,7 +35,6 @@
     "**/.git": true,
     "**/coverage": true
   },
-  
   // Search configuration
   "search.exclude": {
     "**/node_modules": true,
@@ -47,18 +42,46 @@
     "**/coverage": true,
     "**/.git": true
   },
-  
   // Terminal configuration
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.profiles.osx": {
     "zsh": {
       "path": "/bin/zsh",
-      "args": ["-l"]
+      "args": [
+        "-l"
+      ]
     }
   },
-  
   // Cursor rules integration
   "cursor.rules.enabled": true,
   "cursor.rules.autoApply": true,
-  "cursor.rules.version": "4.1.0"
+  "cursor.rules.version": "4.2.0",
+  // Bun Testing Integration (2025-10-08)
+  "bun.test.watch": true,
+  "bun.test.randomize": true,
+  "bun.test.coverage": true,
+  "bun.test.benchmark": true,
+  "bun.test.aiFriendly": true,
+  // Test Explorer Integration
+  "testExplorer.useNativeTesting": true,
+  "testExplorer.addToEditorContextMenu": true,
+  "testExplorer.mergeSuites": true,
+  "testExplorer.showOnRunStart": true,
+  // Performance Benchmarking
+  "bench.enabled": true,
+  "bench.baselineEnabled": true,
+  "bench.showSidebar": true,
+  "bench.performanceWarnings": true,
+  // Snapshot Testing
+  "snapshot.testing.enabled": true,
+  "snapshot.testing.updateOnSave": false,
+  "snapshot.testing.showDiffView": true,
+  // AI-Friendly Testing
+  "aiFriendlyTesting.enabled": true,
+  "aiFriendlyTesting.autoDetect": true,
+  "aiFriendlyTesting.quietMode": true,
+  // TypeScript Configuration for Bun Testing
+  "typescript.preferences.noSemicolons": "insert",
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false
 }

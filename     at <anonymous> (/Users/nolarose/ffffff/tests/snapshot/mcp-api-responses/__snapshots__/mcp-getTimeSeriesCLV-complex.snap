@@ -1,0 +1,13 @@
+{
+  "id": "test-request-123",
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\n  \"timeSeriesCLV\": {\n    \"customerId\": \"cust_1001\",\n    \"timeframe\": \"90_days\",\n    \"metrics\": {\n      \"rollingCLV\": [\n        {\n          \"date\": \"2024-10-10\",\n          \"clv\": 850,\n          \"change\": \"+5.2%\"\n        },\n        {\n          \"date\": \"2024-10-17\",\n          \"clv\": 895.5,\n          \"change\": \"+5.2%\"\n        },\n        {\n          \"date\": \"2024-10-24\",\n          \"clv\": 942.2,\n          \"change\": \"+5.2%\"\n        },\n        {\n          \"date\": \"2024-10-31\",\n          \"clv\": 987.3,\n          \"change\": \"+5.0%\"\n        },\n        {\n          \"date\": \"2024-11-07\",\n          \"clv\": 1034.8,\n          \"change\": \"+4.8%\"\n        },\n        {\n          \"date\": \"2024-11-14\",\n          \"clv\": 1082.1,\n          \"change\": \"+4.6%\"\n        }\n      ],\n      \"trend\": \"INCREASING\",\n      \"acceleration\": 0.031,\n      \"volatility\": \"LOW\"\n    },\n    \"insights\": {\n      \"trendStrength\": \"STRONG\",\n      \"seasonalPatterns\": [\n        \"weekend_increase\",\n        \"midweek_decline\"\n      ],\n      \"keyFactors\": [\n        \"volume_growth\",\n        \"edge_improvement\"\n      ],\n      \"predictions\": {\n        \"nextWeek\": 1148.5,\n        \"confidence\": 0.88,\n        \"riskLevel\": \"LOW\"\n      }\n    },\n    \"metadata\": {\n      \"calculation\": \"rolling_7day\",\n      \"confidenceInterval\": 0.95,\n      \"dataPoints\": 26,\n      \"lastCalculated\": \"2025-01-08T03:00:00.000Z\"\n    }\n  }\n}",
+        "type": "text"
+      }
+    ],
+    "isError": false
+  }
+}

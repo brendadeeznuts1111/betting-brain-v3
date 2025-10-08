@@ -330,7 +330,7 @@
           description: "Verify Cloudflare Worker is responding",
           test: async () => {
             const response = await fetch(
-              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+              "config.workerUrl/health",
             );
             return response.ok;
           },
@@ -340,7 +340,7 @@
           description: "Check worker health endpoint returns valid JSON",
           test: async () => {
             const response = await fetch(
-              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+              "config.workerUrl/health",
             );
             const data = await response.json();
             return data.status === "healthy" && data.version;
@@ -351,7 +351,7 @@
           description: "Verify worker includes CORS headers",
           test: async () => {
             const response = await fetch(
-              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+              "config.workerUrl/health",
             );
             const corsHeader = response.headers.get(
               "access-control-allow-origin",
@@ -409,7 +409,7 @@
           test: async () => {
             const start = Date.now();
             await fetch(
-              "https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+              "config.workerUrl/health",
             );
             const duration = Date.now() - start;
             return duration < 2000;

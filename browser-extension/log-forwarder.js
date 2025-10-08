@@ -6,7 +6,7 @@ class LogForwarder {
     this.logs = [];
     this.maxLogs = 1000;
     this.forwardingEnabled = true;
-    this.endpoint = 'https://betting-brain-v3.nolarose1968-806.workers.dev/logs';
+    this.endpoint = 'config.workerUrl/logs';
     this.sessionId = this.generateSessionId();
     
     this.init();

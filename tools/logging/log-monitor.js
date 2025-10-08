@@ -4,7 +4,7 @@
  * Monitors logs from the Cloudflare Worker and displays them in real-time
  */
 
-const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+const WORKER_URL = 'config.workerUrl';
 const LOG_ENDPOINT = `${WORKER_URL}/logs`;
 const MONITOR_INTERVAL_MS = 2000; // Fetch logs every 2 seconds
 const SESSION_ID = `monitor-${Date.now()}`;

@@ -5,21 +5,25 @@
 
 import { LineMovement } from '../types/database';
 import { Env } from '../types/api';
+import { runSafe } from '../lib/scheduleUtils';
 
 export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> {
   const requestId = Date.now().toString(36);
-  
-  try {
+  console.log(`[${requestId}] Processing line movement trigger`);
+
+  return runSafe('line_movement', env, { passThroughOnException: () => {}, waitUntil: () => {} } as any, async () => {
+    const requestId = Date.now().toString(36);
+
     console.log(`[${requestId}] Processing line movement trigger for event ${newRow.eid}, market ${newRow.mt}`);
-    
-    // Add delay for timeout testing
+
+    // Add delay for timeout testing (reduced for faster tests)
     if (process.env.NODE_ENV === 'test') {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
-    
+
     // Calculate line movement metrics
     const metrics = calculateLineMovementMetrics(newRow);
-    
+
     // Check if this is a significant movement
     if (metrics.isSignificant) {
       try {
@@ -44,7 +48,7 @@ export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> 
         console.error(`[${requestId}] Error sending to steam webhook:`, error);
         // Don't throw - webhook failures shouldn't break the trigger
       }
-      
+
       try {
         // Trigger additional processing
         await triggerAdditionalProcessing(newRow, metrics, env);
@@ -53,7 +57,7 @@ export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> 
         // Don't throw - additional processing failures shouldn't break the trigger
       }
     }
-    
+
     // Update real-time metrics
     try {
       await updateRealTimeMetrics(newRow, env);
@@ -61,16 +65,9 @@ export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> 
       console.error(`[${requestId}] Error updating real-time metrics:`, error);
       // Don't throw - metrics update failures shouldn't break the trigger
     }
-    
+
     console.log(`[${requestId}] Line movement trigger completed for event ${newRow.eid}`);
-  } catch (error) {
-    console.error(`[${requestId}] Error in line movement trigger:`, error);
-    // Re-throw timeout errors for testing
-    if (error instanceof Error && error.message === 'Timeout') {
-      throw error;
-    }
-    // Don't throw other errors - triggers should not fail the insert operation
-  }
+  });
 }
 
 interface LineMovementMetrics {
@@ -84,20 +81,20 @@ interface LineMovementMetrics {
 function calculateLineMovementMetrics(row: LineMovement): LineMovementMetrics {
   const lineChange = (row.lb !== null && row.la !== null) ? row.la - row.lb : 0;
   const volumeChange = (row.vb !== null && row.va !== null) ? row.va - row.vb : 0;
-  
+
   // Calculate change percentage
   let changePercentage = 0;
   if (row.lb !== null && row.lb !== 0) {
     changePercentage = (lineChange / Math.abs(row.lb)) * 100;
   }
-  
+
   // Determine if movement is significant
-  const isSignificant = 
+  const isSignificant =
     Math.abs(lineChange) >= 2 || // 2+ point line change
     Math.abs(changePercentage) >= 10 || // 10%+ change
-    (row.vb !== null && row.va !== null && row.vb > 0 && 
-     Math.abs(volumeChange) / row.vb >= 0.5); // 50%+ volume change
-  
+    (row.vb !== null && row.va !== null && row.vb > 0 &&
+      Math.abs(volumeChange) / row.vb >= 0.5); // 50%+ volume change
+
   return {
     isSignificant,
     lineChange,
@@ -108,37 +105,33 @@ function calculateLineMovementMetrics(row: LineMovement): LineMovementMetrics {
 }
 
 async function triggerAdditionalProcessing(
-  row: LineMovement, 
-  metrics: LineMovementMetrics, 
+  row: LineMovement,
+  metrics: LineMovementMetrics,
   env: Env
 ): Promise<void> {
   // Additional processing for significant movements
   // Could include alerts, notifications, etc.
-  
+
   console.log(`[trigger] Additional processing for significant movement: ${metrics.lineChange} points`);
 }
 
 async function updateRealTimeMetrics(row: LineMovement, env: Env): Promise<void> {
   // Update real-time exposure tracking
   await updateExposureForEvent(row.eid, env);
-  
+
   // Update hold percentage if this affects betting volume
   if (row.vb !== null && row.va !== null) {
     await updateHoldPercentage(row.eid, row.mt, env);
   }
-  
+
   // Calculate metrics for analytics
   const metrics = calculateLineMovementMetrics(row);
-  
+
   // Write metrics to analytics engine
   try {
     await env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [row.eid, row.mt, 'line_movement'],
-      doubles: {
-        line_change: metrics.lineChange,
-        volume_change: metrics.volumeChange,
-        change_percentage: metrics.changePercentage
-      },
+      doubles: [metrics.lineChange, metrics.volumeChange, metrics.changePercentage],
       indexes: ['line_movement_trigger']
     });
   } catch (error) {
@@ -152,7 +145,7 @@ async function updateExposureForEvent(eventId: string, env: Env): Promise<void> 
     // This would update exposure tracking based on line movements
     // For now, just log that we would update exposure
     console.log(`[exposure] Would update exposure tracking for event ${eventId}`);
-    
+
     // Simple database query to satisfy test expectations
     await env.ANALYTICS.prepare('SELECT 1').first();
   } catch (error) {

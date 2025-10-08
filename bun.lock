@@ -4,20 +4,20 @@
     "": {
       "name": "betting-brain-v3",
       "dependencies": {
-        "@cloudflare/workers-types": "^4.20231025.0",
+        "@cloudflare/workers-types": "^4.20251008.0",
         "jsonwebtoken": "^9.0.2",
-        "zod": "^3.22.4",
+        "zod": "^3.25.76",
       },
       "devDependencies": {
         "@types/bun": "^1.0.0",
-        "glob": "^10.3.10",
+        "glob": "^10.4.5",
         "husky": "^9.1.7",
         "typescript": "^5.3.0",
       },
     },
   },
   "packages": {
-    "@cloudflare/workers-types": ["@cloudflare/workers-types@4.20251004.0", "", {}, ""],
+    "@cloudflare/workers-types": ["@cloudflare/workers-types@4.20251008.0", "", {}, "sha512-dZLkO4PbCL0qcCSKzuW7KE4GYe49lI12LCfQ5y9XeSwgYBoAUbwH4gmJ6A0qUIURiTJTkGkRkhVPqpq2XNgYRA=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, ""],
 

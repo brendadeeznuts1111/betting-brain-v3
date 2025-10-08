@@ -34,13 +34,13 @@ describe('Schedule Implementation Detailed Tests', () => {
         }),
         exec: vi.fn().mockResolvedValue({ success: true })
       } as any,
-      QUEUE_PRODUCER: {
-        send: vi.fn().mockResolvedValue({ success: true })
-      } as any,
+      // QUEUE_PRODUCER: { REMOVED - doesn't exist in Env interface
+      //   send: vi.fn().mockResolvedValue({ success: true })
+      // } as any,
       ANALYTICS_ENGINE: {
         writeDataPoint: vi.fn().mockResolvedValue(undefined)
       } as any
-    };
+    } as any;
 
     mockCtx = {
       waitUntil: vi.fn(),
@@ -195,7 +195,7 @@ describe('Schedule Implementation Detailed Tests', () => {
 
       // Verify cleanup was called
       expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM sharp_indicators')
+        expect.stringContaining("DELETE FROM sharp_indicators")
       );
     });
 

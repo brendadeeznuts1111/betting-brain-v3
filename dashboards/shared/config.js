@@ -9,7 +9,7 @@
  */
 
 // Worker API Configuration
-export const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+export const WORKER_URL = 'config.workerUrl';
 
 // API Endpoints
 export const API_ENDPOINTS = {

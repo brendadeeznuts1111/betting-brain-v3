@@ -1,0 +1,16 @@
+[
+  {
+    "eid": "event-123",
+    "mt": "SPREAD",
+    "new_line": -3.5,
+    "old_line": -3,
+    "ts": "2025-01-08T03:00:00.000Z"
+  },
+  {
+    "eid": "event-456",
+    "mt": "TOTAL",
+    "new_line": 49,
+    "old_line": 48.5,
+    "ts": "2025-01-08T03:05:00.000Z"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "event-1",
+    "line": -3.5,
+    "sport": "NFL"
+  },
+  {
+    "id": "event-2",
+    "line": -1.5,
+    "sport": "MLB"
+  },
+  {
+    "id": "event-3",
+    "line": -2.5,
+    "sport": "NBA"
+  }
+]

@@ -114,7 +114,7 @@
     try {
         // Make request to YOUR worker (not fantasy402 directly)
         const response = await fetch(
-            'https://betting-brain-v3.nolarose1968-806.workers.dev/cloud/api/Manager/getBetTicker',
+            'config.workerUrl/cloud/api/Manager/getBetTicker',
             {
                 method: 'POST',
                 headers: {
@@ -219,7 +219,7 @@
               >
               with
               <code class="bg-blue-600 px-2 py-1 rounded"
-                >https://betting-brain-v3.nolarose1968-806.workers.dev</code
+                >config.workerUrl</code
               >
             </li>
             <li>Run the modified curl command</li>

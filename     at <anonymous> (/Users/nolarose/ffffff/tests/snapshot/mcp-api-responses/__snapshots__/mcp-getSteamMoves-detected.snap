@@ -1,0 +1,13 @@
+{
+  "id": "test-request-123",
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\n  \"steamDetection\": {\n    \"events\": [\n      {\n        \"eventId\": \"NFL-SUN-123\",\n        \"marketType\": \"SPREAD\",\n        \"lineMovement\": 1.5,\n        \"severity\": \"HIGH\",\n        \"direction\": \"against_public\",\n        \"velocity\": \"fast\",\n        \"volumeChange\": 85000,\n        \"confidence\": 0.94\n      },\n      {\n        \"eventId\": \"NBA-SAT-456\",\n        \"marketType\": \"TOTAL\",\n        \"lineMovement\": 2,\n        \"severity\": \"CRITICAL\",\n        \"direction\": \"against_public\",\n        \"velocity\": \"extreme\",\n        \"volumeChange\": 125000,\n        \"confidence\": 0.97\n      }\n    ],\n    \"summary\": {\n      \"totalEvents\": 2,\n      \"steamDetected\": 2,\n      \"criticalSeverity\": 1,\n      \"highSeverity\": 1,\n      \"totalVolumeImpact\": 210000,\n      \"averageConfidence\": 0.955\n    },\n    \"alerts\": [\n      {\n        \"level\": \"CRITICAL\",\n        \"message\": \"NBA-SAT-456 showing extreme steam movement\",\n        \"confidence\": 0.97\n      }\n    ]\n  }\n}",
+        "type": "text"
+      }
+    ],
+    "isError": false
+  }
+}

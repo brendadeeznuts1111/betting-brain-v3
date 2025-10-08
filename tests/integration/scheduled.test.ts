@@ -5,6 +5,13 @@
 
 import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
+import {
+  createMockEnv,
+  createMockCtx,
+  resetAllMocks,
+  setupCostCapMock,
+  setupDatabaseMock
+} from '../utils/test-helpers';
 
 // Mock the cost cap guard
 vi.mock('../../src/guards/costCap', () => ({
@@ -13,65 +20,33 @@ vi.mock('../../src/guards/costCap', () => ({
   }
 }));
 
-// Mock the database and analytics engine
-const mockEnv: Env = {
-  ANALYTICS: {
-    prepare: vi.fn().mockReturnValue({
-      first: vi.fn().mockResolvedValue({ count: 0 }),
-      run: vi.fn().mockResolvedValue({ success: true }),
-      all: vi.fn().mockResolvedValue({ results: [] }),
-      bind: vi.fn().mockReturnValue({
-        first: vi.fn().mockResolvedValue({ count: 0 }),
-        run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
-      })
-    }),
-    exec: vi.fn().mockResolvedValue({ success: true })
-  } as any,
-  QUEUE_PRODUCER: {
-    send: vi.fn().mockResolvedValue({ success: true })
-  } as any,
-  ANALYTICS_ENGINE: {
-    writeDataPoint: vi.fn().mockResolvedValue(undefined)
-  } as any
-};
-
-const mockCtx: ExecutionContext = {
-  waitUntil: vi.fn(),
-  passThroughOnException: vi.fn()
-} as any;
+// Create mock environment and context
+let mockEnv: Env;
+let mockCtx: ExecutionContext;
 
 describe('Scheduled Job Execution Tests', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    // Create fresh mock environment and context for each test
+    mockEnv = createMockEnv();
+    mockCtx = createMockCtx();
+
+    // Reset all mocks to clean state
+    resetAllMocks(mockEnv, mockCtx);
   });
 
   describe('Sharp Calculation Job', () => {
     test('should execute sharp calculation successfully', async () => {
-      // Mock cost cap to allow processing
-      const { costCapGuard } = await import('../../src/guards/costCap');
-      (costCapGuard.checkRequest as any).mockResolvedValue({
-        allowed: true,
-        reason: 'OK'
-      });
+      // Setup cost cap mock
+      await setupCostCapMock(true, 'OK');
 
-      // Mock successful database queries
+      // Setup database mock with test data
       const mockCustomers = [
         { cid: 'cust_1' },
         { cid: 'cust_2' },
         { cid: 'cust_3' }
       ];
 
-      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockResolvedValue({ count: 3 }),
-        run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: mockCustomers }),
-        bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockResolvedValue({ count: 3 }),
-          run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: mockCustomers })
-        })
-      } as any);
+      setupDatabaseMock(mockEnv, mockCustomers, 3);
 
       // Import and test the handler
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
@@ -84,21 +59,20 @@ describe('Scheduled Job Execution Tests', () => {
     });
 
     test('should handle database errors gracefully', async () => {
-      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockRejectedValue(new Error('Database error')),
-        run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] }),
-        bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockRejectedValue(new Error('Database error')),
-          run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
-      } as any);
+      // Setup database mock to simulate errors
+      setupDatabaseMock(mockEnv, [], 0, true);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
 
       // Should not throw - errors should be handled gracefully
       await expect(handleSharpCalculation(mockEnv, mockCtx)).resolves.toBeUndefined();
+
+      // Verify that error analytics were written
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
+        expect.objectContaining({
+          blobs: ['sharp_calc', 'error']
+        })
+      );
     });
 
     test('should process only top 100 customers', async () => {

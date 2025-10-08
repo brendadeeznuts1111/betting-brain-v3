@@ -4,7 +4,7 @@
  */
 
 import { Env, GetBettingExposureRequest as GetBettingExposureRequestSchema, BettingExposureResponse as BettingExposureResponseSchema } from '../../types/api';
-import { createErrorResponse } from '../../utils/error-handler';
+import { createErrorResponse, Errors } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
@@ -14,26 +14,13 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
     // Rate limiting
     const rateLimitResult = await rateLimitGuard.checkRateLimit(request);
     if (!rateLimitResult.allowed) {
-      return new Response(createErrorResponse('Rate limit exceeded', 'RATE_LIMIT', {
-        retryAfter: rateLimitResult.retryAfter
-      }), {
-        status: 429,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Retry-After': String(rateLimitResult.retryAfter || 60)
-        }
-      });
+      return createErrorResponse(Errors.rateLimit(), Date.now().toString(36), '/api/betting-exposure');
     }
 
     // Cost cap check
     const costCheck = await costCapGuard.checkRequest(request, env);
     if (!costCheck.allowed) {
-      return new Response(createErrorResponse('Cost cap exceeded', 'COST_CAP', {
-        reason: costCheck.reason
-      }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.serviceUnavailable('Cost cap exceeded'), Date.now().toString(36), '/api/betting-exposure');
     }
 
     // Parse and validate request
@@ -45,18 +32,24 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
     };
 
 
+    // Validate input
+    const validation = GetBettingExposureRequestSchema.safeParse(params);
+    if (!validation.success) {
+      return createErrorResponse(Errors.validationError(['eid is required']), Date.now().toString(36), '/api/betting-exposure');
+    }
+
     // Query exposure data
     const db = createDatabaseHelper(env);
-    const exposureData = await db.executeQuery<any>(
+    const queryResult = await db.executeQuery<any>(
       `SELECT side, risk, net FROM exposure_tracking WHERE eid = ?`,
       [params.eid]
     );
 
-    if (exposureData.length === 0) {
-      return new Response(createErrorResponse('No exposure data found for event', 'NOT_FOUND'), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    // Handle both {results: []} and [] formats
+    const exposureData = Array.isArray(queryResult) ? queryResult : (queryResult as any).results || [];
+
+    if (!exposureData || exposureData.length === 0) {
+      return createErrorResponse(Errors.notFound('Betting exposure data'), Date.now().toString(36), '/api/betting-exposure');
     }
 
     // Build response
@@ -67,7 +60,7 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
       const net = row.net || 0;
       totalRisk += risk;
       maxExposure = Math.max(maxExposure, Math.abs(net));
-      
+
       return {
         side: row.side as 'HOME' | 'AWAY',
         risk,
@@ -76,7 +69,7 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
       };
     });
 
-    const response: BettingExposureResponse = {
+    const response = {
       eid: params.eid,
       sides,
       totalRisk,
@@ -97,9 +90,6 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
 
   } catch (error) {
     console.error('Error in getBettingExposure:', error);
-    return new Response(createErrorResponse('Internal server error', 'INTERNAL_ERROR'), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return createErrorResponse(Errors.databaseError('getBettingExposure query failed'), Date.now().toString(36), '/api/betting-exposure');
   }
 }

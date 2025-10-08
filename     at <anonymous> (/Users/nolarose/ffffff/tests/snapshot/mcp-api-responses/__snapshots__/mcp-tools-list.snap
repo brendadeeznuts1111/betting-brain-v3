@@ -1,0 +1,70 @@
+{
+  "id": "list-request-789",
+  "jsonrpc": "2.0",
+  "result": {
+    "tools": [
+      {
+        "description": "Current betting exposure by event and market",
+        "inputSchema": {
+          "properties": {
+            "agentID": {
+              "description": "Agent identifier",
+              "type": "string"
+            }
+          },
+          "required": [
+            "agentID"
+          ],
+          "type": "object"
+        },
+        "name": "getBettingExposure"
+      },
+      {
+        "description": "Customer lifetime value analysis",
+        "inputSchema": {
+          "properties": {
+            "customerId": {
+              "description": "Customer identifier",
+              "type": "string"
+            },
+            "includeTrends": {
+              "description": "Include trend analysis",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "customerId"
+          ],
+          "type": "object"
+        },
+        "name": "getCLV"
+      },
+      {
+        "description": "3-sigma steam move detection and analysis",
+        "inputSchema": {
+          "properties": {
+            "agentID": {
+              "description": "Agent identifier",
+              "type": "string"
+            },
+            "lookbackHours": {
+              "default": 24,
+              "description": "Hours to look back",
+              "type": "number"
+            },
+            "minLineChange": {
+              "default": 0.5,
+              "description": "Minimum line change threshold",
+              "type": "number"
+            }
+          },
+          "required": [
+            "agentID"
+          ],
+          "type": "object"
+        },
+        "name": "getSteamMoves"
+      }
+    ]
+  }
+}

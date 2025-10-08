@@ -5,6 +5,12 @@
 
 import { z } from 'zod';
 
+// Cloudflare Workers types
+export interface ExecutionContext {
+  passThroughOnException(): void;
+  waitUntil(promise: Promise<any>): void;
+}
+
 // Environment interface for Cloudflare Workers
 export interface Env {
   // D1 Databases

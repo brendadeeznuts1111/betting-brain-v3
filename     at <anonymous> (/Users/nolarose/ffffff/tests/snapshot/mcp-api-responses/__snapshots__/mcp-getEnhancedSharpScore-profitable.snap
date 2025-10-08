@@ -1,0 +1,13 @@
+{
+  "id": "test-request-123",
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\n  \"enhancedSharpScore\": {\n    \"customerId\": \"cust_1003\",\n    \"overallScore\": 82.4,\n    \"classification\": \"PROFESSIONAL\",\n    \"confidence\": 0.94,\n    \"features\": {\n      \"coreScoring\": {\n        \"clv_component\": 8.7,\n        \"win_rate_component\": 12.8,\n        \"total\": 21.5\n      },\n      \"advancedFeatures\": {\n        \"volume_consistency\": 14.2,\n        \"edge_stability\": 13.1,\n        \"pattern_recognition\": 11.8,\n        \"risk_management\": 9.4,\n        \"total\": 48.5\n      }\n    },\n    \"insights\": {\n      \"strengths\": [\n        \"volume_consistency\",\n        \"risk_management\"\n      ],\n      \"weaknesses\": [],\n      \"compared_to_peers\": \"TOP_15_PERCENT\",\n      \"improvement_suggestions\": []\n    },\n    \"timeSeries\": {\n      \"scoreHistory\": [\n        {\n          \"date\": \"2024-09-01\",\n          \"score\": 65.2\n        },\n        {\n          \"date\": \"2024-10-01\",\n          \"score\": 72.8\n        },\n        {\n          \"date\": \"2024-11-01\",\n          \"score\": 79.1\n        },\n        {\n          \"date\": \"2024-12-01\",\n          \"score\": 82.4\n        }\n      ],\n      \"trend\": \"IMPROVING\",\n      \"velocity\": \"+0.98_per_month\"\n    },\n    \"methodology\": {\n      \"version\": \"2.1.0\",\n      \"features_used\": 7,\n      \"training_data\": \"2023-2024_season\",\n      \"validation_accuracy\": 0.89\n    }\n  }\n}",
+        "type": "text"
+      }
+    ],
+    "isError": false
+  }
+}

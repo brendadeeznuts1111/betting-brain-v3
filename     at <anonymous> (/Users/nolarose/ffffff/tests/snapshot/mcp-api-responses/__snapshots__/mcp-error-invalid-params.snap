@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": -32602,
+    "data": {
+      "example": "cust_12345",
+      "field": "customerId",
+      "provided": null,
+      "required": true
+    },
+    "message": "Invalid parameters: customerId is required"
+  },
+  "id": "test-request-456",
+  "jsonrpc": "2.0"
+}

@@ -277,7 +277,7 @@
 
     <script>
       const WORKER_URL =
-        "https://betting-brain-v3.nolarose1968-806.workers.dev";
+        "config.workerUrl";
 
       let selectedProblem = null;
       let diagnosisResults = {};
@@ -609,7 +609,7 @@
               "Worker Status: " + (results.worker_health?.message || "Unknown"),
             commands: [
               "wrangler deploy",
-              "curl https://betting-brain-v3.nolarose1968-806.workers.dev/health",
+              "curl config.workerUrl/health",
             ],
           });
         }

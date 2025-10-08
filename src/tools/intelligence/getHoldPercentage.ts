@@ -4,7 +4,7 @@
  */
 
 import { Env, GetHoldPercentageRequest as GetHoldPercentageRequestSchema, HoldPercentageResponse as HoldPercentageResponseSchema } from '../../types/api';
-import { createErrorResponse } from '../../utils/error-handler';
+import { createErrorResponse, Errors } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
@@ -14,26 +14,13 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
     // Rate limiting
     const rateLimitResult = await rateLimitGuard.checkRateLimit(request);
     if (!rateLimitResult.allowed) {
-      return new Response(createErrorResponse('Rate limit exceeded', 'RATE_LIMIT', {
-        retryAfter: rateLimitResult.retryAfter
-      }), {
-        status: 429,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Retry-After': String(rateLimitResult.retryAfter || 60)
-        }
-      });
+      return createErrorResponse(Errors.rateLimit(), Date.now().toString(36), '/api/hold-percentage');
     }
 
     // Cost cap check
     const costCheck = await costCapGuard.checkRequest(request, env);
     if (!costCheck.allowed) {
-      return new Response(createErrorResponse('Cost cap exceeded', 'COST_CAP', {
-        reason: costCheck.reason
-      }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.serviceUnavailable('Cost cap exceeded'), Date.now().toString(36), '/api/hold-percentage');
     }
 
     // Parse and validate request
@@ -48,42 +35,32 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
     // Validate request with Zod schema
     const validationResult = GetHoldPercentageRequestSchema.safeParse(params);
     if (!validationResult.success) {
-      return new Response(createErrorResponse(
-        'Invalid request parameters', 
-        'INVALID_REQUEST',
-        { errors: validationResult.error.errors }
-      ), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.validationError(['eid and mt required']), Date.now().toString(36), '/api/hold-percentage');
     }
 
     // Query line movement data for hold calculation
     const db = createDatabaseHelper(env);
     const lineData = await db.executeQuery<any>(
-      `SELECT vb, va, lb, la FROM line_movements 
-       WHERE eid = ? AND mt = ? 
+      `SELECT vb, va, lb, la FROM line_movements
+       WHERE eid = ? AND mt = ?
        ORDER BY ts DESC LIMIT 1`,
       [params.eid, params.mt]
     );
 
     if (lineData.length === 0) {
-      return new Response(createErrorResponse('No data found for event/market', 'NOT_FOUND'), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.notFound('Line movement data'), Date.now().toString(36), '/api/hold-percentage');
     }
 
     const latest = lineData[0];
     const totalVolume = (latest.va || 0) + (latest.vb || 0);
     const totalRisk = totalVolume; // Simplified calculation
-    
+
     // Calculate hold percentage (simplified)
     // Hold = (Total handle - Total payouts) / Total handle
     // For demo purposes, using a standard 4.5% hold
     const holdPercentage = 4.5; // This would be calculated from actual betting data
 
-    const response: HoldPercentageResponse = {
+    const response = {
       eid: params.eid,
       mt: params.mt,
       holdPercentage,
@@ -105,7 +82,7 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
 
   } catch (error) {
     console.error('Error in getHoldPercentage:', error);
-    return new Response(createErrorResponse('Internal server error', 'INTERNAL_ERROR'), {
+    return new Response(JSON.stringify(createErrorResponse(Errors.databaseError('getHoldPercentage query failed'), Date.now().toString(36), '/api/hold-percentage')), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

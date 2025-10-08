@@ -1,0 +1,13 @@
+{
+  "id": "test-request-123",
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\n  \"exposures\": {\n    \"event-123\": {\n      \"side\": \"OVER\",\n      \"risk\": 10000,\n      \"net\": -2500,\n      \"currentLine\": -110,\n      \"marketType\": \"MONEYLINE\",\n      \"confidence\": 0.89\n    }\n  },\n  \"totalExposure\": -2500,\n  \"summary\": {\n    \"events\": 1,\n    \"atRisk\": 10000,\n    \"netPosition\": -2500,\n    \"confidence\": 0.89\n  }\n}",
+        "type": "text"
+      }
+    ],
+    "isError": false
+  }
+}

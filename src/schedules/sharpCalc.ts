@@ -6,44 +6,49 @@
 import { SharpIndicator, SharpIndicatorInsert } from '../types/database';
 import { SharpScoreMetrics } from '../types/metrics';
 import { Env } from '../types/api';
-import { costCapGuard } from '../guards/costCap';
+import { runSafe, chunk, isCostCapReached } from '../lib/scheduleUtils';
 
 export async function handleSharpCalculation(env: Env, ctx: ExecutionContext): Promise<void> {
-  try {
+  return runSafe('sharp_calc', env, ctx, async () => {
     console.log('Starting hourly sharp calculation...');
-    
+
     // Check cost cap before processing
-    const costCheck = await costCapGuard.checkRequest(new Request('https://internal'), env);
-    if (!costCheck.allowed) {
-      console.warn('Sharp calculation blocked by cost cap:', costCheck.reason);
-      return;
+    if (await isCostCapReached(env)) {
+      console.warn('Sharp calculation blocked by cost cap');
+      return; // Early exit OK
     }
 
     // Get all customers with recent activity
     const customers = await getActiveCustomers(env);
     console.log(`Processing ${customers.length} active customers`);
-    
+
+    if (!customers.length) {
+      console.log('No active customers to process');
+      return; // Early exit OK
+    }
+
     // Calculate sharp scores in batches
     const batchSize = 100;
-    const batches = [];
-    for (let i = 0; i < customers.length; i += batchSize) {
-      batches.push(customers.slice(i, i + batchSize));
-    }
-    
+    const batches = chunk(customers, batchSize);
+
     let processedCount = 0;
     for (const batch of batches) {
+      // Check cost cap before each batch
+      if (await isCostCapReached(env)) {
+        console.warn('Sharp calculation stopped due to cost cap');
+        break; // Early exit OK
+      }
+
       await processBatchSharpCalculation(batch, env);
       processedCount += batch.length;
       console.log(`Processed ${processedCount}/${customers.length} customers`);
     }
-    
+
     // Clean up old data
     await cleanupOldSharpData(env);
-    
+
     console.log('Hourly sharp calculation completed');
-  } catch (error) {
-    console.error('Error in sharp calculation:', error);
-  }
+  });
 }
 
 async function getActiveCustomers(env: Env): Promise<string[]> {
@@ -55,7 +60,7 @@ async function getActiveCustomers(env: Env): Promise<string[]> {
     ORDER BY upd DESC
     LIMIT 1000
   `).all();
-  
+
   const customers = result.results as unknown as Array<{ cid: string }>;
   return customers.map(row => row.cid);
 }
@@ -64,7 +69,7 @@ async function processBatchSharpCalculation(customerIds: string[], env: Env): Pr
   const sharpScores = await Promise.all(
     customerIds.map(customerId => calculateSharpScore(customerId, env))
   );
-  
+
   // Update database with new sharp scores
   await updateSharpScores(sharpScores, env);
 }
@@ -72,7 +77,7 @@ async function processBatchSharpCalculation(customerIds: string[], env: Env): Pr
 async function calculateSharpScore(customerId: string, env: Env): Promise<SharpScoreMetrics> {
   // Get customer's betting history
   const bettingHistory = await getCustomerBettingHistory(customerId, env);
-  
+
   if (bettingHistory.length === 0) {
     return {
       customerId,
@@ -84,19 +89,19 @@ async function calculateSharpScore(customerId: string, env: Env): Promise<SharpS
       alertThreshold: 60
     };
   }
-  
+
   // Calculate CLV (Customer Lifetime Value)
   const clv = calculateCLV(bettingHistory);
-  
+
   // Calculate win rate
   const winRate = calculateWinRate(bettingHistory);
-  
+
   // Calculate action count
   const actionCount = bettingHistory.length;
-  
+
   // Calculate sharp score (simplified algorithm)
   const sharpScore = calculateSharpScoreAlgorithm(clv, winRate, actionCount);
-  
+
   return {
     customerId,
     sharpScore,
@@ -133,17 +138,17 @@ function calculateWinRate(bettingHistory: any[]): number {
 function calculateSharpScoreAlgorithm(clv: number, winRate: number, actionCount: number): number {
   // Simplified sharp score calculation
   // In reality, this would be much more sophisticated
-  
+
   const clvScore = Math.min(Math.max(clv / 1000, 0), 50); // CLV component (0-50)
   const winRateScore = Math.min(Math.max(winRate - 50, 0), 30); // Win rate component (0-30)
   const volumeScore = Math.min(Math.max(actionCount / 10, 0), 20); // Volume component (0-20)
-  
+
   return clvScore + winRateScore + volumeScore;
 }
 
 async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Promise<void> {
   const now = new Date().toISOString();
-  
+
   for (const score of sharpScores) {
     await env.ANALYTICS.prepare(`
       INSERT OR REPLACE INTO sharp_indicators (cid, clv, wr, ao, nb, upd)
@@ -156,7 +161,7 @@ async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Pr
       score.clv, // Using CLV as net bet for simplicity
       now
     ).run();
-    
+
     // Write to analytics engine
     await env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [score.customerId, 'sharp_score'],
@@ -172,7 +177,7 @@ async function cleanupOldSharpData(env: Env): Promise<void> {
     DELETE FROM sharp_indicators 
     WHERE upd < datetime('now', '-30 days')
   `).run();
-  
+
   console.log('Cleaned up old sharp data');
 }
 

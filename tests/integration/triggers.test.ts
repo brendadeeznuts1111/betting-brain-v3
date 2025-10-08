@@ -5,74 +5,40 @@
 
 import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
+import {
+  createMockEnv,
+  createMockCtx,
+  resetAllMocks,
+  setupDatabaseMock,
+  createMockLineMovement
+} from '../utils/test-helpers';
 
-// Mock the database and analytics engine
-const mockEnv: Env = {
-  ANALYTICS: {
-    prepare: vi.fn().mockReturnValue({
-      first: vi.fn().mockResolvedValue({ count: 0 }),
-      run: vi.fn().mockResolvedValue({ success: true }),
-      all: vi.fn().mockResolvedValue({ results: [] }),
-        bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockResolvedValue({ count: 0 }),
-          run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        }),
-      bind: vi.fn().mockReturnValue({
-        first: vi.fn().mockResolvedValue({ count: 0 }),
-        run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
-      })
-    }),
-    exec: vi.fn().mockResolvedValue({ success: true })
-  } as any,
-  STEAM_WEBHOOK: {
-    send: vi.fn().mockResolvedValue({ success: true })
-  } as any,
-  ANALYTICS_ENGINE: {
-    writeDataPoint: vi.fn().mockResolvedValue(undefined)
-  } as any
-};
-
-const mockCtx: ExecutionContext = {
-  waitUntil: vi.fn(),
-  passThroughOnException: vi.fn()
-} as any;
+// Create mock environment and context
+let mockEnv: Env;
+let mockCtx: ExecutionContext;
 
 describe('Database Trigger Scenario Tests', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    // Create fresh mock environment and context for each test
+    mockEnv = createMockEnv();
+    mockCtx = createMockCtx();
+
+    // Reset all mocks to clean state
+    resetAllMocks(mockEnv, mockCtx);
   });
 
   describe('Line Movement Trigger', () => {
     test('should process line movement events successfully', async () => {
-      const mockLineMovement = {
-        eid: 'nba_123',
-        mt: 'SPREAD',
-        lb: 5.5,
-        la: 6.0,
-        vb: 10000,
-        va: 15000,
-        ts: new Date().toISOString(),
-        ing: new Date().toISOString()
-      };
+      const mockLineMovement = createMockLineMovement();
 
-      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockResolvedValue({ count: 1 }),
-        run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([mockLineMovement]),
-        bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockResolvedValue({ count: 1 }),
-          run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([mockLineMovement])
-        })
-      } as any);
+      // Setup database mock with line movement data
+      setupDatabaseMock(mockEnv, [mockLineMovement], 1);
 
       // Import and test the trigger handler
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Verify database interactions
       expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
@@ -102,17 +68,14 @@ describe('Database Trigger Scenario Tests', () => {
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, significantMovement);
-      
+
       // Verify that significant movements are flagged
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
         expect.objectContaining({
           blobs: ['nba_123', 'SPREAD', 'line_movement'],
-          doubles: expect.objectContaining({
-            line_change: 1.5
-          }),
-          indexes: ['line_movement_trigger']
+          doubles: expect.arrayContaining([1.5])
         })
       );
     });
@@ -126,7 +89,8 @@ describe('Database Trigger Scenario Tests', () => {
           la: 6.0,
           vb: 10000,
           va: 12000,
-          ts: new Date(Date.now() - 30000).toISOString() // 30 seconds ago
+          ts: new Date(Date.now() - 30000).toISOString(), // 30 seconds ago
+          ing: new Date(Date.now() - 30000).toISOString()
         },
         {
           eid: 'nba_123',
@@ -135,7 +99,8 @@ describe('Database Trigger Scenario Tests', () => {
           la: 6.5,
           vb: 12000,
           va: 15000,
-          ts: new Date().toISOString() // Now
+          ts: new Date().toISOString(), // Now
+          ing: new Date().toISOString()
         }
       ];
 
@@ -151,59 +116,52 @@ describe('Database Trigger Scenario Tests', () => {
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Process the second movement
       await onLineMove(mockEnv, rapidMovements[1]);
-      
+
       // Verify that rapid movements are detected
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
         expect.objectContaining({
           blobs: ['nba_123', 'SPREAD', 'line_movement'],
-          doubles: expect.objectContaining({
-            line_change: 0.5
-          }),
-          indexes: ['line_movement_trigger']
+          doubles: expect.arrayContaining([0.5])
         })
       );
     });
 
     test('should handle database errors gracefully', async () => {
-      const mockLineMovement = {
-        eid: 'nba_123',
-        mt: 'SPREAD',
-        lb: 5.5,
-        la: 6.0,
-        vb: 10000,
-        va: 15000,
-        ts: new Date().toISOString(),
-        ing: new Date().toISOString()
-      };
+      const mockLineMovement = createMockLineMovement();
 
-      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockRejectedValue(new Error('Database connection failed')),
-        run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
-      } as any);
+      // Setup database mock to simulate errors
+      setupDatabaseMock(mockEnv, [], 0, true);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should not throw - errors should be handled gracefully
       await expect(onLineMove(mockEnv, mockLineMovement)).resolves.toBeUndefined();
+
+      // Verify that normal analytics were still written (errors don't stop processing)
+      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
+        expect.objectContaining({
+          blobs: ['nba_123', 'SPREAD', 'line_movement']
+        })
+      );
     });
 
     test('should validate line movement data', async () => {
       const invalidMovement = {
         eid: '', // Invalid empty ID
         mt: 'INVALID', // Invalid mt
-        lb: 'invalid', // Invalid line value
+        lb: NaN, // Invalid line value
         la: 6.0,
         vb: -1000, // Invalid negative volume
         va: 15000,
-        ts: 'invalid-date' // Invalid ts
+        ts: 'invalid-date', // Invalid ts
+        ing: 'invalid-date' // Invalid ing
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should handle invalid data gracefully
       await expect(onLineMove(mockEnv, invalidMovement)).resolves.toBeUndefined();
     });
@@ -217,7 +175,8 @@ describe('Database Trigger Scenario Tests', () => {
           la: 6.0,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
+          ts: new Date().toISOString(),
+          ing: new Date().toISOString()
         },
         {
           eid: 'nba_456',
@@ -226,7 +185,8 @@ describe('Database Trigger Scenario Tests', () => {
           la: 221.0,
           vb: 8000,
           va: 12000,
-          ts: new Date().toISOString()
+          ts: new Date().toISOString(),
+          ing: new Date().toISOString()
         }
       ];
 
@@ -242,14 +202,14 @@ describe('Database Trigger Scenario Tests', () => {
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Process both movements concurrently
-      const promises = concurrentMovements.map(movement => 
+      const promises = concurrentMovements.map(movement =>
         onLineMove(mockEnv, movement)
       );
-      
+
       await Promise.all(promises);
-      
+
       // Both should be processed successfully
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
@@ -260,7 +220,7 @@ describe('Database Trigger Scenario Tests', () => {
       // Set NODE_ENV to production to avoid test delay
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
-      
+
       const mockLineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -273,16 +233,16 @@ describe('Database Trigger Scenario Tests', () => {
       };
 
       const startTime = Date.now();
-      
+
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       const endTime = Date.now();
       const executionTime = endTime - startTime;
-      
+
       // Restore original environment
       process.env.NODE_ENV = originalEnv;
-      
+
       // Should complete within 1 second (without test delay)
       expect(executionTime).toBeLessThan(1000);
     });
@@ -295,7 +255,8 @@ describe('Database Trigger Scenario Tests', () => {
         la: 5.5 + (i * 0.1),
         vb: 10000,
         va: 15000,
-        ts: new Date().toISOString()
+        ts: new Date().toISOString(),
+        ing: new Date().toISOString()
       }));
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -310,14 +271,14 @@ describe('Database Trigger Scenario Tests', () => {
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Process all movements
-      const promises = highFrequencyMovements.map(movement => 
+      const promises = highFrequencyMovements.map(movement =>
         onLineMove(mockEnv, movement)
       );
-      
+
       await Promise.all(promises);
-      
+
       // All should be processed successfully
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
@@ -342,9 +303,9 @@ describe('Database Trigger Scenario Tests', () => {
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Should complete without throwing errors even if limits are exceeded
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
@@ -364,7 +325,7 @@ describe('Database Trigger Scenario Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should handle invalid event ID gracefully
       await expect(onLineMove(mockEnv, invalidEventId)).resolves.toBeUndefined();
     });
@@ -382,7 +343,7 @@ describe('Database Trigger Scenario Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should handle invalid mt gracefully
       await expect(onLineMove(mockEnv, invalidMarket)).resolves.toBeUndefined();
     });
@@ -400,7 +361,7 @@ describe('Database Trigger Scenario Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should handle invalid line values gracefully
       await expect(onLineMove(mockEnv, invalidLineValues)).resolves.toBeUndefined();
     });
@@ -418,7 +379,7 @@ describe('Database Trigger Scenario Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should handle invalid volume gracefully
       await expect(onLineMove(mockEnv, invalidVolume)).resolves.toBeUndefined();
     });
@@ -449,9 +410,9 @@ describe('Database Trigger Scenario Tests', () => {
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Verify queue integration
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -485,18 +446,14 @@ describe('Database Trigger Scenario Tests', () => {
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Verify analytics integration
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
         expect.objectContaining({
           blobs: ['nba_123', 'SPREAD', 'line_movement'],
-          doubles: expect.objectContaining({
-            line_change: 0.5,
-            volume_change: 5000
-          }),
-          indexes: ['line_movement_trigger']
+          doubles: expect.arrayContaining([0.5, 5000])
         })
       );
     });

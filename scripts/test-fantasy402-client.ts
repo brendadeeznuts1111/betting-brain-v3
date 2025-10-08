@@ -81,9 +81,9 @@ async function main() {
         console.log(colors.green(`✅ Response received in ${duration2}ms`));
         if (performanceData) {
             console.log(colors.green(`   Agent: ${performanceData.AgentID || 'Unknown'}`));
-            console.log(colors.green(`   Total Risk: $${(parseFloat(performanceData.TotalRisk || 0) / 100).toLocaleString()}`));
-            console.log(colors.green(`   Total Win: $${(parseFloat(performanceData.TotalWin || 0) / 100).toLocaleString()}`));
-            console.log(colors.green(`   Net Income: $${(parseFloat(performanceData.NetIncome || 0) / 100).toLocaleString()}\n`));
+            console.log(colors.green(`   Total Risk: $${(Number(performanceData.TotalRisk || 0) / 100).toLocaleString()}`));
+            console.log(colors.green(`   Total Win: $${(Number(performanceData.TotalWin || 0) / 100).toLocaleString()}`));
+            console.log(colors.green(`   Net Income: $${(Number(performanceData.NetIncome || 0) / 100).toLocaleString()}\n`));
         }
 
         // Test 3: Get Account Info

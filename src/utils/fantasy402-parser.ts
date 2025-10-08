@@ -9,6 +9,22 @@ export function cleanString(str: string | undefined | null): string {
 }
 
 /**
+ * Safe parseFloat that rejects invalid input (prevents "100abc" → 100)
+ * For betting stakes, always validate with Number() + isNaN() check
+ */
+export function safeParseFloat(value: string | number | undefined | null): number {
+    if (value === null || value === undefined) return 0;
+
+    const num = Number(value);
+    if (isNaN(num)) {
+        console.warn(`Invalid number input: "${value}" - using 0`);
+        return 0;
+    }
+
+    return num;
+}
+
+/**
  * Parse sport types list from Fantasy402 API
  * Input: {"LIST":[{"sportType":"Auto Racing         ","0":"Auto Racing         "}, ...]}
  * Output: ["Auto Racing", "Baseball", "Basketball", ...]
@@ -151,11 +167,11 @@ export function parseAccountInfo(response: any): {
             store: cleanString(info.Store),
 
             // Financial (amounts are in cents, divide by 100)
-            currentBalance: parseFloat(info.CurrentBalance || '0') / 100,
-            availableBalance: parseFloat(info.AvailableBalance || '0') / 100,
-            creditLimit: parseFloat(info.CreditLimit || '0') / 100,
-            pendingWagerBalance: parseFloat(info.PendingWagerBalance || '0') / 100,
-            freePlayBalance: parseFloat(info.FreePlayBalance || '0') / 100,
+            currentBalance: safeParseFloat(info.CurrentBalance || '0') / 100,
+            availableBalance: safeParseFloat(info.AvailableBalance || '0') / 100,
+            creditLimit: safeParseFloat(info.CreditLimit || '0') / 100,
+            pendingWagerBalance: safeParseFloat(info.PendingWagerBalance || '0') / 100,
+            freePlayBalance: safeParseFloat(info.FreePlayBalance || '0') / 100,
             currencyCode: cleanString(info.CurrencyCode || 'USD'),
 
             // Status
@@ -167,11 +183,11 @@ export function parseAccountInfo(response: any): {
             denyLiveBetting: cleanString(info.DenyLiveBetting) === 'Y',
 
             // Limits (in cents, divide by 100)
-            wagerLimit: parseFloat(info.WagerLimit || '0') / 100,
-            minimumWager: parseFloat(info.MinimumWager || '0') / 100,
-            maxPropPayout: parseFloat(info.MaxPropPayout || '0') / 100,
-            parlayMaxPayout: parseFloat(info.ParlayMaxPayout || '0') / 100,
-            globalMaxPayout: parseFloat(info.GlobalMaxPayout || '0') / 100,
+            wagerLimit: safeParseFloat(info.WagerLimit || '0') / 100,
+            minimumWager: safeParseFloat(info.MinimumWager || '0') / 100,
+            maxPropPayout: safeParseFloat(info.MaxPropPayout || '0') / 100,
+            parlayMaxPayout: safeParseFloat(info.ParlayMaxPayout || '0') / 100,
+            globalMaxPayout: safeParseFloat(info.GlobalMaxPayout || '0') / 100,
 
             // Contact
             email: cleanString(info.email),
@@ -301,8 +317,8 @@ export function parseAuthorizations(response: any): {
             masterLogin: cleanString(info.MasterLogin),
             permissions,
             financialSettings: {
-                commissionPercent: parseFloat(info.CommissionPercent || '0'),
-                inetHeadCountRate: parseFloat(info.InetHeadCountRate || '0'),
+                commissionPercent: safeParseFloat(info.CommissionPercent || '0'),
+                inetHeadCountRate: safeParseFloat(info.InetHeadCountRate || '0'),
                 chargeCorePlusInet: cleanString(info.ChargeCorePlusInet) === 'Y'
             },
             featureFlags
@@ -366,8 +382,8 @@ export function parseAgentPerformance(response: any): {
             for (const sport of response.SPORTS) {
                 sportBreakdown.push({
                     sport: cleanString(sport.Sport || sport.sport),
-                    risk: parseFloat(sport.Risk || sport.risk || '0') / 100,
-                    win: parseFloat(sport.Win || sport.win || '0') / 100,
+                    risk: safeParseFloat(sport.Risk || sport.risk || '0') / 100,
+                    win: safeParseFloat(sport.Win || sport.win || '0') / 100,
                     count: parseInt(sport.Count || sport.count || '0')
                 });
             }
@@ -381,10 +397,10 @@ export function parseAgentPerformance(response: any): {
             type: cleanString(response.Type || response.type || 'CP'),
 
             // Financial metrics (amounts are in cents, divide by 100)
-            totalRisk: parseFloat(response.TotalRisk || response.totalRisk || '0') / 100,
-            totalWin: parseFloat(response.TotalWin || response.totalWin || '0') / 100,
-            totalCommission: parseFloat(response.TotalCommission || response.commission || '0') / 100,
-            netIncome: parseFloat(response.NetIncome || response.netIncome || response.Net || '0') / 100,
+            totalRisk: safeParseFloat(response.TotalRisk || response.totalRisk || '0') / 100,
+            totalWin: safeParseFloat(response.TotalWin || response.totalWin || '0') / 100,
+            totalCommission: safeParseFloat(response.TotalCommission || response.commission || '0') / 100,
+            netIncome: safeParseFloat(response.NetIncome || response.netIncome || response.Net || '0') / 100,
 
             // Wager counts
             totalWagers: parseInt(response.TotalWagers || response.totalCount || '0'),
@@ -392,8 +408,8 @@ export function parseAgentPerformance(response: any): {
             settledWagers: parseInt(response.SettledWagers || response.settled || '0'),
 
             // Free play
-            freePlayUsed: parseFloat(response.FreePlayUsed || response.freePlay || '0') / 100,
-            freePlayWin: parseFloat(response.FreePlayWin || response.freePlayWin || '0') / 100,
+            freePlayUsed: safeParseFloat(response.FreePlayUsed || response.freePlay || '0') / 100,
+            freePlayWin: safeParseFloat(response.FreePlayWin || response.freePlayWin || '0') / 100,
 
             // Sport breakdown
             sportBreakdown,

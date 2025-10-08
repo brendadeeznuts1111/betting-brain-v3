@@ -5,8 +5,40 @@
 # Default timeout for all tests (10 seconds)
 timeout = 10000
 
+# Coverage configuration - Enhanced for visualization
+coverage = true
+coverageThreshold = 0.8  # 80% minimum function coverage
+
+# Coverage reporters for CI/CD and development (Bun supports: text, lcov)
+coverageReporter = ["text", "lcov"]
+coverageDirectory = "coverage-reports"
+
+# Exclusions for coverage reporting
+coverageExcludeFromTestFiles = false
+coverageExclude = [
+  "tests/**",
+  "scripts/**",
+  "tools/**",
+  "*.test.ts",
+  "*.spec.ts",
+  "docs/**"
+]
+
+# Benchmark configuration
+bench = true
+benchWarmup = true
+benchMinSamples = 10
+
 # Preload files before running tests
 # preload = ["./tests/setup/global-setup.ts"]
 
 # Root directory for tests
 root = "."
+
+# Snapshot configuration
+snapshot = true
+snapshotUpdate = false
+
+# Randomization for catching order dependencies
+randomize = false
+rerunEach = 1

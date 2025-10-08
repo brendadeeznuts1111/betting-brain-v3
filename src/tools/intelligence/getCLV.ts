@@ -4,7 +4,7 @@
  */
 
 import { Env, GetCLVRequest as GetCLVRequestSchema, CLVResponse as CLVResponseSchema } from '../../types/api';
-import { createErrorResponse } from '../../utils/error-handler';
+import { createErrorResponse, Errors } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
@@ -14,26 +14,13 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
     // Rate limiting
     const rateLimitResult = await rateLimitGuard.checkRateLimit(request);
     if (!rateLimitResult.allowed) {
-      return new Response(createErrorResponse('Rate limit exceeded', 'RATE_LIMIT', {
-        retryAfter: rateLimitResult.retryAfter
-      }), {
-        status: 429,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Retry-After': String(rateLimitResult.retryAfter || 60)
-        }
-      });
+      return createErrorResponse(Errors.rateLimit(), Date.now().toString(36), '/api/clv');
     }
 
     // Cost cap check
     const costCheck = await costCapGuard.checkRequest(request, env);
     if (!costCheck.allowed) {
-      return new Response(createErrorResponse('Cost cap exceeded', 'COST_CAP', {
-        reason: costCheck.reason
-      }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.serviceUnavailable('Cost cap exceeded'), Date.now().toString(36), '/api/clv');
     }
 
     // Parse and validate request
@@ -46,12 +33,7 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
 
     const validation = GetCLVRequestSchema.safeParse(params);
     if (!validation.success) {
-      return new Response(createErrorResponse('Invalid request parameters', 'VALIDATION_ERROR', {
-        errors: validation.error.errors
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.validationError(['cid is required']), Date.now().toString(36), '/api/clv');
     }
 
     const validatedParams = validation.data;
@@ -64,13 +46,10 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
     );
 
     if (!clvData) {
-      return new Response(createErrorResponse('No CLV data found for customer', 'NOT_FOUND'), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.notFound('CLV data'), Date.now().toString(36), '/api/clv');
     }
 
-    const response: CLVResponse = {
+    const response = {
       cid: validatedParams.cid,
       lifetimeValue: clvData.clv || 0,
       winRate: clvData.wr || 0,
@@ -90,7 +69,7 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
 
   } catch (error) {
     console.error('Error in getCLV:', error);
-    return new Response(createErrorResponse('Internal server error', 'INTERNAL_ERROR'), {
+    return new Response(JSON.stringify(createErrorResponse(Errors.databaseError('getCLV query failed'), Date.now().toString(36), '/api/clv')), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

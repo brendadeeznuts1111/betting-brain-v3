@@ -1,143 +1,218 @@
 /**
- * Test utility functions for common testing patterns
+ * Test Utilities and Helpers
+ * 
+ * Provides shared utilities for test isolation, mock management,
+ * and common test patterns to prevent test pollution.
  */
 
-import { vi } from 'bun:test';
+import { vi } from "bun:test";
 import type { Env } from '../../src/types/api';
-import type { ExecutionContext } from '@cloudflare/workers-types';
 
 /**
- * Creates a mock D1 database with realistic behavior
+ * Creates a clean mock environment for tests
  */
-export function createMockD1Database() {
+export function createMockEnv(): Env {
   return {
-    prepare: vi.fn().mockReturnValue({
-      first: vi.fn().mockResolvedValue({ count: 0 }),
-      run: vi.fn().mockResolvedValue({ success: true }),
-      all: vi.fn().mockResolvedValue([]),
-      bind: vi.fn().mockReturnValue({
+    ANALYTICS: {
+      prepare: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
-      })
-    }),
-    exec: vi.fn().mockResolvedValue({ success: true })
+        all: vi.fn().mockResolvedValue({ results: [] }),
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ count: 0 }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+          all: vi.fn().mockResolvedValue({ results: [] })
+        })
+      }),
+      exec: vi.fn().mockResolvedValue({ success: true })
+    } as any,
+    STEAM_WEBHOOK: {
+      send: vi.fn().mockResolvedValue({ success: true })
+    } as any,
+    QUEUE_PRODUCER: {
+      send: vi.fn().mockResolvedValue({ success: true })
+    } as any,
+    ANALYTICS_ENGINE: {
+      writeDataPoint: vi.fn().mockResolvedValue(undefined)
+    } as any,
+    BET_TICKER_RAW: {
+      put: vi.fn().mockResolvedValue(undefined),
+      get: vi.fn().mockResolvedValue(null),
+      delete: vi.fn().mockResolvedValue(undefined),
+      list: vi.fn().mockResolvedValue({ keys: [] })
+    } as any
   };
 }
 
 /**
- * Creates a mock Analytics Engine
+ * Creates a clean mock execution context
  */
-export function createMockAnalyticsEngine() {
-  return {
-    writeDataPoint: vi.fn().mockResolvedValue(undefined)
-  };
-}
-
-/**
- * Creates a mock Queue
- */
-export function createMockQueue() {
-  return {
-    send: vi.fn().mockResolvedValue({ success: true })
-  };
-}
-
-/**
- * Creates a complete mock environment
- */
-export function createMockEnvironment(): Env {
-  return {
-    ANALYTICS: createMockD1Database() as any,
-    LINE_INGRESS: createMockQueue() as any,
-    STEAM_WEBHOOK: createMockQueue() as any,
-    ANALYTICS_ENGINE: createMockAnalyticsEngine() as any
-  };
-}
-
-/**
- * Waits for a specified number of milliseconds
- */
-export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Creates a mock request with query parameters
- */
-export function createMockRequest(url: string, method: string = 'GET'): Request {
-  return new Request(url, { method });
-}
-
-/**
- * Asserts that a function throws an error with a specific message
- */
-export async function expectToThrow(
-  fn: () => Promise<any>,
-  expectedMessage?: string
-): Promise<void> {
-  try {
-    await fn();
-    throw new Error('Expected function to throw');
-  } catch (error) {
-    if (expectedMessage && !error.message.includes(expectedMessage)) {
-      throw new Error(`Expected error message to contain "${expectedMessage}", but got "${error.message}"`);
-    }
-  }
-}
-
-/**
- * Asserts that a function does not throw
- */
-export async function expectNotToThrow(fn: () => Promise<any>): Promise<void> {
-  try {
-    await fn();
-  } catch (error) {
-    throw new Error(`Expected function not to throw, but it threw: ${error.message}`);
-  }
-}
-
-/**
- * Creates a mock execution context
- */
-export function createMockExecutionContext(): ExecutionContext {
+export function createMockCtx(): ExecutionContext {
   return {
     waitUntil: vi.fn(),
+    passUntil: vi.fn(),
     passThroughOnException: vi.fn()
   } as any;
 }
 
 /**
- * Validates that an object has the expected structure
+ * Resets all mocks to clean state
  */
-export function validateObjectStructure(obj: any, expectedKeys: string[]): void {
-  const actualKeys = Object.keys(obj);
-  const missingKeys = expectedKeys.filter(key => !actualKeys.includes(key));
-  const extraKeys = actualKeys.filter(key => !expectedKeys.includes(key));
-  
-  if (missingKeys.length > 0) {
-    throw new Error(`Missing keys: ${missingKeys.join(', ')}`);
-  }
-  
-  if (extraKeys.length > 0) {
-    throw new Error(`Unexpected keys: ${extraKeys.join(', ')}`);
+export function resetAllMocks(mockEnv: Env, mockCtx: ExecutionContext): void {
+  vi.resetAllMocks();
+
+  // Reset environment mocks
+  (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+    first: vi.fn().mockResolvedValue({ count: 0 }),
+    run: vi.fn().mockResolvedValue({ success: true }),
+    all: vi.fn().mockResolvedValue({ results: [] }),
+    bind: vi.fn().mockReturnValue({
+      first: vi.fn().mockResolvedValue({ count: 0 }),
+      run: vi.fn().mockResolvedValue({ success: true }),
+      all: vi.fn().mockResolvedValue({ results: [] })
+    })
+  });
+
+  (mockEnv.STEAM_WEBHOOK.send as any).mockResolvedValue({ success: true });
+  (mockEnv.QUEUE_PRODUCER.send as any).mockResolvedValue({ success: true });
+  (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockResolvedValue(undefined);
+
+  // Reset context mocks
+  (mockCtx.waitUntil as any).mockClear();
+  (mockCtx.passThroughOnException as any).mockClear();
+}
+
+/**
+ * Safely reads response body without reuse issues
+ */
+export async function readResponseBody(response: Response): Promise<any> {
+  const clonedResponse = response.clone();
+  return await clonedResponse.json();
+}
+
+/**
+ * Creates a mock request with proper URL parsing
+ */
+export function createMockRequest(url: string, options?: RequestInit): Request {
+  return new Request(url, {
+    method: 'GET',
+    ...options
+  });
+}
+
+/**
+ * Creates a mock line movement data
+ */
+export function createMockLineMovement(overrides: Partial<any> = {}): any {
+  return {
+    eid: 'nba_123',
+    mt: 'SPREAD',
+    lb: 5.5,
+    la: 6.0,
+    vb: 10000,
+    va: 15000,
+    ts: new Date().toISOString(),
+    ing: new Date().toISOString(),
+    ...overrides
+  };
+}
+
+/**
+ * Creates a mock customer data
+ */
+export function createMockCustomer(overrides: Partial<any> = {}): any {
+  return {
+    cid: 'test-customer-1',
+    clv: 1500,
+    wr: 55,
+    ao: 100,
+    nb: 1500,
+    ...overrides
+  };
+}
+
+/**
+ * Sets up mock for cost cap guard
+ */
+export async function setupCostCapMock(allowed: boolean = true, reason: string = 'OK'): Promise<void> {
+  const { costCapGuard } = await import('../../src/guards/costCap');
+  (costCapGuard.checkRequest as any).mockResolvedValue({
+    allowed,
+    reason
+  });
+}
+
+/**
+ * Sets up mock for database queries with specific results
+ */
+export function setupDatabaseMock(
+  mockEnv: Env,
+  queryResults: any[] = [],
+  count: number = 0,
+  shouldError: boolean = false
+): void {
+  if (shouldError) {
+    (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+      first: vi.fn().mockRejectedValue(new Error('Database error')),
+      run: vi.fn().mockRejectedValue(new Error('Database error')),
+      all: vi.fn().mockRejectedValue(new Error('Database error')),
+      bind: vi.fn().mockReturnValue({
+        first: vi.fn().mockRejectedValue(new Error('Database error')),
+        run: vi.fn().mockRejectedValue(new Error('Database error')),
+        all: vi.fn().mockRejectedValue(new Error('Database error'))
+      })
+    });
+  } else {
+    (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+      first: vi.fn().mockResolvedValue({ count }),
+      run: vi.fn().mockResolvedValue({ success: true }),
+      all: vi.fn().mockResolvedValue({ results: queryResults }),
+      bind: vi.fn().mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue({ results: queryResults })
+      })
+    });
   }
 }
 
 /**
- * Creates a test timeout that can be cleared
+ * Sets up mock for cost cap queries (dbstat)
  */
-export function createTestTimeout(ms: number): { promise: Promise<never>; clear: () => void } {
-  let timeoutId: NodeJS.Timeout;
-  
-  const promise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error(`Test timeout after ${ms}ms`));
-    }, ms);
+export function setupCostCapMock(mockEnv: Env, size: number = 1000000, rows: number = 1000): void {
+  (mockEnv.ANALYTICS.prepare as any).mockImplementation((query: string) => {
+    // Handle cost cap queries (dbstat)
+    if (query.includes('dbstat') || query.includes('SUM(pgsize)')) {
+      return {
+        first: async () => ({ size, rows }),
+        bind: () => ({ first: async () => ({ size, rows }) }),
+        run: async () => ({ success: true }),
+        all: async () => []
+      };
+    }
+
+    // Default mock for other queries
+    return {
+      first: async () => null,
+      bind: () => ({ first: async () => null }),
+      run: async () => ({ success: true }),
+      all: async () => []
+    };
   });
-  
-  return {
-    promise,
-    clear: () => clearTimeout(timeoutId)
-  };
+}
+
+/**
+ * Waits for all async operations to complete
+ */
+export async function waitForAsync(): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, 0));
+}
+
+/**
+ * Creates a test timeout with cleanup
+ */
+export function createTestTimeout(ms: number = 5000): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`Test timeout after ${ms}ms`)), ms);
+  });
 }

@@ -6,38 +6,41 @@
 import { ExposureTracking, ExposureTrackingInsert } from '../types/database';
 import { ExposureMetrics } from '../types/metrics';
 import { Env } from '../types/api';
-import { costCapGuard } from '../guards/costCap';
+import { runSafe, isCostCapReached } from '../lib/scheduleUtils';
 
 export async function handleExposureCalculation(env: Env, ctx: ExecutionContext): Promise<void> {
-  try {
-    console.log('Starting 30-second exposure calculation...');
-    
+  return runSafe('exposure_calc', env, ctx, async () => {
+    const requestId = 'cron-exposure-' + Date.now().toString(36);
+    console.log(`[${requestId}] Starting 30-second exposure calculation...`);
+
     // Check cost cap before processing
-    const costCheck = await costCapGuard.checkRequest(new Request('https://internal'), env);
-    if (!costCheck.allowed) {
-      console.warn('Exposure calculation blocked by cost cap:', costCheck.reason);
-      return;
+    if (await isCostCapReached(env)) {
+      console.warn('Exposure calculation blocked by cost cap');
+      return; // Early exit OK
     }
 
     // Get all active events with recent line movements
     const activeEvents = await getActiveEvents(env);
     console.log(`Processing exposure for ${activeEvents.length} active events`);
-    
+
+    if (!activeEvents.length) {
+      console.log('No active events to process');
+      return; // Early exit OK
+    }
+
     // Process each event (max 50 rows constraint)
     const exposureUpdates = await Promise.all(
       activeEvents.slice(0, 50).map(eventId => calculateEventExposure(eventId, env))
     );
-    
+
     // Update exposure tracking
     await updateExposureTracking(exposureUpdates, env);
-    
+
     // Check for alerts
     await checkExposureAlerts(exposureUpdates, env);
-    
+
     console.log('30-second exposure calculation completed');
-  } catch (error) {
-    console.error('Error in exposure calculation:', error);
-  }
+  });
 }
 
 async function getActiveEvents(env: Env): Promise<string[]> {
@@ -49,7 +52,7 @@ async function getActiveEvents(env: Env): Promise<string[]> {
     ORDER BY ing DESC
     LIMIT 50
   `).all();
-  
+
   const events = result.results as unknown as Array<{ eid: string }>;
   return events.map(row => row.eid);
 }
@@ -61,26 +64,26 @@ async function calculateEventExposure(eventId: string, env: Env): Promise<Exposu
     FROM exposure_tracking
     WHERE eid = ?
   `).bind(eventId).all();
-  
+
   const exposureData = exposureDataResult.results as unknown as Array<{
     side: string;
     risk: number;
     net: number;
   }>;
-  
+
   // Calculate total risk and max exposure
   let totalRisk = 0;
   let maxExposure = 0;
   const sides: ExposureMetrics['sides'] = [];
-  
+
   for (const row of exposureData) {
     const risk = (row.risk as number) || 0;
     const net = (row.net as number) || 0;
     const side = (row.side as string) || 'UNKNOWN';
-    
+
     totalRisk += risk;
     maxExposure = Math.max(maxExposure, Math.abs(net));
-    
+
     sides.push({
       side: side as 'HOME' | 'AWAY',
       risk,
@@ -88,7 +91,7 @@ async function calculateEventExposure(eventId: string, env: Env): Promise<Exposu
       percentage: risk > 0 ? (net / risk) * 100 : 0
     });
   }
-  
+
   return {
     eventId,
     sides,
@@ -104,7 +107,7 @@ async function calculateEventExposure(eventId: string, env: Env): Promise<Exposu
 
 async function updateExposureTracking(exposureUpdates: ExposureMetrics[], env: Env): Promise<void> {
   const now = new Date().toISOString();
-  
+
   for (const exposure of exposureUpdates) {
     for (const side of exposure.sides) {
       await env.ANALYTICS.prepare(`
@@ -118,7 +121,7 @@ async function updateExposureTracking(exposureUpdates: ExposureMetrics[], env: E
         now
       ).run();
     }
-    
+
     // Write to analytics engine
     await env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [exposure.eventId, 'exposure_update'],
@@ -134,7 +137,7 @@ async function checkExposureAlerts(exposureUpdates: ExposureMetrics[], env: Env)
     if (exposure.maxExposure > exposure.alertThreshold.maxAmount) {
       await sendExposureAlert(exposure, 'MAX_AMOUNT', env);
     }
-    
+
     // Check if any side exceeds percentage threshold
     for (const side of exposure.sides) {
       if (Math.abs(side.percentage) > exposure.alertThreshold.maxPercentage) {
@@ -151,7 +154,7 @@ async function sendExposureAlert(exposure: ExposureMetrics, alertType: string, e
   console.log(`Total Risk: $${exposure.totalRisk.toLocaleString()}`);
   console.log(`Max Exposure: $${exposure.maxExposure.toLocaleString()}`);
   console.log(`Sides:`, exposure.sides);
-  
+
   // Log to Analytics Engine
   await env.ANALYTICS_ENGINE.writeDataPoint({
     blobs: [exposure.eventId, alertType],

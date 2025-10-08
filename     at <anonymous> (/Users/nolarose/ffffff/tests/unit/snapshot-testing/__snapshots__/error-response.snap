@@ -1,0 +1,16 @@
+{
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "details": {
+      "allowed": [
+        "SPREAD",
+        "TOTAL",
+        "MONEYLINE"
+      ],
+      "field": "marketType",
+      "value": "INVALID_TYPE"
+    },
+    "message": "Invalid market type"
+  }
+}

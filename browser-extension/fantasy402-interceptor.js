@@ -1,7 +1,7 @@
 // Fantasy402.com Data Interceptor
 // Intercepts API calls and forwards to Cloudflare Worker
 
-const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+const WORKER_URL = 'config.workerUrl';
 const DEBUG = true;
 
 // Store original fetch

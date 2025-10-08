@@ -17,7 +17,7 @@ const DB_NAME = 'fantasy402-cache';
 const DB_VERSION = 1;
 const STORE_NAME = 'appConfig';
 const CONFIG_KEY = 'bootstrap';
-const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+const WORKER_URL = 'config.workerUrl';
 
 class Fantasy402ConfigCache {
     constructor() {

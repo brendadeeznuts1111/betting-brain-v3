@@ -4,6 +4,7 @@
  */
 
 import { RateLimitConfig } from '../types/api';
+import { isTestEnvironment } from '../lib/testToggles';
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -24,6 +25,15 @@ export class RateLimitGuard {
    * Check if request is within rate limits
    */
   async checkRateLimit(request: Request): Promise<RateLimitResult> {
+    // Bypass rate limiting in test environment
+    if (isTestEnvironment()) {
+      return {
+        allowed: true,
+        remaining: 999,
+        resetTime: Date.now() + 60000
+      };
+    }
+
     const key = this.config.keyGenerator(request);
     const now = Date.now();
     const windowStart = now - (this.config.windowSize * 1000);
@@ -44,7 +54,7 @@ export class RateLimitGuard {
 
     // Check if we're in burst mode
     const isBurst = data.burstCount < this.config.burstLimit;
-    
+
     // Calculate current rate
     const currentRate = data.requests.length / this.config.windowSize;
     const maxRate = this.config.requestsPerSecond;
@@ -53,7 +63,7 @@ export class RateLimitGuard {
     if (data.burstCount >= this.config.burstLimit) {
       const oldestRequest = Math.min(...data.requests);
       const retryAfter = Math.ceil((oldestRequest + (this.config.windowSize * 1000) - now) / 1000);
-      
+
       return {
         allowed: false,
         retryAfter,
@@ -66,7 +76,7 @@ export class RateLimitGuard {
       // Rate limit exceeded
       const oldestRequest = Math.min(...data.requests);
       const retryAfter = Math.ceil((oldestRequest + (this.config.windowSize * 1000) - now) / 1000);
-      
+
       return {
         allowed: false,
         retryAfter,

@@ -1,0 +1,13 @@
+{
+  "id": "test-request-123",
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\n  \"customerLifetimeValue\": {\n    \"currentValue\": 1500.75,\n    \"projectedValue\": 2375,\n    \"confidence\": 0.92,\n    \"riskLevel\": \"LOW\",\n    \"metrics\": {\n      \"totalBets\": 150,\n      \"averageBetSize\": 10,\n      \"winRate\": 0.52,\n      \"edge\": 0.05,\n      \"holding\": -0.08\n    },\n    \"lastCalculated\": \"2025-01-08T03:00:00.000Z\"\n  }\n}",
+        "type": "text"
+      }
+    ],
+    "isError": false
+  }
+}

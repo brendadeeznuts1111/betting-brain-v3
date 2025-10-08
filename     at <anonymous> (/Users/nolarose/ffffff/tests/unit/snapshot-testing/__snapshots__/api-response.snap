@@ -1,0 +1,14 @@
+{
+  "data": {
+    "events": [
+      {
+        "id": "event-1",
+        "line": -3.5,
+        "name": "Game 1"
+      }
+    ],
+    "limit": 100,
+    "total": 1
+  },
+  "error": null
+}

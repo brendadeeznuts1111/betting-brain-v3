@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": -32000,
+    "data": {
+      "fallback": "cached_results_available",
+      "maintenanceWindow": false,
+      "retryAfter": 30,
+      "type": "SERVICE_UNAVAILABLE"
+    },
+    "message": "Database temporarily unavailable"
+  },
+  "id": "failed-request-999",
+  "jsonrpc": "2.0"
+}

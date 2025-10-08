@@ -1,0 +1,13 @@
+{
+  "id": "test-request-123",
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\n  \"holdForecast\": {\n    \"predictions\": [\n      {\n        \"eventId\": \"NBA_MON_789\",\n        \"currentHold\": 0.042,\n        \"predictedHold\": 0.048,\n        \"trend\": \"INCREASING\",\n        \"confidence\": 0.87,\n        \"volatility\": \"LOW\",\n        \"factors\": {\n          \"historicalPattern\": \"+2.1%\",\n          \"volumeVelocity\": \"+15%\",\n          \"marketEfficiency\": \"HIGH\"\n        }\n      },\n      {\n        \"eventId\": \"NFL_TUE_101\",\n        \"currentHold\": 0.038,\n        \"predictedHold\": 0.034,\n        \"trend\": \"DECREASING\",\n        \"confidence\": 0.81,\n        \"volatility\": \"MEDIUM\",\n        \"factors\": {\n          \"historicalPattern\": \"-1.8%\",\n          \"volumeVelocity\": \"-8%\",\n          \"marketEfficiency\": \"MEDIUM\"\n        }\n      }\n    ],\n    \"methodology\": {\n      \"algorithm\": \"linear_regression\",\n      \"lookbackDays\": 30,\n      \"confidenceInterval\": 0.95,\n      \"updateFrequency\": \"hourly\"\n    },\n    \"validation\": {\n      \"meanAbsoluteError\": 0.0042,\n      \"rSquared\": 0.73,\n      \"lastTrained\": \"2025-01-08T02:00:00.000Z\"\n    }\n  }\n}",
+        "type": "text"
+      }
+    ],
+    "isError": false
+  }
+}
