@@ -151,15 +151,6 @@ function registerLiveBettingTools() {
 
   // getSharpActivity - Sharp customer tracking
   toolRegistry.set('getSharpActivity', getSharpActivity);
-
-  // Placeholder implementations - to be ported from fantasy402-mcp
-  toolRegistry.set('getLiveBettingTicker', async (args, env) => {
-    return createNotImplementedResult('getLiveBettingTicker');
-  });
-
-  toolRegistry.set('getClosingLineValue', async (args, env) => {
-    return createNotImplementedResult('getClosingLineValue');
-  });
 }
 
 /**
@@ -185,57 +176,8 @@ function registerTradingTools() {
   toolRegistry.set('placeHedgeBet', placeHedgeBet);
 }
 
-/**
- * Register Raw Feed Tools
- * Placeholder implementations - to be ported from fantasy402-mcp
- */
-function registerRawFeedTools() {
-  toolRegistry.set('getRawFeedSamples', async (args, env) => {
-    return createNotImplementedResult('getRawFeedSamples');
-  });
-
-  toolRegistry.set('getParsedBetData', async (args, env) => {
-    return createNotImplementedResult('getParsedBetData');
-  });
-
-  toolRegistry.set('getRawFeedHealth', async (args, env) => {
-    return createNotImplementedResult('getRawFeedHealth');
-  });
-
-  toolRegistry.set('searchRawFeeds', async (args, env) => {
-    return createNotImplementedResult('searchRawFeeds');
-  });
-}
-
-/**
- * Register Admin Tools
- * Placeholder implementations - to be ported from fantasy402-mcp
- */
-function registerAdminTools() {
-  toolRegistry.set('searchCustomers', async (args, env) => {
-    return createNotImplementedResult('searchCustomers');
-  });
-
-  toolRegistry.set('getAgentProfile', async (args, env) => {
-    return createNotImplementedResult('getAgentProfile');
-  });
-
-  toolRegistry.set('getCommunicationMessages', async (args, env) => {
-    return createNotImplementedResult('getCommunicationMessages');
-  });
-}
-
-/**
- * Register Management Tools (Fantasy402.com API)
- * Placeholder implementations - to be ported from fantasy402-mcp
- */
-function registerManagementTools() {
-  toolRegistry.set('getAccountInfoOwner', async (args, env) => {
-    return createNotImplementedResult('getAccountInfoOwner');
-  });
-
-  // Additional 18+ management tools would be registered here
-}
+// Placeholder functions removed - tools will be added on-demand when implemented
+// See src/archive/README.md for migration guide
 
 /**
  * Initialize all tool registrations
@@ -246,9 +188,6 @@ function initializeRegistry() {
     registerLiveBettingTools();
     registerAnalyticsTools();
     registerTradingTools();
-    registerRawFeedTools();
-    registerAdminTools();
-    registerManagementTools();
 
     console.log(`[MCP] Registered ${toolRegistry.size} tools`);
   }

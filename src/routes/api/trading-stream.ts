@@ -101,13 +101,21 @@ async function getTradingStatus(env: Env): Promise<any> {
 }
 
 async function getRecentSignals(env: Env): Promise<any[]> {
-  // Would query Analytics Engine or D1 for recent signals
-  // Placeholder implementation
+  // Query Analytics Engine for steam move signals
+  if (!env.ANALYTICS_ENGINE) return [];
+
+  // TODO: Implement Analytics Engine query
+  // const signals = await env.ANALYTICS_ENGINE.getDataPoints({ ... });
   return [];
 }
 
 async function getRecentBets(env: Env): Promise<any[]> {
-  // Would query bet_history table
-  // Placeholder implementation
-  return [];
+  // Query bet_history table for recent autonomous bets
+  if (!env.ANALYTICS) return [];
+
+  const result = await env.ANALYTICS.prepare(
+    'SELECT * FROM bet_history WHERE timestamp > ? ORDER BY timestamp DESC LIMIT 10'
+  ).bind(Date.now() - 3600000).all();
+
+  return result.results || [];
 }
