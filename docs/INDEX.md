@@ -51,6 +51,7 @@
 | [CI_AND_ZOMBIE_FIX_SUMMARY.md](CI_AND_ZOMBIE_FIX_SUMMARY.md) | Complete CI & zombie fix implementation 🆕 | All Devs | ✅ Complete |
 | [ZOMBIE_PROCESS_FIX.md](ZOMBIE_PROCESS_FIX.md) | Zombie process fix technical details 🆕 | DevOps | ✅ Complete |
 | [TESTING_STATUS.md](TESTING_STATUS.md) | Test health & coverage | QA, Devs | ✅ Complete |
+| **[ERROR_PATH_TESTING.md](ERROR_PATH_TESTING.md)** | **📋 Comprehensive error path test suite (299 tests, 81% coverage)** 🆕⭐ | QA, Devs, Tech Leads | ✅ Complete |
 | [testing/TESTING_GUIDE.md](testing/TESTING_GUIDE.md) | Testing patterns & best practices | All Devs | ✅ Complete |
 
 ### MCP Integration ✨ NEW

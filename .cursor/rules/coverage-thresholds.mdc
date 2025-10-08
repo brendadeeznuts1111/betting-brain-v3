@@ -1,16 +1,22 @@
 ---
 globs: bunfig.toml,bunfig.*.toml,package.json
 description: Coverage threshold configuration patterns
+version: "1.0.0"
+lastUpdated: "2025-10-07"
+dependencies: ["analytics-testing", "ci-integration"]
 ---
 
 # Coverage Threshold Rules
 
 ## Dual Threshold System
 
-This codebase uses **dual coverage thresholds** to balance strict production standards with flexible analytics testing.
+This codebase uses **dual coverage thresholds** to balance:
+- Strict production standards
+- Flexible analytics testing
 
 ### Main Suite: 80% Coverage (Strict)
 ```toml
+
 # bunfig.toml
 coverage = false  # coverage off by default
 coverageThreshold = 0.8   # 80% for production code
@@ -18,6 +24,7 @@ coverageThreshold = 0.8   # 80% for production code
 
 ### Analytics Suite: 0% Coverage (Flexible)
 ```toml
+
 # bunfig.analytics.toml
 coverage = true
 coverageThreshold = 0  # No threshold for analytics tests
@@ -27,6 +34,7 @@ coverageThreshold = 0  # No threshold for analytics tests
 
 ### Main Suite Commands
 ```json
+
 {
   "test": "bun test --randomize",
   "test:coverage": "bun test --coverage --randomize"
@@ -35,6 +43,7 @@ coverageThreshold = 0  # No threshold for analytics tests
 
 ### Analytics Suite Commands
 ```json
+
 {
   "analytics:test": "bun test tests/unit/analytics-testing-example.test.ts --randomize",
   "analytics:test:coverage": "bun test --coverage --randomize tests/unit/analytics-testing-example.test.ts --config bunfig.analytics.toml",
@@ -90,12 +99,17 @@ Environment variables
 ### Issue: Config file not working
 **Solution**: Ensure `[test]` section in config file
 
+## Related Rules
+
+- [Analytics Testing](mdc:.cursor/rules/analytics-testing.mdc) - Core analytics testing patterns
+- [CI Integration](mdc:.cursor/rules/ci-integration.mdc) - CI/CD automation with dual thresholds
+- [Test Setup Patterns](mdc:.cursor/rules/test-setup-patterns.mdc) - Test configuration patterns
+
 ## Related Files
 
 - [bunfig.toml](mdc:bunfig.toml) - Main configuration
 - [bunfig.analytics.toml](mdc:bunfig.analytics.toml) - Analytics configuration
 - [package.json](mdc:package.json) - Script definitions
-- [analytics-testing.mdc](mdc:.cursor/rules/analytics-testing.mdc) - Analytics testing patterns
 
 ---
 

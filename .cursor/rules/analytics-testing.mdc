@@ -1,19 +1,26 @@
 ---
 alwaysApply: true
 description: Analytics testing patterns and best practices
+version: "1.0.0"
+lastUpdated: "2025-10-07"
+dependencies: ["test-setup-patterns", "analytics-stub-api", "coverage-thresholds"]
 ---
 
 # Analytics Testing Rules
 
 ## Core Principles
 
-**Analytics Engine calls are first-class citizens in tests** - no network, no flakes, no waiting.
+**Analytics Engine calls are first-class citizens in tests**
+- No network dependencies
+- No flakes
+- No waiting
 
 ## Required Patterns
 
 ### 1. Use AnalyticsEngineStub for All Analytics Testing
 
 ```typescript
+
 // ✅ CORRECT: Use the global stub
 import { createMockEnv } from '../utils/test-helpers';
 
@@ -34,6 +41,7 @@ expect(analytics.getCalls()[0].blobs).toEqual(['event_type', 'data']);
 ### 2. Never Use toHaveBeenCalledWith for Analytics
 
 ```typescript
+
 // ❌ WRONG: Generic mock assertions
 expect(mockAnalytics.writeDataPoint).toHaveBeenCalledWith({
   blobs: ['event_type', 'data']
@@ -48,6 +56,7 @@ expect(analytics.wasCalledWith({
 ### 3. Use Helper Functions for Common Assertions
 
 ```typescript
+
 import { 
   expectAnalyticsCall, 
   expectAnalyticsCallCount,
@@ -67,6 +76,7 @@ expectAnalyticsDoubles(analytics, [1.5, 1000], 0.001);
 ### 4. Test Name Detection for Auto-Flush
 
 ```typescript
+
 // ✅ CORRECT: Set test name for auto-flush
 test('should track analytics calls with stub', async () => {
   setCurrentTestName('should track analytics calls with stub');
@@ -159,6 +169,13 @@ test('my test', async () => {
 // Use the global stub consistently
 const analytics = getGlobalAnalyticsStub();
 ```
+
+## Related Rules
+
+- [Test Setup Patterns](mdc:.cursor/rules/test-setup-patterns.mdc) - Test configuration and setup
+- [Analytics Stub API](mdc:.cursor/rules/analytics-stub-api.mdc) - AnalyticsEngineStub API reference
+- [Coverage Thresholds](mdc:.cursor/rules/coverage-thresholds.mdc) - Dual threshold system
+- [CI Integration](mdc:.cursor/rules/ci-integration.mdc) - CI/CD automation patterns
 
 ## Related Files
 
