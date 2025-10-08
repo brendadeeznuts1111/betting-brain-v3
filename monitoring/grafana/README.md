@@ -1,4 +1,4 @@
-# 📊 Grafana Dashboard - Betting-Brain v3
+# 📊 Grafana Dashboard - Betting-Brain v3.2.0
 
 **Real-Time Intelligence & Cost Monitoring Dashboard**
 
@@ -6,7 +6,7 @@
 
 ## 📋 Overview
 
-This Grafana dashboard provides comprehensive monitoring for the Betting-Brain v3 edge-native betting intelligence layer, including:
+This Grafana dashboard provides comprehensive monitoring for the Betting-Brain v3.2.0 edge-native betting intelligence layer, including:
 
 - **Real-time betting intelligence metrics**
 - **Cost cap monitoring and visualization**
@@ -411,7 +411,18 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 
 ## 📝 Changelog
 
-### Version 1.0 (Current)
+### Version 1.1 (v3.2.0 Compatible) - October 8, 2025
+- ✅ Compatible with Betting-Brain v3.2.0
+- ✅ Updated for quality standards rollout
+- ℹ️ Note: Dashboard panels unchanged (runtime metrics stable)
+- ℹ️ v3.2.0 adds development-time quality monitoring:
+  - 24 Cursor rules with 100% metadata coverage
+  - 23 ast-grep rules (8 quality enforcement, 2 ERROR-level)
+  - Structured logging via StructuredLogger
+  - Type-safe D1 queries with normalizeD1Result()
+  - Anti-pattern elimination (Date.now(), inline CORS, console.log)
+
+### Version 1.0 - October 7, 2025
 - ✅ 17 comprehensive panels
 - ✅ Real-time intelligence metrics
 - ✅ Cost cap monitoring (4 gauges)
@@ -431,8 +442,8 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 
 ---
 
-**Dashboard Version:** 1.0  
-**Last Updated:** October 7, 2025  
-**Maintained By:** Betting-Brain Team  
+**Dashboard Version:** 1.1 (v3.2.0 Compatible)
+**Last Updated:** October 8, 2025
+**Maintained By:** Betting-Brain Team
 **Status:** ✅ Production Ready
 
