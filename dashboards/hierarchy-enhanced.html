@@ -161,22 +161,49 @@
 
     ul.tree {
       list-style: none;
-      padding-left: 1.5rem;
+      padding-left: 0;
     }
 
     ul.tree li {
-      margin: 0.5rem 0;
+      margin: 0.3rem 0;
     }
 
-    ul.tree label {
+    ul.tree details {
+      margin-left: 1.5rem;
+    }
+
+    ul.tree summary {
       cursor: pointer;
-      font-weight: 500;
-      display: inline-block;
-      padding: 0.3rem 0;
+      padding: 0.5rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      transition: background 0.2s;
     }
 
-    ul.tree label:hover {
+    ul.tree summary:hover {
+      background: #f4f5f7;
+    }
+
+    ul.tree summary::marker {
       color: var(--primary);
+    }
+
+    ul.tree .agent-name {
+      font-weight: 500;
+      min-width: 150px;
+    }
+
+    ul.tree .badge {
+      font-size: 1.1rem;
+      padding: 0.3rem 0.6rem;
+    }
+
+    ul.tree .time {
+      font-size: 1.1rem;
+      color: #606c76;
+      margin-left: auto;
     }
 
     /* Side Drawer */
@@ -318,6 +345,7 @@
     <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
       <input id="search" class="search-box" type="text" placeholder="Type to filter agents… (press / to focus)"
         autocomplete="off" aria-label="Search agents" style="flex: 1; margin-bottom: 0;">
+      <button id="toggle-view" class="button" style="min-width: 120px;">🌳 Tree View</button>
       <button id="reset-view" class="button" style="min-width: 120px;">Show All</button>
     </div>
 
@@ -349,8 +377,8 @@
       </tbody>
     </table>
 
-    <div id="tree-container" class="hide">
-      <h5>Tree View</h5>
+    <div id="tree-container" class="hide" style="background: white; border-radius: 8px; box-shadow: 0 2px 4px var(--shadow); padding: 2rem;">
+      <h5 style="margin-top: 0;">🌳 Interactive Tree View</h5>
       <div id="tree-content"></div>
     </div>
   </div>
@@ -781,6 +809,89 @@
         </div>
       `;
     }
+
+    // Build nested tree from flat rows
+    function buildNestedTree(flatRows) {
+      const map = new Map();
+      const roots = [];
+
+      // First pass: create map
+      flatRows.forEach(r => map.set(r.agent, { ...r, children: [] }));
+
+      // Second pass: build hierarchy
+      flatRows.forEach(r => {
+        const node = map.get(r.agent);
+        if (r.parent && map.has(r.parent)) {
+          map.get(r.parent).children.push(node);
+        } else {
+          roots.push(node);
+        }
+      });
+
+      return roots;
+    }
+
+    // Render tree as HTML
+    function renderTreeView(nodes, level = 0) {
+      if (!nodes || nodes.length === 0) return '';
+
+      const ul = document.createElement('ul');
+      ul.className = 'tree';
+
+      nodes.forEach(n => {
+        const li = document.createElement('li');
+        const details = document.createElement('details');
+        details.open = level < 2; // Open first 2 levels by default
+
+        const summary = document.createElement('summary');
+        summary.innerHTML = `
+          <span class="agent-name">${n.agent}</span>
+          <span class="badge ${riskClass(n.risk)}">${n.risk.toFixed(1)}</span>
+          <span class="badge ${riskClass(n.totalRisk)}" title="Total: ${n.totalRisk.toFixed(1)}">${n.totalRisk.toFixed(1)}</span>
+          <span class="badge steam-badge" style="background: ${n.steam > 5 ? '#e41a1c' : n.steam > 2 ? '#ff7f00' : '#4daf4a'};">${n.steam.toFixed(1)}%</span>
+          ${n.childCount > 0 ? `<span class="badge" style="background: #606c76; font-size: 1rem;">${n.childCount} / ${n.descendantCount}</span>` : ''}
+          <span class="time">${timeAgo(n.lastBet)}</span>
+        `;
+
+        details.appendChild(summary);
+
+        if (n.children && n.children.length > 0) {
+          const childTree = renderTreeView(n.children, level + 1);
+          details.appendChild(childTree);
+        }
+
+        li.appendChild(details);
+        ul.appendChild(li);
+      });
+
+      return ul;
+    }
+
+    // Toggle between table and tree view
+    let currentView = 'table';
+    const toggleViewBtn = document.getElementById('toggle-view');
+    const metricsTable = document.getElementById('metrics-table');
+    const treeContainer = document.getElementById('tree-container');
+    const treeContent = document.getElementById('tree-content');
+
+    toggleViewBtn.addEventListener('click', () => {
+      if (currentView === 'table') {
+        // Switch to tree view
+        const tree = buildNestedTree(rows);
+        treeContent.innerHTML = '';
+        treeContent.appendChild(renderTreeView(tree));
+        metricsTable.style.display = 'none';
+        treeContainer.classList.remove('hide');
+        toggleViewBtn.textContent = '📋 Table View';
+        currentView = 'tree';
+      } else {
+        // Switch to table view
+        metricsTable.style.display = 'table';
+        treeContainer.classList.add('hide');
+        toggleViewBtn.textContent = '🌳 Tree View';
+        currentView = 'table';
+      }
+    });
 
     // Initialize
     (async function init() {
