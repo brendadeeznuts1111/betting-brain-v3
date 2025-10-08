@@ -8,7 +8,12 @@
 
 **Zero-downtime, zero-config, zero-cost** betting intelligence layer running entirely on Cloudflare Edge.
 
-[📚 Documentation Index](docs/INDEX.md) | [🚀 Quick Start](docs/QUICKSTART.md) | [🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) | [📊 Dashboard](monitoring/grafana/dashboard.json) | [🤖 Cursor Rules](.cursorrules)
+[📚 Documentation Index](docs/INDEX.md) | [🚀 Quick Start](docs/QUICKSTART.md) | [🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) | [📊 Dashboards](dashboards/index.html) | [⚙️ Grafana Setup](monitoring/grafana/README.md) | [🤖 Cursor Rules](.cursorrules)
+
+<!-- auto-generated dashboard links -->
+> 🚀 **Dashboards deploy automatically on release.**
+> Open [HTML dashboards](dashboards/index.html) locally or visit [Grafana setup guide](monitoring/grafana/README.md) to import the JSON.
+
 
 ## 🎯 What Changed in v3
 
@@ -295,12 +300,12 @@ Output:
 ✔ 6 edge functions deployed (≈ 250 ms cold start)
 ✔ Queues & triggers live
 ✔ Grafana sidecar: https://grafana-<hash>.pages.dev
-✔ Rollback tag: v3.0.0-<sha> (wrangler rollback v3.0.0-<sha>)
+✔ Rollback tag: v3.2.0-<sha> (wrangler rollback v3.2.0-<sha>)
 ```
 
 ### Rollback
 ```bash
-bun run rollback v3.0.0-<sha>
+bun run rollback v3.2.0-<sha>
 ```
 
 ## 📈 Monitoring

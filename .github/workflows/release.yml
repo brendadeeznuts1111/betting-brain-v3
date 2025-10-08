@@ -20,7 +20,32 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-          
+
+      - name: 'Install dependencies'
+        run: bun install
+
+      - name: '🎨 Deploy Dashboards'
+        run: bun run scripts/deploy-dashboards.ts
+
+      - name: '📊 Push Grafana Dashboard'
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          GRAFANA_KEY: ${{ secrets.GRAFANA_KEY }}
+        run: bun run scripts/push-grafana.ts
+        continue-on-error: true
+
+      - name: '📝 Update README with Links'
+        run: bun run scripts/update-readme.ts
+
+      - name: '💾 Commit README Updates'
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md dashboards/README.md
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-update dashboard links [skip ci]"
+          git push
+
       - name: 'Get release info'
         id: release
         run: |
