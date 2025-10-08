@@ -310,8 +310,60 @@ bun run rollback v3.2.0-<sha>
 
 ## 📈 Monitoring
 
-- **Grafana Dashboard**: Auto-provisioned at deployment
-- **Cost Alerts**: Built-in cost cap monitoring
+### 🌲 Forest CLI - At-a-Glance Status
+
+Check the entire grove in one command:
+
+```bash
+bun run forest        # Full dashboard: health, freshness, release, analytics
+bun run forest h      # Health check only
+bun run forest f      # Freshness check only
+bun run forest r      # Release status only
+bun run forest a      # Analytics status only
+```
+
+**Example Output:**
+```
+🌲  Forest Health
+✅  worker   UP
+✅  pages    UP
+❌  grafana  DOWN
+
+🌿  Freshness
+Current Bun: 1.2.23
+Outdated packages: 0
+✨ All dependencies fresh
+
+🏷️  Release Status
+Current tag: v3.2.0
+Commits ahead: 5
+Run bun run release to ship.
+
+📊  Analytics Testing
+Test files: 30
+Stub available: ✅
+Coverage: Run tests for coverage
+```
+
+### Live Endpoints (Auto-Deployed)
+
+- **Worker Health**: `GET https://betting-brain-v3.nolarose1968-806.workers.dev/health`
+- **Metrics**: `GET https://betting-brain-v3.nolarose1968-806.workers.dev/metrics` (Prometheus format)
+- **Dashboards**: [HTML Dashboards](dashboards/index.html) (local) or Cloudflare Pages (deployed)
+- **Grafana**: Import JSON from `monitoring/grafana/dashboard.json`
+
+### Automation Status
+
+- ✅ **Dashboards deploy** on every release tag
+- ✅ **Dependencies updated** weekly (PR created automatically)
+- ✅ **Health checked** every 6 hours (Slack alert if down)
+- ✅ **Analytics stub** enforced in CI (no test drift)
+- ✅ **Release automation** (bump, changelog, deploy on tag push)
+
+### Traditional Monitoring
+
+- **Grafana Dashboard**: Auto-provisioned at deployment (17 panels)
+- **Cost Alerts**: Built-in cost cap monitoring (D1, Queues, Analytics)
 - **Performance Metrics**: Edge function performance tracking
 - **Error Tracking**: Comprehensive error logging
 

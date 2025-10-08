@@ -156,15 +156,53 @@ This `.cursorrules` file is the **single source of truth** for all AI-generated 
 - Validate CORS headers
 - Monitor hardcoded URLs
 
+## Automation Layer (v3.2.0+)
+
+### Forest CLI & Monitoring
+- Always run `bun run forest` before pushing to verify grove health
+- Check specific status: `bun run forest h|f|r|a` (health/fresh/release/analytics)
+- Use Forest CLI in CI for automated status reporting
+
+### Analytics Testing
+- Use `createAnalyticsEngineStub()` for analytics tests—**never mock ANALYTICS_ENGINE directly**
+- Import from `tests/utils/analytics-engine-stub.ts`
+- Violation detection: `bun run guard:analytics` (fails CI if violated)
+
+### Dashboard Management
+- Dashboard changes must pass `bun run dashboard:all` locally before commit
+- Dashboards auto-deploy on release tag push
+- Grafana auto-imports on release (if configured)
+- README auto-updates with version and links
+
+### Release Management
+- Use Conventional Commits (feat:, fix:, chore:, docs:)
+- Release automation: `bun run release [patch|minor|major]`
+- Dry run first: `bun run release:dry`
+- Tag push triggers full automation (bump, deploy, notify)
+
+### Dependency Management
+- Dependency updates happen automatically every Monday
+- **Do not bump dependencies manually** (use freshness workflow)
+- Review weekly PR from automation
+- Emergency updates: `bun run freshness` then create PR
+
+### Health Monitoring
+- Worker health checked every 6 hours automatically
+- Manual check: `bun run health:ping`
+- Slack alerts sent on failure (if configured)
+- Endpoints: `/health` and `/metrics` auto-deployed
+
 ## Related Documentation
 
 - [Complete Rules Guide](https://github.com/nolarose1968/ffffff/blob/main/docs/CURSOR_RULES.md)
 - [API Reference](https://github.com/nolarose1968/ffffff/blob/main/docs/REST_API_REFERENCE.md)
 - [Testing Guide](https://github.com/nolarose1968/ffffff/blob/main/docs/TESTING_STATUS.md)
 - [MCP Integration](https://github.com/nolarose1968/ffffff/blob/main/docs/MCP_INTEGRATION_STATUS.md)
+- [Dashboard Automation](https://github.com/nolarose1968/ffffff/blob/main/docs/DASHBOARD_AUTOMATION.md)
 
 ---
 
-**Status:** Production-ready with 17 comprehensive rules  
-**Last Updated:** 2025-10-07  
-**Total Rules:** 17 rules covering all development areas
+**Status:** Production-ready with automation layer
+**Last Updated:** 2025-10-08
+**Version:** 4.3.0
+**Total Rules:** 17 core rules + 6 automation guidelines

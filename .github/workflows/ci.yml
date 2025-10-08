@@ -114,6 +114,17 @@ jobs:
           echo "Checking for zombie test processes..."
           ps aux | grep -i bun | grep -v grep || echo "✅ No zombie processes found"
 
+      - name: 🌲 Forest self-check
+        run: |
+          echo "Running forest self-checks..."
+          bun run forest:analytics
+          echo "✅ Forest analytics check passed"
+        continue-on-error: false
+
+      - name: 🔍 Analytics stub guard (report only)
+        run: bun run guard:analytics
+        continue-on-error: true
+
   # ═══════════════════════════════════════════════════════════════════════════
   # 📚 DOCUMENTATION - Link checks
   # ═══════════════════════════════════════════════════════════════════════════
