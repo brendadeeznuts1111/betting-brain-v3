@@ -1,11 +1,13 @@
 #!/bin/bash
 # Betting-Brain v1.0 Deployment Script
 # Deploys cache-optimized worker with interactive dashboard
+# Cloudflare Integrations: 50 total (46 bindings + 4 cron triggers)
 
 set -e  # Exit on error
 
 echo "🚀 Betting-Brain v1.0 Deployment Starting..."
 echo "================================================"
+echo "📦 Cloudflare Services: 50 total (46 bindings + 4 crons)"
 
 # Colors
 RED='\033[0;31m'
@@ -80,6 +82,44 @@ if ! wrangler secret list 2>/dev/null | grep -q "EXTENSION_SECRET"; then
     else
         error "EXTENSION_SECRET is required for deployment"
     fi
+fi
+
+# Verify bindings before deployment
+info "Verifying Cloudflare service bindings..."
+info "Expected: 23 bindings per environment (46 total + 4 crons)"
+
+# Count D1 databases
+D1_COUNT=$(grep -c "^\[\[d1_databases\]\]" wrangler.toml || echo "0")
+info "D1 Databases: $D1_COUNT (expected: 4)"
+
+# Count KV namespaces
+KV_COUNT=$(grep -c "^\[\[kv_namespaces\]\]" wrangler.toml || echo "0")
+info "KV Namespaces: $KV_COUNT (expected: 20)"
+
+# Count queue producers
+QUEUE_PROD_COUNT=$(grep -c "^\[\[queues.producers\]\]" wrangler.toml || echo "0")
+info "Queue Producers: $QUEUE_PROD_COUNT (expected: 10)"
+
+# Count queue consumers
+QUEUE_CONS_COUNT=$(grep -c "^\[\[queues.consumers\]\]" wrangler.toml || echo "0")
+info "Queue Consumers: $QUEUE_CONS_COUNT (expected: 10)"
+
+# Count analytics datasets
+ANALYTICS_COUNT=$(grep -c "^\[\[.*analytics_engine_datasets\]\]" wrangler.toml || echo "0")
+info "Analytics Datasets: $ANALYTICS_COUNT (expected: 2)"
+
+TOTAL_BINDINGS=$((D1_COUNT + KV_COUNT + QUEUE_PROD_COUNT + QUEUE_CONS_COUNT + ANALYTICS_COUNT))
+info "Total Bindings: $TOTAL_BINDINGS (expected: 46)"
+
+if [ "$TOTAL_BINDINGS" -ne 46 ]; then
+    warn "Binding count mismatch! Expected 46, got $TOTAL_BINDINGS"
+    read -p "Continue anyway? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        error "Deployment cancelled due to binding verification failure"
+    fi
+else
+    info "✅ All bindings verified"
 fi
 
 # Deploy worker

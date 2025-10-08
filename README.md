@@ -1,4 +1,4 @@
-# 🧠 Betting-Brain v3.2.0
+# 🧠 Betting-Brain v3.3.0
 
 [![CI](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
 [![Security](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg?job=security)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
@@ -18,7 +18,7 @@
 - ❌ **Grafana**: DOWN (local development)
 - ✅ **Forest Health**: All core services operational
 - ✅ **Dependencies**: All fresh (Bun 1.2.23)
-- ✅ **Release**: Up to date (v3.2.0)
+- ✅ **Release**: Up to date (v3.3.0)
 
 ### 🤖 **MCP Tools Available (24)**
 
@@ -70,7 +70,7 @@
 > Open [HTML dashboards](dashboards/index.html) locally or visit [Grafana setup guide](monitoring/grafana/README.md) to import the JSON.
 
 
-## 🎯 What Changed in v3.2.0
+## 🎯 What Changed in v3.3.0
 
 ### 🌲 **Forest Grove System**
 - **Integrated Testing**: Complete Forest Grove testing system with AI-friendly output
@@ -113,6 +113,23 @@ wrangler login   # once per machine
 ```bash
 bun run deploy:prod
 ```
+
+### 📦 **v1.0 Cache Optimization Ready**
+✅ **Status:** Ready for deployment
+✅ **Performance:** 90%+ cache hit rate, 93.3% D1 write reduction
+✅ **Integration:** 50 Cloudflare services (46 bindings + 4 crons)
+
+**Quick Deploy:**
+```bash
+./deployment/scripts/deploy-v1.0.sh
+```
+
+**Full Documentation:**
+- **[📋 Deployment Summary](DEPLOYMENT_SUMMARY.md)** - Complete deployment overview
+- **[🔧 Production Config](deployment/docs/PRODUCTION_CONFIG.md)** - Step-by-step setup
+- **[☁️ Cloudflare Integration](deployment/docs/CLOUDFLARE_INTEGRATION.md)** - All 50 services documented
+- **[✅ Pre-Deployment Checklist](deployment/checklists/pre-deployment.md)** - Ready check
+- **[✅ Post-Deployment Checklist](deployment/checklists/post-deployment.md)** - Verification steps
 
 **Live in 60 seconds** with auto-generated Grafana dashboard!
 
@@ -564,12 +581,12 @@ Output:
 ✔ 6 edge functions deployed (≈ 250 ms cold start)
 ✔ Queues & triggers live
 ✔ Grafana sidecar: https://grafana-<hash>.pages.dev
-✔ Rollback tag: v3.2.0-<sha> (wrangler rollback v3.2.0-<sha>)
+✔ Rollback tag: v3.3.0-<sha> (wrangler rollback v3.3.0-<sha>)
 ```
 
 ### Rollback
 ```bash
-bun run rollback v3.2.0-<sha>
+bun run rollback v3.3.0-<sha>
 ```
 
 ## 📈 Monitoring
@@ -599,7 +616,7 @@ Outdated packages: 0
 ✨ All dependencies fresh
 
 🏷️  Release Status
-Current tag: v3.2.0
+Current tag: v3.3.0
 Commits ahead: 5
 Run bun run release to ship.
 
@@ -894,7 +911,8 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[🛠️ Testing Tools Hub](tools/index.html)** - Complete diagnostic and testing suite
 
 ### **Recommended Dashboards**
-- **[Enhanced Analytics](dashboards/dashboard-enhanced.html)** ⭐ - Charts, alerts, and deep analytics (RECOMMENDED)
+- **[🌲 Floor Control Dashboard](dashboards/floor-control.html)** ⭐ - Complete system monitoring with Floor health, Forest grove status, MCP tools, live odds, scores, database metrics, Fantasy402 integration, and real-time analytics (NEW RECOMMENDED)
+- **[Enhanced Analytics](dashboards/dashboard-enhanced.html)** - Charts, alerts, and deep analytics
 - **[AI Intelligence Hub](dashboards/dashboard-pro.html)** - AI-powered insights with Claude integration
 - **[Position & Risk Tracker](dashboards/dashboard-positions.html)** - Real-time risk analysis
 - **[Basic Monitoring](dashboards/dashboard.html)** - Simple, clean monitoring interface
@@ -906,6 +924,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Troubleshooting Guide](tools/troubleshooting-guide.html)** - Intelligent problem diagnosis
 
 ### **Documentation**
+- **[📊 Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md)** - Complete dashboard guide and specifications 🆕
 - **[Dashboard Collection](README.md)** - Complete dashboard overview
 - **[Tools & Utilities](README.md)** - HTML tools and utilities  
 - **[Testing Guide](docs/guides/TESTING_GUIDE.md)** - Extension testing and deployment

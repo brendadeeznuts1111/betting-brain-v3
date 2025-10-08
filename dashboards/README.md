@@ -18,16 +18,16 @@ The BetTicker Dashboards provide real-time betting intelligence and analytics vi
 - **Purpose:** Landing page and dashboard selector
 - **Features:** System status, quick actions, feature comparison
 - **Use Case:** Starting point for all dashboard access
-- **Size:** 316 lines
+- **Size:** 357 lines
 
-### 2. **Basic Monitoring Dashboard** ([`dashboard.html`](dashboard.html))
-- **Purpose:** Simple, clean monitoring view
-- **Features:** Real-time data display, basic filtering
-- **Use Case:** Quick checks and simple monitoring
-- **Size:** 442 lines
-- **Badge:** `BASIC`
+### 2. **🌲 Floor Control Dashboard** ([`floor-control.html`](floor-control.html)) ⭐ **NEW RECOMMENDED**
+- **Purpose:** Complete system monitoring and control center
+- **Features:** Floor health, Forest grove status, MCP tools, live odds, scores, database metrics, Fantasy402 integration, cache performance, agent tree visualization, real-time analytics
+- **Use Case:** Primary dashboard for system monitoring and management
+- **Size:** 1750 lines
+- **Badge:** `NEW ⚡ RECOMMENDED`
 
-### 3. **Enhanced Analytics Dashboard** ([`dashboard-enhanced.html`](dashboard-enhanced.html)) ⭐
+### 3. **Enhanced Analytics Dashboard** ([`dashboard-enhanced.html`](dashboard-enhanced.html))
 - **Purpose:** Comprehensive analytics with charts
 - **Features:** Live charts, smart alerts, trend analysis
 - **Use Case:** Daily monitoring and deep analysis
@@ -48,6 +48,41 @@ The BetTicker Dashboards provide real-time betting intelligence and analytics vi
 - **Size:** 865 lines
 - **Badge:** `ADVANCED`
 
+### 6. **Basic Monitoring Dashboard** ([`dashboard.html`](dashboard.html))
+- **Purpose:** Simple, clean monitoring view
+- **Features:** Real-time data display, basic filtering
+- **Use Case:** Quick checks and simple monitoring
+- **Size:** 442 lines
+- **Badge:** `BASIC`
+
+### 7. **Analytics Enhanced** ([`analytics-enhanced.html`](analytics-enhanced.html))
+- **Purpose:** Advanced analytics with enhanced features
+- **Features:** Enhanced charts, detailed analytics, performance metrics
+- **Use Case:** Advanced analytics and performance monitoring
+- **Size:** ~800 lines
+- **Badge:** `ENHANCED`
+
+### 8. **Analytics Live** ([`analytics-live.html`](analytics-live.html))
+- **Purpose:** Live analytics and real-time monitoring
+- **Features:** Live data feeds, real-time updates, streaming analytics
+- **Use Case:** Real-time monitoring and live analytics
+- **Size:** ~600 lines
+- **Badge:** `LIVE`
+
+### 9. **Agent Performance Dashboard** ([`dashboard-agent-performance.html`](dashboard-agent-performance.html))
+- **Purpose:** Agent performance monitoring and analysis
+- **Features:** Agent metrics, performance tracking, PnL analysis
+- **Use Case:** Agent management and performance oversight
+- **Size:** ~700 lines
+- **Badge:** `AGENT`
+
+### 10. **Sports Dashboard** ([`sports.html`](sports.html))
+- **Purpose:** Sports-specific analytics and monitoring
+- **Features:** Sports data, live scores, sports analytics
+- **Use Case:** Sports betting analytics and monitoring
+- **Size:** ~500 lines
+- **Badge:** `SPORTS`
+
 ---
 
 ## 📂 Directory Structure
@@ -55,11 +90,16 @@ The BetTicker Dashboards provide real-time betting intelligence and analytics vi
 ```
 dashboards/
 ├── index.html                      # Dashboard hub (entry point)
-├── dashboard.html                  # Basic monitoring
-├── dashboard-enhanced.html         # Enhanced analytics ⭐
+├── floor-control.html              # Floor Control Dashboard ⭐ NEW RECOMMENDED
+├── dashboard-enhanced.html          # Enhanced analytics
 ├── dashboard-pro.html              # AI Intelligence Hub
 ├── dashboard-positions.html        # Position & Risk Tracker
-├── shared/                         # Shared utilities (NEW)
+├── dashboard.html                  # Basic monitoring
+├── analytics-enhanced.html         # Analytics Enhanced
+├── analytics-live.html             # Analytics Live
+├── dashboard-agent-performance.html # Agent Performance Dashboard
+├── sports.html                     # Sports Dashboard
+├── shared/                         # Shared utilities
 │   ├── config.js                   # Central configuration
 │   ├── utils.js                    # Common utilities
 │   ├── styles.css                  # Shared styles
@@ -162,15 +202,21 @@ addChartDataPoint(chart, 'Apr', [175], 50);
 
 ## 📊 Features Comparison
 
-| Feature | Basic | Enhanced | Pro | Positions |
-|---------|-------|----------|-----|-----------|
-| Real-time Data | ✅ | ✅ | ✅ | ✅ |
-| Charts & Graphs | ❌ | ✅ | ✅ | ✅ |
-| Alerts & Notifications | ❌ | ✅ | ✅ | ✅ |
-| AI Analysis | ❌ | ❌ | ✅ | ❌ |
-| Risk Management | ❌ | ⚠️ | ✅ | ✅ |
-| Position Tracking | ❌ | ❌ | ⚠️ | ✅ |
-| Auto-refresh | ✅ | ✅ | ✅ | ✅ |
+| Feature | Floor Control | Enhanced | Pro | Positions | Basic |
+|---------|-------------|----------|-----|-----------|-------|
+| Real-time Data | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Charts & Graphs | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Alerts & Notifications | ✅ | ✅ | ✅ | ✅ | ❌ |
+| AI Analysis | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Risk Management | ✅ | ⚠️ | ✅ | ✅ | ❌ |
+| Position Tracking | ✅ | ❌ | ⚠️ | ✅ | ❌ |
+| Auto-refresh | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Floor Health | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Forest Grove | ✅ | ❌ | ❌ | ❌ | ❌ |
+| MCP Tools | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Fantasy402 Integration | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Agent Tree Visualization | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Cache Performance | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -184,7 +230,8 @@ addChartDataPoint(chart, 'Apr', [175], 50);
    ```
 
 2. **Select a dashboard** based on your needs:
-   - **New users:** Start with `dashboard-enhanced.html` (recommended)
+   - **System monitoring:** Start with `floor-control.html` (NEW RECOMMENDED)
+   - **Analytics & charts:** Use `dashboard-enhanced.html` (recommended)
    - **Quick checks:** Use `dashboard.html` (basic)
    - **Advanced analysis:** Use `dashboard-pro.html` (AI-powered)
    - **Risk management:** Use `dashboard-positions.html`
@@ -230,7 +277,7 @@ All dashboards connect to these endpoints:
 - `GET /api/*` - REST API endpoints (new)
 - `POST /mcp` - MCP JSON-RPC endpoint
 
-**Base URL:** `https://betting-brain-v3.nolarose1968-806.workers.dev`
+**Base URL:** `https://betting-brain-v3-prod.nolarose1968-806.workers.dev`
 
 ### Auto-Refresh
 
@@ -333,7 +380,7 @@ When editing `shared/` files:
 
 ### Dashboard Not Loading Data
 
-1. Check system status: [/health](https://betting-brain-v3.nolarose1968-806.workers.dev/health)
+1. Check system status: [/health](https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health)
 2. Verify network tab in DevTools for API responses
 3. Check console for errors
 4. Verify `WORKER_URL` in `shared/config.js`

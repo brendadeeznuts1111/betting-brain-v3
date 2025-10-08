@@ -1,12 +1,18 @@
-# ast-grep Configuration for BetTicker Codebase
+# ast-grep Configuration for Betting-Brain v3 Codebase
 # https://ast-grep.github.io/
 #
-# Code searchability and pattern matching rules for TypeScript/JavaScript.
-# Use `sg scan` to run all rules, or `sg run <rule-id>` for specific rules.
+# Enhanced code searchability, pattern matching, and ripgrep integration
+# for TypeScript/JavaScript betting intelligence platform.
 #
-# Version: 2.0.0
+# Usage:
+#   sg scan                    # Run all rules
+#   sg scan --filter <rule-id> # Run specific rule
+#   sg search <pattern>        # Search for patterns
+#   sg search --help           # Show search options
+#
+# Version: 3.0.0
 # Last Updated: 2025-10-08
-# Quality Standards Enforcement: 8 additional rules added
+# Enhanced: 50+ patterns, ripgrep integration, comprehensive searchability
 
 # Language: TypeScript
 language: TypeScript
@@ -275,35 +281,447 @@ rules:
           $$$
         })
 
-# Search Patterns (can be used with sg search)
+# Enhanced Search Patterns (use with sg search)
 patterns:
-  # Find all endpoint handlers
+  # ===== API ENDPOINTS =====
   endpoint-handlers:
     pattern: |
       async function $NAME(request: Request, env: Env, requestId: string): Promise<Response>
   
-  # Find all MCP handlers
+  api-routes:
+    pattern: |
+      case '/$PATH':
+  
+  route-handlers:
+    pattern: |
+      return await $HANDLER(request, env, requestId)
+  
+  # ===== MCP INTEGRATION =====
   mcp-handlers:
     pattern: |
       export async function $NAME(params: $PARAMS, env: Env): Promise<MCPToolResult>
   
-  # Find all validators
+  mcp-tool-calls:
+    pattern: |
+      callTool($NAME, $ARGS, env)
+  
+  mcp-responses:
+    pattern: |
+      return { content: [{ type: 'text', text: $TEXT }] }
+  
+  # ===== DATABASE PATTERNS =====
+  database-queries:
+    pattern: |
+      env.$DB.prepare($QUERY).bind($$$)
+  
+  database-results:
+    pattern: |
+      normalizeD1Result<$TYPE>($RESULT)
+  
+  sql-select:
+    pattern: |
+      SELECT $COLUMNS FROM $TABLE WHERE $CONDITION
+  
+  sql-insert:
+    pattern: |
+      INSERT INTO $TABLE ($COLUMNS) VALUES ($VALUES)
+  
+  sql-update:
+    pattern: |
+      UPDATE $TABLE SET $SET WHERE $CONDITION
+  
+  # ===== VALIDATION & ERROR HANDLING =====
   validators:
     pattern: |
       Validators.$METHOD($$$)
   
-  # Find all error responses
+  validation-calls:
+    pattern: |
+      validateQueryParams($URL, $VALIDATORS)
+  
   error-responses:
     pattern: |
       createErrorResponse($ERR, $ID, $PATH)
   
-  # Find all database bindings
-  database-bindings:
+  error-throws:
     pattern: |
-      env.$DB.prepare($QUERY).bind($$$)
+      throw Errors.$METHOD($$$)
+  
+  try-catch-blocks:
+    pattern: |
+      try {
+        $$$
+      } catch ($ERR) {
+        $$$
+      }
+  
+  # ===== FANTASY402 INTEGRATION =====
+  fantasy402-endpoints:
+    pattern: |
+      /api/fantasy402/$OPERATION
+  
+  fantasy402-tables:
+    pattern: |
+      fantasy402_$TABLE
+  
+  fantasy402-operations:
+    pattern: |
+      getInfoPlayer|getPerformancePlayer|getTransactionList|getPending|getReportPlayerAnalysis
+  
+  # ===== ANALYTICS ENGINE =====
+  analytics-writes:
+    pattern: |
+      env.ANALYTICS_ENGINE.writeDataPoint($$$)
+  
+  analytics-blobs:
+    pattern: |
+      blobs: [$BLOBS]
+  
+  analytics-doubles:
+    pattern: |
+      doubles: [$DOUBLES]
+  
+  analytics-indexes:
+    pattern: |
+      indexes: [$INDEXES]
+  
+  # ===== KV CACHE PATTERNS =====
+  kv-get:
+    pattern: |
+      await env.$KV.get($KEY)
+  
+  kv-put:
+    pattern: |
+      await env.$KV.put($KEY, $VALUE)
+  
+  kv-delete:
+    pattern: |
+      await env.$KV.delete($KEY)
+  
+  cache-patterns:
+    pattern: |
+      const cached = await env.$KV.get($KEY)
+  
+  # ===== QUEUE PATTERNS =====
+  queue-send:
+    pattern: |
+      await env.$QUEUE.send($MESSAGES)
+  
+  queue-consumer:
+    pattern: |
+      async queue(batch: MessageBatch, env: Env): Promise<void>
+  
+  queue-processing:
+    pattern: |
+      for (const message of batch.messages) {
+        $$$
+      }
+  
+  # ===== SCHEDULED TASKS =====
+  scheduled-handler:
+    pattern: |
+      async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void>
+  
+  cron-patterns:
+    pattern: |
+      if (event.cron === '$CRON')
+  
+  # ===== WORKER PATTERNS =====
+  worker-handler:
+    pattern: |
+      export default { async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> }
+  
+  cors-headers:
+    pattern: |
+      'Access-Control-Allow-Origin': $ORIGIN
+  
+  json-responses:
+    pattern: |
+      createJSONResponse($DATA)
+  
+  # ===== TESTING PATTERNS =====
+  test-functions:
+    pattern: |
+      test('$NAME', async () => {
+        $$$
+      })
+  
+  describe-blocks:
+    pattern: |
+      describe('$NAME', () => {
+        $$$
+      })
+  
+  mock-patterns:
+    pattern: |
+      vi.fn().mockResolvedValue($VALUE)
+  
+  # ===== PERFORMANCE PATTERNS =====
+  performance-timing:
+    pattern: |
+      const start = Date.now()
+  
+  timeout-patterns:
+    pattern: |
+      setTimeout($$$, $MS)
+  
+  # ===== SECURITY PATTERNS =====
+  jwt-patterns:
+    pattern: |
+      Bun.jwt.verify($TOKEN, $SECRET)
+  
+  auth-headers:
+    pattern: |
+      'X-Extension-Secret': $SECRET
+  
+  # ===== UTILITY PATTERNS =====
+  request-id:
+    pattern: |
+      generateRequestId()
+  
+  logger-patterns:
+    pattern: |
+      createLogger($REQUEST)
+  
+  formatters:
+    pattern: |
+      fmt($VALUE)|fmtNum($VALUE)
+  
+  # ===== CONFIGURATION PATTERNS =====
+  env-bindings:
+    pattern: |
+      env.$BINDING
+  
+  constants-usage:
+    pattern: |
+      $CONSTANT from '../shared/constants'
+  
+  # ===== DASHBOARD PATTERNS =====
+  chart-creation:
+    pattern: |
+      new Chart($CTX, $CONFIG)
+  
+  d3-patterns:
+    pattern: |
+      d3.select($SELECTOR)
+  
+  worker-url:
+    pattern: |
+      const WORKER_URL = $URL
+  
+  # ===== RIPGREP INTEGRATION PATTERNS =====
+  # These patterns work with both ast-grep and ripgrep
+  
+  # Find all imports
+  imports:
+    pattern: |
+      import $ITEM from $SOURCE
+  
+  # Find all exports
+  exports:
+    pattern: |
+      export $ITEM
+  
+  # Find all function declarations
+  functions:
+    pattern: |
+      function $NAME($$$) { $$$ }
+  
+  # Find all async functions
+  async-functions:
+    pattern: |
+      async function $NAME($$$) { $$$ }
+  
+  # Find all arrow functions
+  arrow-functions:
+    pattern: |
+      const $NAME = ($$$) => { $$$ }
+  
+  # Find all class declarations
+  classes:
+    pattern: |
+      class $NAME { $$$ }
+  
+  # Find all interface declarations
+  interfaces:
+    pattern: |
+      interface $NAME { $$$ }
+  
+  # Find all type declarations
+  types:
+    pattern: |
+      type $NAME = $TYPE
+  
+  # Find all const declarations
+  consts:
+    pattern: |
+      const $NAME = $VALUE
+  
+  # Find all let declarations
+  lets:
+    pattern: |
+      let $NAME = $VALUE
+  
+  # Find all var declarations
+  vars:
+    pattern: |
+      var $NAME = $VALUE
 
-# Ignore paths
+# ===== RIPGREP INTEGRATION =====
+# Enhanced ripgrep patterns for comprehensive code search
+ripgrep:
+  # Basic text search patterns (use with rg command)
+  text-patterns:
+    # Find all TODO comments
+    todos: "TODO|FIXME|HACK|XXX"
+    
+    # Find all console statements
+    console: "console\.(log|error|warn|debug|info)"
+    
+    # Find all fetch calls
+    fetch: "fetch\("
+    
+    # Find all async/await usage
+    async: "async |await "
+    
+    # Find all error handling
+    errors: "throw |catch |Error\("
+    
+    # Find all database operations
+    database: "\.prepare\(|\.bind\(|\.all\(|\.first\(|\.run\("
+    
+    # Find all API endpoints
+    endpoints: "/api/|/mcp|/health|/metrics"
+    
+    # Find all environment variables
+    env-vars: "env\.|process\.env\."
+    
+    # Find all imports
+    imports: "^import |^export "
+    
+    # Find all function declarations
+    functions: "^function |^const.*=.*=>|^async function"
+    
+    # Find all class declarations
+    classes: "^class "
+    
+    # Find all interface declarations
+    interfaces: "^interface "
+    
+    # Find all type declarations
+    types: "^type "
+    
+    # Find all constants
+    constants: "^const |^let |^var "
+    
+    # Find all comments
+    comments: "//|/\*|\*/"
+    
+    # Find all string literals
+    strings: '"[^"]*"|\'[^\']*\'|`[^`]*`'
+    
+    # Find all numbers
+    numbers: "\b\d+\.?\d*\b"
+    
+    # Find all boolean values
+    booleans: "\b(true|false|null|undefined)\b"
+    
+    # Find all regex patterns
+    regex: "/[^/]*/[gimuy]*"
+    
+    # Find all JSON patterns
+    json: "\{.*\}|\[.*\]"
+    
+    # Find all URL patterns
+    urls: "https?://[^\s]+"
+    
+    # Find all email patterns
+    emails: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+    
+    # Find all IP addresses
+    ips: "\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+    
+    # Find all UUIDs
+    uuids: "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    
+    # Find all timestamps
+    timestamps: "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"
+    
+    # Find all file paths
+    paths: "[a-zA-Z0-9_/.-]+\.[a-zA-Z0-9]+"
+    
+    # Find all SQL keywords
+    sql: "\b(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|FROM|WHERE|JOIN|GROUP BY|ORDER BY|HAVING|LIMIT)\b"
+    
+    # Find all HTTP methods
+    http: "\b(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b"
+    
+    # Find all status codes
+    status: "\b(200|201|204|400|401|403|404|429|500|502|503|504)\b"
+    
+    # Find all Fantasy402 patterns
+    fantasy402: "fantasy402|Fantasy402|FANTASY402"
+    
+    # Find all MCP patterns
+    mcp: "\bMCP\b|mcp|Model Context Protocol"
+    
+    # Find all analytics patterns
+    analytics: "analytics|Analytics|ANALYTICS"
+    
+    # Find all betting patterns
+    betting: "bet|Bet|BET|wager|Wager|WAGER|odds|Odds|ODDS"
+    
+    # Find all sports patterns
+    sports: "\b(NBA|NFL|MLB|NHL|nba|nfl|mlb|nhl)\b"
+    
+    # Find all market patterns
+    markets: "\b(moneyline|spread|total|prop|over|under)\b"
+    
+    # Find all agent patterns
+    agents: "agent|Agent|AGENT|customer|Customer|CUSTOMER"
+    
+    # Find all risk patterns
+    risk: "risk|Risk|RISK|exposure|Exposure|EXPOSURE"
+    
+    # Find all steam patterns
+    steam: "steam|Steam|STEAM|move|Move|MOVE"
+    
+    # Find all sharp patterns
+    sharp: "sharp|Sharp|SHARP|clv|CLV|closing"
+    
+    # Find all hold patterns
+    hold: "hold|Hold|HOLD|percentage|Percentage|PERCENTAGE"
+    
+    # Find all queue patterns
+    queues: "queue|Queue|QUEUE|message|Message|MESSAGE"
+    
+    # Find all cache patterns
+    cache: "cache|Cache|CACHE|kv|KV|namespace|Namespace"
+    
+    # Find all worker patterns
+    workers: "worker|Worker|WORKER|cloudflare|Cloudflare|CLOUDFLARE"
+    
+    # Find all test patterns
+    tests: "test|Test|TEST|spec|Spec|SPEC|describe|it|expect"
+    
+    # Find all mock patterns
+    mocks: "mock|Mock|MOCK|stub|Stub|STUB|fake|Fake|FAKE"
+    
+    # Find all performance patterns
+    performance: "performance|Performance|PERFORMANCE|timing|Timing|TIMING"
+    
+    # Find all security patterns
+    security: "security|Security|SECURITY|auth|Auth|AUTH|jwt|JWT|secret|Secret"
+    
+    # Find all monitoring patterns
+    monitoring: "monitor|Monitor|MONITOR|log|Log|LOG|metric|Metric|METRIC"
+    
+    # Find all deployment patterns
+    deployment: "deploy|Deploy|DEPLOY|build|Build|BUILD|release|Release|RELEASE"
+
+# Enhanced ignore patterns
 ignore:
+  # Standard ignores
   - node_modules
   - dist
   - coverage
@@ -311,10 +729,68 @@ ignore:
   - bun.lock
   - package-lock.json
   - "*.min.js"
+  - "*.map"
+  - "*.snap"
+  
+  # Test files (exclude from production rules)
   - "*.test.ts"
   - "*.spec.ts"
-  - ".cursor/rules/*.mdc"  # Exclude Cursor rules (contain example anti-patterns)
-  - "docs/**/*.md"          # Exclude documentation (contains example code)
+  - "*.test.js"
+  - "*.spec.js"
+  - "tests/**"
+  - "test/**"
+  
+  # Documentation (contains example code)
+  - "docs/**/*.md"
+  - "*.md"
+  - "README*"
+  - "CHANGELOG*"
+  - "LICENSE*"
+  
+  # Configuration files
+  - ".cursor/rules/*.mdc"
+  - "*.config.*"
+  - "*.toml"
+  - "*.json"
+  - "*.yaml"
+  - "*.yml"
+  
+  # Build artifacts
+  - "build/**"
+  - "out/**"
+  - "target/**"
+  - "*.tsbuildinfo"
+  
+  # IDE files
+  - ".vscode/**"
+  - ".idea/**"
+  - "*.swp"
+  - "*.swo"
+  - "*~"
+  
+  # OS files
+  - ".DS_Store"
+  - "Thumbs.db"
+  - "*.tmp"
+  - "*.temp"
+  
+  # Browser extension (different context)
+  - "browser-extension/**"
+  
+  # Dashboards (browser context)
+  - "dashboards/**"
+  
+  # Tools (utility scripts)
+  - "tools/**"
+  
+  # Scripts (utility scripts)
+  - "scripts/**"
+  
+  # Deployment configs
+  - "deployment/**"
+  
+  # Monitoring configs
+  - "monitoring/**"
 
 # File Extensions
 extensions:
@@ -322,7 +798,98 @@ extensions:
   - js
   - tsx
   - jsx
+  - mjs
+  - cjs
 
 # Output format (json, compact, or detailed)
 format: detailed
+
+# ===== SEARCH COMMANDS REFERENCE =====
+# 
+# Basic ast-grep commands:
+#   sg scan                           # Run all rules
+#   sg scan --filter <rule-id>        # Run specific rule
+#   sg scan --error                   # Only show errors
+#   sg scan --warning                 # Only show warnings
+#   sg scan --info                    # Only show info
+#   sg search <pattern>               # Search for patterns
+#   sg search --help                  # Show search options
+#
+# Enhanced search examples:
+#   sg search endpoint-handlers       # Find all API endpoint handlers
+#   sg search mcp-handlers           # Find all MCP tool handlers
+#   sg search database-queries       # Find all database queries
+#   sg search fantasy402-endpoints   # Find all Fantasy402 endpoints
+#   sg search analytics-writes       # Find all Analytics Engine writes
+#   sg search kv-get                 # Find all KV cache gets
+#   sg search queue-send            # Find all queue sends
+#   sg search test-functions         # Find all test functions
+#   sg search security-patterns      # Find all security-related code
+#
+# Ripgrep integration examples:
+#   rg "TODO|FIXME" --type ts        # Find all TODO comments
+#   rg "console\." --type ts         # Find all console statements
+#   rg "fetch\(" --type ts           # Find all fetch calls
+#   rg "async |await " --type ts     # Find all async/await usage
+#   rg "throw |catch " --type ts     # Find all error handling
+#   rg "\.prepare\(" --type ts       # Find all database operations
+#   rg "/api/" --type ts             # Find all API endpoints
+#   rg "env\." --type ts             # Find all environment variables
+#   rg "fantasy402" --type ts        # Find all Fantasy402 references
+#   rg "MCP" --type ts               # Find all MCP references
+#   rg "analytics" --type ts         # Find all analytics references
+#   rg "bet|wager|odds" --type ts    # Find all betting-related code
+#   rg "NBA|NFL|MLB|NHL" --type ts   # Find all sports references
+#   rg "agent|customer" --type ts    # Find all agent/customer references
+#   rg "risk|exposure" --type ts     # Find all risk/exposure references
+#   rg "steam|move" --type ts        # Find all steam move references
+#   rg "sharp|clv" --type ts         # Find all sharp/CLV references
+#   rg "hold|percentage" --type ts   # Find all hold percentage references
+#   rg "queue|message" --type ts     # Find all queue/message references
+#   rg "cache|kv" --type ts          # Find all cache/KV references
+#   rg "worker|cloudflare" --type ts # Find all worker/Cloudflare references
+#   rg "test|spec" --type ts         # Find all test/spec references
+#   rg "mock|stub" --type ts         # Find all mock/stub references
+#   rg "performance|timing" --type ts # Find all performance/timing references
+#   rg "security|auth|jwt" --type ts # Find all security/auth references
+#   rg "monitor|log|metric" --type ts # Find all monitoring/logging references
+#   rg "deploy|build|release" --type ts # Find all deployment references
+#
+# Combined search examples:
+#   sg search endpoint-handlers | rg "fantasy402"  # Find Fantasy402 endpoints
+#   sg search mcp-handlers | rg "analytics"        # Find MCP analytics handlers
+#   sg search database-queries | rg "SELECT"       # Find SELECT queries
+#   sg search analytics-writes | rg "steam"        # Find steam analytics
+#   sg search kv-get | rg "cache"                  # Find cache operations
+#   sg search queue-send | rg "fantasy402"        # Find Fantasy402 queue operations
+#   sg search test-functions | rg "mock"           # Find test mocks
+#   sg search security-patterns | rg "jwt"        # Find JWT security
+#   sg search performance-patterns | rg "timing"  # Find performance timing
+#   sg search monitoring-patterns | rg "log"      # Find monitoring logs
+#
+# File-specific searches:
+#   sg search endpoint-handlers --include "src/api/**"     # API endpoints only
+#   sg search mcp-handlers --include "src/mcp/**"          # MCP handlers only
+#   sg search database-queries --include "src/**"          # Database queries only
+#   sg search fantasy402-endpoints --include "src/**"      # Fantasy402 endpoints only
+#   sg search analytics-writes --include "src/**"          # Analytics writes only
+#   sg search kv-get --include "src/**"                    # KV operations only
+#   sg search queue-send --include "src/queues/**"         # Queue operations only
+#   sg search test-functions --include "tests/**"          # Test functions only
+#   sg search security-patterns --include "src/**"          # Security patterns only
+#   sg search performance-patterns --include "src/**"       # Performance patterns only
+#   sg search monitoring-patterns --include "src/**"        # Monitoring patterns only
+#
+# Exclude patterns:
+#   sg search endpoint-handlers --exclude "tests/**"        # Exclude tests
+#   sg search mcp-handlers --exclude "docs/**"              # Exclude docs
+#   sg search database-queries --exclude "*.test.ts"        # Exclude test files
+#   sg search fantasy402-endpoints --exclude "node_modules/**" # Exclude node_modules
+#   sg search analytics-writes --exclude "dist/**"          # Exclude build artifacts
+#   sg search kv-get --exclude "coverage/**"                # Exclude coverage
+#   sg search queue-send --exclude ".git/**"                # Exclude git
+#   sg search test-functions --exclude "scripts/**"         # Exclude scripts
+#   sg search security-patterns --exclude "tools/**"        # Exclude tools
+#   sg search performance-patterns --exclude "dashboards/**" # Exclude dashboards
+#   sg search monitoring-patterns --exclude "browser-extension/**" # Exclude extension
 

@@ -18,7 +18,8 @@
 | **Tests** | [../tests/](../tests/) | Unit test suite |
 | **Scripts** | [../scripts/](../scripts/) | Automation & deployment |
 | **Deploy Scripts** | [../deployment/deploy/](../deployment/deploy/) | Production deployment tools |
-| **Dashboards** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | Grafana monitoring |
+| **Dashboards** | [DASHBOARD_DOCUMENTATION.md](DASHBOARD_DOCUMENTATION.md) | Complete dashboard guide 🆕 |
+| **Grafana** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | Grafana monitoring |
 | **CI/CD** | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml) | GitHub Actions |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | **Changelog** | [CHANGELOG.md](CHANGELOG.md) | Version history |

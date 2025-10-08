@@ -1,5 +1,5 @@
 ---
-version: 4.2.0
+version: 4.3.0
 scope: ["typescript", "javascript", "markdown", "sql", "html", "json", "yaml", "toml"]
 ---
 # Cursor AI Rules for Betting Brain Platform

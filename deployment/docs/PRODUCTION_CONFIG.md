@@ -48,11 +48,27 @@ git describe --tags --exact-match
 # Expected: v1.0-cache-optimization
 ```
 
+### 4. Cloudflare Service Bindings
+
+This deployment uses **50 Cloudflare integrations**:
+- 46 service bindings (23 per environment)
+- 4 cron triggers
+
+For complete integration details, see:
+📄 **[CLOUDFLARE_INTEGRATION.md](./CLOUDFLARE_INTEGRATION.md)**
+
+Quick summary:
+- 4 D1 databases (2 dev + 2 prod)
+- 20 KV namespaces (10 dev + 10 prod)
+- 20 Queues (10 dev + 10 prod)
+- 2 Analytics datasets (1 dev + 1 prod)
+- 4 Cron triggers (shared)
+
 ---
 
 ## Critical Configuration Steps
 
-### Step 1: Set EXTENSION_SECRET
+### Step 5: Set EXTENSION_SECRET
 
 **⚠️ CRITICAL:** This secret protects the Fantasy402 ingest endpoint from unauthorized access.
 
@@ -113,7 +129,7 @@ curl -X POST https://betting-brain-v3.workers.dev/api/fantasy402/ingest \
 
 ---
 
-### Step 2: Configure Browser Extension
+### Step 6: Configure Browser Extension
 
 **Location:** `browser-extension/manifest.json`
 
@@ -161,7 +177,7 @@ curl -X POST https://betting-brain-v3.workers.dev/api/fantasy402/ingest \
 
 ---
 
-### Step 3: Tune KV TTLs
+### Step 7: Tune KV TTLs
 
 **Default (Development):** 1 hour (`expirationTtl: 3600`)
 **Recommended (Production):** 24 hours (`expirationTtl: 86400`)
@@ -213,7 +229,7 @@ Keep `expirationTtl: 3600` if:
 
 ---
 
-### Step 4: Database Migrations
+### Step 8: Database Migrations
 
 Apply migrations to production D1:
 
@@ -237,7 +253,7 @@ Expected migrations:
 
 ---
 
-### Step 5: KV Namespace Verification
+### Step 9: KV Namespace Verification
 
 Verify all KV namespaces are bound:
 
@@ -258,7 +274,7 @@ wrangler kv:namespace list
 
 ---
 
-### Step 6: Queue Configuration
+### Step 10: Queue Configuration
 
 Verify queues are configured:
 

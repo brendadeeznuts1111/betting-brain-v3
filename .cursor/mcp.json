@@ -2,9 +2,12 @@
   "mcpServers": {
     "forest-grove": {
       "command": "bun",
-      "args": ["run", "scripts/mcp-server.ts"],
+      "args": [
+        "run",
+        "scripts/mcp-server.ts"
+      ],
       "env": {
-        "WORKER_URL": "https://betting-brain-v3.nolarose1968-806.workers.dev",
+        "WORKER_URL": "https://betting-brain-v3-prod.nolarose1968-806.workers.dev",
         "NODE_ENV": "development"
       },
       "description": "Forest Grove MCP Server - Production-hardened betting intelligence with sports API integration",
@@ -29,8 +32,17 @@
           "Sports data ingestion to Analytics Engine"
         ],
         "sportsApi": {
-          "supported": ["nba", "nfl", "mlb", "nhl"],
-          "markets": ["moneyline", "spread", "total"],
+          "supported": [
+            "nba",
+            "nfl",
+            "mlb",
+            "nhl"
+          ],
+          "markets": [
+            "moneyline",
+            "spread",
+            "total"
+          ],
           "caching": "30s KV cache",
           "rateLimiting": "100 req/min per IP on /ingest",
           "authentication": "JWT required for data ingestion"
@@ -56,7 +68,7 @@
       "LOG_LEVEL": "debug"
     },
     "production": {
-      "WORKER_URL": "https://betting-brain-v3.nolarose1968-806.workers.dev",
+      "WORKER_URL": "https://betting-brain-v3-prod.nolarose1968-806.workers.dev",
       "LOG_LEVEL": "info"
     }
   },
