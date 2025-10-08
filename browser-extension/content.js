@@ -528,6 +528,19 @@ logger.success('Enhanced BetTicker interceptor active', {
   timeout: TIMEOUT_MS
 });
 
+/* ========== MISSION CONTROL MENU HIJACK ========== */
+// wait for DOM, then hijack Bet-Ticker menu click
+const hijack = () => {
+  const a = document.querySelector('a[data-action="get-bet-ticker"]');
+  if (!a) return setTimeout(hijack, 500);      // SPA hasn't rendered it yet
+  a.onclick = e => {
+    e.preventDefault();                        // stop old ticker
+    window.location.hash = '#mission-control'; // open unified pane
+  };
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hijack);
+else hijack();
+
 /* ======  Enterprise Circuit Breaker Guard  ====== */
 (async () => {
   const STORAGE_KEY = 'cb-state';

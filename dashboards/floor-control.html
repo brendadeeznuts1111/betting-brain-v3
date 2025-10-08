@@ -314,12 +314,17 @@
 
   <script>
     /* ========== CONFIG ========== */
-    let WORKER_URL = localStorage.getItem('worker_url') || 'http://localhost:8787';
-    document.getElementById('worker-url').value = WORKER_URL;
+    const WORKER_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost:8787'
+      : 'https://' + window.location.hostname;
+
+    // Still show config box for manual override
+    let overrideURL = localStorage.getItem('worker_url') || WORKER_URL;
+    document.getElementById('worker-url').value = overrideURL;
 
     function saveConfig() {
-      WORKER_URL = document.getElementById('worker-url').value;
-      localStorage.setItem('worker_url', WORKER_URL);
+      overrideURL = document.getElementById('worker-url').value;
+      localStorage.setItem('worker_url', overrideURL);
       tick();
     }
 
@@ -328,7 +333,8 @@
 
     /* ========== HELPERS ========== */
     const $ = (s) => document.querySelector(s);
-    const fmt = (n) => new Intl.NumberFormat().format(n);
+    const fmt = (n) => new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(n);
+    const fmtNum = (n) => new Intl.NumberFormat().format(n);
     const updateTime = () => {
       $('#last-update').textContent = new Date().toLocaleTimeString();
     };
@@ -416,7 +422,8 @@
     async function getJSON(path, errorId) {
       try {
         const start = Date.now();
-        const r = await fetch(`${WORKER_URL}${path}`);
+        const url = (overrideURL || WORKER_URL) + path;
+        const r = await fetch(url);
         const duration = Date.now() - start;
 
         // Update perf chart
@@ -551,10 +558,10 @@
     async function loadDb() {
       // Mock data since we don't have a /api/db/metrics endpoint yet
       // In production, you'd call an MCP tool or direct endpoint
-      $('#db-total').textContent = fmt(1247);
-      $('#db-lines').textContent = fmt(856);
-      $('#db-sharp').textContent = fmt(234);
-      $('#db-exposure').textContent = fmt(157);
+      $('#db-total').textContent = fmtNum(1247);
+      $('#db-lines').textContent = fmtNum(856);
+      $('#db-sharp').textContent = fmtNum(234);
+      $('#db-exposure').textContent = fmtNum(157);
     }
 
     async function loadActivity() {
@@ -575,18 +582,15 @@
       $('#activity-list').textContent = activities.join('\n');
     }
 
-    /* ========== FANTASY402 FETCHERS ========== */
-    async function loadLiveBets() {
-      const d = await getJSON('/api/f402/bets/live', 'bets');
-      if (!d) {
-        // Show mock data
-        $('#live-bets').textContent = '12';
-        return;
-      }
+    /* ========== FANTASY402 FETCHERS (UNIFIED) ========== */
+    async function loadFantasy402Data() {
+      const d = await getJSON('/api/f402/mission-control', 'bets');
+      if (!d) return;
 
-      $('#live-bets').textContent = d.count ?? '—';
-      const vol = d.buckets?.map(b => b.volume) ?? [];
-      betsChart.data.labels = d.buckets?.map(b => b.minute) ?? [];
+      // Live Bets
+      $('#live-bets').textContent = d.liveBets?.count ?? '0';
+      const vol = d.liveBets?.buckets?.map(b => b.volume) ?? [];
+      betsChart.data.labels = d.liveBets?.buckets?.map(b => b.minute) ?? [];
       betsChart.data.datasets = [{
         label: 'Volume ($)',
         data: vol,
@@ -595,66 +599,32 @@
         borderWidth: 1
       }];
       betsChart.update();
-    }
 
-    async function loadAgents() {
-      const d = await getJSON('/api/f402/agents/performance?period=today', 'agent');
-      if (!d) {
-        // Show mock data
-        $('#agent-pnl').textContent = '+$1,247';
-        $('#agent-pnl').className = 'value status-green';
-        $('#agent-top').textContent = 'agent-001:  +$523\nagent-042:  +$412\nagent-099:  +$312';
-        return;
-      }
-
-      const pnl = d.totalPnl ?? 0;
-      $('#agent-pnl').textContent = pnl >= 0 ? `+$${fmt(pnl)}` : `-$${fmt(Math.abs(pnl))}`;
+      // Agent Performance
+      const pnl = d.agents?.totalPnl ?? 0;
+      $('#agent-pnl').textContent = fmt(pnl);
       $('#agent-pnl').className = pnl >= 0 ? 'value status-green' : 'value status-red';
-      $('#agent-top').textContent = d.top?.slice(0, 3)
-        .map(a => `${a.id}:  ${a.pnl >= 0 ? '+' : ''}$${fmt(a.pnl)}`)
-        .join('\n') ?? '';
-    }
+      $('#agent-top').textContent = (d.agents?.top ?? [])
+        .map(a => `${a.id}:  ${fmt(a.pnl)}`)
+        .join('\n');
 
-    async function loadCustomers() {
-      const [active, stake] = await Promise.all([
-        getJSON('/api/f402/customers/active?minutes=30', 'customer'),
-        getJSON('/api/f402/customers/staked?period=today', 'customer')
-      ]);
+      // Customer Pulse
+      $('#active-cust').textContent = d.customers?.active ?? '0';
+      $('#staked-today').textContent = fmt(d.customers?.staked ?? 0);
 
-      if (!active || !stake) {
-        // Show mock data
-        $('#active-cust').textContent = '47';
-        $('#staked-today').textContent = '$12,450';
-        return;
+      // Transaction Ticker
+      if (d.transactions && Array.isArray(d.transactions)) {
+        $('#tx-ticker').textContent = d.transactions.map(t =>
+          `${t.type.padEnd(8)} ${t.customerId.padEnd(10)} ${fmt(t.amount).padEnd(10)} ${t.status}`
+        ).join('\n');
+      } else {
+        $('#tx-ticker').textContent = 'No transactions';
       }
 
-      $('#active-cust').textContent = active.count ?? '—';
-      $('#staked-today').textContent = stake.total != null ? `$${fmt(stake.total)}` : '—';
-    }
-
-    async function loadTxTicker() {
-      const d = await getJSON('/api/f402/transactions/latest?limit=10', 'tx');
-      if (!d || !Array.isArray(d)) {
-        // Show mock data
-        const mockTx = [
-          'BET      cust-001    $100   SETTLED',
-          'BET      cust-042    $250   PENDING',
-          'PAYOUT   cust-003    $450   SETTLED',
-          'BET      cust-017    $75    SETTLED',
-          'BET      cust-099    $300   PENDING',
-          'PAYOUT   cust-042    $600   SETTLED',
-          'BET      cust-023    $150   SETTLED',
-          'BET      cust-055    $200   PENDING',
-          'PAYOUT   cust-001    $220   SETTLED',
-          'BET      cust-088    $125   SETTLED'
-        ];
-        $('#tx-ticker').textContent = mockTx.join('\n');
-        return;
-      }
-
-      $('#tx-ticker').textContent = d.map(t =>
-        `${t.type.padEnd(8)} ${t.customerId.padEnd(10)} $${t.amount.toString().padEnd(6)} ${t.status}`
-      ).join('\n');
+      hideError('bets');
+      hideError('agent');
+      hideError('customer');
+      hideError('tx');
     }
 
     /* ========== MAIN LOOP ========== */
@@ -670,10 +640,7 @@
         loadScores(),
         loadDb(),
         loadActivity(),
-        loadLiveBets(),
-        loadAgents(),
-        loadCustomers(),
-        loadTxTicker()
+        loadFantasy402Data()  // Single unified call instead of 4 separate calls
       ]);
     }
 
