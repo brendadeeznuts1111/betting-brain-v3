@@ -1,6 +1,9 @@
 ---
 globs: tests/**/*.ts,tests/**/*.js
 description: Test setup and configuration patterns
+version: "1.0.0"
+lastUpdated: "2025-10-07"
+dependencies: ["analytics-testing", "coverage-thresholds"]
 ---
 
 # Test Setup Patterns
@@ -10,6 +13,7 @@ description: Test setup and configuration patterns
 ### Test Setup File: `tests/setup/test-setup.ts`
 
 ```typescript
+
 import { vi, beforeAll, beforeEach, afterEach, expect } from 'bun:test';
 import { createAnalyticsEngineStub } from '../utils/analytics-engine-stub';
 
@@ -30,6 +34,7 @@ export function setCurrentTestName(name: string) {
 
 ### Analytics Tests Only
 ```typescript
+
 afterEach(function () {
   if (currentTestName.toLowerCase().includes('analytics') && globalAnalyticsStub) {
     globalAnalyticsStub.flush();
@@ -40,6 +45,7 @@ afterEach(function () {
 
 ### Test Name Detection
 ```typescript
+
 // In analytics tests, always set test name
 test('should track analytics calls with stub', async () => {
   setCurrentTestName('should track analytics calls with stub');
@@ -51,6 +57,7 @@ test('should track analytics calls with stub', async () => {
 
 ### Create Mock Environment
 ```typescript
+
 import { createMockEnv } from '../utils/test-helpers';
 
 describe('My Analytics Test', () => {
@@ -172,6 +179,12 @@ beforeAll(() => {
   process.env.NODE_ENV = 'test';
 });
 ```
+
+## Related Rules
+
+- [Analytics Testing](mdc:.cursor/rules/analytics-testing.mdc) - Core analytics testing patterns
+- [Coverage Thresholds](mdc:.cursor/rules/coverage-thresholds.mdc) - Dual threshold system
+- [Analytics Stub API](mdc:.cursor/rules/analytics-stub-api.mdc) - AnalyticsEngineStub API reference
 
 ## Related Files
 

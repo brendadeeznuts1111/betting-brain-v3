@@ -1,6 +1,9 @@
 ---
 globs: scripts/**/*.ts,.github/workflows/*.yml,package.json
 description: CI/CD integration patterns and automation
+version: "1.0.0"
+lastUpdated: "2025-10-07"
+dependencies: ["analytics-testing", "coverage-thresholds", "test-setup-patterns"]
 ---
 
 # CI/CD Integration Rules
@@ -9,6 +12,7 @@ description: CI/CD integration patterns and automation
 
 ### Main CI Pipeline
 ```typescript
+
 // scripts/bun-ci.ts
 private async runTests(): Promise<boolean> {
   console.log('🧪 Running tests...');
@@ -30,6 +34,7 @@ private async runTests(): Promise<boolean> {
 
 ### Analytics-Specific CI
 ```json
+
 {
   "analytics:ci": "CI=true bun run analytics:test:coverage"
 }
@@ -39,6 +44,7 @@ private async runTests(): Promise<boolean> {
 
 ### GitHub Actions Workflow
 ```yaml
+
 # .github/workflows/analytics-smoke.yml
 name: analytics-smoke
 on:
@@ -59,6 +65,7 @@ jobs:
 
 ### Nightly Test Script
 ```typescript
+
 // scripts/nightly-analytics-test.ts
 export class NightlyAnalyticsTest {
   async run(): Promise<boolean> {
@@ -180,6 +187,12 @@ try {
 - Use hardcoded paths
 - Forget timeout handling
 - Skip error reporting
+
+## Related Rules
+
+- [Analytics Testing](mdc:.cursor/rules/analytics-testing.mdc) - Core analytics testing patterns
+- [Coverage Thresholds](mdc:.cursor/rules/coverage-thresholds.mdc) - Dual threshold system
+- [Test Setup Patterns](mdc:.cursor/rules/test-setup-patterns.mdc) - Test configuration patterns
 
 ## Related Files
 

@@ -1,6 +1,9 @@
 ---
 globs: tests/utils/analytics-engine-stub.ts,tests/**/*analytics*.ts
 description: AnalyticsEngineStub API patterns and usage
+version: "1.0.0"
+lastUpdated: "2025-10-07"
+dependencies: ["analytics-testing", "test-setup-patterns"]
 ---
 
 # AnalyticsEngineStub API Rules
@@ -9,6 +12,7 @@ description: AnalyticsEngineStub API patterns and usage
 
 ### AnalyticsCall Interface
 ```typescript
+
 export interface AnalyticsCall {
   blobs: string[];
   doubles: number[];
@@ -19,6 +23,7 @@ export interface AnalyticsCall {
 
 ### AnalyticsEngineStub Class
 ```typescript
+
 export class AnalyticsEngineStub {
   private calls: AnalyticsCall[] = [];
   private flushPromises: Promise<void>[] = [];
@@ -37,6 +42,7 @@ export class AnalyticsEngineStub {
 
 ### writeDataPoint
 ```typescript
+
 // ✅ CORRECT: Standard analytics call
 await analytics.writeDataPoint({
   blobs: ['event_type', 'data_type'],
@@ -47,6 +53,7 @@ await analytics.writeDataPoint({
 
 ### getCalls
 ```typescript
+
 // ✅ CORRECT: Get all calls
 const calls = analytics.getCalls();
 expect(calls).toHaveLength(1);
@@ -248,6 +255,12 @@ const analytics = getGlobalAnalyticsStub();
 - No network flakes
 - Consistent behavior
 - Easy to debug
+
+## Related Rules
+
+- [Analytics Testing](mdc:.cursor/rules/analytics-testing.mdc) - Core analytics testing patterns
+- [Test Setup Patterns](mdc:.cursor/rules/test-setup-patterns.mdc) - Test configuration patterns
+- [Coverage Thresholds](mdc:.cursor/rules/coverage-thresholds.mdc) - Dual threshold system
 
 ## Related Files
 
