@@ -40,7 +40,16 @@ const OUTPUT_FILE = '/tmp/fantasy402-agents-tree.json';
       level: level,
       active: 1,
       site_id: 1,
-      synced_at: Date.now()
+      synced_at: Date.now(),
+      // Real metrics from API
+      risk_score: agent.HeadCountRateM || 0,
+      steam_percentage: (agent.LiveBettingRateM || 0) + (agent.LiveBetting2RateM || 0),
+      velocity: agent.InetHeadCountRateM || 0,
+      sharpness: (agent.PropBuilderRateM || 0) + (agent.FlashBetsRate || 0) + (agent.ExtPropsRate || 0),
+      // Additional raw metrics
+      casino_rate: agent.CasinoHeadCountRateM || 0,
+      live_casino_rate: agent.LiveCasinoRateM || 0,
+      crash_rate: agent.CrashRate || 0
     };
 
     agentMap[agentId] = node;

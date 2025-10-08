@@ -537,11 +537,11 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
       office: agent.office,
       totalRequests: agent.totalRequests || agent.total_requests || 0,
       lastActive: agent.lastActive || agent.last_active,
-      // Generate mock risk/steam scores (TODO: calculate from real data)
-      risk: agent.risk_score || (Math.random() * 100),
-      steam: agent.steam_percentage || (Math.random() * 100),
-      velocity: agent.velocity || (Math.random() * 20),
-      sharpness: agent.sharpness || (Math.random() * 100),
+      // Real metrics from cached API data
+      risk: agent.risk_score || 0,
+      steam: agent.steam_percentage || 0,
+      velocity: agent.velocity || 0,
+      sharpness: agent.sharpness || 0,
       children: [],
     });
 

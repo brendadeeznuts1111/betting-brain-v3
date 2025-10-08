@@ -174,6 +174,11 @@ import { gzipSync } from 'bun';
         level: level,
         active: agent.Active !== false && agent.active !== false ? 1 : 0,
         site_id: agent.SiteID || agent.siteID || 1,
+        // Real metrics from API
+        risk_score: agent.HeadCountRateM || 0,
+        steam_percentage: (agent.LiveBettingRateM || 0) + (agent.LiveBetting2RateM || 0),
+        velocity: agent.InetHeadCountRateM || 0,
+        sharpness: (agent.PropBuilderRateM || 0) + (agent.FlashBetsRate || 0) + (agent.ExtPropsRate || 0),
         children: []
       };
 
