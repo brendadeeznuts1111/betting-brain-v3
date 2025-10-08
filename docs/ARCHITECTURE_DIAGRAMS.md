@@ -93,8 +93,11 @@ flowchart TD
 
 ## Database Schema
 
+### Complete D1 Database Schema (32 Tables)
+
 ```mermaid
 erDiagram
+    %% Core Analytics Tables
     LINE_MOVEMENTS {
         string eid
         string mt
@@ -147,6 +150,12 @@ erDiagram
         string created_at
     }
     
+    STEAM_DEDUPE {
+        string eid PK
+        string mt PK
+        string ts
+    }
+    
     AGENT_GRAPH {
         integer id PK
         string parent_id
@@ -160,9 +169,10 @@ erDiagram
         string updated_at
     }
     
+    %% Fantasy402 Core Tables
     FANTASY402_RAW_FEED {
         integer id PK
-        string packet_id
+        string packet_id UK
         string timestamp
         string endpoint
         string operation
@@ -180,6 +190,20 @@ erDiagram
         boolean jwt_valid
         string metadata
         string created_at
+    }
+    
+    FANTASY402_AGENTS {
+        integer id PK
+        string agent_id UK
+        string agent_name
+        string agent_owner
+        string office
+        string status
+        real commission_rate
+        real credit_limit
+        string permissions_json
+        string created_at
+        string updated_at
     }
     
     FANTASY402_AGENT_PERFORMANCE {
@@ -240,6 +264,98 @@ erDiagram
         string updated_at
     }
     
+    FANTASY402_PLAYER_PERFORMANCE {
+        integer id PK
+        string customer_id
+        string agent_id
+        string period_start
+        string period_end
+        string period_type
+        integer period_number
+        string period_name
+        real total_risk
+        real total_win
+        real total_commission
+        real net_income
+        integer total_wagers
+        integer pending_wagers
+        integer settled_wagers
+        real free_play_used
+        real free_play_win
+        string sport_breakdown_json
+        string captured_at
+        string raw_response_json
+        string created_at
+    }
+    
+    FANTASY402_PLAYER_ACTIVITY {
+        integer id PK
+        string customer_id
+        string agent_id
+        string activity_type
+        string activity_date
+        string description
+        real amount
+        string status
+        string created_at
+    }
+    
+    FANTASY402_PLAYER_ANALYSIS {
+        integer id PK
+        string customer_id
+        string agent_id
+        string report_type
+        string start_date
+        string end_date
+        string line_type
+        integer total_wagers
+        real total_risk
+        real total_win
+        real net_income
+        real win_rate
+        real average_odds
+        string sports_breakdown_json
+        string bet_types_breakdown_json
+        string time_breakdown_json
+        string raw_analysis_json
+        string captured_at
+        string created_at
+    }
+    
+    FANTASY402_PLAYER_SPORT_ANALYSIS {
+        integer id PK
+        string customer_id
+        string agent_id
+        string sport
+        string period_start
+        string period_end
+        integer total_wagers
+        real total_risk
+        real total_win
+        real net_income
+        real win_rate
+        string bet_types_breakdown_json
+        string captured_at
+        string created_at
+    }
+    
+    FANTASY402_PLAYER_SPORT_PERFORMANCE {
+        integer id PK
+        string customer_id
+        string agent_id
+        string sport
+        string period_start
+        string period_end
+        integer total_wagers
+        real total_risk
+        real total_win
+        real net_income
+        real win_rate
+        string sport_breakdown_json
+        string captured_at
+        string created_at
+    }
+    
     FANTASY402_TRANSACTIONS {
         integer id PK
         string document_number UK
@@ -254,6 +370,22 @@ erDiagram
         string grade_num
         string entered_by
         real balance
+        string captured_at
+        string created_at
+    }
+    
+    FANTASY402_TRANSACTION_SUMMARY {
+        integer id PK
+        string customer_id
+        string agent_id
+        string period_start
+        string period_end
+        real total_deposits
+        real total_withdrawals
+        real total_wager_loss
+        real total_wager_win
+        real net_balance
+        integer total_transactions
         string captured_at
         string created_at
     }
@@ -276,6 +408,122 @@ erDiagram
         string description
         string captured_at
         string created_at
+    }
+    
+    FANTASY402_PENDING_SUMMARY {
+        integer id PK
+        string customer_id
+        string agent_id
+        string period_start
+        string period_end
+        integer total_wagers
+        real total_risk
+        real total_potential_win
+        real average_odds
+        string sport_breakdown_json
+        string captured_at
+        string created_at
+    }
+    
+    FANTASY402_SPORT_PERFORMANCE {
+        integer id PK
+        string sport
+        string period_start
+        string period_end
+        integer total_wagers
+        real total_risk
+        real total_win
+        real net_income
+        real win_rate
+        string agent_breakdown_json
+        string captured_at
+        string created_at
+    }
+    
+    FANTASY402_WEEKLY_FIGURES {
+        integer id PK
+        string period_start
+        string period_end
+        string period_name
+        integer total_wagers
+        real total_risk
+        real total_win
+        real net_income
+        real win_rate
+        string sport_breakdown_json
+        string agent_breakdown_json
+        string captured_at
+        string created_at
+    }
+    
+    FANTASY402_TOKENS {
+        integer id PK
+        string token_id UK
+        string customer_id
+        string agent_id
+        string token_type
+        string token_value
+        string expires_at
+        boolean is_active
+        string permissions_json
+        string created_at
+        string updated_at
+    }
+    
+    FANTASY402_AUTHORIZATIONS {
+        integer id PK
+        string customer_id
+        string agent_id
+        string authorization_type
+        string authorization_level
+        string permissions_json
+        string granted_by
+        string granted_at
+        string expires_at
+        boolean is_active
+        string created_at
+        string updated_at
+    }
+    
+    FANTASY402_ACCOUNT_SNAPSHOTS {
+        integer id PK
+        string customer_id
+        string agent_id
+        string snapshot_date
+        real available_balance
+        real pending_balance
+        real free_play_balance
+        real credit_limit
+        real total_risk
+        real total_win
+        integer total_wagers
+        string status
+        string captured_at
+        string created_at
+    }
+    
+    %% System Tables
+    D1_MIGRATIONS {
+        integer id PK
+        string migration_name
+        string applied_at
+    }
+    
+    SCHEMA_MIGRATIONS {
+        integer id PK
+        string migration_name
+        string applied_at
+    }
+    
+    SQLITE_SEQUENCE {
+        string name PK
+        integer seq
+    }
+    
+    _CF_KV {
+        string key PK
+        string value
+        string metadata
     }
 ```
 
