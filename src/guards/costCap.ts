@@ -2,6 +2,7 @@ import { CostCapConfig } from '../types/api';
 import { CostCapMetrics } from '../types/metrics';
 import { Env } from '../types/api';
 import { isTestEnvironment } from '../lib/testToggles';
+import { TEST_LIMITS, COST_CAP_THRESHOLDS } from '../shared/constants';
 
 export class CostCapGuard {
   private config: CostCapConfig;
@@ -20,21 +21,28 @@ export class CostCapGuard {
   }> {
     // Bypass cost checking in test environment
     if (isTestEnvironment()) {
+      const testMetrics: CostCapMetrics = {
+        requests: { current: 0, limit: TEST_LIMITS.REQUESTS, percentage: 0 },
+        d1: {
+          size: 0,
+          rows: 0,
+          limit: { size: TEST_LIMITS.D1_SIZE, rows: TEST_LIMITS.D1_ROWS },
+          percentage: 0
+        },
+        queue: { operations: 0, limit: TEST_LIMITS.QUEUE_OPS, percentage: 0 },
+        analytics: { points: 0, limit: TEST_LIMITS.ANALYTICS_POINTS, percentage: 0 }
+      };
+
       return {
         allowed: true,
-        metrics: {
-          requests: { current: 0, limit: 9999999, percentage: 0 },
-          d1: { size: 0, rows: 0, limit: { size: 9999999, rows: 9999999 }, percentage: 0 },
-          queue: { operations: 0, limit: 9999999, percentage: 0 },
-          analytics: { points: 0, limit: 9999999, percentage: 0 }
-        } as any
+        metrics: testMetrics
       };
     }
 
     const metrics = await this.getCurrentMetrics(env);
 
     // Check D1 limits
-    if (metrics.d1.percentage > 90) {
+    if (metrics.d1.percentage > COST_CAP_THRESHOLDS.WARNING_PERCENTAGE) {
       return {
         allowed: false,
         reason: 'D1 database approaching capacity limit',
@@ -43,7 +51,7 @@ export class CostCapGuard {
     }
 
     // Check queue limits
-    if (metrics.queue.percentage > 90) {
+    if (metrics.queue.percentage > COST_CAP_THRESHOLDS.WARNING_PERCENTAGE) {
       return {
         allowed: false,
         reason: 'Queue operations approaching monthly limit',
@@ -52,7 +60,7 @@ export class CostCapGuard {
     }
 
     // Check analytics limits
-    if (metrics.analytics.percentage > 90) {
+    if (metrics.analytics.percentage > COST_CAP_THRESHOLDS.WARNING_PERCENTAGE) {
       return {
         allowed: false,
         reason: 'Analytics Engine approaching monthly limit',
@@ -61,7 +69,7 @@ export class CostCapGuard {
     }
 
     // Check request limits
-    if (metrics.requests.percentage > 90) {
+    if (metrics.requests.percentage > COST_CAP_THRESHOLDS.WARNING_PERCENTAGE) {
       return {
         allowed: false,
         reason: 'Request rate approaching daily limit',
