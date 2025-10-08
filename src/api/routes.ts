@@ -16,6 +16,7 @@ import { getLiveBets } from '../routes/api/f402-bets';
 import { getAgentPerformance as getF402AgentPerformance } from '../routes/api/f402-agents';
 import { getActiveCustomers, getStakedTotal } from '../routes/api/f402-customers';
 import { getLatestTransactions } from '../routes/api/f402-transactions';
+import { getMissionControl } from '../routes/api/f402-mission-control';
 
 /**
  * Handle REST API routes
@@ -91,6 +92,9 @@ export async function handleAPIRoute(
         return await getFantasy402Config(request, env, requestId);
 
       // Fantasy402 Mission Control endpoints
+      case '/f402/mission-control':
+        return await getMissionControl(request, env, requestId);
+
       case '/f402/bets/live':
         return await getLiveBets(request, env, requestId);
 
