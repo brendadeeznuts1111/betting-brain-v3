@@ -109,11 +109,14 @@
   "dependencies": {
     "@cloudflare/workers-types": "^4.20251008.0",
     "jsonwebtoken": "^9.0.2",
+    "simple-statistics": "^7.8.8",
+    "ws": "^8.18.3",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.19.1",
     "@types/bun": "^1.0.0",
+    "@types/ws": "^8.18.1",
     "chart.js": "^4.5.0",
     "glob": "^10.4.5",
     "husky": "^9.1.7",

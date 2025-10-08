@@ -4,8 +4,139 @@
       "command": "bun",
       "args": ["run", "scripts/mcp-server.ts"],
       "env": {
-        "WORKER_URL": "https://betting-brain-v3.nolarose1968-806.workers.dev"
+        "WORKER_URL": "https://betting-brain-v3.nolarose1968-806.workers.dev",
+        "NODE_ENV": "development"
+      },
+      "description": "Forest Grove MCP Server - Production-hardened betting intelligence with sports API integration",
+      "capabilities": {
+        "tools": [
+          "forest-status",
+          "deploy-dashboards",
+          "release",
+          "live-odds",
+          "live-scores",
+          "push-sports-data"
+        ]
+      },
+      "metadata": {
+        "version": "3.3.0",
+        "features": [
+          "Grove health monitoring",
+          "Dashboard deployment automation",
+          "Release management (patch/minor/major)",
+          "Live sports odds aggregation (Pinnacle + Bet365)",
+          "Live scores from SportsData.io",
+          "Sports data ingestion to Analytics Engine"
+        ],
+        "sportsApi": {
+          "supported": ["nba", "nfl", "mlb", "nhl"],
+          "markets": ["moneyline", "spread", "total"],
+          "caching": "30s KV cache",
+          "rateLimiting": "100 req/min per IP on /ingest",
+          "authentication": "JWT required for data ingestion"
+        },
+        "documentation": [
+          "docs/MCP_INTEGRATION_STATUS.md",
+          "docs/MCP_ENDPOINTS.md",
+          "docs/SPORTS_API_DEPLOYMENT.md",
+          "docs/guides/TESTING_GUIDE.md"
+        ]
       }
     }
+  },
+  "mcpSettings": {
+    "logLevel": "info",
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "environment": {
+    "development": {
+      "WORKER_URL": "http://localhost:8787",
+      "LOG_LEVEL": "debug"
+    },
+    "production": {
+      "WORKER_URL": "https://betting-brain-v3.nolarose1968-806.workers.dev",
+      "LOG_LEVEL": "info"
+    }
+  },
+  "testingGuide": {
+    "directHandlerTesting": "bun scripts/test-handlers-direct.ts",
+    "httpTesting": "curl -X POST http://localhost:8787/mcp -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}'",
+    "localServer": "wrangler dev --local",
+    "jwtGeneration": "bun run scripts/test-jwt.ts"
+  },
+  "knownIssues": {
+    "testFailures": {
+      "count": 60,
+      "total": 299,
+      "coverage": "81%",
+      "mainIssues": [
+        "Error path tests expecting 500 but getting 429 (rate limit)",
+        "Some timeout tests not properly handling async operations",
+        "BetTicker sniffer origin timeout tests intermittent"
+      ],
+      "status": "Non-blocking, tracked in TESTING_STATUS.md"
+    },
+    "typeScriptErrors": {
+      "count": 154,
+      "status": "Non-blocking, mostly D1 result type casting",
+      "tracked": "docs/TESTING_STATUS.md"
+    }
+  },
+  "recentUpdates": {
+    "v3.3.0": {
+      "commit": "c1b712b",
+      "date": "2025-10-08",
+      "changes": [
+        "Created RATE_LIMITER and SPORTS_CACHE KV namespaces",
+        "Added JWT authentication utility (scripts/test-jwt.ts)",
+        "Created comprehensive deployment guide",
+        "Updated wrangler.toml with production KV bindings"
+      ]
+    },
+    "v3.2.1": {
+      "commit": "11b1b64",
+      "date": "2025-10-08",
+      "changes": [
+        "Production-hardened MCP with sports API integration",
+        "Rewrote MCP server using @modelcontextprotocol/sdk",
+        "Added JWT validation and rate limiting to /ingest",
+        "Created multi-bookmaker odds aggregation",
+        "Added daily API key rotation (KEY_1/2/3 pattern)",
+        "Built real-time sports dashboard with Chart.js"
+      ]
+    }
+  },
+  "quickStart": {
+    "installation": [
+      "bun install",
+      "cp .env.example .env",
+      "# Add your API keys to .env",
+      "wrangler dev --local"
+    ],
+    "mcpTesting": [
+      "# Start MCP server",
+      "bun run scripts/mcp-server.ts",
+      "",
+      "# In another terminal, test tools",
+      "echo '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}' | bun run scripts/mcp-server.ts"
+    ],
+    "sportsApi": [
+      "# Generate test JWT",
+      "bun run scripts/test-jwt.ts",
+      "",
+      "# Test live odds",
+      "curl http://localhost:8787/api/live-odds?sport=nba&market=moneyline",
+      "",
+      "# Test data ingestion (use JWT from above)",
+      "curl -X POST http://localhost:8787/ingest \\",
+      "  -H 'Content-Type: application/json' \\",
+      "  -H 'Authorization: Bearer YOUR_JWT' \\",
+      "  -d '{\"records\":[...]}'",
+      "",
+      "# View dashboard",
+      "open http://localhost:8787/dashboards/sports.html"
+    ]
   }
 }
