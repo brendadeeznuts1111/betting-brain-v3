@@ -1,8 +1,10 @@
 ---
-version: 4
+version: "5.0.0"
 scope: ["typescript", "javascript", "json", "toml"]
 description: Bun runtime patterns and best practices
 alwaysApply: true
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "process-management"]
 ---
 
 # Bun Runtime Rules
@@ -163,3 +165,25 @@ import { describe, test } from 'bun:test';
 7. ❌ Never use Node.js `child_process`
 8. ❌ Never use Node.js `fs` module
 9. ❌ Never install packages for Bun-native features
+
+---
+
+## Related Rules
+
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
+- [Process Management](mdc:.cursor/rules/process-management.mdc) - Zombie process prevention
+- [Testing Patterns](mdc:.cursor/rules/testing-patterns.mdc) - Bun test patterns
+- [Cloudflare Workers](mdc:.cursor/rules/cloudflare-workers.mdc) - Workers with Bun
+
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide ⭐ **NEW**
+- [tests/utils/process-cleanup.ts](mdc:tests/utils/process-cleanup.ts) - Process manager
+- [bunfig.toml](mdc:bunfig.toml) - Bun configuration
+- [package.json](mdc:package.json) - Project configuration
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+
+---
+
+**Status:** Bun runtime patterns established
+**Last Updated:** 2025-10-08

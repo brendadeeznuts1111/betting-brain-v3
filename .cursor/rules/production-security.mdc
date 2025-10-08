@@ -1,5 +1,8 @@
 ---
 alwaysApply: true
+version: "1.0.0"
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "security-patterns"]
 ---
 # Production Security Patterns
 
@@ -9,7 +12,6 @@ alwaysApply: true
 - **Topics:** #security #production #scale
 - **Last Updated:** 2025-10-07
 
----
 
 ## Overview
 
@@ -17,7 +19,6 @@ This rule enforces **production-ready security patterns** for sports betting pla
 
 All patterns are enforced via **ast-grep** rules in the `rules/` directory.
 
----
 
 ## Critical Security Rules
 
@@ -43,7 +44,6 @@ if (isNaN(stake) || stake <= 0) {
 sg scan --filter "no-parsefloat-stake" --error
 ```
 
----
 
 ### 2. D1 SQL Injection Prevention (CRITICAL)
 
@@ -67,7 +67,6 @@ await env.ANALYTICS.prepare(`SELECT * FROM users WHERE id = ?`)
 sg scan --filter "d1-sql-injection" --error
 ```
 
----
 
 ### 3. Queue Batch Size Limits (HIGH)
 
@@ -91,7 +90,6 @@ for (let i = 0; i < items.length; i += 100) {
 sg scan --filter "queue-batch-limit"
 ```
 
----
 
 ### 4. No new Date() in Edge Workers (MEDIUM)
 
@@ -113,7 +111,6 @@ const nowISO = new Date().toISOString();
 sg scan --filter "no-new-date-edge" --error
 ```
 
----
 
 ### 5. WASM Memory Management (HIGH)
 
@@ -141,7 +138,6 @@ try {
 sg scan --filter "wasm-memory-guard" --error
 ```
 
----
 
 ## CI/CD Integration
 
@@ -163,7 +159,6 @@ sg scan --filter "no-parsefloat-stake" --error
 sg scan --filter "d1-sql-injection" --error
 ```
 
----
 
 ## Production Checklist
 
@@ -177,7 +172,6 @@ Before deploying to production:
 - [ ] No `new Date()` without arguments in workers
 - [ ] WASM memory freed in finally{} blocks
 
----
 
 ## Scale Testing
 
@@ -200,7 +194,6 @@ wrangler queues list
 wrangler d1 execute betting-analytics --command "SELECT COUNT(*) FROM bets WHERE created_at > datetime('now', '-1 hour')"
 ```
 
----
 
 ## Related Documentation
 
@@ -208,7 +201,6 @@ wrangler d1 execute betting-analytics --command "SELECT COUNT(*) FROM bets WHERE
 - **[ast-grep Quick Start](../docs/AST_GREP_QUICKSTART.md)** - Rule usage
 - **[Security Audit](../docs/CODE_QUALITY_AUDIT.md)** - Code quality review
 
----
 
 **Status:** Production-Ready  
 **Enforcement:** CI/CD Required  

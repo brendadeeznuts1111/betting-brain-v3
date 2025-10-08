@@ -1,6 +1,9 @@
 ---
+version: "2.0.0"
 description: Testing patterns and best practices for Bun test
 globs: *.test.ts,*.spec.ts
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "bun-runtime"]
 ---
 
 # Testing Patterns for Bun Test
@@ -417,3 +420,25 @@ test('should handle timeout scenarios', async () => {
 13. ❌ Never test implementation details
 14. ❌ Never use `vi.mocked()` (Vitest-specific)
 15. ❌ Never use `resolves.not.toThrow()` (doesn't work in Bun)
+
+---
+
+## Related Rules
+
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
+- [Bun Runtime](mdc:.cursor/rules/bun-runtime.mdc) - Bun runtime patterns
+- [Process Management](mdc:.cursor/rules/process-management.mdc) - Zombie process prevention
+- [Test Setup Patterns](mdc:.cursor/rules/test-setup-patterns.mdc) - Test configuration
+
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide ⭐ **NEW**
+- [docs/testing/TESTING_GUIDE.md](mdc:docs/testing/TESTING_GUIDE.md) - Testing guide
+- [docs/ERROR_PATH_TESTING.md](mdc:docs/ERROR_PATH_TESTING.md) - Error path testing
+- [tests/utils/process-cleanup.ts](mdc:tests/utils/process-cleanup.ts) - Process manager
+- [bunfig.toml](mdc:bunfig.toml) - Test configuration
+
+---
+
+**Status:** Bun test patterns established
+**Last Updated:** 2025-10-08

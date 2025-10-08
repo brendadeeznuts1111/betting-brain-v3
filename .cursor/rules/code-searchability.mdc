@@ -1,5 +1,8 @@
 ---
 alwaysApply: true
+version: "1.0.0"
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards"]
 ---
 ## Overview
 
@@ -7,7 +10,6 @@ This codebase uses **ast-grep** for structural code search and pattern matching.
 
 See [sgconfig.yml](mdc:sgconfig.yml) and [rules/](mdc:rules/) for complete configuration.
 
----
 
 ## Quick Reference
 
@@ -40,7 +42,6 @@ ast-grep --pattern 'throw Errors.$METHOD($$$)' src/api/
 | **Hardcoded URLs** | `sg scan --filter "hardcoded-url"` | All files |
 | **WORKER_URL Dupe** | `sg scan --filter "worker-url-definition"` | Dashboard files |
 
----
 
 ## Installation
 
@@ -63,7 +64,6 @@ Verify installation:
 sg --version
 ```
 
----
 
 ## Usage Patterns
 
@@ -159,7 +159,6 @@ sg scan --filter "unstructured-log" src/index.ts  # Specific file
 sg -p 'console.error' src/
 ```
 
----
 
 ## Code Quality Rules
 
@@ -238,7 +237,6 @@ console.log('Processing request');
 console.log(`[${requestId}] Processing request`);
 ```
 
----
 
 ## Dashboard Refactoring Patterns
 
@@ -264,7 +262,6 @@ sg scan --filter "duplicate-fetch"
 - [ ] Chart helpers moved to `dashboards/shared/charts.js`
 - [ ] All dashboards import from `shared/`
 
----
 
 ## Custom Patterns
 
@@ -311,7 +308,6 @@ not:                                  # Pattern must NOT match
   pattern: requestId
 ```
 
----
 
 ## Integration with Cursor
 
@@ -322,7 +318,6 @@ ast-grep integrates seamlessly with Cursor for inline code search:
 3. Enter pattern: `async function $NAME`
 4. Results appear in sidebar
 
----
 
 ## Best Practices
 
@@ -372,7 +367,6 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
 }
 ```
 
----
 
 ## Common Searches
 
@@ -406,7 +400,6 @@ sg -p 'Validators.$METHOD' src/
 sg -p 'Errors.$TYPE' src/
 ```
 
----
 
 ## Troubleshooting
 
@@ -432,7 +425,6 @@ npm install -g @ast-grep/cli
 2. Limit file extensions in config
 3. Add paths to ignore list
 
----
 
 ## Related Documentation
 
@@ -442,7 +434,6 @@ npm install -g @ast-grep/cli
 - **[CURSOR_RULES.md](mdc:docs/CURSOR_RULES.md)** - All Cursor rules
 - **[ast-grep Documentation](https://ast-grep.github.io/)** - Official docs
 
----
 
 **Status:** Production patterns established  
 **Last Updated:** 2025-10-07

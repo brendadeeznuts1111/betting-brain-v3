@@ -1,6 +1,9 @@
 ---
+version: "2.0.0"
 globs: src/**/*.ts,scripts/**/*.ts
 description: Security patterns and vulnerability prevention
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "api-patterns"]
 ---
 
 # Security Patterns
@@ -153,23 +156,34 @@ async function encryptData(data: string): Promise<string> {
 ### Secure Error Messages
 
 ```typescript
-// ✅ CORRECT: Generic error messages
-function handleError(error: Error): Response {
-  console.error('Internal error:', error);
-  return new Response(JSON.stringify({
-    error: 'Internal Server Error',
-    requestId: generateRequestId()
-  }), {
-    status: 500,
-    headers: { 'Content-Type': 'application/json' }
-  });
+// ✅ CORRECT: Generic error messages with structured logging
+import { createLogger } from '../utils/logger';
+import { generateRequestId, createErrorResponse } from '../utils/request';
+
+function handleError(error: Error, request: Request): Response {
+  const requestId = generateRequestId();
+  const logger = createLogger(request);
+
+  // Log internally with full details
+  logger.error('internal_error', {
+    requestId,
+    errorType: error.name
+  }, error);
+
+  // Return generic message to user
+  return createErrorResponse(
+    'Internal Server Error',
+    500,
+    'INTERNAL_ERROR',
+    requestId
+  );
 }
 
 // ❌ WRONG: Expose internal details
 function handleError(error: Error): Response {
   return new Response(JSON.stringify({
     error: error.message,
-    stack: error.stack,
+    stack: error.stack,  // Never expose stack traces!
     details: error.toString()
   }), { status: 500 });
 }
@@ -178,21 +192,26 @@ function handleError(error: Error): Response {
 ### Logging Security
 
 ```typescript
-// ✅ CORRECT: Sanitize logs
+// ✅ CORRECT: Sanitize logs with structured logging
+import { createLogger } from '../utils/logger';
+
 function logRequest(request: Request, data: any) {
+  const logger = createLogger(request);
+
   const sanitizedData = {
     ...data,
     password: '[REDACTED]',
     token: '[REDACTED]',
-    apiKey: '[REDACTED]'
+    apiKey: '[REDACTED]',
+    secret: '[REDACTED]'
   };
-  
-  console.log(`[${requestId}] Request:`, sanitizedData);
+
+  logger.info('request_logged', { data: sanitizedData });
 }
 
 // ❌ WRONG: Log sensitive data
 function logRequest(request: Request, data: any) {
-  console.log('Request data:', data); // May contain sensitive info
+  console.log('Request data:', data); // May contain sensitive info!
 }
 ```
 
@@ -330,10 +349,34 @@ return new Response(data, {
 5. ✅ **Always** implement rate limiting
 6. ✅ **Always** hash sensitive data
 7. ✅ **Always** use secure error messages
-8. ✅ **Always** sanitize logs
+8. ✅ **Always** sanitize logs with StructuredLogger ⭐ **UPDATED**
 9. ✅ **Always** use restrictive CORS
 10. ✅ **Always** validate environment variables
 11. ❌ **Never** expose internal details
 12. ❌ **Never** hardcode secrets
 13. ❌ **Never** use string interpolation in SQL
 14. ❌ **Never** ignore security headers
+15. ❌ **Never** use console.log (use StructuredLogger) ⭐ **NEW**
+
+---
+
+## Related Rules
+
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API design patterns
+- [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - SQL injection prevention
+- [Production Security](mdc:.cursor/rules/production-security.mdc) - Production security patterns
+
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide ⭐ **NEW**
+- [src/utils/logger.ts](mdc:src/utils/logger.ts) - Secure logging utilities ⭐ **NEW**
+- [src/utils/request.ts](mdc:src/utils/request.ts) - Request utilities ⭐ **NEW**
+- [src/utils/error-handler.ts](mdc:src/utils/error-handler.ts) - Error handling patterns
+- [src/utils/validation.ts](mdc:src/utils/validation.ts) - Input validation
+- [rules/](mdc:rules/) - ast-grep security rules
+
+---
+
+**Status:** Security patterns established
+**Last Updated:** 2025-10-08

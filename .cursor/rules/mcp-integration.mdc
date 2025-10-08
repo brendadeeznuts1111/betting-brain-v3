@@ -1,6 +1,9 @@
 ---
+version: "2.0.0"
 globs: src/mcp/**/*.ts
 description: MCP server integration patterns and conventions
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "database-patterns", "api-patterns"]
 ---
 
 # MCP Integration Rules
@@ -53,10 +56,17 @@ MCPToolResult → JSON-RPC Response
 ### 1. Create Handler (`src/mcp/handlers/myTool.ts`)
 ```typescript
 import type { MCPToolResult, MCPEnv } from '../types';
+import { normalizeD1Result } from '../../utils/request';
 
 interface MyToolArgs {
   param1: string;
   param2?: number;
+}
+
+interface TableRow {
+  id: string;
+  field: string;
+  // ... other fields
 }
 
 export async function getMyTool(
@@ -76,11 +86,14 @@ export async function getMyTool(
     'SELECT * FROM table WHERE field = ?'
   ).bind(args.param1).all();
 
+  // Normalize D1 results
+  const data = normalizeD1Result<TableRow>(result);
+
   // Return formatted result
   return {
     content: [{
       type: 'text',
-      text: JSON.stringify(result.results, null, 2)
+      text: JSON.stringify(data, null, 2)
     }]
   };
 }
@@ -159,5 +172,26 @@ See [migrations/0003_mcp_tables.sql](mdc:migrations/0003_mcp_tables.sql) for MCP
 4. **Performance:** Optimize queries (target < 500ms)
 5. **Documentation:** Clear descriptions in tool definitions
 6. **Testing:** Test with direct handler script first
+7. **D1 Normalization:** Always use `normalizeD1Result()` for type safety ⭐ **NEW**
 
-See [docs/MCP_TESTING_GUIDE.md](mdc:docs/MCP_TESTING_GUIDE.md) for comprehensive testing guide.
+---
+
+## Related Rules
+
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
+- [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - Database best practices
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API design patterns
+- [Cloudflare Workers](mdc:.cursor/rules/cloudflare-workers.mdc) - Workers patterns
+
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide ⭐ **NEW**
+- [src/utils/request.ts](mdc:src/utils/request.ts) - Request & D1 utilities ⭐ **NEW**
+- [docs/MCP_TESTING_GUIDE.md](mdc:docs/MCP_TESTING_GUIDE.md) - Testing guide
+- [docs/MCP_ENDPOINTS.md](mdc:docs/MCP_ENDPOINTS.md) - Complete API reference
+- [src/mcp/](mdc:src/mcp/) - MCP server implementation
+
+---
+
+**Status:** Production-ready MCP server
+**Last Updated:** 2025-10-08

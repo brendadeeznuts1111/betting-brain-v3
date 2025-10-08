@@ -1,9 +1,7 @@
 ---
 globs: tests/utils/analytics-engine-stub.ts,tests/**/*analytics*.ts
 description: AnalyticsEngineStub API patterns and usage
-version: "1.0.0"
-lastUpdated: "2025-10-07"
-dependencies: ["analytics-testing", "test-setup-patterns"]
+version: "1.1.0"
 ---
 
 # AnalyticsEngineStub API Rules

@@ -1,6 +1,9 @@
 ---
 alwaysApply: true
 description: AI-friendly testing patterns and Bun test integration
+version: "1.0.0"
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "testing-patterns", "bun-runtime"]
 ---
 
 # AI-Friendly Testing Patterns
@@ -338,6 +341,9 @@ Potential improvements being considered:
 - **[Cursor Rules](.cursor/rules/testing-patterns.mdc)** - Testing patterns
 - **[CI/CD Guide](../../docs/guides/CI_CD_GUIDE.md)** - Continuous integration
 
+version: "1.0.0"
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "testing-patterns", "bun-runtime"]
 ---
 
 **Status:** Production-Ready ✅  

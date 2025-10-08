@@ -1,6 +1,9 @@
 ---
+version: "2.0.0"
 globs: src/**/*.ts,wrangler*.toml
 description: Cloudflare Workers specific patterns and requirements
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "api-patterns", "endpoint-routing"]
 ---
 
 # Cloudflare Workers Rules
@@ -63,18 +66,29 @@ switch (url.pathname) {
 
 Always include CORS headers for dashboard access:
 ```typescript
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+import { CORS_HEADERS, createOPTIONSResponse, createJSONResponse } from '../utils/request';
+
+// Use CORS_HEADERS constant
+// No need to define inline
+
+// Handle OPTIONS preflight
+if (request.method === 'OPTIONS') {
+  return createOPTIONSResponse();
+}
+
+// Use in responses (automatic with createJSONResponse)
+return createJSONResponse({ data });
 ```
 
 ## Request ID Tracking
 
 ```typescript
-const requestId = Date.now().toString(36);
-console.log(`[${requestId}] ...`);
+import { generateRequestId } from '../utils/request';
+import { createLogger } from '../utils/logger';
+
+const requestId = generateRequestId();
+const logger = createLogger(request);
+logger.info('request_received', { requestId });
 ```
 
 ## Async Storage
@@ -156,3 +170,27 @@ wrangler d1 migrations apply betting-analytics --remote
 - Base: [wrangler.toml](mdc:wrangler.toml)
 - Staging: [wrangler.staging.toml](mdc:wrangler.staging.toml)
 - Production: [wrangler.production.toml](mdc:wrangler.production.toml)
+
+---
+
+## Related Rules
+
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards ⭐ **NEW**
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API design patterns
+- [Endpoint Routing](mdc:.cursor/rules/endpoint-routing.mdc) - Endpoint routing patterns
+- [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - Database best practices
+- [MCP Integration](mdc:.cursor/rules/mcp-integration.mdc) - MCP server patterns
+
+## Related Documentation
+
+- [docs/QUALITY_STANDARDS.md](mdc:docs/QUALITY_STANDARDS.md) - Complete quality guide ⭐ **NEW**
+- [src/utils/request.ts](mdc:src/utils/request.ts) - Request utilities ⭐ **NEW**
+- [src/utils/logger.ts](mdc:src/utils/logger.ts) - Logging utilities ⭐ **NEW**
+- [src/shared/constants.ts](mdc:src/shared/constants.ts) - All constants ⭐ **NEW**
+- [docs/DEPLOYMENT.md](mdc:docs/DEPLOYMENT.md) - Deployment guide
+- [wrangler.toml](mdc:wrangler.toml) - Configuration reference
+
+---
+
+**Status:** Production patterns established
+**Last Updated:** 2025-10-08

@@ -1,8 +1,9 @@
 ---
-version: 4
+version: "5.0.0"
 scope: ["*"]
 alwaysApply: true
 description: Root directory organization and file placement rules
+lastUpdated: "2025-10-08"
 ---
 
 # Root Directory Organization Rules

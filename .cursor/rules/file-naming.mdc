@@ -1,8 +1,10 @@
 ---
-version: 4
+version: "5.0.0"
 scope: ["*"]
 alwaysApply: true
 description: File and directory naming conventions
+lastUpdated: "2025-10-08"
+dependencies: ["root-organization"]
 ---
 
 # File Naming Conventions

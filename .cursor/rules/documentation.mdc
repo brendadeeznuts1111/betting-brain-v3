@@ -1,6 +1,9 @@
 ---
 globs: *.md
 description: Documentation file conventions and placement
+version: "1.0.0"
+lastUpdated: "2025-10-08"
+dependencies: ["root-organization"]
 ---
 
 # Documentation Rules
