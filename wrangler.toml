@@ -4,14 +4,115 @@ compatibility_date = "2023-12-01"
 compatibility_flags = ["nodejs_compat"]
 account_id = "80693377f3abb78e00820aa69a415ce4"
 
-[env.production]
-name = "betting-brain-v3-prod"
-
 [[d1_databases]]
 binding = "ANALYTICS"
 database_name = "betting-analytics"
 database_id = "1fd6d6d3-7b0f-4488-a651-a234c61705b1"
 migrations_dir = "migrations"
+
+# MCP Raw Feed Database (from fantasy402-mcp)
+[[d1_databases]]
+binding = "RAW_FEED_DB"
+database_name = "fantasy42-raw-feed"
+database_id = "1b2e8ea8-a702-4cc7-9665-a8bea78b5dea"
+
+[env.production]
+name = "betting-brain-v3-prod"
+
+[[env.production.d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics"
+database_id = "1fd6d6d3-7b0f-4488-a651-a234c61705b1"
+migrations_dir = "migrations"
+
+[[env.production.d1_databases]]
+binding = "RAW_FEED_DB"
+database_name = "fantasy42-raw-feed"
+database_id = "1b2e8ea8-a702-4cc7-9665-a8bea78b5dea"
+
+[[env.production.queues.producers]]
+binding = "LINE_INGRESS"
+queue = "line-ingress-prod"
+
+[[env.production.queues.consumers]]
+queue = "line-ingress-prod"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[[env.production.queues.producers]]
+binding = "STEAM_WEBHOOK"
+queue = "steam-webhook-prod"
+
+[[env.production.queues.consumers]]
+queue = "steam-webhook-prod"
+max_batch_size = 5
+max_batch_timeout = 10
+
+[[env.production.queues.producers]]
+binding = "STEAM_QUEUE"
+queue = "steam-processor-prod"
+
+[[env.production.queues.consumers]]
+queue = "steam-processor-prod"
+max_batch_size = 10
+max_batch_timeout = 2
+max_retries = 2
+
+[[env.production.queues.producers]]
+binding = "EXPOSURE_QUEUE"
+queue = "exposure-calculator-prod"
+
+[[env.production.queues.consumers]]
+queue = "exposure-calculator-prod"
+max_batch_size = 50
+max_batch_timeout = 10
+max_retries = 3
+
+[[env.production.queues.producers]]
+binding = "FANTASY402_QUEUE"
+queue = "fantasy402-logs-prod"
+
+[[env.production.queues.consumers]]
+queue = "fantasy402-logs-prod"
+max_batch_size = 100
+max_batch_timeout = 5
+max_retries = 5
+
+[[env.production.analytics_engine_datasets]]
+binding = "ANALYTICS_ENGINE"
+dataset = "betting-metrics-prod"
+
+[[env.production.kv_namespaces]]
+binding = "BET_TICKER_RAW"
+id = "8b9618cb00c647f18ad83458e0061018"
+
+[[env.production.kv_namespaces]]
+binding = "TOKEN_STORE"
+id = "47da877d6aab4edc91ee6f052a056769"
+
+[[env.production.kv_namespaces]]
+binding = "USER_STORE"
+id = "74003502667e42ae9271ec9a1591a2b0"
+
+[[env.production.kv_namespaces]]
+binding = "SESSION_STORE"
+id = "c00d737fbf124185868c638af8ff3507"
+
+[[env.production.kv_namespaces]]
+binding = "REFRESH_STORE"
+id = "0e4571a38a9d4c4781a982d05fd1291b"
+
+[[env.production.kv_namespaces]]
+binding = "LIVEBETS_STORE"
+id = "321ecd09a5764e1cb04a3e87c37d590c"
+
+[[env.production.kv_namespaces]]
+binding = "FANTASY_CACHE"
+id = "e8ea80789b5246e58ea95798f04d0047"
+
+[[env.production.kv_namespaces]]
+binding = "FANTASY_CONFIG_CACHE"
+id = "2e7c333ad95e4933b65a0686e7d5bf6b"
 
 [[queues.producers]]
 binding = "LINE_INGRESS"
@@ -107,11 +208,10 @@ id = "321ecd09a5764e1cb04a3e87c37d590c"
 binding = "FANTASY_CACHE"
 id = "e8ea80789b5246e58ea95798f04d0047"
 
-# MCP Raw Feed Database (from fantasy402-mcp)
-[[d1_databases]]
-binding = "RAW_FEED_DB"
-database_name = "fantasy42-raw-feed"
-database_id = "1b2e8ea8-a702-4cc7-9665-a8bea78b5dea"
+# Fantasy402 Config Cache (for bootstrap data)
+[[kv_namespaces]]
+binding = "FANTASY_CONFIG_CACHE"
+id = "2e7c333ad95e4933b65a0686e7d5bf6b"
 
 [limits]
 cpu_ms = 50
