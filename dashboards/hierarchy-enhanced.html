@@ -327,10 +327,7 @@
     </header>
 
     <!-- live data fetch with graceful fallback -->
-    <div id="live-data"
-      hx-trigger="load delay:0.5s, every 60s"
-      hx-target="#table-body"
-      hx-swap="innerHTML"
+    <div id="live-data" hx-trigger="load delay:0.5s, every 60s" hx-target="#table-body" hx-swap="innerHTML"
       hx-on::after-request="if (event.detail.successful === false) fallbackTree()">
     </div>
 
@@ -341,7 +338,8 @@
     </div>
 
     <!-- Summary Stats -->
-    <div id="summary-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div id="summary-stats"
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
       <!-- Stats cards will be inserted here -->
     </div>
 
@@ -353,7 +351,8 @@
     </div>
 
     <div class="help-text">
-      Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear • Sort by any column header • Click 🔽 to expand sub-tree
+      Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear • Sort by
+      any column header • Click 🔽 to expand sub-tree
     </div>
 
     <table class="metrics-table" id="metrics-table">
@@ -380,7 +379,8 @@
       </tbody>
     </table>
 
-    <div id="tree-container" class="hide" style="background: white; border-radius: 8px; box-shadow: 0 2px 4px var(--shadow); padding: 2rem;">
+    <div id="tree-container" class="hide"
+      style="background: white; border-radius: 8px; box-shadow: 0 2px 4px var(--shadow); padding: 2rem;">
       <h5 style="margin-top: 0;">🌳 Interactive Tree View</h5>
       <div id="tree-content"></div>
     </div>
@@ -877,8 +877,7 @@
     let currentView = 'table';
     const toggleViewBtn = document.getElementById('toggle-view');
     const metricsTable = document.getElementById('metrics-table');
-    const treeContainer = document.getElementById('tree-container');
-    const treeContent = document.getElementById('tree-content');
+    // treeContainer and treeContent already declared above in DOM Elements section
 
     toggleViewBtn.addEventListener('click', () => {
       if (currentView === 'table') {

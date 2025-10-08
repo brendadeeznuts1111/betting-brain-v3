@@ -126,8 +126,9 @@
   "license": "MIT",
   "dependencies": {
     "@cloudflare/workers-types": "^4.20251008.0",
+    "async-mutex": "^0.5.0",
     "fuse.js": "^7.0.0",
-    "glob": "^11.0.0",
+    "glob": "^10.4.5",
     "jsonwebtoken": "^9.0.2",
     "simple-statistics": "^7.8.8",
     "ws": "^8.18.3",
@@ -138,7 +139,6 @@
     "@types/bun": "^1.0.0",
     "@types/ws": "^8.18.1",
     "chart.js": "^4.5.0",
-    "glob": "^10.4.5",
     "husky": "^9.1.7",
     "typescript": "^5.3.0"
   },

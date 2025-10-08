@@ -1671,6 +1671,90 @@ flowchart TD
     API --> DASH
 ```
 
+## 🚀 **Drop-in Agent Tree Population Script**
+
+**One-shot browser snippet** that replays Fantasy402 API calls and populates the agent tree with real data:
+
+```javascript
+(async () => {
+  // 1. Replay the captured Fantasy402 API call
+  const res = await fetch("https://fantasy402.com/cloud/api/Manager/getListAgenstByAgent", {
+    method: "POST",
+    headers: {
+      "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCSUxMWTY2NiIsInR5cGUiOjAsImFnIjoiIiwiaW1wIjoiIiwib2ZmIjoiTk9MQVJPU0UiLCJyYiI6bnVsbCwibmJmIjoxNzU5OTQyMjM4LCJleHAiOjE3NTk5NDM0OTh9.qRvQ-QOwXCvtZgiLoeAWjtEpEG1c0TzM4r3Syc8KkQs",
+      "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+    },
+    body: "agentID=BILLY666&agentType=M&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCSUxMWTY2NiIsInR5cGUiOjAsImFnIjoiIiwiaW1wIjoiIiwib2ZmIjoiTk9MQVJPU0UiLCJyYiI6bnVsbCwibmJmIjoxNzU5OTQyMjM4LCJleHAiOjE3NTk5NDM0OTh9.qRvQ-QOwXCvtZgiLoeAWjtEpEG1c0TzM4r3Syc8KkQs&operation=getListAgenstByAgent&RRO=1&agentOwner=BILLY666&agentSite=1"
+  });
+
+  // 2. Parse the flat agent list
+  const list = await res.json();
+  /* Expected shape per element:
+     { agentID: "NOLAWOLF", parentID: "BILLY666", agentType: "M", ... }
+  */
+
+  // 3. Build nested tree structure
+  const map = {};
+  const root = [];
+  list.forEach(a => {
+    map[a.agentID] = { ...a, children: [] };
+  });
+  list.forEach(a => {
+    const node = map[a.agentID];
+    if (!a.parentID || a.parentID === a.agentID) {
+      root.push(node);                 // top-level
+    } else {
+      const parent = map[a.parentID];
+      if (parent) parent.children.push(node);
+      else root.push(node);            // orphan → promote
+    }
+  });
+
+  // 4. Wrap in envelope our UI expects
+  const envelope = {
+    tree: root,
+    ts: Date.now(),
+    source: "fantasy402-ingest"
+  };
+
+  // 5. Push to Worker via ingest endpoint
+  const ingest = await fetch("/api/fantasy402/ingest", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(envelope)
+  });
+
+  console.log("Ingest status:", ingest.status, await ingest.text());
+})();
+```
+
+### **Usage Instructions**
+
+1. **Copy & Paste**: Drop the script into any dashboard page or browser console
+2. **Run Once**: Execute the script to populate real agent data
+3. **Verify**: Open `hierarchy-enhanced.html` to see real agent names and data
+4. **Result**: Dashboard shows live production data instead of mocks
+
+### **Automation (Optional)**
+
+**GitHub Action Cron** for automated sync every 5 minutes:
+
+```yaml
+- name: Sync agent tree
+  run: |
+    node -e "$(cat scripts/sync-agent-tree.js)"
+  env:
+    BEARER: ${{ secrets.FANTASY402_BEARER }}
+```
+
+### **Benefits**
+
+- ✅ **No Backend Changes**: Drop-in solution
+- ✅ **Real Data**: Live Fantasy402 agent hierarchy
+- ✅ **Instant Results**: 30-second setup
+- ✅ **Production Ready**: Works with existing ingest endpoint
+- ✅ **Automated**: Optional cron job for continuous sync
+
 ## Cache Warming Flow
 
 ```mermaid
