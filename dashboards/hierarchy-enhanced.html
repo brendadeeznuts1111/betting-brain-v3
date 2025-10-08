@@ -315,11 +315,14 @@
       <!-- Stats cards will be inserted here -->
     </div>
 
-    <input id="search" class="search-box" type="text" placeholder="Type to filter agents… (press / to focus)"
-      autocomplete="off" aria-label="Search agents">
+    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+      <input id="search" class="search-box" type="text" placeholder="Type to filter agents… (press / to focus)"
+        autocomplete="off" aria-label="Search agents" style="flex: 1; margin-bottom: 0;">
+      <button id="reset-view" class="button" style="min-width: 120px;">Show All</button>
+    </div>
 
     <div class="help-text">
-      Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear • Sort by any column header
+      Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear • Sort by any column header • Click 🔽 to expand sub-tree
     </div>
 
     <table class="metrics-table" id="metrics-table">
@@ -496,7 +499,11 @@
             ${timeAgo(r.lastBet)}
           </td>
           <td>
-            <button class="button-small" data-agent="${r.agent}">📊</button>
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-start;">
+              <button class="button-small" data-agent="${r.agent}" title="View analytics">📊</button>
+              ${r.childCount > 0 ? `<button class="button-small" data-action="expand" data-agent="${r.agent}" title="Expand children">🔽</button>` : ''}
+              <button class="button-small" data-action="copy" data-agent="${r.agent}" title="Copy agent ID">📋</button>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -665,6 +672,16 @@
       });
     });
 
+    // Reset view button
+    document.getElementById('reset-view').addEventListener('click', () => {
+      searchBox.value = '';
+      sortCol = 'risk';
+      sortAsc = false;
+      sortRows();
+      renderTable(rows);
+      renderSummaryStats(rows);
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === '/' && document.activeElement !== searchBox) {
@@ -674,14 +691,60 @@
         searchBox.value = '';
         searchBox.blur();
         renderTable(rows);
+        renderSummaryStats(rows);
       }
     });
 
     // Handle button clicks with event delegation
     tableBody.addEventListener('click', (e) => {
-      if (e.target.matches('button[data-agent]')) {
-        const agentId = e.target.dataset.agent;
-        loadAgentDetails(agentId);
+      if (!e.target.matches('button[data-agent]')) return;
+
+      const agentId = e.target.dataset.agent;
+      const action = e.target.dataset.action;
+
+      switch (action) {
+        case 'expand':
+          // Filter to show only this agent's sub-tree (recursive descendants)
+          const agent = rows.find(r => r.agent === agentId);
+          if (agent) {
+            const subTree = [agent];
+            const visited = new Set([agentId]);
+
+            // Recursively collect all descendants
+            function collectDescendants(parentId) {
+              const children = rows.filter(r => r.parent === parentId);
+              children.forEach(child => {
+                if (!visited.has(child.agent)) {
+                  visited.add(child.agent);
+                  subTree.push(child);
+                  collectDescendants(child.agent);
+                }
+              });
+            }
+
+            collectDescendants(agentId);
+            renderTable(subTree);
+            renderSummaryStats(subTree);
+            searchBox.value = `📍 ${agentId}'s network: ${subTree.length} agents (${agent.descendantCount} total)`;
+          }
+          break;
+
+        case 'copy':
+          // Copy agent ID to clipboard
+          navigator.clipboard.writeText(agentId).then(() => {
+            e.target.textContent = '✅';
+            setTimeout(() => { e.target.textContent = '📋'; }, 1000);
+          }).catch(err => {
+            console.error('Failed to copy:', err);
+            e.target.textContent = '❌';
+            setTimeout(() => { e.target.textContent = '📋'; }, 1000);
+          });
+          break;
+
+        default:
+          // Default: open analytics drawer
+          loadAgentDetails(agentId);
+          break;
       }
     });
 
