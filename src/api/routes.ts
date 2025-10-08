@@ -4,13 +4,14 @@
  */
 
 import { Env } from '../types/api';
+import { CORS_HEADERS } from '../utils/request';
 import { validateQueryParams, Validators, validationErrorResponse } from '../utils/validation';
 import { createErrorResponse, Errors, validateEnv } from '../utils/error-handler';
 import { getBettingExposure } from '../tools/intelligence/getBettingExposure';
 import { getCLV } from '../tools/intelligence/getCLV';
 import { getSharpScore } from '../tools/intelligence/getSharpScore';
 import { getHoldPercentage } from '../tools/intelligence/getHoldPercentage';
-import { handleFantasy402Ingest } from './fantasy402-ingest';
+import { handleFantasy402Ingest, handleFantasy402IngestHead } from './fantasy402-ingest';
 import { getAgentPerformance, getSportPerformance, getPerformanceSummary } from './fantasy402-performance-api';
 import { getLiveBets } from '../routes/api/f402-bets';
 import { getAgentPerformance as getF402AgentPerformance, getAgentList, getAgentDetail, getAgentTree, getCacheMetrics } from '../routes/api/f402-agents';
@@ -78,6 +79,9 @@ export async function handleAPIRoute(
         return await getStats(request, env, requestId);
 
       case '/fantasy402/ingest':
+        if (request.method === 'HEAD') {
+          return await handleFantasy402IngestHead(request, env, requestId);
+        }
         return await handleFantasy402Ingest(request, env, requestId);
 
       case '/fantasy402/performance':

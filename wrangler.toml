@@ -7,6 +7,8 @@ account_id = "80693377f3abb78e00820aa69a415ce4"
 # Environment variables
 [vars]
 EXTENSION_SECRET = "default-dev-secret-change-me"
+FANTASY402_JWT_TOKEN = "dev-token-change-me"
+JWT_SECRET = "dev-jwt-secret-local-development-key"
 
 [[d1_databases]]
 binding = "ANALYTICS"
@@ -238,4 +240,3 @@ id = "4b0ce52be11041299d35f4c741666afa"
 
 [limits]
 cpu_ms = 50
-

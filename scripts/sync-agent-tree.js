@@ -37,6 +37,47 @@ import { gzipSync } from 'bun';
     burst: 3          // Allow bursts of 3
   };
 
+  // D1 Production Limits (dynamically queried from worker)
+  // Falls back to safe defaults if HEAD request fails
+  let D1_LIMITS = {
+    MAX_PAYLOAD_BYTES: 900_000,    // 900 KB (safety margin below 1 MB)
+    MAX_BATCH_SIZE: 9_000,         // 9k statements (safety margin below 10k)
+    CHUNK_SIZE: 1_000              // Agents per chunk when chunking needed
+  };
+
+  /**
+   * Query D1 limits from worker via HEAD request
+   * This allows the worker to control limits centrally
+   */
+  async function queryD1Limits() {
+    try {
+      const response = await fetch(`${WORKER_URL}/api/fantasy402/ingest`, {
+        method: 'HEAD'
+      });
+
+      if (response.ok) {
+        const maxPayload = parseInt(response.headers.get('X-D1-Max-Payload-Bytes') || '0');
+        const maxAgents = parseInt(response.headers.get('X-D1-Max-Agents') || '0');
+        const recommendedChunk = parseInt(response.headers.get('X-D1-Recommended-Chunk') || '0');
+
+        if (maxPayload && maxAgents && recommendedChunk) {
+          // Apply 10% safety margin to max payload
+          D1_LIMITS.MAX_PAYLOAD_BYTES = Math.floor(maxPayload * 0.9);
+          D1_LIMITS.MAX_BATCH_SIZE = maxAgents;
+          D1_LIMITS.CHUNK_SIZE = recommendedChunk;
+
+          console.log(`✅ Worker limits: ${(maxPayload / 1024).toFixed(0)} KB max, ${maxAgents} agents max, ${recommendedChunk} chunk size`);
+          return true;
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️  Failed to query D1 limits from worker, using defaults:', error.message);
+    }
+
+    console.log(`📋 Using default limits: ${(D1_LIMITS.MAX_PAYLOAD_BYTES / 1024).toFixed(0)} KB max, ${D1_LIMITS.MAX_BATCH_SIZE} agents max`);
+    return false;
+  }
+
   // Rate limiter state
   let lastHit = 0;
   let hitsInWindow = 0;
@@ -138,6 +179,9 @@ import { gzipSync } from 'bun';
   }
 
   try {
+    // Query D1 limits from worker (centralizes limit configuration)
+    await queryD1Limits();
+
     // Fetch agents (from cache or Fantasy402)
     const agents = await fetchAgentsWithCache();
 
@@ -213,6 +257,11 @@ import { gzipSync } from 'bun';
         path: agentPath,
         active: node.active,
         site_id: node.site_id,
+        // Include metrics for dashboard display
+        risk_score: node.risk_score || 0,
+        steam_percentage: node.steam_percentage || 0,
+        velocity: node.velocity || 0,
+        sharpness: node.sharpness || 0,
         synced_at: Date.now()
       });
 
@@ -224,67 +273,92 @@ import { gzipSync } from 'bun';
     rootAgents.forEach(root => flatten(root));
     console.log(`✅ Flattened ${flatAgents.length} agents for database`);
 
-    // Step 4: Send to Worker in ≤100 KB chunks
-    console.log('🚀 Sending to Worker in chunks...');
+    // Step 4: Send agent tree (single payload or chunked based on D1 limits)
+    const payload = {
+      tree   : flatAgents,
+      ts     : Date.now(),
+      source : 'fantasy402-ingest',
+      force  : forceSync
+    };
 
-    const CHUNK_SIZE = 300;          // agents per chunk (≈85 KB)
-    const chunks    = [];
-    for (let i = 0; i < flatAgents.length; i += CHUNK_SIZE) {
-      chunks.push(flatAgents.slice(i, i + CHUNK_SIZE));
-    }
+    const jsonStr = JSON.stringify(payload);
+    const payloadSize = new Blob([jsonStr]).size;
+    const needsChunking = payloadSize > D1_LIMITS.MAX_PAYLOAD_BYTES || flatAgents.length > D1_LIMITS.MAX_BATCH_SIZE;
 
-    let stored = 0;
-    for (let c = 0; c < chunks.length; c++) {
-      const payload = {
-        tree   : chunks[c],
-        ts     : Date.now(),
-        source : 'fantasy402-ingest',
-        chunk  : { index: c, total: chunks.length }, // metadata
-        force  : forceSync // Pass force flag to bypass rate limiting
-      };
+    if (needsChunking) {
+      console.log(`⚠️  Payload exceeds D1 limits (${(payloadSize / 1024).toFixed(1)} KB > ${(D1_LIMITS.MAX_PAYLOAD_BYTES / 1024).toFixed(0)} KB or ${flatAgents.length} agents > ${D1_LIMITS.MAX_BATCH_SIZE})`);
+      console.log(`🔄 Falling back to chunked upload (${D1_LIMITS.CHUNK_SIZE} agents per chunk)...`);
 
-      // gzip = smaller payload (12 KB) but requires worker gunzip; set true when ready
-      const USE_GZIP = false; // TODO: flip to true when worker stabilises
-      const jsonStr = JSON.stringify(payload);
-
-      let body, headers;
-      if (USE_GZIP) {
-        body = gzipSync(jsonStr);
-        const compressionRatio = ((1 - body.length / jsonStr.length) * 100).toFixed(1);
-        console.log(`  📦 Chunk ${c + 1}/${chunks.length}: ${jsonStr.length} bytes → ${body.length} bytes (${compressionRatio}% smaller)`);
-        headers = {
-          'content-type': 'application/json',
-          'content-encoding': 'gzip',
-          'X-Extension-Secret': 'default-dev-secret-change-me'
-        };
-      } else {
-        body = jsonStr;
-        const payloadSize = new Blob([jsonStr]).size;
-        console.log(`  📦 Chunk ${c + 1}/${chunks.length}: ${payloadSize} bytes (${(payloadSize / 1024).toFixed(1)} KB)`);
-        headers = {
-          'content-type': 'application/json',
-          'X-Extension-Secret': 'default-dev-secret-change-me'
-        };
+      const chunks = [];
+      for (let i = 0; i < flatAgents.length; i += D1_LIMITS.CHUNK_SIZE) {
+        chunks.push(flatAgents.slice(i, i + D1_LIMITS.CHUNK_SIZE));
       }
+
+      let stored = 0;
+      for (let c = 0; c < chunks.length; c++) {
+        const chunkPayload = {
+          tree   : chunks[c],
+          ts     : Date.now(),
+          source : 'fantasy402-ingest',
+          chunk  : { index: c, total: chunks.length },
+          force  : forceSync
+        };
+
+        const chunkStr = JSON.stringify(chunkPayload);
+        console.log(`  📦 Chunk ${c + 1}/${chunks.length}: ${(new Blob([chunkStr]).size / 1024).toFixed(1)} KB (${chunks[c].length} agents)`);
+
+        const res = await fetch(`${WORKER_URL}/api/fantasy402/ingest`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'X-Extension-Secret': 'default-dev-secret-change-me'
+          },
+          body: chunkStr
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error(`❌ Chunk ${c + 1} error response:`, errorText);
+          throw new Error(`Chunk ${c + 1} failed: ${res.status} - ${errorText}`);
+        }
+
+        const result = await res.json();
+        stored += result.stored || chunks[c].length;
+        console.log(`  ✅ Chunk ${c + 1}/${chunks.length} stored (${result.stored} agents, ${result.duration_ms}ms)`);
+
+        // Small delay between chunks to prevent overwhelming worker
+        if (c < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      console.log(`✅ Worker stored ${stored} agents in ${chunks.length} batched transactions`);
+    } else {
+      // Single payload path (optimal for <900 KB)
+      console.log(`🚀 Sending all ${flatAgents.length} agents in single payload...`);
+      console.log(`  📦 Payload size: ${payloadSize} bytes (${(payloadSize / 1024).toFixed(1)} KB)`);
+
+      const headers = {
+        'content-type': 'application/json',
+        'X-Extension-Secret': 'default-dev-secret-change-me'
+      };
 
       const res = await fetch(`${WORKER_URL}/api/fantasy402/ingest`, {
         method: 'POST',
         headers,
-        body
+        body: jsonStr
       });
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error(`❌ Chunk ${c} error response:`, errorText);
-        throw new Error(`Chunk ${c} failed: ${res.status} - ${errorText}`);
+        console.error(`❌ Sync error response:`, errorText);
+        throw new Error(`Sync failed: ${res.status} - ${errorText}`);
       }
-      const result = await res.json();
-      const n = result.stored || chunks[c].length;
-      stored += n;
-      console.log(`  ✅ Chunk ${c + 1}/${chunks.length} stored (${n} agents)`);
-    }
 
-    console.log(`✅ Worker responded: 200 - {"stored":${stored},"agents":${stored}}`);
+      const result = await res.json();
+      const stored = result.stored || flatAgents.length;
+      console.log(`✅ Worker stored ${stored} agents in ${result.duration_ms}ms (${result.throughput} agents/sec)`);
+    }
 
     // Step 5: Verify in dashboard
     console.log('🎉 Done! Refresh hierarchy dashboard to see all agents.');
