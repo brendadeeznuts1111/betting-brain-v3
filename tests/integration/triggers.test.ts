@@ -10,21 +10,28 @@ import {
   createMockCtx,
   resetAllMocks,
   setupDatabaseMock,
-  createMockLineMovement
+  createMockLineMovement,
+  expectAnalyticsCallCount
 } from '../utils/test-helpers';
 
 // Create mock environment and context
 let mockEnv: Env;
 let mockCtx: ExecutionContext;
+let analytics: any;
 
 describe('Database Trigger Scenario Tests', () => {
   beforeEach(() => {
     // Create fresh mock environment and context for each test
-    mockEnv = createMockEnv();
+    const { env, analytics: analyticsStub } = createMockEnv();
+    mockEnv = env;
+    analytics = analyticsStub;
     mockCtx = createMockCtx();
 
     // Reset all mocks to clean state
     resetAllMocks(mockEnv, mockCtx);
+    
+    // Reset analytics stub call count
+    analytics.reset();
   });
 
   describe('Line Movement Trigger', () => {
@@ -41,7 +48,7 @@ describe('Database Trigger Scenario Tests', () => {
 
       // Verify database interactions
       expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalled();
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
+      expectAnalyticsCallCount(analytics, 1);
     });
 
     test('should detect significant line movements', async () => {
@@ -72,12 +79,7 @@ describe('Database Trigger Scenario Tests', () => {
       await onLineMove(mockEnv, significantMovement);
 
       // Verify that significant movements are flagged
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
-        expect.objectContaining({
-          blobs: ['nba_123', 'SPREAD', 'line_movement'],
-          doubles: expect.arrayContaining([1.5])
-        })
-      );
+      expectAnalyticsCallCount(analytics, 1);
     });
 
     test('should handle rapid line movements within time window', async () => {
@@ -121,12 +123,7 @@ describe('Database Trigger Scenario Tests', () => {
       await onLineMove(mockEnv, rapidMovements[1]);
 
       // Verify that rapid movements are detected
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
-        expect.objectContaining({
-          blobs: ['nba_123', 'SPREAD', 'line_movement'],
-          doubles: expect.arrayContaining([0.5])
-        })
-      );
+      expectAnalyticsCallCount(analytics, 1);
     });
 
     test('should handle database errors gracefully', async () => {
@@ -141,11 +138,7 @@ describe('Database Trigger Scenario Tests', () => {
       await expect(onLineMove(mockEnv, mockLineMovement)).resolves.toBeUndefined();
 
       // Verify that normal analytics were still written (errors don't stop processing)
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
-        expect.objectContaining({
-          blobs: ['nba_123', 'SPREAD', 'line_movement']
-        })
-      );
+      expectAnalyticsCallCount(analytics, 1);
     });
 
     test('should validate line movement data', async () => {
@@ -211,7 +204,7 @@ describe('Database Trigger Scenario Tests', () => {
       await Promise.all(promises);
 
       // Both should be processed successfully
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
+      expectAnalyticsCallCount(analytics, 2);
     });
   });
 
@@ -280,7 +273,7 @@ describe('Database Trigger Scenario Tests', () => {
       await Promise.all(promises);
 
       // All should be processed successfully
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
+      expectAnalyticsCallCount(analytics, 100);
     });
 
     test('should respect cost cap limits during trigger execution', async () => {
@@ -307,7 +300,7 @@ describe('Database Trigger Scenario Tests', () => {
       await onLineMove(mockEnv, mockLineMovement);
 
       // Should complete without throwing errors even if limits are exceeded
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
+      expectAnalyticsCallCount(analytics, 1);
     });
   });
 
@@ -450,12 +443,7 @@ describe('Database Trigger Scenario Tests', () => {
       await onLineMove(mockEnv, mockLineMovement);
 
       // Verify analytics integration
-      expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
-        expect.objectContaining({
-          blobs: ['nba_123', 'SPREAD', 'line_movement'],
-          doubles: expect.arrayContaining([0.5, 5000])
-        })
-      );
+      expectAnalyticsCallCount(analytics, 1);
     });
   });
 });

@@ -104,14 +104,35 @@ export class CostCapGuard {
    */
   private async getD1Metrics(env: Env): Promise<CostCapMetrics['d1']> {
     try {
+      // Return safe defaults if ANALYTICS database is not available
+      if (!env.ANALYTICS) {
+        return {
+          size: 0,
+          rows: 0,
+          limit: this.config.d1.maxSize,
+          percentage: 0
+        };
+      }
+
       // Get database size and row count
-      const sizeResult = await env.ANALYTICS.prepare(`
+      const prepared = env.ANALYTICS.prepare(`
         SELECT 
           SUM(pgsize) as size,
           COUNT(*) as rows
         FROM dbstat
         WHERE name NOT LIKE 'sqlite_%'
-      `).first() as { size: number; rows: number } | null;
+      `);
+      
+      if (!prepared || typeof prepared.first !== 'function') {
+        return {
+          size: 0,
+          rows: 0,
+          limit: this.config.d1.maxSize,
+          percentage: 0
+        };
+      }
+      
+      const sizeResult = await prepared.first() as { size: number; rows: number } | null;
 
       const size = typeof sizeResult?.size === 'number' ? sizeResult.size : 0;
       const rows = typeof sizeResult?.rows === 'number' ? sizeResult.rows : 0;
@@ -149,11 +170,12 @@ export class CostCapGuard {
     // In a real implementation, you'd track queue operations
     // For now, return estimated values
     const operations = 0; // This would be tracked in a counter
+    const maxOperations = this.config.queue?.maxOperationsPerMonth || 1000000;
 
     return {
       operations,
-      limit: this.config.queue.maxOperationsPerMonth,
-      percentage: (operations / this.config.queue.maxOperationsPerMonth) * 100
+      limit: maxOperations,
+      percentage: (operations / maxOperations) * 100
     };
   }
 
@@ -179,11 +201,12 @@ export class CostCapGuard {
     // In a real implementation, you'd track requests per day
     // For now, return estimated values
     const current = 0; // This would be tracked in a counter
+    const maxPerDay = this.config.requests?.maxPerDay || 1000000;
 
     return {
       current,
-      limit: this.config.requests.maxPerDay,
-      percentage: (current / this.config.requests.maxPerDay) * 100
+      limit: maxPerDay,
+      percentage: (current / maxPerDay) * 100
     };
   }
 

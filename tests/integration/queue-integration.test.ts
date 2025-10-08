@@ -8,14 +8,18 @@ import { handleLineIngress, handleBatchLineIngress } from '../../src/queues/line
 import { handleSteamWebhook, handleBatchSteamWebhook } from '../../src/queues/steamWebhook';
 import type { Env } from '../../src/types/api';
 import type { ExecutionContext } from '@cloudflare/workers-types';
+import { setupCostCapGuardMock } from '../utils/test-helpers';
 
 describe('Queue Integration Tests', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetAllMocks();
-    
+
+    // Setup cost cap guard mock
+    await setupCostCapGuardMock(true, 'OK');
+
     mockEnv = {
       ANALYTICS: {
         prepare: vi.fn().mockReturnValue({
@@ -108,7 +112,7 @@ describe('Queue Integration Tests', () => {
 
       // Should not throw for validation errors (non-retryable)
       await handleLineIngress(message, mockEnv, mockCtx);
-      
+
       // Should not call database operations for invalid data
       expect(mockEnv.ANALYTICS.prepare().run).not.toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
@@ -121,7 +125,7 @@ describe('Queue Integration Tests', () => {
 
       // Should not throw for parsing errors (non-retryable)
       await handleLineIngress(message, mockEnv, mockCtx);
-      
+
       // Should not call database operations for invalid JSON
       expect(mockEnv.ANALYTICS.prepare).not.toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
@@ -243,7 +247,7 @@ describe('Queue Integration Tests', () => {
       ] as any[];
 
       await handleBatchLineIngress(messages, mockEnv, mockCtx);
-      
+
       // Batch processing should handle mixed valid/invalid messages
       // Valid messages are processed, invalid ones are handled gracefully without throwing
     });

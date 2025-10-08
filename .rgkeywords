@@ -1,0 +1,124 @@
+# Ripgrep Keywords - One per line
+# Keep index tiny but relevant; add new terms in same PR as code
+
+# Core Analytics
+steam
+gini
+agent_graph
+velocity
+sharpness
+concentration
+recency
+lagAnalysis
+timeSeriesLayer
+signals
+
+# Risk & Fraud
+rollupRisk
+detectSteam
+ringFence
+sharpScore
+fraudDetection
+multiAccount
+
+# Data Processing
+ingest
+queue
+consumer
+producer
+batch
+webhook
+
+# Storage
+KV
+D1
+R2
+Analytics
+cache
+
+# Security
+fingerprint
+rateLimit
+GDPR
+purge
+encrypt
+
+# MCP Tools
+getBettingExposure
+getSharpScore
+getCLV
+getHoldPercentage
+getSteamMoves
+getRiskConcentration
+getSharpActivity
+
+# Fantasy402
+fantasy402
+agentPerformance
+customerVolume
+liveBets
+betTicker
+
+# Infrastructure
+worker
+cron
+trigger
+migration
+binding
+
+# Constants & Configuration
+TEST_LIMITS
+COST_CAP_THRESHOLDS
+RATE_LIMITS
+STEAM_THRESHOLDS
+SHARP_SCORE_THRESHOLDS
+ANOMALY_DETECTION
+PAGINATION
+TIMEOUTS
+TTL
+HTTP_STATUS
+RETRY_CONFIG
+
+# Cloudflare Bindings (D1)
+ANALYTICS
+RAW_FEED_DB
+
+# Cloudflare Bindings (KV)
+FANTASY_CACHE
+TOKEN_STORE
+USER_STORE
+SESSION_STORE
+REFRESH_STORE
+LIVEBETS_STORE
+BET_TICKER_RAW
+RATE_LIMITER
+SPORTS_CACHE
+FANTASY_CONFIG_CACHE
+
+# Cloudflare Bindings (Queues)
+LINE_INGRESS
+STEAM_WEBHOOK
+STEAM_QUEUE
+EXPOSURE_QUEUE
+FANTASY402_QUEUE
+
+# Cloudflare Bindings (Analytics)
+ANALYTICS_ENGINE
+
+# Environment Variables
+EXTENSION_SECRET
+FANTASY402_JWT_TOKEN
+FANTASY402_API_BASE
+ENCRYPTION_KEY
+JWT_SECRET
+
+# HTTP Endpoints
+/health
+/mcp
+/floor/status
+/api/analytics
+/api/fantasy402
+/cloud/api/Manager/getBetTicker
+/interceptor
+/diagnostics
+/system-status

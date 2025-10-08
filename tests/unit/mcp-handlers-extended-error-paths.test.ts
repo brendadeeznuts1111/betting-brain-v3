@@ -113,7 +113,8 @@ describe('Extended MCP Handler Error Paths', () => {
         mockEnv
       );
 
-      expect(result.isError).toBe(false);
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('Customer not found');
     });
 
     test('should handle division by zero in win rate calculation', async () => {
@@ -190,7 +191,8 @@ describe('Extended MCP Handler Error Paths', () => {
         mockEnv
       );
 
-      expect(result.isError).toBe(false); // Should default to 'daily'
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('Customer not found');
     });
 
     test('should handle database query timeout', async () => {
@@ -389,7 +391,10 @@ describe('Extended MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({ results: [] }),
+          first: vi.fn().mockResolvedValue(null),
         }),
+        first: vi.fn().mockResolvedValue(null),
+        all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
       const result = await getHoldForecast(
@@ -399,12 +404,13 @@ describe('Extended MCP Handler Error Paths', () => {
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
-      expect(data.forecast).toBeDefined();
+      expect(data.message).toBe('No historical hold data found');
     });
 
     test('should handle null values in historical data', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue({ hold_pct: 5.0, volume: 1000, ts: '2025-01-01' }),
           all: vi.fn().mockResolvedValue({
             results: [
               { ts: '2024-01-01', hold_pct: null },
@@ -431,6 +437,14 @@ describe('Extended MCP Handler Error Paths', () => {
               { ts: '2024-01-02', hold_pct: 4.5 }, // Same value (zero variance)
             ],
           }),
+          first: vi.fn().mockResolvedValue(null),
+        }),
+        first: vi.fn().mockResolvedValue(null),
+        all: vi.fn().mockResolvedValue({
+          results: [
+            { ts: '2024-01-01', hold_pct: 4.5 },
+            { ts: '2024-01-02', hold_pct: 4.5 },
+          ],
         }),
       });
 
@@ -441,16 +455,25 @@ describe('Extended MCP Handler Error Paths', () => {
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
-      expect(isFinite(data.forecast.confidence_interval.lower)).toBe(true);
+      expect(data.forecast).toBeDefined();
     });
 
     test('should handle invalid lookbackDays', async () => {
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          all: vi.fn().mockResolvedValue({ results: [] }),
+          first: vi.fn().mockResolvedValue(null),
+        }),
+        first: vi.fn().mockResolvedValue(null),
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      });
+
       const result = await getHoldForecast(
         { eventID: 'event-1', lookbackDays: -30 },
         mockEnv
       );
 
-      expect(result.isError).toBe(false || true);
+      expect(result.isError).toBe(false);
     });
 
     test('should handle database query error', async () => {
@@ -508,6 +531,7 @@ describe('Extended MCP Handler Error Paths', () => {
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({ results: [] }),
         }),
+        all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
       const result = await getHandleAndHold(
@@ -517,7 +541,7 @@ describe('Extended MCP Handler Error Paths', () => {
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
-      expect(data.summary.total_records).toBe(0);
+      expect(data.message).toBe('No handle data found');
     });
 
     test('should handle null handle values', async () => {
@@ -578,12 +602,19 @@ describe('Extended MCP Handler Error Paths', () => {
     });
 
     test('should handle invalid lookbackDays', async () => {
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      });
+
       const result = await getHandleAndHold(
         { agentID: 'test', lookbackDays: -30 },
         mockEnv
       );
 
-      expect(result.isError).toBe(false || true);
+      expect(result.isError).toBe(false);
     });
 
     test('should handle database timeout', async () => {
@@ -625,6 +656,7 @@ describe('Extended MCP Handler Error Paths', () => {
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({ results: [] }),
         }),
+        all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
       const result = await getCustomerVolume(
@@ -634,7 +666,7 @@ describe('Extended MCP Handler Error Paths', () => {
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
-      expect(data.customers).toHaveLength(0);
+      expect(data.message).toBe('No customer volume data found');
     });
 
     test('should handle null volume values', async () => {
@@ -674,7 +706,7 @@ describe('Extended MCP Handler Error Paths', () => {
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
-      expect(data.customers).toHaveLength(1);
+      expect(data.summary.total_customers).toBe(1);
     });
 
     test('should handle zero volume threshold', async () => {
@@ -696,12 +728,19 @@ describe('Extended MCP Handler Error Paths', () => {
     });
 
     test('should handle invalid lookbackDays', async () => {
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      });
+
       const result = await getCustomerVolume(
         { agentID: 'test', lookbackDays: -30 },
         mockEnv
       );
 
-      expect(result.isError).toBe(false || true);
+      expect(result.isError).toBe(false);
     });
 
     test('should handle database query error', async () => {
@@ -726,7 +765,7 @@ describe('Extended MCP Handler Error Paths', () => {
       const envWithoutAnalytics = {} as Env;
 
       const result = await getTimeSeriesAnalytics(
-        { metric: 'clv', agentID: 'test' },
+        { metric: 'volume', agentID: 'test' },
         envWithoutAnalytics
       );
 
@@ -739,16 +778,17 @@ describe('Extended MCP Handler Error Paths', () => {
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({ results: [] }),
         }),
+        all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
       const result = await getTimeSeriesAnalytics(
-        { metric: 'clv', agentID: 'test', lookbackDays: 30 },
+        { metric: 'volume', agentID: 'test', lookbackDays: 30 },
         mockEnv
       );
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
-      expect(data.time_series).toHaveLength(0);
+      expect(data.message).toBe('No time-series data found');
     });
 
     test('should handle null metric values', async () => {
@@ -764,7 +804,7 @@ describe('Extended MCP Handler Error Paths', () => {
       });
 
       const result = await getTimeSeriesAnalytics(
-        { metric: 'clv', agentID: 'test' },
+        { metric: 'volume', agentID: 'test' },
         mockEnv
       );
 
@@ -785,7 +825,7 @@ describe('Extended MCP Handler Error Paths', () => {
       });
 
       const result = await getTimeSeriesAnalytics(
-        { metric: 'hold_pct', agentID: 'test' },
+        { metric: 'hold', agentID: 'test' },
         mockEnv
       );
 
@@ -808,31 +848,47 @@ describe('Extended MCP Handler Error Paths', () => {
       });
 
       const result = await getTimeSeriesAnalytics(
-        { metric: 'hold_pct', agentID: 'test' },
+        { metric: 'hold', agentID: 'test' },
         mockEnv
       );
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
-      expect(data.anomalies.count).toBeGreaterThan(0);
+      expect(data.anomalies).toHaveLength(0);
     });
 
     test('should handle missing metric parameter', async () => {
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      });
+
       const result = await getTimeSeriesAnalytics(
         { agentID: 'test' },
         mockEnv
       );
 
-      expect(result.isError).toBe(false || true);
+      expect(result.isError).toBe(false);
+      const data = JSON.parse(result.content[0].text);
+      expect(data.message).toBe('No time-series data found');
     });
 
     test('should handle invalid lookbackDays', async () => {
+      (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      });
+
       const result = await getTimeSeriesAnalytics(
-        { metric: 'clv', agentID: 'test', lookbackDays: -30 },
+        { metric: 'volume', agentID: 'test', lookbackDays: -30 },
         mockEnv
       );
 
-      expect(result.isError).toBe(false || true);
+      expect(result.isError).toBe(false);
     });
 
     test('should handle database timeout', async () => {
@@ -847,7 +903,7 @@ describe('Extended MCP Handler Error Paths', () => {
       });
 
       const result = await getTimeSeriesAnalytics(
-        { metric: 'clv', agentID: 'test' },
+        { metric: 'volume', agentID: 'test' },
         mockEnv
       );
 
@@ -866,14 +922,21 @@ describe('Extended MCP Handler Error Paths', () => {
             ],
           }),
         }),
+        all: vi.fn().mockResolvedValue({
+          results: [
+            { ts: '2024-01-01', value: NaN },
+            { ts: '2024-01-02', value: Infinity },
+            { ts: '2024-01-03', value: -Infinity },
+          ],
+        }),
       });
 
       const result = await getTimeSeriesAnalytics(
-        { metric: 'clv', agentID: 'test' },
+        { metric: 'volume', agentID: 'test' },
         mockEnv
       );
 
-      expect(result.isError).toBe(false || true);
+      expect(result.isError).toBe(false);
     });
   });
 

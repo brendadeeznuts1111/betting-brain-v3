@@ -221,7 +221,7 @@
         "targets": [
           {
             "dataset": "betting_brain_analytics",
-            "query": "SELECT blob1 as event_id, sum(double1) as total_risk FROM betting_brain_analytics WHERE index1 = 'exposure_alert' AND timestamp > now() - INTERVAL '1' HOUR GROUP BY blob1 ORDER BY total_risk DESC LIMIT 10",                                  
+            "query": "SELECT blob1 as event_id, sum(double1) as total_risk FROM betting_brain_analytics WHERE index1 = 'exposure_alert' AND timestamp > now() - INTERVAL '1' HOUR GROUP BY blob1 ORDER BY total_risk DESC LIMIT 10",
             "refId": "A",
             "legendFormat": "{{event_id}}"
           }
@@ -250,7 +250,7 @@
         "targets": [
           {
             "dataset": "betting_brain_analytics",
-            "query": "SELECT timestamp, blob1 as event_id, blob2 as market_type, double1 as line_change, double2 as volume_change, double3 as sigma FROM betting_brain_analytics WHERE index1 = 'steam_move' AND timestamp > now() - INTERVAL '1' HOUR ORDER BY timestamp DESC LIMIT 50",                                                                                                                
+            "query": "SELECT timestamp, blob1 as event_id, blob2 as market_type, double1 as line_change, double2 as volume_change, double3 as sigma FROM betting_brain_analytics WHERE index1 = 'steam_move' AND timestamp > now() - INTERVAL '1' HOUR ORDER BY timestamp DESC LIMIT 50",
             "refId": "A"
           }
         ],

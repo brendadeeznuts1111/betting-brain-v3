@@ -71,3 +71,11 @@ tools/organize-files.sh
 ~
 ~/
 lint-report.json
+
+# Search Index (auto-generated)
+.rgindex.json
+.rgmeta.json
+
+# Auto-generated docs
+docs/api/AUTO_GENERATED_API.md
+docs/dataflow.mmd

@@ -45,6 +45,14 @@ export class AnalyticsEngineStub {
     }
 
     /**
+     * Reset the stub to clean state
+     */
+    reset(): void {
+        this.calls = [];
+        this.flushPromises = [];
+    }
+
+    /**
      * Get calls filtered by blob content
      */
     callsWithBlob(blob: string): AnalyticsCall[] {

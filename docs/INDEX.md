@@ -39,6 +39,9 @@
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues & solutions | All Devs | ✅ Complete |
 | [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md) | Complete codebase analysis | All Teams | ✅ Complete |
 | [ROOT_STRUCTURE.md](ROOT_STRUCTURE.md) | Root directory reference | Maintainers | ✅ Complete |
+| [DOCUMENTATION_FLOW.md](DOCUMENTATION_FLOW.md) | Documentation navigation guide | All Users | ✅ Complete |
+| [RULES_INDEX.md](RULES_INDEX.md) | Complete rules reference | AI Assistants, Developers | ✅ Complete |
+| [FORMATTING_CONSISTENCY_GUIDE.md](FORMATTING_CONSISTENCY_GUIDE.md) | Formatting standards guide | Writers, Reviewers | ✅ Complete |
 
 ### API Documentation ✨ NEW
 | Document | Purpose | Audience | Status |
@@ -140,6 +143,17 @@
 | [testing/INTEGRATED_TESTING_SYSTEM.md](testing/INTEGRATED_TESTING_SYSTEM.md) | Complete testing system guide 🆕 | All Devs | ✅ Complete |
 | [archive/testing-cleanup/CLEANUP_SUMMARY.md](archive/testing-cleanup/CLEANUP_SUMMARY.md) | Testing system cleanup summary 🗑️ | All Teams | ✅ Complete |
 
+### Enhanced Analytics Architecture 🧠 NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| **[ENHANCED_ANALYTICS_ARCHITECTURE.md](ENHANCED_ANALYTICS_ARCHITECTURE.md)** | **📊 Complete analytics architecture (6 modules)** 🆕⭐ | All Teams | ✅ Complete |
+| **[ENHANCED_ANALYTICS_DEPLOYMENT.md](ENHANCED_ANALYTICS_DEPLOYMENT.md)** | **🚀 Deployment summary & checklist** 🆕🔥 | DevOps, All Teams | ✅ Complete |
+
+### Developer UX System 🚀 NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| **[DEVELOPER_UX_SYSTEM.md](DEVELOPER_UX_SYSTEM.md)** | **⚡ Single-command dev environment (<30s startup, <20ms search)** 🆕🔥⭐ | All Developers | ✅ Complete |
+
 ### Developer Resources ✨ NEW
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|
@@ -148,8 +162,8 @@
 | [SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md) | Complete src/ analysis | All Devs | ✅ Complete |
 | [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide | All Devs | ✅ Complete |
 | [DASHBOARD_REFACTORING_SUMMARY.md](DASHBOARD_REFACTORING_SUMMARY.md) | Dashboard refactoring (60% reduction) 🆕 | All Devs | ✅ Complete |
-| [dashboards/README.md](../README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
-| [AST_GREP_QUICKSTART.md](QUICKSTART.md) | ast-grep code search guide (WORKING!) 🆕 | All Devs | ✅ Complete |
+| [dashboards/README.md](../dashboards/README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
+| [AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md) | ast-grep code search guide (WORKING!) 🆕 | All Devs | ✅ Complete |
 | [sgconfig.yml](../sgconfig.yml) | ast-grep project configuration 🆕 | All Devs | ✅ Complete |
 
 ### Archive (Historical)
@@ -360,14 +374,18 @@ npm run link-check
 ## 🏷️ Documentation Topics & Tags
 
 ### By Topic
+- **#developer-ux** - DEVELOPER_UX_SYSTEM.md (search, format, docs, dataflow)
+- **#analytics** - ENHANCED_ANALYTICS_ARCHITECTURE.md, ENHANCED_ANALYTICS_DEPLOYMENT.md
 - **#mcp** - MCP_INTEGRATION_STATUS.md, MCP_ENDPOINTS.md, MCP_TESTING_GUIDE.md
 - **#testing** - TEST_AUDIT_REPORT.md, TESTING_STATUS.md, MCP_TESTING_GUIDE.md, AUTOMATION_GUIDE.md
-- **#deployment** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, QUICKSTART.md
-- **#architecture** - IMPLEMENTATION_SUMMARY.md, SYSTEM_INTEGRATION_MAP.md, PROJECT_STRUCTURE.md
+- **#deployment** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, QUICKSTART.md, ENHANCED_ANALYTICS_DEPLOYMENT.md
+- **#architecture** - IMPLEMENTATION_SUMMARY.md, SYSTEM_INTEGRATION_MAP.md, PROJECT_STRUCTURE.md, ENHANCED_ANALYTICS_ARCHITECTURE.md
 - **#quality** - CODE_QUALITY_AUDIT.md, TEST_AUDIT_REPORT.md, CODEBASE_REVIEW.md
 - **#integration** - ENDPOINT_DASHBOARD_INTEGRATION.md, SYSTEM_INTEGRATION_MAP.md, DATABASE_CRON_VERIFICATION.md
-- **#developer-tools** - CURSOR_RULES.md, ROOT_STRUCTURE.md, AUTOMATION_GUIDE.md
+- **#developer-tools** - CURSOR_RULES.md, ROOT_STRUCTURE.md, AUTOMATION_GUIDE.md, DEVELOPER_UX_SYSTEM.md
 - **#api** - MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md, ENDPOINT_DASHBOARD_INTEGRATION.md
+- **#security** - ENHANCED_ANALYTICS_ARCHITECTURE.md (GDPR, fingerprinting, rate limiting)
+- **#performance** - DEVELOPER_UX_SYSTEM.md (<20ms search, <30s startup)
 
 ### By Audience
 - **Developers** - QUICKSTART.md, MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md, CODE_QUALITY_AUDIT.md

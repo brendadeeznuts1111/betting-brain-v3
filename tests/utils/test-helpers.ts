@@ -82,7 +82,7 @@ export function resetAllMocks(mockEnv: Env, mockCtx: ExecutionContext): void {
 
   (mockEnv.STEAM_WEBHOOK.send as any).mockResolvedValue({ success: true });
   (mockEnv.QUEUE_PRODUCER.send as any).mockResolvedValue({ success: true });
-  (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockResolvedValue(undefined);
+  // Note: ANALYTICS_ENGINE.writeDataPoint is bound to analytics stub, not a mock function
 
   // Reset context mocks
   (mockCtx.waitUntil as any).mockClear();
@@ -140,13 +140,11 @@ export function createMockCustomer(overrides: Partial<any> = {}): any {
 
 /**
  * Sets up mock for cost cap guard
+ * Note: Cost cap guard automatically bypasses in test environment
  */
-export async function setupCostCapMock(allowed: boolean = true, reason: string = 'OK'): Promise<void> {
-  const { costCapGuard } = await import('../../src/guards/costCap');
-  (costCapGuard.checkRequest as any).mockResolvedValue({
-    allowed,
-    reason
-  });
+export async function setupCostCapGuardMock(allowed: boolean = true, reason: string = 'OK'): Promise<void> {
+  // Cost cap guard automatically bypasses in test environment
+  // No mocking needed
 }
 
 /**
@@ -186,7 +184,7 @@ export function setupDatabaseMock(
 /**
  * Sets up mock for cost cap queries (dbstat)
  */
-export function setupCostCapMock(mockEnv: Env, size: number = 1000000, rows: number = 1000): void {
+export function setupCostCapDatabaseMock(mockEnv: Env, size: number = 1000000, rows: number = 1000): void {
   (mockEnv.ANALYTICS.prepare as any).mockImplementation((query: string) => {
     // Handle cost cap queries (dbstat)
     if (query.includes('dbstat') || query.includes('SUM(pgsize)')) {
