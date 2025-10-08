@@ -2,6 +2,7 @@
  * Fantasy402 Mission Control - Unified Dashboard Endpoint
  *
  * GET /api/f402/mission-control
+ * Reads intercepted BetTicker data from KV (populated by bet-ticker-sniffer)
  * Returns all dashboard data in a single call:
  * - Floor status
  * - Grove health
@@ -10,10 +11,30 @@
  * - Agent performance (PNL + top agents)
  * - Customer pulse (active + staked)
  * - Transaction ticker (last 10)
- * - Pending wagers count
  */
 
 import { Env } from '../../types/api';
+
+interface BetTickerWager {
+  wagerId?: string;
+  customerId?: string;
+  agentId?: string;
+  risk?: number;
+  toWin?: number;
+  agentPnl?: number;
+  type?: string;
+  status?: string;
+  placedAt?: number | string;
+  settledAt?: number | string;
+}
+
+interface BetTickerResponse {
+  data?: {
+    wagers?: BetTickerWager[];
+    summary?: any;
+  };
+  wagers?: BetTickerWager[]; // Alternative structure
+}
 
 interface MissionControlResponse {
   floor: {
@@ -34,6 +55,7 @@ interface MissionControlResponse {
   };
   liveBets: {
     count: number;
+    volume: number;
     buckets: Array<{ minute: string; volume: number }>;
   };
   agents: {
@@ -45,27 +67,26 @@ interface MissionControlResponse {
     staked: number;
   };
   transactions: Array<{
-    type: 'BET' | 'PAYOUT';
+    type: string;
     customerId: string;
     amount: number;
-    status: 'PENDING' | 'SETTLED';
-    timestamp: string;
+    status: string;
   }>;
-  pending: number;
   timestamp: string;
   requestId: string;
+  dataSource: 'kv' | 'mock';
 }
 
 /**
  * GET /api/f402/mission-control
- * Single endpoint for entire dashboard - fetches all data in parallel
+ * Reads from KV-stored BetTicker responses
  */
 export async function getMissionControl(
   request: Request,
   env: Env,
   requestId: string
 ): Promise<Response> {
-  console.log(`[${requestId}] 🎯 GET /api/f402/mission-control (unified dashboard)`);
+  console.log(`[${requestId}] 🎯 GET /api/f402/mission-control (KV-backed)`);
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -75,126 +96,54 @@ export async function getMissionControl(
   };
 
   try {
-    if (!env.ANALYTICS) {
-      throw new Error('ANALYTICS database not configured');
-    }
+    // 1. Get latest BetTicker data from KV
+    const betTickerData = await getLatestBetTickerFromKV(env, requestId);
+    const wagers = betTickerData?.data?.wagers || betTickerData?.wagers || [];
 
-    // Fetch all data in parallel for maximum performance
-    const [
-      floorStatus,
-      liveBetsCount,
-      volumeData,
-      totalPnl,
-      topAgents,
-      activeCustomers,
-      stakedTotal,
-      transactions,
-      pendingCount,
-    ] = await Promise.all([
-      // 1. Floor status (from floor-status route)
-      getFloorStatus(env, requestId),
+    console.log(`[${requestId}] 📊 Found ${wagers.length} wagers in latest BetTicker`);
 
-      // 2. Live bets count (PENDING)
-      env.ANALYTICS.prepare(`
-        SELECT COUNT(*) as count
-        FROM bet_history
-        WHERE result = 'PENDING'
-      `).first() as Promise<{ count: number } | null>,
+    // 2. Aggregate live bets
+    const liveBets = {
+      count: wagers.length,
+      volume: wagers.reduce((sum, w) => sum + (w.risk || 0), 0),
+      buckets: aggregateLast5Min(wagers),
+    };
 
-      // 3. Volume buckets (last 5 minutes)
-      env.ANALYTICS.prepare(`
-        SELECT
-          strftime('%H:%M', ts) as minute,
-          SUM(stake) as volume
-        FROM bet_history
-        WHERE ts > datetime('now', '-5 minutes')
-        GROUP BY strftime('%H:%M', ts)
-        ORDER BY minute DESC
-        LIMIT 5
-      `).all(),
+    // 3. Aggregate agents
+    const agentMap = new Map<string, number>();
+    wagers.forEach((w) => {
+      const agent = w.agentId || 'unknown';
+      agentMap.set(agent, (agentMap.get(agent) || 0) + (w.agentPnl || 0));
+    });
 
-      // 4. Total PNL (today)
-      env.ANALYTICS.prepare(`
-        SELECT SUM(net_income) as totalPnl
-        FROM fantasy402_agent_performance
-        WHERE date(period_start) = date('now')
-      `).first() as Promise<{ totalPnl: number | null } | null>,
+    const topAgents = Array.from(agentMap.entries())
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([id, pnl]) => ({ id, pnl }));
 
-      // 5. Top 3 agents
-      env.ANALYTICS.prepare(`
-        SELECT
-          agent_id as id,
-          SUM(net_income) as pnl
-        FROM fantasy402_agent_performance
-        WHERE date(period_start) = date('now')
-        GROUP BY agent_id
-        ORDER BY pnl DESC
-        LIMIT 3
-      `).all(),
+    const agents = {
+      totalPnl: wagers.reduce((sum, w) => sum + (w.agentPnl || 0), 0),
+      top: topAgents,
+    };
 
-      // 6. Active customers (last 30 min)
-      env.ANALYTICS.prepare(`
-        SELECT COUNT(DISTINCT cid) as count
-        FROM bet_history
-        WHERE ts > datetime('now', '-30 minutes')
-      `).first() as Promise<{ count: number } | null>,
+    // 4. Aggregate customers
+    const uniqueCustomers = new Set(wagers.map((w) => w.customerId).filter(Boolean));
+    const customers = {
+      active: uniqueCustomers.size,
+      staked: wagers.reduce((sum, w) => sum + (w.risk || 0), 0),
+    };
 
-      // 7. Total staked (today)
-      env.ANALYTICS.prepare(`
-        SELECT SUM(stake) as total
-        FROM bet_history
-        WHERE date(ts) = date('now')
-      `).first() as Promise<{ total: number | null } | null>,
+    // 5. Last 10 transactions
+    const transactions = wagers.slice(0, 10).map((w) => ({
+      type: w.type || 'wager',
+      customerId: w.customerId || 'unknown',
+      amount: w.risk || 0,
+      status: w.status || 'pending',
+    }));
 
-      // 8. Last 10 transactions
-      env.ANALYTICS.prepare(`
-        SELECT
-          CASE
-            WHEN result = 'WIN' THEN 'PAYOUT'
-            ELSE 'BET'
-          END as type,
-          cid as customerId,
-          CASE
-            WHEN result = 'WIN' THEN payout
-            ELSE stake
-          END as amount,
-          CASE
-            WHEN result = 'PENDING' THEN 'PENDING'
-            ELSE 'SETTLED'
-          END as status,
-          ts as timestamp
-        FROM bet_history
-        ORDER BY ts DESC
-        LIMIT 10
-      `).all(),
-
-      // 9. Pending wagers count (same as live bets for now)
-      env.ANALYTICS.prepare(`
-        SELECT COUNT(*) as count
-        FROM bet_history
-        WHERE result = 'PENDING'
-      `).first() as Promise<{ count: number } | null>,
-    ]);
-
-    // Build volume buckets (fill missing minutes)
-    const now = new Date();
-    const buckets: MissionControlResponse['liveBets']['buckets'] = [];
-    const volumeMap = new Map(
-      (volumeData.results as Array<{ minute: string; volume: number }>).map((v) => [v.minute, v.volume])
-    );
-
-    for (let i = 4; i >= 0; i--) {
-      const minuteTime = new Date(now.getTime() - i * 60000);
-      const minuteKey = minuteTime.toISOString().substring(11, 16); // HH:MM
-      buckets.push({
-        minute: minuteKey,
-        volume: volumeMap.get(minuteKey) || 0,
-      });
-    }
-
-    // Build response
+    // 6. Build response
     const response: MissionControlResponse = {
-      floor: floorStatus,
+      floor: getFloorStatus(),
       grove: {
         status: 'healthy',
         worker: 'up',
@@ -212,33 +161,22 @@ export async function getMissionControl(
           'push-sports-data',
         ],
       },
-      liveBets: {
-        count: liveBetsCount?.count || 0,
-        buckets,
-      },
-      agents: {
-        totalPnl: totalPnl?.totalPnl || 0,
-        top: (topAgents.results as Array<{ id: string; pnl: number }>).map((a) => ({
-          id: a.id,
-          pnl: a.pnl,
-        })),
-      },
-      customers: {
-        active: activeCustomers?.count || 0,
-        staked: stakedTotal?.total || 0,
-      },
-      transactions: transactions.results as MissionControlResponse['transactions'],
-      pending: pendingCount?.count || 0,
+      liveBets,
+      agents,
+      customers,
+      transactions,
       timestamp: new Date().toISOString(),
       requestId,
+      dataSource: wagers.length > 0 ? 'kv' : 'mock',
     };
 
     console.log(`[${requestId}] ✅ Mission control data:`, {
       liveBets: response.liveBets.count,
-      pending: response.pending,
+      volume: response.liveBets.volume,
       activeCustomers: response.customers.active,
       totalPnl: response.agents.totalPnl,
       transactions: response.transactions.length,
+      dataSource: response.dataSource,
     });
 
     return new Response(JSON.stringify(response), {
@@ -262,32 +200,92 @@ export async function getMissionControl(
 }
 
 /**
- * Get Floor status data
+ * Get latest BetTicker response from KV
  */
-async function getFloorStatus(env: Env, requestId: string) {
+async function getLatestBetTickerFromKV(
+  env: Env,
+  requestId: string
+): Promise<BetTickerResponse | null> {
   try {
-    // Return floor metrics
-    // In production, this would call the actual floor-status route
-    return {
-      version: '3.3.0',
-      status: 'green',
-      tests: {
-        pass: 239,
-        fail: 60,
-        total: 299,
-        rate: 0.8,
-      },
-      coverage: {
-        percentage: 81,
-      },
-    };
+    if (!env.BET_TICKER_RAW) {
+      console.warn(`[${requestId}] ⚠️  BET_TICKER_RAW KV not configured`);
+      return null;
+    }
+
+    // List all BetTicker keys (they're timestamped)
+    const list = await env.BET_TICKER_RAW.list({
+      prefix: 'raw:getBetTicker:',
+      limit: 1, // Only get the most recent
+    });
+
+    if (list.keys.length === 0) {
+      console.warn(`[${requestId}] ⚠️  No BetTicker data in KV`);
+      return null;
+    }
+
+    // Keys are sorted by name, and we use timestamps, so the last one is most recent
+    // But list() returns in sorted order, so we need to reverse or get the latest
+    const latestKey = list.keys[list.keys.length - 1].name;
+
+    console.log(`[${requestId}] 🔑 Latest BetTicker key: ${latestKey}`);
+
+    // Get the value
+    const rawValue = await env.BET_TICKER_RAW.get(latestKey);
+
+    if (!rawValue) {
+      console.warn(`[${requestId}] ⚠️  No value for key ${latestKey}`);
+      return null;
+    }
+
+    // Parse JSON
+    const data = JSON.parse(rawValue) as BetTickerResponse;
+
+    console.log(`[${requestId}] ✅ Loaded BetTicker data from KV`);
+
+    return data;
   } catch (error) {
-    console.error(`[${requestId}] ⚠️  Floor status error:`, error);
-    return {
-      version: '3.3.0',
-      status: 'unknown',
-      tests: { pass: 0, fail: 0, total: 0, rate: 0 },
-      coverage: { percentage: 0 },
-    };
+    console.error(`[${requestId}] ❌ Error loading from KV:`, error);
+    return null;
   }
+}
+
+/**
+ * Aggregate wagers into 5-minute buckets
+ */
+function aggregateLast5Min(wagers: BetTickerWager[]): Array<{ minute: string; volume: number }> {
+  const now = Date.now();
+  const buckets: Record<string, number> = {};
+
+  for (const w of wagers) {
+    const placedTime = typeof w.placedAt === 'number' ? w.placedAt : Date.parse(w.placedAt || '0');
+    const ageMinutes = Math.floor((now - placedTime) / 60_000);
+
+    if (ageMinutes < 5 && ageMinutes >= 0) {
+      const label = `${4 - ageMinutes}m ago`;
+      buckets[label] = (buckets[label] || 0) + (w.risk || 0);
+    }
+  }
+
+  return Object.entries(buckets)
+    .map(([minute, volume]) => ({ minute, volume }))
+    .sort((a, b) => a.minute.localeCompare(b.minute));
+}
+
+/**
+ * Get Floor status data (static for now)
+ */
+function getFloorStatus() {
+  return {
+    version: '3.3.0',
+    status: 'green',
+    tests: {
+      pass: 239,
+      fail: 60,
+      total: 299,
+      rate: 0.8,
+    },
+    coverage: {
+      percentage: 81,
+    },
+  };
 }

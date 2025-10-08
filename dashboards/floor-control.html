@@ -310,6 +310,18 @@
       <pre id="tx-ticker"></pre>
       <div id="tx-error" class="error" style="display:none;"></div>
     </section>
+
+    <!-- DNS Health -->
+    <section class="card">
+      <h2>🔍 DNS Resolve</h2>
+      <div class="label">IP Address</div>
+      <div id="dns-ip" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Latency</span>
+        <span class="val" id="dns-latency">—</span>
+      </div>
+      <div id="dns-error" class="error" style="display:none;"></div>
+    </section>
   </main>
 
   <script>
@@ -627,6 +639,16 @@
       hideError('tx');
     }
 
+    /* ========== DNS HEALTH ========== */
+    async function loadDNS() {
+      const d = await getJSON('/api/health/dns?host=fantasy402.com', 'dns');
+      if (!d) return;
+
+      $('#dns-ip').textContent = d.ip || '—';
+      $('#dns-latency').textContent = d.latency ? `${d.latency} ms${d.cached ? ' (cached)' : ''}` : '—';
+      hideError('dns');
+    }
+
     /* ========== MAIN LOOP ========== */
     async function tick() {
       updateTime();
@@ -640,7 +662,8 @@
         loadScores(),
         loadDb(),
         loadActivity(),
-        loadFantasy402Data()  // Single unified call instead of 4 separate calls
+        loadFantasy402Data(),  // Single unified call instead of 4 separate calls
+        loadDNS()              // DNS health check
       ]);
     }
 
