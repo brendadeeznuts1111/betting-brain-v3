@@ -60,6 +60,7 @@
 | [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) | MCP server status & overview | All Teams | ✅ Complete |
 | [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md) | Complete API docs (13 tools) | Developers | ✅ Complete |
 | [MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | Testing procedures | QA, Developers | ✅ Complete |
+| [SPORTS_API_DEPLOYMENT.md](SPORTS_API_DEPLOYMENT.md) | Sports API production deployment | DevOps, All Devs | ✅ Complete |
 
 ### Fantasy402 Integration 🎯 NEW
 

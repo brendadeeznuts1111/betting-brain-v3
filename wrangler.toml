@@ -114,6 +114,14 @@ id = "e8ea80789b5246e58ea95798f04d0047"
 binding = "FANTASY_CONFIG_CACHE"
 id = "2e7c333ad95e4933b65a0686e7d5bf6b"
 
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMITER"
+id = "126aa83f7b6342d6bd68bde184f431dc"
+
+[[env.production.kv_namespaces]]
+binding = "SPORTS_CACHE"
+id = "eb56dd8a866041219232c98c88b59e52"
+
 [[queues.producers]]
 binding = "LINE_INGRESS"
 queue = "line-ingress"
@@ -212,6 +220,15 @@ id = "e8ea80789b5246e58ea95798f04d0047"
 [[kv_namespaces]]
 binding = "FANTASY_CONFIG_CACHE"
 id = "2e7c333ad95e4933b65a0686e7d5bf6b"
+
+# Sports API KV Namespaces (v3.3.0)
+[[kv_namespaces]]
+binding = "RATE_LIMITER"
+id = "40765b38805b4cae8fa3e90de40776d3"
+
+[[kv_namespaces]]
+binding = "SPORTS_CACHE"
+id = "4b0ce52be11041299d35f4c741666afa"
 
 [limits]
 cpu_ms = 50
