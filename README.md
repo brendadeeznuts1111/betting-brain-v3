@@ -394,11 +394,34 @@ CREATE TABLE fantasy402_player_analysis (
 );
 ```
 
+### Additional Fantasy402 Tables (Not Documented in Detail)
+
+**betting-analytics database also contains:**
+- `agent_graph` - Agent relationship mapping
+- `fantasy402_account_snapshots` - Account state snapshots
+- `fantasy402_agents` - Agent registry and metadata
+- `fantasy402_authorizations` - Authorization tokens and permissions
+- `fantasy402_pending_summary` - Aggregated pending wager summaries
+- `fantasy402_player_activity` - Player activity tracking
+- `fantasy402_player_sport_analysis` - Sport-specific player analysis
+- `fantasy402_player_sport_performance` - Sport-specific performance metrics
+- `fantasy402_sport_performance` - Overall sport performance analytics
+- `fantasy402_tokens` - Authentication token management
+- `fantasy402_transaction_summary` - Aggregated transaction summaries
+- `fantasy402_weekly_figures` - Weekly performance figures
+
+**fantasy42-raw-feed database contains:**
+- Duplicate Fantasy402 tables for redundancy
+- Additional raw feed processing tables
+- Backup and archival tables
+
 ### Database Bindings
 
 #### D1 Databases
-- **ANALYTICS**: `betting-analytics` (main analytics database)
-- **RAW_FEED_DB**: `fantasy42-raw-feed` (Fantasy402 data ingestion)
+- **ANALYTICS**: `betting-analytics` (main analytics database) - **32 tables total**
+- **RAW_FEED_DB**: `fantasy42-raw-feed` (Fantasy402 data ingestion) - **20 tables total**
+
+**Note:** Fantasy402 tables are duplicated across both databases for redundancy and performance optimization.
 
 #### KV Namespaces
 - **BET_TICKER_RAW**: Raw BetTicker API responses (7-day retention)
