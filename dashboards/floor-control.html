@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>🌲 Floor Control | Forest Grove Mission Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --accent: #238636;
+      --warn: #f85149;
+      --yellow: #d29922;
+      --text: #c9d1d9;
+      --border: #30363d;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .config-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .config-box input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      width: 300px;
+    }
+    .config-box button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .config-box button:hover {
+      opacity: 0.8;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      transition: border-color 0.2s;
+    }
+    .card:hover {
+      border-color: var(--accent);
+    }
+    .card h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .label {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-bottom: 0.25rem;
+    }
+    .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .status-green { color: var(--accent); }
+    .status-yellow { color: var(--yellow); }
+    .status-red { color: var(--warn); }
+    .mini-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem;
+      background: var(--bg);
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .mini-stat .label {
+      margin: 0;
+    }
+    .mini-stat .val {
+      font-weight: 600;
+    }
+    pre {
+      font-size: 0.75rem;
+      overflow: auto;
+      max-height: 180px;
+      background: var(--bg);
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin: 0.5rem 0 0;
+    }
+    canvas {
+      max-height: 200px;
+    }
+    .error {
+      color: var(--warn);
+      font-size: 0.875rem;
+      padding: 0.5rem;
+      background: rgba(248, 81, 73, 0.1);
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+    .loading {
+      opacity: 0.5;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--accent);
+    }
+    .badge-warn { background: var(--warn); }
+    .badge-yellow { background: var(--yellow); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      <span>🌲</span>
+      <span>Floor Control</span>
+      <span id="status-badge" class="badge">●</span>
+    </h1>
+    <div class="config-box">
+      <input
+        type="text"
+        id="worker-url"
+        placeholder="https://your-worker.workers.dev"
+        value="http://localhost:8787"
+      />
+      <button onclick="saveConfig()">Save</button>
+      <span id="last-update" style="opacity: 0.7;">—</span>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Floor Health -->
+    <section class="card">
+      <h2>🤖 Floor Health</h2>
+      <div class="label">Overall Status</div>
+      <div id="floor-status" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Version</span>
+        <span class="val" id="floor-version">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Tests</span>
+        <span class="val" id="floor-tests">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Coverage</span>
+        <span class="val" id="floor-coverage">—</span>
+      </div>
+      <div id="floor-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Forest Grove -->
+    <section class="card">
+      <h2>🌲 Forest Grove</h2>
+      <div class="label">Health Status</div>
+      <div id="grove-status" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Worker</span>
+        <span class="val" id="grove-worker">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Database</span>
+        <span class="val" id="grove-db">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Queue</span>
+        <span class="val" id="grove-queue">—</span>
+      </div>
+      <div id="grove-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- MCP Tools -->
+    <section class="card">
+      <h2>🛠️ MCP Tools</h2>
+      <div class="label">Available Tools</div>
+      <div id="mcp-count" class="value">—</div>
+      <pre id="mcp-list"></pre>
+      <div id="mcp-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Live Odds -->
+    <section class="card">
+      <h2>📊 Live Odds (NBA)</h2>
+      <canvas id="odds-chart"></canvas>
+      <div id="odds-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Live Scores -->
+    <section class="card">
+      <h2>🏀 Live Scores</h2>
+      <div class="label">Active Games</div>
+      <div id="scores-count" class="value">—</div>
+      <pre id="scores-list"></pre>
+      <div id="scores-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Database Metrics -->
+    <section class="card">
+      <h2>💾 Database Metrics</h2>
+      <div class="label">Total Records</div>
+      <div id="db-total" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Line Movements</span>
+        <span class="val" id="db-lines">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Sharp Indicators</span>
+        <span class="val" id="db-sharp">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Exposure Tracking</span>
+        <span class="val" id="db-exposure">—</span>
+      </div>
+      <div id="db-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- System Performance -->
+    <section class="card">
+      <h2>⚡ System Performance</h2>
+      <canvas id="perf-chart"></canvas>
+      <div id="perf-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="card">
+      <h2>📡 Recent Activity</h2>
+      <div class="label">Last 10 Events</div>
+      <pre id="activity-list"></pre>
+      <div id="activity-error" class="error" style="display:none;"></div>
+    </section>
+  </main>
+
+  <script>
+    /* ========== CONFIG ========== */
+    let WORKER_URL = localStorage.getItem('worker_url') || 'http://localhost:8787';
+    document.getElementById('worker-url').value = WORKER_URL;
+
+    function saveConfig() {
+      WORKER_URL = document.getElementById('worker-url').value;
+      localStorage.setItem('worker_url', WORKER_URL);
+      tick();
+    }
+
+    const REFRESH_MS = 30_000;
+    let tickCount = 0;
+
+    /* ========== HELPERS ========== */
+    const $ = (s) => document.querySelector(s);
+    const fmt = (n) => new Intl.NumberFormat().format(n);
+    const updateTime = () => {
+      $('#last-update').textContent = new Date().toLocaleTimeString();
+    };
+
+    function showError(id, msg) {
+      const el = $(`#${id}-error`);
+      if (el) {
+        el.textContent = msg;
+        el.style.display = 'block';
+      }
+    }
+
+    function hideError(id) {
+      const el = $(`#${id}-error`);
+      if (el) el.style.display = 'none';
+    }
+
+    /* ========== CHARTS ========== */
+    const oddsCtx = $('#odds-chart').getContext('2d');
+    const oddsChart = new Chart(oddsCtx, {
+      type: 'bar',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            min: -300,
+            max: 300,
+            ticks: { color: '#c9d1d9' }
+          },
+          x: {
+            ticks: { color: '#c9d1d9' }
+          }
+        }
+      }
+    });
+
+    const perfCtx = $('#perf-chart').getContext('2d');
+    const perfChart = new Chart(perfCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Response Time (ms)',
+          data: [],
+          borderColor: '#238636',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#c9d1d9' } } },
+        scales: {
+          y: { ticks: { color: '#c9d1d9' } },
+          x: { ticks: { color: '#c9d1d9' } }
+        }
+      }
+    });
+
+    /* ========== FETCHERS ========== */
+    async function getJSON(path, errorId) {
+      try {
+        const start = Date.now();
+        const r = await fetch(`${WORKER_URL}${path}`);
+        const duration = Date.now() - start;
+
+        // Update perf chart
+        perfChart.data.labels.push(new Date().toLocaleTimeString());
+        perfChart.data.datasets[0].data.push(duration);
+        if (perfChart.data.labels.length > 20) {
+          perfChart.data.labels.shift();
+          perfChart.data.datasets[0].data.shift();
+        }
+        perfChart.update();
+
+        if (!r.ok) {
+          showError(errorId, `HTTP ${r.status}: ${r.statusText}`);
+          return null;
+        }
+        hideError(errorId);
+        return await r.json();
+      } catch (err) {
+        showError(errorId, err.message);
+        return null;
+      }
+    }
+
+    async function loadFloor() {
+      const d = await getJSON('/floor/status', 'floor');
+      if (!d) return;
+
+      const statusMap = {
+        'green': 'status-green',
+        'yellow': 'status-yellow',
+        'red': 'status-red'
+      };
+
+      $('#floor-status').textContent = d.status || 'unknown';
+      $('#floor-status').className = `value ${statusMap[d.status] || 'status-red'}`;
+      $('#floor-version').textContent = d.version || '—';
+      $('#floor-tests').textContent = d.tests ? `${d.tests.pass}/${d.tests.total}` : '—';
+      $('#floor-coverage').textContent = d.coverage ? `${d.coverage.percentage}%` : '—';
+
+      // Update header badge
+      const badge = $('#status-badge');
+      badge.className = 'badge';
+      if (d.status === 'red') badge.className += ' badge-warn';
+      else if (d.status === 'yellow') badge.className += ' badge-yellow';
+    }
+
+    async function loadGrove() {
+      const d = await getJSON('/health', 'grove');
+      if (!d) return;
+
+      $('#grove-status').textContent = d.status || 'unknown';
+      $('#grove-status').className = d.status === 'ok' ? 'value status-green' : 'value status-red';
+      $('#grove-worker').textContent = d.worker ? '✅ UP' : '❌ DOWN';
+      $('#grove-db').textContent = d.database ? '✅ UP' : '❌ DOWN';
+      $('#grove-queue').textContent = d.queue ? '✅ UP' : '❌ DOWN';
+    }
+
+    async function loadMcp() {
+      // Try MCP endpoint first, fall back to floor:voice
+      const d = await getJSON('/mcp', 'mcp');
+      if (!d) {
+        $('#mcp-count').textContent = '6';
+        $('#mcp-list').textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
+        return;
+      }
+
+      $('#mcp-count').textContent = d.tools?.length ?? '—';
+      $('#mcp-list').textContent = d.tools?.map(t => t.name).join('\n') ?? '';
+    }
+
+    async function loadOdds() {
+      const d = await getJSON('/api/live-odds?sport=nba&market=moneyline&limit=10', 'odds');
+      if (!d || !d.odds || d.odds.length === 0) {
+        showError('odds', 'No odds data available');
+        return;
+      }
+
+      const books = [...new Set(d.odds.map(o => o.book))].slice(0, 5);
+      const homeOdds = books.map(book => {
+        const odd = d.odds.find(o => o.book === book && o.side === 'home');
+        return odd ? odd.odds : 0;
+      });
+
+      oddsChart.data.labels = books;
+      oddsChart.data.datasets = [{
+        label: 'Home Odds',
+        data: homeOdds,
+        backgroundColor: '#238636',
+        borderColor: '#2ea043',
+        borderWidth: 1
+      }];
+      oddsChart.update();
+    }
+
+    async function loadScores() {
+      const d = await getJSON('/api/live-scores?sport=nba', 'scores');
+      if (!d || !d.games) {
+        showError('scores', 'No live games');
+        return;
+      }
+
+      $('#scores-count').textContent = d.games.length;
+      $('#scores-list').textContent = d.games.slice(0, 5)
+        .map(g => `${g.awayTeam} @ ${g.homeTeam}\n  ${g.awayScore || 0} - ${g.homeScore || 0}`)
+        .join('\n\n');
+    }
+
+    async function loadDb() {
+      // Mock data since we don't have a /api/db/metrics endpoint yet
+      // In production, you'd call an MCP tool or direct endpoint
+      $('#db-total').textContent = fmt(1247);
+      $('#db-lines').textContent = fmt(856);
+      $('#db-sharp').textContent = fmt(234);
+      $('#db-exposure').textContent = fmt(157);
+    }
+
+    async function loadActivity() {
+      // Mock recent activity - in production this could be from Analytics Engine
+      const activities = [
+        '🔄 Line movement detected: NBA_123 (spread)',
+        '⚡ Steam move: NFL_456 (+3.5 → +5.0)',
+        '📊 Sharp indicator updated: CID_789',
+        '💰 High exposure alert: NBA_234',
+        '🎯 CLV threshold crossed: CID_345',
+        '📈 Hold % update: MLB_567',
+        '🔔 Queue processed: 15 messages',
+        '✅ Health check passed',
+        '🌲 Forest status: All services up',
+        '🤖 Floor health: 95%'
+      ];
+
+      $('#activity-list').textContent = activities.join('\n');
+    }
+
+    /* ========== MAIN LOOP ========== */
+    async function tick() {
+      updateTime();
+      tickCount++;
+
+      await Promise.all([
+        loadFloor(),
+        loadGrove(),
+        loadMcp(),
+        loadOdds(),
+        loadScores(),
+        loadDb(),
+        loadActivity()
+      ]);
+    }
+
+    // Initial load
+    tick();
+
+    // Auto-refresh
+    setInterval(tick, REFRESH_MS);
+
+    // Show config hint on first load
+    if (!localStorage.getItem('worker_url')) {
+      alert('👋 Welcome to Floor Control!\n\nPlease configure your Worker URL in the top-right input box.');
+    }
+  </script>
+</body>
+</html>
