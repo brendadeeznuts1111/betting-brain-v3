@@ -3,8 +3,7 @@
  * Returns current exposure metrics for a given event
  */
 
-import { Env, GetBettingExposureRequest, BettingExposureResponse } from '../../types/api';
-import { GetBettingExposureRequest as GetBettingExposureRequestSchema, BettingExposureResponse as BettingExposureResponseSchema } from '../../types/api';
+import { Env, GetBettingExposureRequest as GetBettingExposureRequestSchema, BettingExposureResponse as BettingExposureResponseSchema } from '../../types/api';
 import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';

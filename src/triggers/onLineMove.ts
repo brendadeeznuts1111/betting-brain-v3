@@ -22,30 +22,45 @@ export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> 
     
     // Check if this is a significant movement
     if (metrics.isSignificant) {
-      // Send to steam webhook queue for significant movements
-      await env.STEAM_WEBHOOK.send({
-        eid: newRow.eid,
-        mt: newRow.mt,
-        lb: newRow.lb,
-        la: newRow.la,
-        vb: newRow.vb,
-        va: newRow.va,
-        ts: newRow.ts,
-        trigger: 'line_movement_trigger',
-        metrics: {
-          lineChange: metrics.lineChange,
-          volumeChange: metrics.volumeChange,
-          changePercentage: metrics.changePercentage,
-          isSignificant: metrics.isSignificant
-        }
-      });
+      try {
+        // Send to steam webhook queue for significant movements
+        await env.STEAM_WEBHOOK.send({
+          eid: newRow.eid,
+          mt: newRow.mt,
+          lb: newRow.lb,
+          la: newRow.la,
+          vb: newRow.vb,
+          va: newRow.va,
+          ts: newRow.ts,
+          trigger: 'line_movement_trigger',
+          metrics: {
+            lineChange: metrics.lineChange,
+            volumeChange: metrics.volumeChange,
+            changePercentage: metrics.changePercentage,
+            isSignificant: metrics.isSignificant
+          }
+        });
+      } catch (error) {
+        console.error(`[${requestId}] Error sending to steam webhook:`, error);
+        // Don't throw - webhook failures shouldn't break the trigger
+      }
       
-      // Trigger additional processing
-      await triggerAdditionalProcessing(newRow, metrics, env);
+      try {
+        // Trigger additional processing
+        await triggerAdditionalProcessing(newRow, metrics, env);
+      } catch (error) {
+        console.error(`[${requestId}] Error in additional processing:`, error);
+        // Don't throw - additional processing failures shouldn't break the trigger
+      }
     }
     
     // Update real-time metrics
-    await updateRealTimeMetrics(newRow, env);
+    try {
+      await updateRealTimeMetrics(newRow, env);
+    } catch (error) {
+      console.error(`[${requestId}] Error updating real-time metrics:`, error);
+      // Don't throw - metrics update failures shouldn't break the trigger
+    }
     
     console.log(`[${requestId}] Line movement trigger completed for event ${newRow.eid}`);
   } catch (error) {
@@ -116,20 +131,34 @@ async function updateRealTimeMetrics(row: LineMovement, env: Env): Promise<void>
   const metrics = calculateLineMovementMetrics(row);
   
   // Write metrics to analytics engine
-  await env.ANALYTICS_ENGINE.writeDataPoint({
-    blobs: [row.eid, row.mt, 'line_movement'],
-    doubles: [metrics.lineChange, metrics.volumeChange, metrics.changePercentage],
-    indexes: ['line_movement_trigger']
-  });
+  try {
+    await env.ANALYTICS_ENGINE.writeDataPoint({
+      blobs: [row.eid, row.mt, 'line_movement'],
+      doubles: {
+        line_change: metrics.lineChange,
+        volume_change: metrics.volumeChange,
+        change_percentage: metrics.changePercentage
+      },
+      indexes: ['line_movement_trigger']
+    });
+  } catch (error) {
+    console.error(`[analytics] Error writing data point:`, error);
+    // Don't throw - analytics failures shouldn't break the trigger
+  }
 }
 
 async function updateExposureForEvent(eventId: string, env: Env): Promise<void> {
-  // This would update exposure tracking based on line movements
-  // For now, just log that we would update exposure
-  console.log(`[exposure] Would update exposure tracking for event ${eventId}`);
-  
-  // Simple database query to satisfy test expectations
-  await env.ANALYTICS.prepare('SELECT 1').first();
+  try {
+    // This would update exposure tracking based on line movements
+    // For now, just log that we would update exposure
+    console.log(`[exposure] Would update exposure tracking for event ${eventId}`);
+    
+    // Simple database query to satisfy test expectations
+    await env.ANALYTICS.prepare('SELECT 1').first();
+  } catch (error) {
+    console.error(`[exposure] Error updating exposure for event ${eventId}:`, error);
+    // Don't throw - this is a background operation
+  }
 }
 
 async function updateHoldPercentage(eventId: string, marketType: string, env: Env): Promise<void> {

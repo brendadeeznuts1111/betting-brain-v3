@@ -67,7 +67,9 @@ export const GetSharpScoreRequest = z.object({
 
 export const GetHoldPercentageRequest = z.object({
   eid: z.string().min(1, 'Event ID is required'),
-  mt: z.string().min(1, 'Market Type is required'),
+  mt: z.enum(['SPREAD', 'TOTAL', 'MONEYLINE'], { 
+    errorMap: () => ({ message: 'Market Type must be one of: SPREAD, TOTAL, MONEYLINE' })
+  }),
   includeHistory: z.boolean().optional().default(false),
   timeWindow: z.number().min(1).max(24).optional().default(1) // hours
 });

@@ -1,4 +1,6 @@
 ---
+version: 4
+scope: ["*"]
 alwaysApply: true
 description: File and directory naming conventions
 ---

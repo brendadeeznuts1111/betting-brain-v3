@@ -222,6 +222,184 @@ bun test tests/integration --timeout 20000
 - [Integration Setup](mdc:tests/setup/integration.ts) - Integration test setup
 - [Bun Config](mdc:bunfig.toml) - Test configuration
 
+## Bun Test vs Vitest/Jest Differences
+
+### Critical Differences
+
+**❌ DON'T USE (Vitest/Jest patterns):**
+```typescript
+// These DON'T work in Bun test
+import { vi } from 'vitest';
+vi.mocked(someMock).mockReturnValue(...);
+await expect(fn()).resolves.not.toThrow();
+```
+
+**✅ USE (Bun test patterns):**
+```typescript
+// Correct Bun test patterns
+import { vi } from 'bun:test';
+(someMock as any).mockReturnValue(...);
+let threwError = false;
+try {
+  await fn();
+} catch (error) {
+  threwError = true;
+}
+expect(threwError).toBe(false);
+```
+
+## D1 Database Mock Structure
+
+### Critical: D1 Returns Objects, Not Arrays
+
+**❌ WRONG:**
+```typescript
+all: vi.fn().mockResolvedValue(mockData)
+```
+
+**✅ CORRECT:**
+```typescript
+all: vi.fn().mockResolvedValue({ results: mockData })
+```
+
+**Why:** D1 database `all()` method returns `{ results: [...] }`, not plain arrays.
+
+## Test Isolation Issues
+
+### Mock Accumulation Problem
+
+**Problem:** Mocks accumulate calls across tests, causing `toHaveBeenCalledTimes()` failures.
+
+**Solution:** Enhanced `beforeEach` setup:
+```typescript
+beforeEach(() => {
+  vi.clearAllMocks();
+  
+  // Reset mock implementations to prevent accumulation
+  (mockEnv.STEAM_WEBHOOK.send as any).mockResolvedValue({ success: true });
+  (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockResolvedValue(undefined);
+  (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+    first: vi.fn().mockResolvedValue({ count: 0 }),
+    run: vi.fn().mockResolvedValue({ success: true }),
+    all: vi.fn().mockResolvedValue({ results: [] }),
+    bind: vi.fn().mockReturnValue({
+      first: vi.fn().mockResolvedValue({ count: 0 }),
+      run: vi.fn().mockResolvedValue({ success: true }),
+      all: vi.fn().mockResolvedValue({ results: [] })
+    })
+  });
+});
+```
+
+## Error Handling Test Patterns
+
+### Testing Async Functions That Shouldn't Throw
+
+**❌ WRONG (doesn't work in Bun test):**
+```typescript
+await expect(fn()).resolves.not.toThrow();
+```
+
+**✅ CORRECT:**
+```typescript
+let threwError = false;
+try {
+  await fn();
+} catch (error) {
+  threwError = true;
+}
+expect(threwError).toBe(false);
+```
+
+### Testing Error Responses
+
+**✅ CORRECT:**
+```typescript
+test('should return 400 for invalid input', async () => {
+  const response = await handler(invalidRequest);
+  expect(response.status).toBe(400);
+  expect(response.headers.get('Content-Type')).toBe('application/json');
+});
+```
+
+## Module-Level Mock Setup
+
+### Cost Cap Guard Mocking
+
+**Pattern for module-level mocks:**
+```typescript
+// At module level
+vi.mock('../../src/guards/costCap', () => ({
+  costCapGuard: {
+    checkRequest: vi.fn()
+  }
+}));
+
+// In individual tests
+const { costCapGuard } = await import('../../src/guards/costCap');
+(costCapGuard.checkRequest as any).mockResolvedValue({
+  allowed: true,
+  reason: 'OK'
+});
+```
+
+## Zod Schema Validation Testing
+
+### Testing Request Validation
+
+**Pattern for API validation:**
+```typescript
+// In implementation
+const validationResult = RequestSchema.safeParse(params);
+if (!validationResult.success) {
+  return new Response(createErrorResponse(
+    'Invalid request parameters', 
+    'INVALID_REQUEST',
+    { errors: validationResult.error.errors }
+  ), {
+    status: 400,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+// In tests
+test('should validate market type', async () => {
+  const invalidRequest = new Request('https://test.com/api?mt=INVALID');
+  const response = await handler(invalidRequest);
+  expect(response.status).toBe(400);
+});
+```
+
+### Schema with Enums
+
+**Pattern for enum validation:**
+```typescript
+// In schema definition
+mt: z.enum(['SPREAD', 'TOTAL', 'MONEYLINE'], { 
+  errorMap: () => ({ message: 'Market Type must be one of: SPREAD, TOTAL, MONEYLINE' })
+})
+```
+
+## Test Performance Patterns
+
+### Handling Timeouts in Tests
+
+**Pattern for timeout testing:**
+```typescript
+// In implementation (for testing)
+if (process.env.NODE_ENV === 'test') {
+  await new Promise(resolve => setTimeout(resolve, 2000));
+}
+
+// In tests
+test('should handle timeout scenarios', async () => {
+  const start = Date.now();
+  await functionWithTimeout();
+  const duration = Date.now() - start;
+  expect(duration).toBeGreaterThan(1900); // Allow some variance
+});
+```
+
 ## Rules Summary
 
 1. ✅ Use Bun test imports (not Vitest/Jest)
@@ -231,6 +409,11 @@ bun test tests/integration --timeout 20000
 5. ✅ Group related tests in `describe` blocks
 6. ✅ Mock external dependencies
 7. ✅ Test both success and error paths
-8. ❌ Never leave zombie processes
-9. ❌ Never use infinite waits
-10. ❌ Never test implementation details
+8. ✅ Use `{ results: [...] }` for D1 database mocks
+9. ✅ Use explicit try-catch for async error testing
+10. ✅ Reset mock implementations in `beforeEach`
+11. ❌ Never leave zombie processes
+12. ❌ Never use infinite waits
+13. ❌ Never test implementation details
+14. ❌ Never use `vi.mocked()` (Vitest-specific)
+15. ❌ Never use `resolves.not.toThrow()` (doesn't work in Bun)

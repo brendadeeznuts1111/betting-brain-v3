@@ -23,6 +23,9 @@
     "ci:full": "bun run security && bun run lint && bun run type-check && bun run test && bun run build:worker && echo '✅ All CI checks passed!'",
     "ci:quick": "bun run security && bun run test:fast && echo '✅ Quick CI passed!'",
     "ci:local": "bun run scripts/ci-local.ts",
+    "ci:bun": "bun run scripts/bun-ci.ts",
+    "ci:bun:quick": "bun run scripts/bun-ci.ts --skip-tests --skip-security",
+    "ci:bun:full": "bun run scripts/bun-ci.ts --verbose",
     "lint": "bun run scripts/lint.ts",
     "format": "bun run scripts/format.ts",
     "format:check": "bun run scripts/format-check.ts",
@@ -45,6 +48,9 @@
     "security": "sg scan src/",
     "security:migrations": "bun run scripts/validate-migrations.ts",
     "pre-push": "bun run security && bun run security:migrations && echo '✅ Security checks passed'",
+    "precheck": "bunx eslint@latest src --max-warnings 0 && bunx ast-grep@latest scan --config sgconfig.yml && echo '✅ Precheck passed!'",
+    "precheck:quick": "bunx eslint@latest src --max-warnings 0 && echo '✅ Quick precheck passed!'",
+    "precheck:security": "bunx ast-grep@latest scan --filter 'sql-injection-risk' --error && bunx ast-grep@latest scan --filter 'no-parsefloat-stake' --error && echo '✅ Security precheck passed!'",
     "prepare": "husky"
   },
   "keywords": [

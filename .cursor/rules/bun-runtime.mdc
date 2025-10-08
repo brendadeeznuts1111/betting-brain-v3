@@ -1,4 +1,6 @@
 ---
+version: 4
+scope: ["typescript", "javascript", "json", "toml"]
 description: Bun runtime patterns and best practices
 alwaysApply: true
 ---
@@ -123,6 +125,12 @@ Bun provides native APIs for:
 - [TypeScript Config](mdc:tsconfig.json) - TypeScript settings
 - [Package.json](mdc:package.json) - Scripts and dependencies
 - [Process Cleanup](mdc:tests/utils/process-cleanup.ts) - Process management
+
+## Related Rules
+
+- [Process Management](mdc:.cursor/rules/process-management.mdc) - Process spawning patterns
+- [Testing Patterns](mdc:.cursor/rules/testing-patterns.mdc) - Bun Test usage
+- [Security Patterns](mdc:.cursor/rules/security-patterns.mdc) - Security considerations
 
 ## Common Mistakes
 

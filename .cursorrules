@@ -1,0 +1,170 @@
+---
+version: 4.2.0
+scope: ["typescript", "javascript", "markdown", "sql", "html", "json", "yaml", "toml"]
+---
+# Cursor AI Rules for Betting Brain Platform
+# https://github.com/nolarose1968/ffffff/blob/main/.cursorrules
+
+## One File to Rule Them All
+
+This `.cursorrules` file is the **single source of truth** for all AI-generated code.
+
+**Benefits:**
+- ✅ No confusion - everyone follows the same patterns
+- ✅ Version control - every change is tracked
+- ✅ Automatic application - Cursor applies rules to matching files
+- ✅ Machine readable - front-matter enables tooling integration
+
+**Alternative:** Cursor ≥ 0.45 also supports `.cursor/rules/` folder for larger projects.
+
+## Core Development Rules
+
+### Bun Runtime (CRITICAL)
+- Use `bun` commands exclusively (not npm/yarn/node)
+- Use Bun Test (not Vitest/Jest)
+- Use Bun file APIs (not Node.js fs)
+- Use processManager for all process spawning
+- Leverage Bun native APIs (crypto, compression, etc.)
+
+### File Organization
+- Root directory: Only 9 essential files allowed
+- Documentation: All docs in `docs/` (except README.md, LICENSE, CLAUDE.md)
+- Scripts: All in `scripts/`
+- Tools: All in `tools/`
+- Status files: All in `docs/`
+
+### File Naming
+- Use lowercase kebab-case for all files/directories
+- Test files: `*.test.ts` (preferred)
+- Special cases: MCP handlers use camelCase to match tool names
+- Never create backup files (*.backup, *.old, *.bak)
+
+## API & Endpoint Patterns
+
+### Request Handling
+- Always generate requestId: `Date.now().toString(36)`
+- Always include CORS headers for dashboard access
+- Always handle OPTIONS preflight requests
+- Always log with requestId prefix: `[${requestId}] ...`
+
+### Error Handling
+- Use standardized error classes from `src/utils/error-handler.ts`
+- Always use try-catch or asyncHandler wrapper
+- Always return structured error responses
+- Never expose internal details in error messages
+
+### Database Queries
+- Always use parameterized queries (`.bind()`)
+- Never use string interpolation in SQL
+- Always cast D1 results with `as unknown as`
+- Always handle database errors
+
+## Security Patterns
+
+### Input Validation
+- Always validate all inputs before processing
+- Use Zod schemas for request validation
+- Never trust user input
+- Always sanitize output to prevent XSS
+
+### Production Security
+- Never use `parseFloat()` on stakes (use `Number()`)
+- Always use parameterized D1 queries
+- Respect queue batch limits (100 messages max)
+- Always free WASM memory in finally blocks
+- Use explicit UTC timestamps (not `new Date()`)
+
+## Testing Patterns
+
+### Bun Test Usage
+- Import from `bun:test` (not vitest/jest)
+- Always cleanup processes in `afterEach`/`afterAll`
+- Use `{ results: [...] }` for D1 database mocks
+- Reset mock implementations in `beforeEach`
+- Use explicit try-catch for async error testing
+
+### Test Organization
+- Unit tests: `tests/unit/*.test.ts`
+- Integration tests: `tests/integration/*.test.ts`
+- Use descriptive test names
+- Group related tests in `describe` blocks
+
+## Cloudflare Workers
+
+### Environment Bindings
+- ANALYTICS: Main betting analytics database
+- KV namespaces: BET_TICKER_RAW, TOKEN_STORE, USER_STORE
+- Queues: LINE_INGRESS, STEAM_WEBHOOK, STEAM_QUEUE
+- Analytics Engine: ANALYTICS_ENGINE
+
+### Performance
+- CPU limit: 50ms per request
+- Use `ctx.waitUntil()` for non-blocking operations
+- Implement cost guards for resource limits
+- Use rate limiting (10 req/s per IP)
+
+## MCP Integration
+
+### Tool Development
+- Create handler in `src/mcp/handlers/`
+- Register in `toolRegistry.ts`
+- Define in `tools.ts` with schema
+- Always validate args before database queries
+- Return `MCPToolResult` format
+
+### Testing MCP Tools
+- Use direct handler testing first
+- Test with `bun scripts/test-handlers-direct.ts`
+- HTTP testing via `/mcp` endpoint
+
+## Browser Extension
+
+### Manifest v3
+- Use service worker lifecycle
+- Handle message passing correctly
+- Implement proper storage management
+- Follow security best practices
+- Never use eval() or innerHTML
+
+## CI/CD Patterns
+
+### Local Development
+- Use `bun run ci` for full pipeline
+- Use `bun run ci:quick` for fast checks
+- Always use timeouts (job and command level)
+- Cache dependencies for speed
+- Report results clearly
+
+### Process Management
+- Always use `processManager.spawn()`
+- Always set timeouts for processes
+- Always cleanup in finally blocks
+- Never leave zombie processes
+
+## Code Quality
+
+### Documentation
+- Reference rules with stable GitHub links
+- Use `mdc:` links for project files
+- Keep documentation in `docs/`
+- Update INDEX.md when adding docs
+
+### ast-grep Integration
+- Use `sg scan` for security checks
+- Enforce SQL injection prevention
+- Check for unstructured logs
+- Validate CORS headers
+- Monitor hardcoded URLs
+
+## Related Documentation
+
+- [Complete Rules Guide](https://github.com/nolarose1968/ffffff/blob/main/docs/CURSOR_RULES.md)
+- [API Reference](https://github.com/nolarose1968/ffffff/blob/main/docs/REST_API_REFERENCE.md)
+- [Testing Guide](https://github.com/nolarose1968/ffffff/blob/main/docs/TESTING_STATUS.md)
+- [MCP Integration](https://github.com/nolarose1968/ffffff/blob/main/docs/MCP_INTEGRATION_STATUS.md)
+
+---
+
+**Status:** Production-ready with 17 comprehensive rules  
+**Last Updated:** 2025-10-07  
+**Total Rules:** 17 rules covering all development areas

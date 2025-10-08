@@ -176,16 +176,18 @@ export class CostCapGuard {
   async applyTTLCleanup(env: Env): Promise<void> {
     try {
       // Clean up old line movements (7-day TTL)
-      await env.ANALYTICS.prepare(`
+      const stmt1 = env.ANALYTICS.prepare(`
         DELETE FROM line_movements 
         WHERE ing < datetime('now', '-7 days')
-      `).run();
+      `);
+      await stmt1.run();
 
       // Clean up old steam dedupe (5-minute TTL)
-      await env.ANALYTICS.prepare(`
+      const stmt2 = env.ANALYTICS.prepare(`
         DELETE FROM steam_dedupe 
         WHERE ts < datetime('now', '-5 minutes')
-      `).run();
+      `);
+      await stmt2.run();
 
       console.log('TTL cleanup completed');
     } catch (error) {

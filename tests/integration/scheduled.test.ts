@@ -19,11 +19,11 @@ const mockEnv: Env = {
     prepare: vi.fn().mockReturnValue({
       first: vi.fn().mockResolvedValue({ count: 0 }),
       run: vi.fn().mockResolvedValue({ success: true }),
-      all: vi.fn().mockResolvedValue([]),
+      all: vi.fn().mockResolvedValue({ results: [] }),
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       })
     }),
     exec: vi.fn().mockResolvedValue({ success: true })
@@ -41,12 +41,12 @@ const mockCtx: ExecutionContext = {
   passThroughOnException: vi.fn()
 } as any;
 
-describe.concurrent('Scheduled Job Execution Tests', () => {
+describe('Scheduled Job Execution Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe.concurrent('Sharp Calculation Job', () => {
+  describe('Sharp Calculation Job', () => {
     test('should execute sharp calculation successfully', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
@@ -65,19 +65,19 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 3 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockCustomers),
+        all: vi.fn().mockResolvedValue({ results: mockCustomers }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 3 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockCustomers)
+          all: vi.fn().mockResolvedValue({ results: mockCustomers })
         })
       } as any);
 
       // Import and test the handler
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Verify database interactions
       expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
@@ -87,16 +87,16 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Database error')),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       // Should not throw - errors should be handled gracefully
       await expect(handleSharpCalculation(mockEnv, mockCtx)).resolves.toBeUndefined();
     });
@@ -116,18 +116,18 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 150 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockCustomers),
+        all: vi.fn().mockResolvedValue({ results: mockCustomers }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 150 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockCustomers)
+          all: vi.fn().mockResolvedValue({ results: mockCustomers })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Verify that all customers are processed (implementation processes all customers)
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(150);
     });
@@ -136,19 +136,19 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Should complete without errors
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
   });
 
-  describe.concurrent('Exposure Calculation Job', () => {
+  describe('Exposure Calculation Job', () => {
     test('should execute exposure calculation successfully', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
@@ -171,18 +171,18 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 3 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockEvents),
+        all: vi.fn().mockResolvedValue({ results: mockEvents }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 3 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockExposureData)
+          all: vi.fn().mockResolvedValue({ results: mockExposureData })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       await handleExposureCalculation(mockEnv, mockCtx);
-      
+
       // Verify database interactions
       expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalled();
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
@@ -208,18 +208,18 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 75 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockEvents),
+        all: vi.fn().mockResolvedValue({ results: mockEvents }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 75 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockExposureData)
+          all: vi.fn().mockResolvedValue({ results: mockExposureData })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       await handleExposureCalculation(mockEnv, mockCtx);
-      
+
       // Verify that events are processed (implementation limits to 50 events)
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(50);
     });
@@ -235,16 +235,16 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database connection failed')),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Database connection failed')),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       // Should not throw - errors should be handled gracefully
       await expect(handleExposureCalculation(mockEnv, mockCtx)).resolves.toBeUndefined();
     });
@@ -260,18 +260,18 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       await handleExposureCalculation(mockEnv, mockCtx);
-      
+
       // Should complete without errors
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
@@ -298,18 +298,18 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 3 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockEvents),
+        all: vi.fn().mockResolvedValue({ results: mockEvents }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 3 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockExposureData)
+          all: vi.fn().mockResolvedValue({ results: mockExposureData })
         })
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       await handleExposureCalculation(mockEnv, mockCtx);
-      
+
       // Verify that data points are written with correct totals
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -319,7 +319,7 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
     });
   });
 
-  describe.concurrent('Job Performance and Limits', () => {
+  describe('Job Performance and Limits', () => {
     test('should complete within reasonable time limits', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
@@ -329,13 +329,13 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       });
 
       const startTime = Date.now();
-      
+
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       const endTime = Date.now();
       const executionTime = endTime - startTime;
-      
+
       // Should complete within 5 seconds
       expect(executionTime).toBeLessThan(5000);
     });
@@ -368,25 +368,25 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 2 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockCustomers),
+        all: vi.fn().mockResolvedValue({ results: mockCustomers }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 2 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockEvents)
+          all: vi.fn().mockResolvedValue({ results: mockEvents })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
-      
+
       // Execute both jobs concurrently
       const promises = [
         handleSharpCalculation(mockEnv, mockCtx),
         handleExposureCalculation(mockEnv, mockCtx)
       ];
-      
+
       await Promise.all(promises);
-      
+
       // Both should complete successfully
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
@@ -402,24 +402,24 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
-      
+
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Should complete without throwing errors even if limits are exceeded
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).not.toHaveBeenCalled();
     });
   });
 
-  describe.concurrent('Job Scheduling and Timing', () => {
+  describe('Job Scheduling and Timing', () => {
     test('should handle scheduled time correctly', async () => {
       // Mock cost cap to allow processing
       const { costCapGuard } = await import('../../src/guards/costCap');
@@ -433,19 +433,19 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 1 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue(mockCustomers),
+        all: vi.fn().mockResolvedValue({ results: mockCustomers }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 1 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockCustomers)
+          all: vi.fn().mockResolvedValue({ results: mockCustomers })
         })
       } as any);
 
       const scheduledTime = new Date('2025-10-07T10:00:00Z');
-      
+
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
       await handleSharpCalculation(mockEnv, mockCtx);
-      
+
       // Verify that the job writes data points (implementation doesn't include scheduled_time)
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
     });
@@ -460,28 +460,28 @@ describe.concurrent('Scheduled Job Execution Tests', () => {
 
       // Test with different timezone scenarios
       const timezones = ['UTC', 'America/New_York', 'Europe/London'];
-      
+
       for (const timezone of timezones) {
         vi.clearAllMocks();
-        
+
         // Mock exposure data for each timezone test
         const mockEvents = [{ eid: 'nba_123' }];
         const mockExposureData = [{ side: 'HOME', risk: 1000, net: 500 }];
-        
+
         (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 1 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(mockEvents),
+          all: vi.fn().mockResolvedValue({ results: mockEvents }),
           bind: vi.fn().mockReturnValue({
             first: vi.fn().mockResolvedValue({ count: 1 }),
             run: vi.fn().mockResolvedValue({ success: true }),
-            all: vi.fn().mockResolvedValue(mockExposureData)
+            all: vi.fn().mockResolvedValue({ results: mockExposureData })
           })
         } as any);
-        
+
         const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
         await handleExposureCalculation(mockEnv, mockCtx);
-        
+
         // Should complete successfully regardless of timezone
         expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
       }

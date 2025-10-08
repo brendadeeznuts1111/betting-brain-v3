@@ -1,0 +1,389 @@
+---
+globs: browser-extension/**/*.js,browser-extension/**/*.html,browser-extension/**/*.json
+description: Browser extension patterns and development practices
+---
+
+# Browser Extension Rules
+
+## Extension Structure
+
+### Core Files
+
+```
+browser-extension/
+├── manifest.json           # Extension manifest
+├── background.js           # Background script
+├── content.js              # Content script
+├── popup.html              # Extension popup
+├── popup.js                # Popup logic
+├── icon.svg                # Extension icon
+└── dashboards/             # Dashboard integration
+    ├── dashboard.html
+    ├── dashboard-pro.html
+    └── shared/
+```
+
+### Manifest Configuration
+
+**Location:** [browser-extension/manifest.json](mdc:browser-extension/manifest.json)
+
+```json
+{
+  "manifest_version": 3,
+  "name": "Betting Brain Extension",
+  "version": "1.0.0",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://localhost:*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
+```
+
+## Background Script Patterns
+
+### Service Worker Lifecycle
+
+**Location:** [browser-extension/background.js](mdc:browser-extension/background.js)
+
+```javascript
+// Extension installation
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    console.log('Extension installed');
+    // Initialize storage
+    chrome.storage.local.set({
+      sessionId: Date.now().toString(36),
+      installDate: new Date().toISOString()
+    });
+  }
+});
+
+// Message handling
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case 'logData':
+      handleLogData(request.data);
+      break;
+    case 'getStatus':
+      sendResponse({ status: 'active' });
+      break;
+  }
+  return true; // Keep message channel open
+});
+```
+
+### Storage Patterns
+
+```javascript
+// Save data to extension storage
+async function saveData(key, data) {
+  try {
+    await chrome.storage.local.set({ [key]: data });
+    console.log(`Data saved: ${key}`);
+  } catch (error) {
+    console.error('Storage error:', error);
+  }
+}
+
+// Retrieve data from storage
+async function getData(key) {
+  try {
+    const result = await chrome.storage.local.get([key]);
+    return result[key];
+  } catch (error) {
+    console.error('Storage retrieval error:', error);
+    return null;
+  }
+}
+```
+
+## Content Script Patterns
+
+### DOM Interaction
+
+**Location:** [browser-extension/content.js](mdc:browser-extension/content.js)
+
+```javascript
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  initialize();
+}
+
+function initialize() {
+  // Inject into page
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('injected.js');
+  document.head.appendChild(script);
+  
+  // Listen for page events
+  document.addEventListener('click', handleClick);
+  window.addEventListener('beforeunload', handleUnload);
+}
+```
+
+### Message Passing
+
+```javascript
+// Send message to background script
+function sendToBackground(action, data) {
+  chrome.runtime.sendMessage({
+    action,
+    data,
+    timestamp: Date.now()
+  });
+}
+
+// Listen for messages from background
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'injectData') {
+    // Handle injected data
+    processInjectedData(request.data);
+  }
+});
+```
+
+## Popup Patterns
+
+### Popup HTML Structure
+
+**Location:** [browser-extension/popup.html](mdc:browser-extension/popup.html)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Betting Brain</title>
+  <style>
+    body { width: 300px; height: 200px; }
+    .status { padding: 10px; }
+    .controls { padding: 10px; }
+  </style>
+</head>
+<body>
+  <div class="status">
+    <h3>Extension Status</h3>
+    <p id="status">Loading...</p>
+  </div>
+  <div class="controls">
+    <button id="refresh">Refresh</button>
+    <button id="settings">Settings</button>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
+```
+
+### Popup JavaScript
+
+**Location:** [browser-extension/popup.js](mdc:browser-extension/popup.js)
+
+```javascript
+// Popup initialization
+document.addEventListener('DOMContentLoaded', async () => {
+  await updateStatus();
+  setupEventListeners();
+});
+
+async function updateStatus() {
+  try {
+    const response = await fetch(`${WORKER_URL}/health`);
+    const data = await response.json();
+    document.getElementById('status').textContent = 
+      `Status: ${data.status} (${data.duration}ms)`;
+  } catch (error) {
+    document.getElementById('status').textContent = 'Error: Connection failed';
+  }
+}
+
+function setupEventListeners() {
+  document.getElementById('refresh').addEventListener('click', updateStatus);
+  document.getElementById('settings').addEventListener('click', openSettings);
+}
+```
+
+## Dashboard Integration
+
+### Worker Communication
+
+```javascript
+// Configuration
+const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
+
+// Health check
+async function checkWorkerHealth() {
+  try {
+    const response = await fetch(`${WORKER_URL}/health`);
+    const data = await response.json();
+    return data.status === 'healthy';
+  } catch (error) {
+    console.error('Worker health check failed:', error);
+    return false;
+  }
+}
+
+// Send logs to worker
+async function sendLogs(logs) {
+  try {
+    const response = await fetch(`${WORKER_URL}/logs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        logs,
+        sessionId: await getSessionId(),
+        timestamp: Date.now()
+      })
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Log sending failed:', error);
+    return false;
+  }
+}
+```
+
+### Dashboard Loading
+
+```javascript
+// Load dashboard in new tab
+function openDashboard(type = 'main') {
+  const dashboardUrl = `${WORKER_URL}/dashboards/${type}.html`;
+  chrome.tabs.create({ url: dashboardUrl });
+}
+
+// Load specific dashboard
+function openDashboardPro() {
+  openDashboard('dashboard-pro');
+}
+```
+
+## Security Patterns
+
+### Content Security Policy
+
+```json
+{
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
+```
+
+### Permission Management
+
+```javascript
+// Request permissions
+async function requestPermissions() {
+  try {
+    const granted = await chrome.permissions.request({
+      permissions: ['activeTab', 'storage'],
+      origins: ['https://*/*']
+    });
+    return granted;
+  } catch (error) {
+    console.error('Permission request failed:', error);
+    return false;
+  }
+}
+
+// Check permissions
+async function checkPermissions() {
+  try {
+    const hasPermissions = await chrome.permissions.contains({
+      permissions: ['activeTab'],
+      origins: ['https://*/*']
+    });
+    return hasPermissions;
+  } catch (error) {
+    console.error('Permission check failed:', error);
+    return false;
+  }
+}
+```
+
+## Testing Patterns
+
+### Extension Testing
+
+```javascript
+// Test extension functionality
+async function testExtension() {
+  console.log('Testing extension...');
+  
+  // Test storage
+  await chrome.storage.local.set({ test: 'value' });
+  const result = await chrome.storage.local.get(['test']);
+  console.assert(result.test === 'value', 'Storage test failed');
+  
+  // Test messaging
+  const response = await chrome.runtime.sendMessage({
+    action: 'getStatus'
+  });
+  console.assert(response.status === 'active', 'Message test failed');
+  
+  console.log('Extension tests passed');
+}
+```
+
+### Debug Patterns
+
+```javascript
+// Debug logging
+function debugLog(message, data = null) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Extension Debug] ${message}`, data);
+  }
+}
+
+// Error handling
+function handleError(error, context) {
+  console.error(`[Extension Error] ${context}:`, error);
+  
+  // Send error to worker
+  sendToBackground('error', {
+    message: error.message,
+    context,
+    timestamp: Date.now()
+  });
+}
+```
+
+## Key Files
+
+- [Manifest](mdc:browser-extension/manifest.json) - Extension configuration
+- [Background Script](mdc:browser-extension/background.js) - Service worker
+- [Content Script](mdc:browser-extension/content.js) - Page interaction
+- [Popup](mdc:browser-extension/popup.html) - Extension UI
+- [Dashboards](mdc:browser-extension/dashboards/) - Dashboard integration
+
+## Rules Summary
+
+1. ✅ **Always** use manifest v3
+2. ✅ **Always** handle service worker lifecycle
+3. ✅ **Always** use proper message passing
+4. ✅ **Always** handle storage errors
+5. ✅ **Always** check permissions before use
+6. ✅ **Always** use CSP for security
+7. ❌ **Never** use eval() or innerHTML
+8. ❌ **Never** store sensitive data in storage
+9. ❌ **Never** ignore permission errors
+10. ❌ **Never** block the main thread

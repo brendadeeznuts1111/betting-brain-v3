@@ -7,7 +7,7 @@ import { describe, test, expect, vi, beforeEach } from "bun:test";
 import type { Env } from '../../src/types/api';
 import type { LineMovement } from '../../src/types/database';
 
-describe.concurrent('Trigger Implementation Detailed Tests', () => {
+describe('Trigger Implementation Detailed Tests', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
@@ -19,11 +19,11 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
         prepare: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([]),
+          all: vi.fn().mockResolvedValue({ results: [] }),
           bind: vi.fn().mockReturnValue({
             first: vi.fn().mockResolvedValue({ count: 0 }),
             run: vi.fn().mockResolvedValue({ success: true }),
-            all: vi.fn().mockResolvedValue([])
+            all: vi.fn().mockResolvedValue({ results: [] })
           })
         }),
         exec: vi.fn().mockResolvedValue({ success: true })
@@ -42,7 +42,7 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
     } as any;
   });
 
-  describe.concurrent('Line Movement Trigger Detailed Tests', () => {
+  describe('Line Movement Trigger Detailed Tests', () => {
     test('should process line movement with valid data', async () => {
       const lineMovement: LineMovement = {
         eid: 'nba_123',
@@ -235,7 +235,13 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       
       // Should not throw - errors should be handled gracefully
-      await expect(onLineMove(mockEnv, lineMovement)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await onLineMove(mockEnv, lineMovement);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
 
     test('should handle steam webhook errors gracefully', async () => {
@@ -255,7 +261,13 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       
       // Should not throw - errors should be handled gracefully
-      await expect(onLineMove(mockEnv, significantMovement)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await onLineMove(mockEnv, significantMovement);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
 
     test('should handle analytics engine errors gracefully', async () => {
@@ -275,7 +287,13 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       
       // Should not throw - errors should be handled gracefully
-      await expect(onLineMove(mockEnv, lineMovement)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await onLineMove(mockEnv, lineMovement);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
 
     test('should handle concurrent line movements', async () => {
@@ -373,7 +391,13 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       
       // Should handle invalid timestamps gracefully
-      await expect(onLineMove(mockEnv, invalidTimestampMovement)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await onLineMove(mockEnv, invalidTimestampMovement);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
 
     test('should handle line movements with special characters in event ID', async () => {
@@ -434,7 +458,13 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       
       // Should handle NaN values gracefully
-      await expect(onLineMove(mockEnv, nanMovement)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await onLineMove(mockEnv, nanMovement);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
 
     test('should handle line movements with Infinity values', async () => {
@@ -452,11 +482,17 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       
       // Should handle Infinity values gracefully
-      await expect(onLineMove(mockEnv, infinityMovement)).resolves.not.toThrow();
+      let threwError = false;
+      try {
+        await onLineMove(mockEnv, infinityMovement);
+      } catch (error) {
+        threwError = true;
+      }
+      expect(threwError).toBe(false);
     });
   });
 
-  describe.concurrent('Trigger Performance and Limits', () => {
+  describe('Trigger Performance and Limits', () => {
     test('should complete within reasonable time limits', async () => {
       // Set NODE_ENV to production to avoid test delay
       const originalEnv = process.env.NODE_ENV;
@@ -523,13 +559,13 @@ describe.concurrent('Trigger Implementation Detailed Tests', () => {
           new Promise(resolve => setTimeout(() => resolve({ count: 0 }), 100))
         ),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockImplementation(() => 
             new Promise(resolve => setTimeout(() => resolve({ count: 0 }), 2000))
           ),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 

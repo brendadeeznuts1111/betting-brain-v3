@@ -3,8 +3,7 @@
  * Returns hold percentage and volume metrics for an event
  */
 
-import { Env, GetHoldPercentageRequest, HoldPercentageResponse } from '../../types/api';
-import { GetHoldPercentageRequest as GetHoldPercentageRequestSchema, HoldPercentageResponse as HoldPercentageResponseSchema } from '../../types/api';
+import { Env, GetHoldPercentageRequest as GetHoldPercentageRequestSchema, HoldPercentageResponse as HoldPercentageResponseSchema } from '../../types/api';
 import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
@@ -46,6 +45,18 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
       timeWindow: parseInt(url.searchParams.get('timeWindow') || '1')
     };
 
+    // Validate request with Zod schema
+    const validationResult = GetHoldPercentageRequestSchema.safeParse(params);
+    if (!validationResult.success) {
+      return new Response(createErrorResponse(
+        'Invalid request parameters', 
+        'INVALID_REQUEST',
+        { errors: validationResult.error.errors }
+      ), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     // Query line movement data for hold calculation
     const db = createDatabaseHelper(env);

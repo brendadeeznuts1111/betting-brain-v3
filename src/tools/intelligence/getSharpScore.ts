@@ -3,8 +3,7 @@
  * Returns sharp score and performance metrics for a customer
  */
 
-import { Env, GetSharpScoreRequest, SharpScoreResponse } from '../../types/api';
-import { GetSharpScoreRequest as GetSharpScoreRequestSchema, SharpScoreResponse as SharpScoreResponseSchema } from '../../types/api';
+import { Env, GetSharpScoreRequest as GetSharpScoreRequestSchema, SharpScoreResponse as SharpScoreResponseSchema } from '../../types/api';
 import { createErrorResponse } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';

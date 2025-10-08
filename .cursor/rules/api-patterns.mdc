@@ -1,90 +1,8 @@
-# API Patterns & Best Practices
-
-## Overview
-
-The REST API layer provides comprehensive validation, error handling, and standardized responses across all endpoints.
-
-See [docs/REST_API_REFERENCE.md](mdc:docs/REST_API_REFERENCE.md) for complete API documentation.
-
 ---
-
-## Validation Patterns
-
-### Using Validators
-
-**Location:** `src/utils/validation.ts`
-
-```typescript
-import { validateQueryParams, Validators, validationErrorResponse } from '../utils/validation';
-
-// In endpoint handler
-const validation = validateQueryParams(url, [
-  Validators.agentID(true),      // Required
-  Validators.eventID(),           // Optional
-  Validators.sport(),             // Optional with enum
-  Validators.limit(500),          // Optional with max
-  Validators.offset()             // Optional, min 0
-]);
-
-if (!validation.valid) {
-  return validationErrorResponse(validation.errors, requestId);
-}
-
-const { agentID, eventID, sport, limit, offset } = validation.sanitized!;
-```
-
-### Common Validators
-
-```typescript
-// Agent ID (required, alphanumeric + underscore/hyphen)
-Validators.agentID(true)
-
-// Event ID (optional, string)
-Validators.eventID()
-
-// Market Type (enum)
-Validators.marketType()  // MONEYLINE, SPREAD, TOTAL, PROP, FUTURE, PARLAY
-
-// Sport (enum)
-Validators.sport()  // NFL, NBA, MLB, NHL, etc.
-
-// Dates (YYYY-MM-DD format)
-Validators.date('startDate')
-Validators.date('endDate')
-
-// Numeric limits
-Validators.limit(maxValue)
-Validators.offset()
-Validators.threshold(min, max)
-
-// Exposure level
-Validators.exposureLevel()  // LOW, MEDIUM, HIGH, CRITICAL
-
-// Group by
-Validators.groupBy()  // event, market, customer, sport
-```
-
-### Custom Validation
-
-```typescript
-const customRule: ValidationRule = {
-  field: 'myField',
-  required: true,
-  type: 'string',
-  minLength: 5,
-  maxLength: 100,
-  pattern: /^[A-Z0-9_-]+$/,
-  custom: (value) => {
-    if (value.startsWith('test_')) {
-      return 'Field cannot start with test_';
-    }
-    return null;
-  }
-};
-```
-
+version: 4
+scope: ["typescript", "javascript"]
+alwaysApply: true
 ---
-
 ## Error Handling Patterns
 
 ### Using Error Classes
@@ -474,6 +392,13 @@ console.error(`[${requestId}] ❌ Error:`, error);
 - **[error-handler.ts](mdc:src/utils/error-handler.ts)** - Error handling utilities
 - **[validation.ts](mdc:src/utils/validation.ts)** - Validation utilities
 - **[routes.ts](mdc:src/api/routes.ts)** - API route implementations
+
+## Related Rules
+
+- [Endpoint Routing](mdc:.cursor/rules/endpoint-routing.mdc) - Endpoint patterns
+- [Security Patterns](mdc:.cursor/rules/security-patterns.mdc) - Security considerations
+- [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - Database query patterns
+- [Cloudflare Workers](mdc:.cursor/rules/cloudflare-workers.mdc) - Workers-specific patterns
 
 ---
 

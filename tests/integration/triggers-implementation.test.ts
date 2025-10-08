@@ -13,11 +13,11 @@ const mockEnv: Env = {
     prepare: vi.fn().mockReturnValue({
       first: vi.fn().mockResolvedValue({ count: 0 }),
       run: vi.fn().mockResolvedValue({ success: true }),
-      all: vi.fn().mockResolvedValue([]),
+      all: vi.fn().mockResolvedValue({ results: [] }),
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([])
+        all: vi.fn().mockResolvedValue({ results: [] })
       })
     }),
     exec: vi.fn().mockResolvedValue({ success: true })
@@ -30,12 +30,26 @@ const mockEnv: Env = {
   } as any
 };
 
-describe.concurrent('Trigger Implementation Tests', () => {
+describe('Trigger Implementation Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Reset mock implementations to prevent accumulation
+    (mockEnv.STEAM_WEBHOOK.send as any).mockClear().mockResolvedValue({ success: true });
+    (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockClear().mockResolvedValue(undefined);
+    (mockEnv.ANALYTICS.prepare as any).mockClear().mockReturnValue({
+      first: vi.fn().mockResolvedValue({ count: 0 }),
+      run: vi.fn().mockResolvedValue({ success: true }),
+      all: vi.fn().mockResolvedValue({ results: [] }),
+      bind: vi.fn().mockReturnValue({
+        first: vi.fn().mockResolvedValue({ count: 0 }),
+        run: vi.fn().mockResolvedValue({ success: true }),
+        all: vi.fn().mockResolvedValue({ results: [] })
+      })
+    });
   });
 
-  describe.concurrent('Line Movement Trigger Implementation', () => {
+  describe('Line Movement Trigger Implementation', () => {
     test('should process line movement events successfully', async () => {
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
@@ -49,9 +63,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Verify steam webhook was called
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -78,9 +92,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, significantMovement);
-      
+
       // Verify additional processing was triggered
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -107,9 +121,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, percentageChange);
-      
+
       // Verify additional processing was triggered
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -135,9 +149,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, volumeChange);
-      
+
       // Verify additional processing was triggered
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -162,9 +176,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, nonSignificant);
-      
+
       // Verify steam webhook was not called for non-significant movement
       expect(mockEnv.STEAM_WEBHOOK.send).not.toHaveBeenCalled();
     });
@@ -182,10 +196,10 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should not throw
       await expect(onLineMove(mockEnv, nullValues)).resolves.toBeUndefined();
-      
+
       // Verify steam webhook was not called with null values (not significant)
       expect(mockEnv.STEAM_WEBHOOK.send).not.toHaveBeenCalled();
     });
@@ -203,9 +217,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, zeroValues);
-      
+
       // Verify steam webhook was called
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -228,9 +242,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, rapidMovement);
-      
+
       // Verify additional processing was triggered
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -259,7 +273,7 @@ describe.concurrent('Trigger Implementation Tests', () => {
       (mockEnv.STEAM_WEBHOOK.send as any).mockRejectedValue(new Error('Queue error'));
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Should not throw - errors should be handled gracefully
       await expect(onLineMove(mockEnv, mockLineMovement)).resolves.toBeUndefined();
     });
@@ -277,20 +291,20 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Verify steam webhook was called for real-time updates
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalled();
     });
   });
 
-  describe.concurrent('Trigger Performance', () => {
+  describe('Trigger Performance', () => {
     test('should complete within reasonable time limits', async () => {
       // Set NODE_ENV to production to avoid test delay
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
-      
+
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
         mt: 'SPREAD',
@@ -303,16 +317,16 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const startTime = Date.now();
-      
+
       const { onLineMove } = await import('../../src/triggers/onLineMove');
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       const endTime = Date.now();
       const executionTime = endTime - startTime;
-      
+
       // Restore original environment
       process.env.NODE_ENV = originalEnv;
-      
+
       // Should complete within 1 second (without test delay)
       expect(executionTime).toBeLessThan(1000);
     });
@@ -329,20 +343,20 @@ describe.concurrent('Trigger Implementation Tests', () => {
       }));
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       // Process all movements
-      const promises = highFrequencyMovements.map(movement => 
+      const promises = highFrequencyMovements.map(movement =>
         onLineMove(mockEnv, movement)
       );
-      
+
       await Promise.all(promises);
-      
+
       // All should be processed successfully
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledTimes(100);
     });
   });
 
-  describe.concurrent('Trigger Integration', () => {
+  describe('Trigger Integration', () => {
     test('should integrate with steam webhook queue', async () => {
       const mockLineMovement: LineMovement = {
         eid: 'nba_123',
@@ -356,9 +370,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Verify queue integration
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -382,9 +396,9 @@ describe.concurrent('Trigger Implementation Tests', () => {
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
-      
+
       await onLineMove(mockEnv, mockLineMovement);
-      
+
       // Verify metrics are included
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({

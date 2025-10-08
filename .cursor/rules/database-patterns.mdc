@@ -1,0 +1,240 @@
+---
+globs: src/**/*.ts,migrations/*.sql
+description: Database patterns and D1 query best practices
+---
+
+# Database Patterns
+
+## D1 Database Usage
+
+### Environment Bindings
+
+**Primary Databases:**
+- `ANALYTICS` - Main betting analytics database
+- `RAW_FEED_DB` - Raw feed database
+
+**Configuration:** [wrangler.toml](mdc:wrangler.toml)
+
+### Query Patterns
+
+#### Parameterized Queries (CRITICAL)
+
+```typescript
+// ✅ CORRECT: Parameterized query
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM line_movements 
+  WHERE eid = ? AND ts > ?
+  LIMIT ?
+`).bind(eventID, timestamp, limit).all();
+
+// ❌ WRONG: String interpolation (SQL injection risk)
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM line_movements 
+  WHERE eid = '${eventID}' AND ts > '${timestamp}'
+  LIMIT ${limit}
+`).all();
+```
+
+#### Type Safety
+
+```typescript
+// Query with type conversion
+const result = await env.ANALYTICS.prepare(`
+  SELECT eid, mt, ts, old_line, new_line
+  FROM line_movements
+  WHERE eid = ?
+  ORDER BY ts DESC
+  LIMIT ?
+`).bind(eventID, limit).all();
+
+// Convert with unknown cast (required for D1Result type)
+const movements = result.results as unknown as Array<{
+  eid: string;
+  mt: string;
+  ts: string;
+  old_line: number;
+  new_line: number;
+}>;
+```
+
+### Database Tables
+
+#### Core Tables
+
+**Analytics Tables:**
+- `line_movements` - Line change tracking
+- `sharp_indicators` - Customer profiling
+- `bet_history` - Historical bets
+- `hold_tracking` - Hold percentage history
+- `exposure_tracking` - Real-time exposure
+
+**MCP Tables:**
+- `sharp_indicators` - Customer profiling
+- `line_movements` - Line changes
+- `bet_history` - Historical bets
+- `hold_tracking` - Hold % history
+- `exposure_tracking` - Real-time exposure
+
+#### Schema Patterns
+
+```sql
+-- Migration naming: NNNN_description.sql
+-- Example: 0001_initial_schema.sql
+
+-- Table with TTL
+CREATE TABLE line_movements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  eid TEXT NOT NULL,
+  mt TEXT NOT NULL,
+  ts TEXT NOT NULL,
+  old_line REAL,
+  new_line REAL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index for performance
+CREATE INDEX idx_line_movements_eid_ts ON line_movements(eid, ts);
+```
+
+### Migration Patterns
+
+#### File Naming
+
+```
+migrations/
+├── 0001_initial_schema.sql
+├── 0002_add_ttl.sql
+├── 0003_mcp_tables.sql
+└── 0004_test_data.sql
+```
+
+#### Migration Commands
+
+```bash
+# Apply migrations to remote
+wrangler d1 migrations apply betting-analytics --remote
+
+# Apply to local
+wrangler d1 migrations apply betting-analytics --local
+
+# List migrations
+wrangler d1 migrations list betting-analytics
+```
+
+### Performance Patterns
+
+#### Query Optimization
+
+```typescript
+// ✅ GOOD: Use indexes
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM line_movements 
+  WHERE eid = ? AND ts > ?
+  ORDER BY ts DESC
+  LIMIT ?
+`).bind(eventID, timestamp, limit).all();
+
+// ✅ GOOD: Limit results
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM table 
+  WHERE condition = ?
+  LIMIT 100
+`).bind(value).all();
+```
+
+#### Batch Operations
+
+```typescript
+// ✅ GOOD: Batch inserts
+const stmt = env.ANALYTICS.prepare(`
+  INSERT INTO line_movements (eid, mt, ts, old_line, new_line)
+  VALUES (?, ?, ?, ?, ?)
+`);
+
+for (const movement of movements) {
+  await stmt.bind(
+    movement.eid,
+    movement.mt,
+    movement.ts,
+    movement.old_line,
+    movement.new_line
+  ).run();
+}
+```
+
+### Error Handling
+
+#### Database Error Patterns
+
+```typescript
+try {
+  const result = await env.ANALYTICS.prepare(query).bind(...params).all();
+  return result.results;
+} catch (error) {
+  console.error(`[${requestId}] Database error:`, error);
+  throw new Error(`Database query failed: ${error.message}`);
+}
+```
+
+### Testing Database
+
+#### Mock Environment
+
+```typescript
+const mockEnv = {
+  ANALYTICS: {
+    prepare: (query: string) => ({
+      bind: (...params: any[]) => ({
+        first: vi.fn().mockResolvedValue(null),
+        all: vi.fn().mockResolvedValue({ results: [] }),
+        run: vi.fn().mockResolvedValue({ success: true })
+      }),
+      first: vi.fn().mockResolvedValue(null),
+      all: vi.fn().mockResolvedValue({ results: [] }),
+      run: vi.fn().mockResolvedValue({ success: true })
+    })
+  }
+};
+```
+
+#### Test Data Patterns
+
+```typescript
+// Test data setup
+const testMovements = [
+  {
+    eid: 'test-event-1',
+    mt: 'SPREAD',
+    ts: '2025-01-01T00:00:00Z',
+    old_line: -3.5,
+    new_line: -4.0
+  }
+];
+
+// Mock database response
+(mockEnv.ANALYTICS.prepare as any).mockReturnValue({
+  bind: vi.fn().mockReturnValue({
+    all: vi.fn().mockResolvedValue({ results: testMovements })
+  })
+});
+```
+
+## Key Files
+
+- [Database Migrations](mdc:migrations/) - Schema definitions
+- [MCP Handlers](mdc:src/mcp/handlers/) - Database usage examples
+- [API Routes](mdc:src/api/routes.ts) - Query patterns
+- [Wrangler Config](mdc:wrangler.toml) - Database bindings
+
+## Rules Summary
+
+1. ✅ **Always** use parameterized queries (`.bind()`)
+2. ✅ **Always** cast D1 results with `as unknown as`
+3. ✅ **Always** use indexes for performance
+4. ✅ **Always** limit query results
+5. ✅ **Always** handle database errors
+6. ✅ **Always** use proper migration naming
+7. ❌ **Never** use string interpolation in SQL
+8. ❌ **Never** forget to bind parameters
+9. ❌ **Never** ignore database errors
+10. ❌ **Never** create tables without indexes

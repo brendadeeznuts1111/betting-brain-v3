@@ -52,7 +52,7 @@ import { getCLV } from '../../src/tools/intelligence/getCLV';
 // Import the main module after mocking
 import worker from '../../src/index';
 
-describe.concurrent('Integration Tests - Main Entry Point', () => {
+describe('Integration Tests - Main Entry Point', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
@@ -64,11 +64,11 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
         prepare: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([]),
+          all: vi.fn().mockResolvedValue({ results: [] }),
           bind: vi.fn().mockReturnValue({
             first: vi.fn().mockResolvedValue({ count: 0 }),
             run: vi.fn().mockResolvedValue({ success: true }),
-            all: vi.fn().mockResolvedValue([])
+            all: vi.fn().mockResolvedValue({ results: [] })
           })
         }),
         exec: vi.fn().mockResolvedValue({ success: true })
@@ -90,7 +90,7 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
     } as any;
   });
 
-  describe.concurrent('Health Check Endpoint', () => {
+  describe('Health Check Endpoint', () => {
     test('should return healthy status for /health endpoint', async () => {
       const request = new Request('https://example.com/health');
       const response = await worker.fetch(request, mockEnv, mockCtx);
@@ -115,7 +115,7 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe.concurrent('MCP Tools API Routes', () => {
+  describe('MCP Tools API Routes', () => {
     test('should route to getBettingExposure tool', async () => {
       const mockResponse = new Response(JSON.stringify({ exposure: 1000 }), { status: 200 });
       (getBettingExposure as any).mockResolvedValue(mockResponse);
@@ -172,7 +172,7 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe.concurrent('Default Response', () => {
+  describe('Default Response', () => {
     test('should return default response for unknown paths', async () => {
       const request = new Request('https://example.com/unknown');
       const response = await worker.fetch(request, mockEnv, mockCtx);
@@ -181,11 +181,11 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
       expect(response.headers.get('Content-Type')).toBe('text/plain');
       
       const body = await response.text();
-      expect(body).toBe('Betting-Brain v3 - Edge Intelligence Layer');
+      expect(body).toMatch(/Betting-Brain v3 - Edge Intelligence Layer\nRequest ID: \w+\nDuration: \d+ms/);
     });
   });
 
-  describe.concurrent('Queue Processing', () => {
+  describe('Queue Processing', () => {
     test('should process line-ingress queue messages', async () => {
       const mockMessage = {
         id: 'msg-1',
@@ -230,7 +230,7 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe.concurrent('Scheduled Jobs', () => {
+  describe('Scheduled Jobs', () => {
     test('should execute sharp calculation on hourly cron', async () => {
       const event = {
         cron: '0 * * * *',
@@ -280,7 +280,7 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
     });
   });
 
-  describe.concurrent('Edge Cases', () => {
+  describe('Edge Cases', () => {
     test('should handle malformed URLs', async () => {
       // Use a valid URL but test error handling
       const request = new Request('https://example.com/unknown');
@@ -288,7 +288,7 @@ describe.concurrent('Integration Tests - Main Entry Point', () => {
       
       expect(response.status).toBe(200);
       const body = await response.text();
-      expect(body).toBe('Betting-Brain v3 - Edge Intelligence Layer');
+      expect(body).toMatch(/Betting-Brain v3 - Edge Intelligence Layer\nRequest ID: \w+\nDuration: \d+ms/);
     });
 
     test('should handle empty queue batches', async () => {

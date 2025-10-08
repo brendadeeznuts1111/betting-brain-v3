@@ -9,7 +9,7 @@ import { handleSteamWebhook, handleBatchSteamWebhook } from '../../src/queues/st
 import type { Env } from '../../src/types/api';
 import type { ExecutionContext } from '@cloudflare/workers-types';
 
-describe.concurrent('Queue Integration Tests', () => {
+describe('Queue Integration Tests', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
 
@@ -21,11 +21,11 @@ describe.concurrent('Queue Integration Tests', () => {
         prepare: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([]),
+          all: vi.fn().mockResolvedValue({ results: [] }),
           bind: vi.fn().mockReturnValue({
             first: vi.fn().mockResolvedValue(null),
             run: vi.fn().mockResolvedValue({ success: true }),
-            all: vi.fn().mockResolvedValue([])
+            all: vi.fn().mockResolvedValue({ results: [] })
           })
         }),
         exec: vi.fn().mockResolvedValue({ success: true })
@@ -47,7 +47,7 @@ describe.concurrent('Queue Integration Tests', () => {
     } as any;
   });
 
-  describe.concurrent('Line Ingress Queue Integration', () => {
+  describe('Line Ingress Queue Integration', () => {
     test('should process valid line movement successfully', async () => {
       const message = {
         body: JSON.stringify({
@@ -144,11 +144,11 @@ describe.concurrent('Queue Integration Tests', () => {
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
         run: vi.fn().mockRejectedValue(new Error('Database connection timeout')),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
           run: vi.fn().mockRejectedValue(new Error('Database connection timeout')),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
@@ -160,11 +160,11 @@ describe.concurrent('Queue Integration Tests', () => {
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
         run: vi.fn().mockRejectedValue(new Error('Database error')),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
           run: vi.fn().mockRejectedValue(new Error('Database error')),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
@@ -253,11 +253,11 @@ describe.concurrent('Queue Integration Tests', () => {
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
@@ -280,7 +280,7 @@ describe.concurrent('Queue Integration Tests', () => {
     });
   });
 
-  describe.concurrent('Steam Webhook Queue Integration', () => {
+  describe('Steam Webhook Queue Integration', () => {
     test('should process valid steam move successfully', async () => {
       const message = {
         body: JSON.stringify({
@@ -384,11 +384,11 @@ describe.concurrent('Queue Integration Tests', () => {
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ eid: 'nba_123', mt: 'SPREAD' }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]),
+        all: vi.fn().mockResolvedValue({ results: [] }),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ eid: 'nba_123', mt: 'SPREAD' }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
@@ -415,11 +415,11 @@ describe.concurrent('Queue Integration Tests', () => {
       mockEnv.ANALYTICS.prepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue([]), // No historical data
+        all: vi.fn().mockResolvedValue({ results: [] }), // No historical data
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
+          all: vi.fn().mockResolvedValue({ results: [] })
         })
       } as any);
 
@@ -533,7 +533,7 @@ describe.concurrent('Queue Integration Tests', () => {
     });
   });
 
-  describe.concurrent('Queue Handler Performance', () => {
+  describe('Queue Handler Performance', () => {
     test('should process messages within reasonable time limits', async () => {
       const message = {
         body: JSON.stringify({

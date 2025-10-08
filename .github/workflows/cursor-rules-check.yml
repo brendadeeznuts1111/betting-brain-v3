@@ -1,0 +1,135 @@
+name: cursor-rules-check
+on: [pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate .cursorrules file exists and is properly formatted
+        run: |
+          echo "🔍 Checking .cursorrules file..."
+          
+          # Ensure .cursorrules exists at repo root
+          if [ ! -f .cursorrules ]; then
+            echo "::error::.cursorrules file must exist at repo root"
+            echo "This file serves as the single source of truth for AI development standards"
+            exit 1
+          fi
+          
+          # Check if file is valid UTF-8 (required for proper parsing)
+          if ! file .cursorrules | grep -q "UTF-8"; then
+            echo "::error::.cursorrules must be valid UTF-8 encoding"
+            echo "This ensures proper parsing by Cursor and other tools"
+            exit 1
+          fi
+          
+          # Check if file has proper front-matter (version and scope)
+          if ! head -3 .cursorrules | grep -q "version:"; then
+            echo "::error::.cursorrules must have version front-matter"
+            echo "Add: ---\nversion: 4.0.0\nscope: [\"typescript\", \"javascript\"]\n---"
+            exit 1
+          fi
+          
+          echo "✅ .cursorrules file is valid and properly formatted"
+      
+      - name: Validate Semantic Versioning (SemVer) format
+        run: |
+          echo "🔍 Checking SemVer format..."
+          
+          # Extract version from .cursorrules file
+          VERSION=$(head -3 .cursorrules | grep "version:" | sed 's/version: *//' | tr -d ' ')
+          
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract version from .cursorrules"
+            exit 1
+          fi
+          
+          # Validate SemVer format (MAJOR.MINOR.PATCH)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version must follow Semantic Versioning (SemVer) format: MAJOR.MINOR.PATCH"
+            echo "Current version: $VERSION"
+            echo "Expected format: 4.0.0, 4.1.0, 5.0.0, etc."
+            exit 1
+          fi
+          
+          echo "✅ Version format is valid SemVer: $VERSION"
+      
+      - name: Check if version was incremented (if rules changed)
+        run: |
+          echo "🔍 Checking if version was incremented..."
+          
+          # Check if .cursorrules was modified in this PR
+          if git diff --name-only ${{ github.event.pull_request.base.sha }}..HEAD | grep -q "\.cursorrules"; then
+            echo "📝 .cursorrules file was modified in this PR"
+            
+            # Get current version
+            CURRENT_VERSION=$(head -3 .cursorrules | grep "version:" | sed 's/version: *//' | tr -d ' ')
+            
+            # Get previous version from base branch
+            PREVIOUS_VERSION=$(git show ${{ github.event.pull_request.base.sha }}:.cursorrules 2>/dev/null | head -3 | grep "version:" | sed 's/version: *//' | tr -d ' ' || echo "0.0.0")
+            
+            echo "Previous version: $PREVIOUS_VERSION"
+            echo "Current version: $CURRENT_VERSION"
+            
+            # Compare versions (simple string comparison for SemVer)
+            if [ "$CURRENT_VERSION" = "$PREVIOUS_VERSION" ]; then
+              echo "::error::Version must be incremented when .cursorrules is modified"
+              echo "Previous: $PREVIOUS_VERSION → Current: $CURRENT_VERSION"
+              echo "Please increment the version according to SemVer guidelines:"
+              echo "  - PATCH (x.y.z+1): Small fixes, typos, documentation"
+              echo "  - MINOR (x.y+1.0): New features, enhancements"
+              echo "  - MAJOR (x+1.0.0): Breaking changes, rule restructuring"
+              exit 1
+            else
+              echo "✅ Version was incremented: $PREVIOUS_VERSION → $CURRENT_VERSION"
+            fi
+          else
+            echo "ℹ️ .cursorrules file was not modified in this PR"
+          fi
+      
+      - name: Validate CHANGELOG.md entry exists (if version changed)
+        run: |
+          echo "🔍 Checking CHANGELOG.md entry..."
+          
+          # Check if .cursorrules was modified
+          if git diff --name-only ${{ github.event.pull_request.base.sha }}..HEAD | grep -q "\.cursorrules"; then
+            # Get current version
+            CURRENT_VERSION=$(head -3 .cursorrules | grep "version:" | sed 's/version: *//' | tr -d ' ')
+            
+            # Check if CHANGELOG.md exists
+            if [ ! -f CHANGELOG.md ]; then
+              echo "::warning::CHANGELOG.md should exist for tracking rule changes"
+              echo "Consider creating CHANGELOG.md to document version changes"
+            else
+              # Check if current version is mentioned in CHANGELOG.md
+              if ! grep -q "\[$CURRENT_VERSION\]" CHANGELOG.md; then
+                echo "::warning::CHANGELOG.md should include entry for version $CURRENT_VERSION"
+                echo "Add entry in format: ## [$CURRENT_VERSION] - YYYY-MM-DD"
+              else
+                echo "✅ CHANGELOG.md includes entry for version $CURRENT_VERSION"
+              fi
+            fi
+          fi
+      
+      - name: Check PR references cursor rules
+        run: |
+          grep -qi cursorrules <<< "${{ github.event.pull_request.body }}" || exit 1
+      
+      - name: Validate rule consistency across project
+        run: |
+          echo "🔍 Checking rule consistency across .cursor/rules/..."
+          
+          # Check if all .cursor/rules/*.mdc files have version front-matter
+          for file in .cursor/rules/*.mdc; do
+            if [ -f "$file" ]; then
+              if ! head -5 "$file" | grep -q "version:"; then
+                echo "::warning::$file should have version front-matter for consistency"
+                echo "Add: ---\nversion: 4\nscope: [\"typescript\"]\n---"
+              fi
+            fi
+          done
+          
+          echo "✅ Rule consistency check completed"
+          echo "🎉 All cursor rules checks passed!"

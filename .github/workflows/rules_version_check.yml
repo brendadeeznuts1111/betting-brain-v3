@@ -1,0 +1,43 @@
+name: 'Check .cursorrules Version'
+
+on:
+  pull_request:
+    paths:
+      - '.cursorrules' # Only run this workflow if the rules file is changed
+    branches:
+      - main # Or your default branch
+
+jobs:
+  check-version-bump:
+    name: Verify Version Bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout base branch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }} # Checkout the target branch (e.g., 'main')
+
+      - name: 'Get old version'
+        id: old_version
+        run: |
+          OLD_VERSION=$(grep '^version:' .cursorrules | awk '{print $2}')
+          echo "old_version=$OLD_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: 'Checkout PR branch'
+        uses: actions/checkout@v4
+        # This checks out the code from the PR itself
+
+      - name: 'Get new version and compare'
+        run: |
+          OLD_VERSION="${{ steps.old_version.outputs.old_version }}"
+          NEW_VERSION=$(grep '^version:' .cursorrules | awk '{print $2}')
+
+          echo "Base branch version: $OLD_VERSION"
+          echo "This PR version: $NEW_VERSION"
+
+          if [[ "$NEW_VERSION" == "$OLD_VERSION" ]]; then
+            echo "❌ Error: The version in .cursorrules was not incremented."
+            exit 1
+          else
+            echo "✅ Success: Version has been correctly incremented."
+          fi
