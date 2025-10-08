@@ -70,3 +70,4 @@ tools/organize-files.sh
 # Problematic directories
 ~
 ~/
+lint-report.json
