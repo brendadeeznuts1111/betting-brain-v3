@@ -134,7 +134,6 @@
       </h2>
       <div id="hierarchy-tile"
            hx-ext="sse"
-           sse-connect="http://localhost:8787/api/f402/agents/stream"
            sse-swap="message">
         <p style="opacity: 0.7;">Connecting to stream...</p>
       </div>
@@ -148,7 +147,6 @@
       </h2>
       <div id="health-tile"
            hx-ext="sse"
-           sse-connect="http://localhost:8787/api/health/stream"
            sse-swap="message">
         <p style="opacity: 0.7;">Connecting to stream...</p>
       </div>
@@ -162,7 +160,6 @@
       </h2>
       <div id="bets-tile"
            hx-ext="sse"
-           sse-connect="http://localhost:8787/api/f402/bets/stream"
            sse-swap="message">
         <p style="opacity: 0.7;">Connecting to stream...</p>
       </div>
@@ -177,12 +174,22 @@
   </div>
 
   <script>
+    // Auto-detect worker URL (localhost vs production)
+    const WORKER_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost:8787'
+      : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
+
     // Track connection status
     const connections = {
       hierarchy: null,
       health: null,
       bets: null
     };
+
+    // Set SSE connection URLs dynamically
+    document.getElementById('hierarchy-tile')?.setAttribute('sse-connect', `${WORKER_URL}/api/f402/agents/stream`);
+    document.getElementById('health-tile')?.setAttribute('sse-connect', `${WORKER_URL}/api/health/stream`);
+    document.getElementById('bets-tile')?.setAttribute('sse-connect', `${WORKER_URL}/api/f402/bets/stream`);
 
     // Update status indicators
     function updateStatus(stream, connected) {
@@ -265,7 +272,7 @@
     // Fetch stream stats every 5 seconds
     async function updateStats() {
       try {
-        const res = await fetch('http://localhost:8787/api/streams/stats');
+        const res = await fetch(`${WORKER_URL}/api/streams/stats`);
         const stats = await res.json();
         document.getElementById('stats-display').innerHTML = `
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">

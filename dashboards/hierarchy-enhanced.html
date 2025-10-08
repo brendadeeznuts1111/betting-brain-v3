@@ -328,7 +328,6 @@
 
     <!-- live data fetch with graceful fallback -->
     <div id="live-data"
-      hx-get="http://localhost:8787/api/f402/agents/tree?owner=BILLY666&depth=99"
       hx-trigger="load delay:0.5s, every 60s"
       hx-target="#table-body"
       hx-swap="innerHTML"
@@ -404,6 +403,9 @@
       agentDetail: (id) => `${WORKER_URL}/api/f402/agents/${id}?expand=true`,
       microAnalytics: (id) => `${WORKER_URL}/api/analytics/micro/${id}`
     };
+
+    // Set htmx URL dynamically
+    document.getElementById('live-data')?.setAttribute('hx-get', `${WORKER_URL}/api/f402/agents/tree?owner=BILLY666&depth=99`);
 
     // State
     let rows = [];

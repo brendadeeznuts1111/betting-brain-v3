@@ -81,29 +81,21 @@ jobs:
 
 ## 🔧 Configuration
 
-### Update Worker URL in Dashboards
+### ✅ Automatic Environment Detection
 
-Once deployed, update the worker URL in the dashboards:
+**No configuration needed!** All dashboards automatically detect their environment and use the correct worker URL:
 
-**floor-control.html** (line ~631):
+- **Local Development**: Automatically uses `http://localhost:8787`
+- **Production (Pages)**: Automatically uses `https://betting-brain-v3-prod.nolarose1968-806.workers.dev`
+
+**Implementation** (already done in all dashboards):
 ```javascript
 const WORKER_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:8787'
   : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
 ```
 
-**hierarchy-enhanced.html** (line ~330):
-```html
-<div id="live-data"
-  hx-get="https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/f402/agents/tree?owner=BILLY666&depth=99"
-  ...>
-</div>
-```
-
-**sse-demo.html** (line ~76):
-```html
-sse-connect="https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/f402/agents/stream"
-```
+This means dashboards work seamlessly in both environments without any manual configuration.
 
 ### Enable CORS on Worker
 
