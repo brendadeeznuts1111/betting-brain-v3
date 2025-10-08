@@ -101,6 +101,19 @@
       vertical-align: middle;
     }
 
+    .parent-row {
+      background: #f9f9fb;
+    }
+
+    .parent-row:hover {
+      background: #f0f0f5 !important;
+    }
+
+    tr[data-level="0"] {
+      font-weight: 600;
+      background: #fafbfc;
+    }
+
     .badge {
       display: inline-block;
       padding: 0.4rem 0.8rem;
@@ -297,30 +310,37 @@
         href="javascript:location.reload()" style="color: #0366d6;">Retry connection</a>
     </div>
 
+    <!-- Summary Stats -->
+    <div id="summary-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      <!-- Stats cards will be inserted here -->
+    </div>
+
     <input id="search" class="search-box" type="text" placeholder="Type to filter agents… (press / to focus)"
       autocomplete="off" aria-label="Search agents">
 
     <div class="help-text">
-      Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear
+      Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear • Sort by any column header
     </div>
 
     <table class="metrics-table" id="metrics-table">
       <thead>
         <tr>
-          <th>Agent</th>
+          <th style="min-width: 200px;">Agent & Type</th>
           <th data-sort="risk" title="Click to sort">Risk (Own) ▼</th>
           <th data-sort="totalRisk" title="Click to sort">Total Risk ▼</th>
-          <th data-sort="steam" title="Click to sort">Steam % ▲</th>
-          <th title="Children / Descendants">👥</th>
-          <th data-sort="lastBet" title="Click to sort">Last Activity ▼</th>
+          <th data-sort="steam" title="Click to sort">Steam ▲</th>
+          <th data-sort="velocity" title="Click to sort">Velocity ▲</th>
+          <th data-sort="sharpness" title="Click to sort">Sharp ▲</th>
+          <th title="Children / Descendants">Network</th>
+          <th data-sort="lastBet" title="Click to sort">Activity ▼</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="table-body">
         <tr>
-          <td colspan="7" class="empty-state">
-            <h5>Loading agent data...</h5>
-            <p>Fetching hierarchy from worker</p>
+          <td colspan="9" class="empty-state">
+            <h5>🔄 Loading agent data...</h5>
+            <p>Fetching 1,955-agent hierarchy from worker</p>
           </td>
         </tr>
       </tbody>
@@ -398,6 +418,7 @@
               agent_name: node.name || node.id,
               parent: parent,
               level: level,
+              type: node.type || 'A',
               risk: node.risk || 0,
               totalRisk: node.totalRisk || node.risk || 0,
               steam: node.steam || 0,
@@ -430,7 +451,7 @@
       if (data.length === 0) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="5" class="empty-state">
+            <td colspan="9" class="empty-state">
               <h5>No agents found</h5>
               <p>Try adjusting your search</p>
             </td>
@@ -439,26 +460,43 @@
       }
 
       tableBody.innerHTML = data.map(r => `
-        <tr>
+        <tr class="${r.childCount > 0 ? 'parent-row' : ''}" data-level="${r.level}">
           <td style="padding-left: ${r.level * 30 + 10}px">
-            <strong>${r.agent}</strong>
-            ${r.parent ? `<br><small style="color: #606c76">↳ ${r.parent}</small>` : ''}
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              ${r.childCount > 0 ? '<span style="color: var(--primary);">▼</span>' : '<span style="color: #d1d1d1;">●</span>'}
+              <div>
+                <strong>${r.agent}</strong>
+                <span class="badge" style="margin-left: 0.5rem; font-size: 1rem; padding: 0.2rem 0.5rem; background: ${r.type === 'M' ? '#4daf4a' : r.type === 'A' ? '#ff7f00' : '#9b4dca'};">${r.type || '?'}</span>
+                ${r.parent ? `<br><small style="color: #606c76;">↳ ${r.parent}</small>` : ''}
+              </div>
+            </div>
           </td>
           <td>
             <span class="badge ${riskClass(r.risk)}">${r.risk.toFixed(1)}</span>
           </td>
           <td>
-            <span class="badge ${riskClass(r.totalRisk)}" title="Includes ${r.descendantCount || 0} descendants">${r.totalRisk.toFixed(1)}</span>
+            <span class="badge ${riskClass(r.totalRisk)}" title="Includes ${r.descendantCount || 0} descendants">
+              ${r.totalRisk.toFixed(1)}
+              ${r.totalRisk > r.risk ? `<small style="opacity: 0.7;"> (+${(r.totalRisk - r.risk).toFixed(1)})</small>` : ''}
+            </span>
           </td>
           <td>
-            <span class="badge steam-badge">${r.steam.toFixed(0)}%</span>
+            <span class="badge steam-badge" style="background: ${r.steam > 5 ? '#e41a1c' : r.steam > 2 ? '#ff7f00' : '#4daf4a'};">${r.steam.toFixed(1)}%</span>
+          </td>
+          <td>
+            <span class="badge" style="background: ${r.velocity > 15 ? '#e41a1c' : r.velocity > 5 ? '#ff7f00' : '#606c76'};">${r.velocity.toFixed(1)}</span>
+          </td>
+          <td>
+            <span class="badge" style="background: ${r.sharpness > 2 ? '#e41a1c' : r.sharpness > 1 ? '#ff7f00' : '#606c76'};">${r.sharpness.toFixed(1)}</span>
           </td>
           <td style="text-align: center; font-size: 1.2rem; color: #606c76;">
-            ${r.childCount > 0 ? `${r.childCount} / ${r.descendantCount}` : '—'}
+            ${r.childCount > 0 ? `<strong>${r.childCount}</strong> / ${r.descendantCount}` : '—'}
           </td>
-          <td>${timeAgo(r.lastBet)}</td>
+          <td style="font-size: 1.2rem; color: ${Date.now() - r.lastBet < 3600000 ? 'var(--risk-critical)' : '#606c76'};">
+            ${timeAgo(r.lastBet)}
+          </td>
           <td>
-            <button class="button-small" data-agent="${r.agent}">Details</button>
+            <button class="button-small" data-agent="${r.agent}">📊</button>
           </td>
         </tr>
       `).join('');
@@ -647,12 +685,47 @@
       }
     });
 
+    // Calculate and render summary stats
+    function renderSummaryStats(data) {
+      const totalAgents = data.length;
+      const parentAgents = data.filter(a => a.childCount > 0).length;
+      const activeAgents = data.filter(a => a.risk > 0 || a.steam > 0 || a.velocity > 0).length;
+      const totalRisk = data.reduce((sum, a) => sum + (a.totalRisk || 0), 0);
+      const avgRisk = totalAgents > 0 ? totalRisk / totalAgents : 0;
+      const maxDepth = Math.max(...data.map(a => a.level), 0) + 1;
+
+      const summaryStats = document.getElementById('summary-stats');
+      summaryStats.innerHTML = `
+        <div class="analytics-card">
+          <h5>Total Agents</h5>
+          <div class="value">${totalAgents.toLocaleString()}</div>
+          <small>${parentAgents} parents • ${totalAgents - parentAgents} leaves</small>
+        </div>
+        <div class="analytics-card">
+          <h5>Active Agents</h5>
+          <div class="value">${activeAgents.toLocaleString()}</div>
+          <small>${((activeAgents / totalAgents) * 100).toFixed(1)}% of total</small>
+        </div>
+        <div class="analytics-card">
+          <h5>Total Risk Exposure</h5>
+          <div class="value">${totalRisk.toFixed(1)}</div>
+          <small>Avg: ${avgRisk.toFixed(2)} per agent</small>
+        </div>
+        <div class="analytics-card">
+          <h5>Hierarchy Depth</h5>
+          <div class="value">${maxDepth} levels</div>
+          <small>Max: Level ${maxDepth - 1}</small>
+        </div>
+      `;
+    }
+
     // Initialize
     (async function init() {
       try {
         rows = await loadHierarchy();
         sortRows();
         renderTable(rows);
+        renderSummaryStats(rows);
         console.log(`✅ Loaded ${rows.length} agents`);
 
         // inside init() success branch
@@ -662,7 +735,7 @@
         console.error('Initialization error:', error);
         tableBody.innerHTML = `
           <tr>
-            <td colspan="5" class="empty-state">
+            <td colspan="9" class="empty-state">
               <h5>⚠️ Failed to Load Data</h5>
               <p>${error.message}</p>
             </td>
