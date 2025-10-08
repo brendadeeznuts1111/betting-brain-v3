@@ -13,7 +13,7 @@ const currentDate = new Date().toISOString().split('T')[0];
 
 // Rules that need version updates
 const updates = [
-    // Add specific updates here based on analysis
+  // Add specific updates here based on analysis
 ];
 
 console.log('🔄 Updating Cursor Rules Versioning...');

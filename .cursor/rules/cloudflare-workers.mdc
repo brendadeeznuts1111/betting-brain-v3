@@ -1,13 +1,54 @@
 ---
 version: "2.0.0"
-globs: src/**/*.ts,wrangler*.toml
-description: Cloudflare Workers specific patterns and requirements
+globs: "src/**/*.ts,wrangler*.toml"
+alwaysApply: true
+description: "Cloudflare Workers specific patterns and requirements"
 lastUpdated: "2025-10-08"
-dependencies: ["quality-standards", "api-patterns", "endpoint-routing"]
+dependencies: ["quality-standards", "api-patterns", "endpoint-routing", "bun-runtime"]
 ---
 
 # Cloudflare Workers Rules
 
+## 🔍 Code Searchability Patterns
+
+### Find cloudflare-workers Issues with ast-grep
+
+```bash
+# Find export default { fetch($$$) }
+# Find env.$BINDING
+# Find ctx.waitUntil($$$)
+# Find new Response($$$)
+ast-grep --pattern 'export default { fetch($$$) }' src/
+ast-grep --pattern 'env.$BINDING' src/
+ast-grep --pattern 'ctx.waitUntil($$$)' src/
+ast-grep --pattern 'new Response($$$)' src/
+sg -p 'export' src/
+sg -p 'env.$BINDING' src/
+sg -p 'ctx.waitUntil($$$)' src/
+sg -p 'new' src/
+```
+
+### cloudflare-workers Discovery Commands
+
+```bash
+sg search "export default" src/
+sg search "env." src/
+sg search "ctx.waitUntil" src/
+sg search "new Response" src/
+```
+
+### Search Examples
+
+```bash
+# Find worker entry points
+sg search 'export' src/
+# Find environment bindings
+sg search 'env.$BINDING' src/
+# Find background tasks
+sg search 'ctx.waitUntil($$$)' src/
+# Find response creation
+sg search 'new' src/
+```
 ## Entry Point
 
 Main worker handler: [src/index.ts](mdc:src/index.ts)

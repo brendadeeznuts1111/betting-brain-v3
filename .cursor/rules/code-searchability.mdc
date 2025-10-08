@@ -1,6 +1,7 @@
 ---
-alwaysApply: true
 version: "1.0.0"
+alwaysApply: true
+description: "Code searchability patterns and ast-grep integration"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards"]
 ---

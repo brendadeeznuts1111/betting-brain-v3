@@ -1,13 +1,64 @@
 ---
 version: "5.0.0"
 scope: ["typescript", "javascript", "json", "toml"]
-description: Bun runtime patterns and best practices
 alwaysApply: true
+description: "Bun runtime patterns and best practices"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards", "process-management"]
 ---
 
 # Bun Runtime Rules
+
+## 🔍 Code Searchability Patterns
+
+### Find Bun Runtime Issues with ast-grep
+
+```bash
+# Find incorrect process spawning (should use processManager)
+ast-grep --pattern 'Bun.spawn($$$)' src/
+ast-grep --pattern 'import { spawn } from "bun"' src/
+ast-grep --pattern 'import { spawn } from "child_process"' src/
+sg -p 'Bun.spawn' src/
+sg -p 'from "child_process"' src/
+
+# Find Node.js fs usage (should use Bun file APIs)
+ast-grep --pattern 'import fs from "fs"' src/
+ast-grep --pattern 'import { readFile } from "fs/promises"' src/
+sg -p 'from "fs"' src/
+sg -p 'from "fs/promises"' src/
+
+# Find incorrect test imports (should use bun:test)
+ast-grep --pattern 'import { describe, test, expect } from "vitest"' tests/
+ast-grep --pattern 'import { describe, test, expect } from "@jest/globals"' tests/
+sg -p 'from "vitest"' tests/
+sg -p 'from "@jest/globals"' tests/
+
+# Find npm/yarn usage (should use bun)
+ast-grep --pattern 'npm install' scripts/
+ast-grep --pattern 'yarn install' scripts/
+sg -p 'npm install' scripts/
+sg -p 'yarn install' scripts/
+```
+
+### Bun Runtime Discovery Commands
+
+```bash
+# Find all Bun-specific patterns
+sg search 'Bun.' src/
+sg search 'bun:' src/
+sg search 'processManager' src/
+
+# Find Node.js anti-patterns
+sg search 'from "fs"' src/
+sg search 'from "child_process"' src/
+sg search 'npm ' scripts/
+sg search 'yarn ' scripts/
+
+# Find Bun native APIs
+sg search 'Bun.file' src/
+sg search 'Bun.write' src/
+sg search 'Bun.password' src/
+```
 
 ## Process Spawning (CRITICAL)
 

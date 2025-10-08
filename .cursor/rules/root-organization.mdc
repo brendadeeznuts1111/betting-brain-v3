@@ -1,6 +1,6 @@
 ---
 version: "5.0.0"
-scope: [*]
+scope: ["*"]
 alwaysApply: true
 description: "Root directory organization and file placement rules"
 lastUpdated: "2025-10-08"

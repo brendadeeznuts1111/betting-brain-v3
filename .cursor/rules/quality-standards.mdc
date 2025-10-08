@@ -1,7 +1,7 @@
 ---
-alwaysApply: true
-description: Code quality standards and anti-pattern prevention
 version: "1.0.0"
+alwaysApply: true
+description: "Code quality standards and anti-pattern prevention"
 lastUpdated: "2025-10-08"
 dependencies: ["api-patterns", "bun-runtime", "database-patterns"]
 ---
@@ -18,6 +18,48 @@ These rules enforce the quality standards defined in [docs/QUALITY_STANDARDS.md]
 - ❌ No magic numbers (use constants)
 - ❌ No code duplication (use utilities)
 - ❌ No empty catch blocks
+
+## 🔍 Code Searchability Patterns
+
+### Find Quality Issues with ast-grep
+
+```bash
+# Find 'as any' type assertions (CRITICAL)
+ast-grep --pattern 'as any' src/
+sg -p 'as any' src/
+
+# Find console.log usage (should use StructuredLogger)
+ast-grep --pattern 'console.$METHOD($$$)' src/
+sg -p 'console.log' src/
+sg -p 'console.error' src/
+
+# Find magic numbers (should use constants)
+ast-grep --pattern '$NUM' src/
+sg -p '90' src/  # Example: find hardcoded 90
+sg -p '5000' src/  # Example: find hardcoded 5000
+
+# Find empty catch blocks
+ast-grep --pattern 'catch ($VAR) { }' src/
+sg -p 'catch' src/
+
+# Find duplicate code patterns
+ast-grep --pattern 'const $VAR = Date.now().toString(36)' src/
+sg -p 'Date.now().toString' src/
+```
+
+### Quality Enforcement Commands
+
+```bash
+# Run all quality checks
+sg scan --filter "detect-type-assertion-any"
+sg scan --filter "detect-console-in-source"
+sg scan --filter "detect-magic-numbers"
+
+# Find specific anti-patterns
+sg search 'as any' src/
+sg search 'console.log' src/
+sg search 'Date.now().toString' src/
+```
 
 ---
 

@@ -2,9 +2,53 @@
 version: "5.0.0"
 scope: ["typescript", "javascript"]
 alwaysApply: true
+description: "API endpoint patterns and request handling conventions"
 lastUpdated: "2025-10-08"
-dependencies: ["quality-standards", "database-patterns", "endpoint-routing"]
+dependencies: ["quality-standards", "database-patterns", "endpoint-routing", "bun-runtime"]
 ---
+## 🔍 Code Searchability Patterns
+
+### Find api-patterns Issues with ast-grep
+
+```bash
+# Find async function $NAME(request: Request, env: Env, requestId: string)
+# Find return createJSONResponse($$$)
+# Find return createErrorResponse($$$)
+# Find generateRequestId()
+# Find createLogger($$$)
+ast-grep --pattern 'async function $NAME(request: Request, env: Env, requestId: string)' src/
+ast-grep --pattern 'return createJSONResponse($$$)' src/
+ast-grep --pattern 'return createErrorResponse($$$)' src/
+ast-grep --pattern 'generateRequestId()' src/
+ast-grep --pattern 'createLogger($$$)' src/
+sg -p 'async' src/
+sg -p 'return' src/
+sg -p 'return' src/
+sg -p 'generateRequestId()' src/
+sg -p 'createLogger($$$)' src/
+```
+
+### api-patterns Discovery Commands
+
+```bash
+sg search "async function" src/api/
+sg search "createJSONResponse" src/
+sg search "generateRequestId" src/
+sg search "createLogger" src/
+```
+
+### Search Examples
+
+```bash
+# Find all API endpoint handlers
+sg search 'async' src/
+# Find JSON response patterns
+sg search 'return' src/
+# Find request ID generation
+sg search 'return' src/
+# Find logging patterns
+sg search 'generateRequestId()' src/
+```
 ## Error Handling Patterns
 
 ### Using Error Classes

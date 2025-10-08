@@ -1,13 +1,54 @@
 ---
 version: "2.0.0"
-globs: src/**/*.ts,migrations/*.sql
-description: Database patterns and D1 query best practices
+globs: "src/**/*.ts,migrations/*.sql"
+alwaysApply: true
+description: "Database patterns and D1 query best practices"
 lastUpdated: "2025-10-08"
-dependencies: ["quality-standards", "api-patterns"]
+dependencies: ["quality-standards", "api-patterns", "bun-runtime", "database-patterns"]
 ---
 
 # Database Patterns
 
+## 🔍 Code Searchability Patterns
+
+### Find database-patterns Issues with ast-grep
+
+```bash
+# Find env.$DB.prepare($QUERY)
+# Find await stmt.bind($$$).all()
+# Find await stmt.bind($$$).first()
+# Find normalizeD1Result<$$$>($$$)
+ast-grep --pattern 'env.$DB.prepare($QUERY)' src/
+ast-grep --pattern 'await stmt.bind($$$).all()' src/
+ast-grep --pattern 'await stmt.bind($$$).first()' src/
+ast-grep --pattern 'normalizeD1Result<$$$>($$$)' src/
+sg -p 'env.$DB.prepare($QUERY)' src/
+sg -p 'await' src/
+sg -p 'await' src/
+sg -p 'normalizeD1Result<$$$>($$$)' src/
+```
+
+### database-patterns Discovery Commands
+
+```bash
+sg search "env.ANALYTICS.prepare" src/
+sg search "normalizeD1Result" src/
+sg search ".bind(" src/
+sg search ".all()" src/
+```
+
+### Search Examples
+
+```bash
+# Find all database queries
+sg search 'env.$DB.prepare($QUERY)' src/
+# Find D1 result normalization
+sg search 'await' src/
+# Find parameterized queries
+sg search 'await' src/
+# Find query execution patterns
+sg search 'normalizeD1Result<$$$>($$$)' src/
+```
 ## D1 Database Usage
 
 ### Environment Bindings

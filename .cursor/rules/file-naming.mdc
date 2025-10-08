@@ -2,9 +2,9 @@
 version: "5.0.0"
 scope: ["*"]
 alwaysApply: true
-description: File and directory naming conventions
+description: "File and directory naming conventions"
 lastUpdated: "2025-10-08"
-dependencies: ["root-organization"]
+dependencies: ["root-organization", "quality-standards"]
 ---
 
 # File Naming Conventions

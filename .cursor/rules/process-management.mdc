@@ -1,9 +1,9 @@
 ---
-description: Process management and zombie process prevention patterns
-globs: *.ts,*.js
 version: "1.0.0"
+globs: "*.ts,*.js"
+description: "Process management and zombie process prevention patterns"
 lastUpdated: "2025-10-08"
-dependencies: ["bun-runtime"]
+dependencies: ["bun-runtime", "quality-standards"]
 ---
 
 # Process Management Rules

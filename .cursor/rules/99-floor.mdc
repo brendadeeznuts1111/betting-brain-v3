@@ -1,11 +1,11 @@
 ---
 version: "3.3.0"
-globs: [**/*.{ts,js,json}, scripts/*, tests/*, src/**/*]
+globs: "[**/*.{ts,js,json}, scripts/*, tests/*, src/**/*]"
 alwaysApply: true
 priority: 99
 description: "AI Floor - Single source of truth for autonomous operations"
 lastUpdated: "2025-10-08"
-dependencies: ["quality-standards", "bun-runtime", "testing-patterns"]
+dependencies: ["quality-standards", "bun-runtime", "testing-patterns", "api-patterns", "database-patterns"]
 ---
 
 # AI Floor - Autonomous Operations Layer

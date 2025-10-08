@@ -1,8 +1,9 @@
 ---
-alwaysApply: true
 version: "1.0.0"
+alwaysApply: true
+description: "Code quality standards and anti-pattern prevention"
 lastUpdated: "2025-10-08"
-dependencies: ["quality-standards", "security-patterns"]
+dependencies: ["quality-standards", "security-patterns", "api-patterns", "bun-runtime", "database-patterns"]
 ---
 # Production Security Patterns
 
@@ -13,6 +14,46 @@ dependencies: ["quality-standards", "security-patterns"]
 - **Last Updated:** 2025-10-07
 
 
+## 🔍 Code Searchability Patterns
+
+### Find security-patterns Issues with ast-grep
+
+```bash
+# Find parseFloat($$$)
+# Find env.$DB.prepare(`SELECT $QUERY`)
+# Find new Date()
+# Find WASM.*exports
+ast-grep --pattern 'parseFloat($$$)' src/
+ast-grep --pattern 'env.$DB.prepare(`SELECT $QUERY`)' src/
+ast-grep --pattern 'new Date()' src/
+ast-grep --pattern 'WASM.*exports' src/
+sg -p 'parseFloat($$$)' src/
+sg -p 'env.$DB.prepare(`SELECT' src/
+sg -p 'new' src/
+sg -p 'WASM.*exports' src/
+```
+
+### security-patterns Discovery Commands
+
+```bash
+sg search "parseFloat" src/
+sg search "SELECT" src/
+sg search "new Date()" src/
+sg search "WASM" src/
+```
+
+### Search Examples
+
+```bash
+# Find parseFloat usage (security risk)
+sg search 'parseFloat($$$)' src/
+# Find SQL injection risks
+sg search 'env.$DB.prepare(`SELECT' src/
+# Find timezone issues
+sg search 'new' src/
+# Find WASM memory leaks
+sg search 'WASM.*exports' src/
+```
 ## Overview
 
 This rule enforces **production-ready security patterns** for sports betting platforms handling real money at scale.

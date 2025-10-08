@@ -1,13 +1,54 @@
 ---
 version: "2.0.0"
-globs: src/**/*.ts,scripts/**/*.ts
-description: Security patterns and vulnerability prevention
+globs: "src/**/*.ts,scripts/**/*.ts"
+alwaysApply: true
+description: "Security patterns and vulnerability prevention"
 lastUpdated: "2025-10-08"
-dependencies: ["quality-standards", "api-patterns"]
+dependencies: ["quality-standards", "api-patterns", "bun-runtime", "database-patterns"]
 ---
 
 # Security Patterns
 
+## 🔍 Code Searchability Patterns
+
+### Find security-patterns Issues with ast-grep
+
+```bash
+# Find parseFloat($$$)
+# Find env.$DB.prepare(`SELECT $QUERY`)
+# Find new Date()
+# Find WASM.*exports
+ast-grep --pattern 'parseFloat($$$)' src/
+ast-grep --pattern 'env.$DB.prepare(`SELECT $QUERY`)' src/
+ast-grep --pattern 'new Date()' src/
+ast-grep --pattern 'WASM.*exports' src/
+sg -p 'parseFloat($$$)' src/
+sg -p 'env.$DB.prepare(`SELECT' src/
+sg -p 'new' src/
+sg -p 'WASM.*exports' src/
+```
+
+### security-patterns Discovery Commands
+
+```bash
+sg search "parseFloat" src/
+sg search "SELECT" src/
+sg search "new Date()" src/
+sg search "WASM" src/
+```
+
+### Search Examples
+
+```bash
+# Find parseFloat usage (security risk)
+sg search 'parseFloat($$$)' src/
+# Find SQL injection risks
+sg search 'env.$DB.prepare(`SELECT' src/
+# Find timezone issues
+sg search 'new' src/
+# Find WASM memory leaks
+sg search 'WASM.*exports' src/
+```
 ## Input Validation
 
 ### Parameter Validation

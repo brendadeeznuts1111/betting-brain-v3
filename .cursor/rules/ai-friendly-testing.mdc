@@ -1,7 +1,7 @@
 ---
-alwaysApply: true
-description: AI-friendly testing patterns and Bun test integration
 version: "1.0.0"
+alwaysApply: true
+description: "AI-friendly testing patterns and Bun test integration"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards", "testing-patterns", "bun-runtime"]
 ---

@@ -1,6 +1,6 @@
 ---
-description: CI/CD patterns and automation best practices
 version: "1.0.0"
+description: "CI/CD patterns and automation best practices"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards", "bun-runtime"]
 ---

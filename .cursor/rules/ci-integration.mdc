@@ -1,6 +1,6 @@
 ---
 version: "1.1.0"
-globs: scripts/**/*.ts,.github/workflows/*.yml,package.json
+globs: "scripts/**/*.ts,.github/workflows/*.yml,package.json"
 description: "CI/CD integration patterns and automation"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards", "bun-runtime"]

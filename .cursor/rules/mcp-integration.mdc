@@ -1,13 +1,54 @@
 ---
 version: "2.0.0"
-globs: src/mcp/**/*.ts
-description: MCP server integration patterns and conventions
+globs: "src/mcp/**/*.ts"
+alwaysApply: true
+description: "MCP server integration patterns and conventions"
 lastUpdated: "2025-10-08"
-dependencies: ["quality-standards", "database-patterns", "api-patterns"]
+dependencies: ["quality-standards", "database-patterns", "api-patterns", "bun-runtime"]
 ---
 
 # MCP Integration Rules
 
+## 🔍 Code Searchability Patterns
+
+### Find mcp-integration Issues with ast-grep
+
+```bash
+# Find export async function $NAME(params: $PARAMS, env: Env)
+# Find MCPToolResult
+# Find registerTool($$$)
+# Find JSON-RPC
+ast-grep --pattern 'export async function $NAME(params: $PARAMS, env: Env)' src/
+ast-grep --pattern 'MCPToolResult' src/
+ast-grep --pattern 'registerTool($$$)' src/
+ast-grep --pattern 'JSON-RPC' src/
+sg -p 'export' src/
+sg -p 'MCPToolResult' src/
+sg -p 'registerTool($$$)' src/
+sg -p 'JSON-RPC' src/
+```
+
+### mcp-integration Discovery Commands
+
+```bash
+sg search "MCPToolResult" src/
+sg search "registerTool" src/
+sg search "JSON-RPC" src/
+sg search "export async function" src/mcp/
+```
+
+### Search Examples
+
+```bash
+# Find MCP tool handlers
+sg search 'export' src/
+# Find tool registration
+sg search 'MCPToolResult' src/
+# Find JSON-RPC usage
+sg search 'registerTool($$$)' src/
+# Find MCP result types
+sg search 'JSON-RPC' src/
+```
 ## Overview
 
 The MCP (Model Context Protocol) server provides **13 working tools** via JSON-RPC 2.0 endpoint at `/mcp`.

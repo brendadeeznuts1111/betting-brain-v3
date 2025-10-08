@@ -1,9 +1,9 @@
 ---
-globs: *.md
-description: Documentation file conventions and placement
 version: "1.0.0"
+globs: "*.md"
+description: "Documentation file conventions and placement"
 lastUpdated: "2025-10-08"
-dependencies: ["root-organization"]
+dependencies: ["root-organization", "quality-standards"]
 ---
 
 # Documentation Rules

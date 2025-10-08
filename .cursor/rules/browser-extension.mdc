@@ -1,7 +1,7 @@
 ---
-globs: browser-extension/**/*.js,browser-extension/**/*.html,browser-extension/**/*.json
-description: Browser extension patterns and development practices
 version: "1.0.0"
+globs: "browser-extension/**/*.js,browser-extension/**/*.html,browser-extension/**/*.json"
+description: "Browser extension patterns and development practices"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards"]
 ---

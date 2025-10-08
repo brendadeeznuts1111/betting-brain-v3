@@ -1,12 +1,56 @@
 ---
 version: "2.0.0"
-description: Testing patterns and best practices for Bun test
-globs: *.test.ts,*.spec.ts
+globs: "*.test.ts,*.spec.ts"
+description: "Testing patterns and best practices for Bun test"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards", "bun-runtime"]
 ---
 
 # Testing Patterns for Bun Test
+
+## 🔍 Code Searchability Patterns
+
+### Find Testing Issues with ast-grep
+
+```bash
+# Find incorrect test imports (should use bun:test)
+ast-grep --pattern 'import { describe, test, expect } from "vitest"' tests/
+ast-grep --pattern 'import { describe, test, expect } from "@jest/globals"' tests/
+sg -p 'from "vitest"' tests/
+sg -p 'from "@jest/globals"' tests/
+
+# Find missing process cleanup
+ast-grep --pattern 'Bun.spawn($$$)' tests/
+sg -p 'Bun.spawn' tests/
+
+# Find missing afterEach cleanup
+ast-grep --pattern 'afterEach($$$)' tests/
+sg -p 'afterEach' tests/
+
+# Find test files without proper structure
+ast-grep --pattern 'describe($$$)' tests/
+sg -p 'describe' tests/
+
+# Find timeout issues
+ast-grep --pattern 'timeout: $NUM' tests/
+sg -p 'timeout:' tests/
+```
+
+### Testing Discovery Commands
+
+```bash
+# Find all test files
+find tests/ -name "*.test.ts" -o -name "*.spec.ts"
+
+# Find test patterns
+sg search 'describe(' tests/
+sg search 'test(' tests/
+sg search 'expect(' tests/
+
+# Find test utilities
+sg search 'processManager' tests/
+sg search 'createMockEnv' tests/
+```
 
 ## Test Structure
 

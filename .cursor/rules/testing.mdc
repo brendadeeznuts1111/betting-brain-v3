@@ -1,7 +1,7 @@
 ---
-globs: *.test.ts,*.test.tsx,*_test.ts,*.spec.ts
-description: Testing conventions and patterns
 version: "1.0.0"
+globs: "*.test.ts,*.test.tsx,*_test.ts,*.spec.ts"
+description: "Testing conventions and patterns"
 lastUpdated: "2025-10-08"
 dependencies: ["quality-standards", "testing-patterns", "bun-runtime"]
 ---
