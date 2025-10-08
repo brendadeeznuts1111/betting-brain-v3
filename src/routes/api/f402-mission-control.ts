@@ -80,6 +80,9 @@ interface MissionControlResponse {
 /**
  * GET /api/f402/mission-control
  * Reads from KV-stored BetTicker responses
+ * 
+ * Query Parameters:
+ * - expand=true: Include analytics data for drill-down cards
  */
 export async function getMissionControl(
   request: Request,
@@ -87,6 +90,9 @@ export async function getMissionControl(
   requestId: string
 ): Promise<Response> {
   console.log(`[${requestId}] 🎯 GET /api/f402/mission-control (KV-backed)`);
+
+  const url = new URL(request.url);
+  const expand = url.searchParams.get('expand') === 'true';
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -108,6 +114,32 @@ export async function getMissionControl(
       volume: wagers.reduce((sum, w) => sum + (w.risk || 0), 0),
       buckets: aggregateLast5Min(wagers),
     };
+
+    // Add analytics data if expand=true
+    if (expand) {
+      try {
+        // Get analytics from KV cache
+        const analyticsData = await env.FANTASY_CACHE?.get('betTicker:analytics');
+        if (analyticsData) {
+          const analytics = JSON.parse(analyticsData);
+          (liveBets as any).analytics = {
+            steamAlerts: analytics.steamAlerts || [],
+            riskByAgent: analytics.riskByAgent || {},
+            exposureBySide: analytics.exposureBySide || {},
+            custRecency: analytics.custRecency || {}
+          };
+          console.log(`[${requestId}] 📊 Added analytics to liveBets:`, {
+            steamAlerts: analytics.steamAlerts?.length || 0,
+            agents: Object.keys(analytics.riskByAgent || {}).length,
+            games: Object.keys(analytics.exposureBySide || {}).length
+          });
+        } else {
+          console.log(`[${requestId}] ⚠️ No analytics data found in cache`);
+        }
+      } catch (error) {
+        console.warn(`[${requestId}] ⚠️ Failed to fetch analytics data:`, error);
+      }
+    }
 
     // 3. Aggregate agents
     const agentMap = new Map<string, number>();

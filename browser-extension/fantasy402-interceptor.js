@@ -3,6 +3,7 @@
 
 const WORKER_URL = 'http://localhost:3000';
 const DEBUG = true;
+const EXTENSION_SECRET = 'default-dev-secret-change-me'; // ⚠️ PRODUCTION: Replace with your secret
 
 // Store original fetch
 const originalFetch = window.fetch;
@@ -73,6 +74,7 @@ async function forwardToWorker(data) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Extension-Secret': EXTENSION_SECRET,
         },
         body: JSON.stringify(data),
         keepalive: true

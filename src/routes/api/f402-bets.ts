@@ -22,6 +22,9 @@ interface LiveBetsResponse {
 /**
  * GET /api/f402/bets/live
  * Returns in-flight bet count and 5-minute volume chart data
+ * 
+ * Query Parameters:
+ * - expand=true: Include analytics data (steam alerts, risk by agent, etc.)
  */
 export async function getLiveBets(
   request: Request,
@@ -29,6 +32,9 @@ export async function getLiveBets(
   requestId: string
 ): Promise<Response> {
   console.log(`[${requestId}] 🎲 GET /api/f402/bets/live`);
+
+  const url = new URL(request.url);
+  const expand = url.searchParams.get('expand') === 'true';
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -89,10 +95,37 @@ export async function getLiveBets(
       buckets,
     };
 
+    // Add analytics data if expand=true
+    if (expand) {
+      try {
+        // Get analytics from KV cache
+        const analyticsData = await env.FANTASY_CACHE?.get('betTicker:analytics');
+        if (analyticsData) {
+          const analytics = JSON.parse(analyticsData);
+          (response as any).analytics = {
+            steamAlerts: analytics.steamAlerts || [],
+            riskByAgent: analytics.riskByAgent || {},
+            exposureBySide: analytics.exposureBySide || {},
+            custRecency: analytics.custRecency || {}
+          };
+          console.log(`[${requestId}] 📊 Added analytics data:`, {
+            steamAlerts: analytics.steamAlerts?.length || 0,
+            agents: Object.keys(analytics.riskByAgent || {}).length,
+            games: Object.keys(analytics.exposureBySide || {}).length
+          });
+        } else {
+          console.log(`[${requestId}] ⚠️ No analytics data found in cache`);
+        }
+      } catch (error) {
+        console.warn(`[${requestId}] ⚠️ Failed to fetch analytics data:`, error);
+      }
+    }
+
     console.log(`[${requestId}] ✅ Live bets response:`, {
       count: response.count,
       bucketsCount: response.buckets.length,
       totalVolume: response.buckets.reduce((sum, b) => sum + b.volume, 0),
+      hasAnalytics: expand && !!(response as any).analytics
     });
 
     return new Response(JSON.stringify(response), {

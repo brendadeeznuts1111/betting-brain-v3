@@ -85,6 +85,7 @@ max_retries = 5
 [[env.production.analytics_engine_datasets]]
 binding = "ANALYTICS_ENGINE"
 dataset = "betting-metrics-prod"
+retention_days = 7
 
 [[env.production.kv_namespaces]]
 binding = "BET_TICKER_RAW"
@@ -181,12 +182,13 @@ crons = [
   "0 * * * *",  # hourly sharp calculation
   "* * * * *",  # every minute exposure calculation (closest to 30s possible)
   "*/1 * * * *",  # every minute - MCP cache warming
-  "0 3 * * *"  # daily at 3 AM UTC - MCP cleanup old data
+  "0 3 * * *"  # daily at 3 AM UTC - MCP cleanup old data and agent graph population
 ]
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS_ENGINE"
 dataset = "betting-metrics"
+retention_days = 7
 
 # KV Namespace for BetTicker raw data storage
 [[kv_namespaces]]
@@ -236,3 +238,4 @@ id = "4b0ce52be11041299d35f4c741666afa"
 
 [limits]
 cpu_ms = 50
+

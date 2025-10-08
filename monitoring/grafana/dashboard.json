@@ -2,7 +2,13 @@
   "dashboard": {
     "title": "Betting-Brain v3 - Real-Time Intelligence & Cost Monitoring",
     "description": "Production dashboard for edge-native betting intelligence with cost cap visualization",
-    "tags": ["betting", "intelligence", "edge", "cloudflare", "cost-monitoring"],
+    "tags": [
+      "betting",
+      "intelligence",
+      "edge",
+      "cloudflare",
+      "cost-monitoring"
+    ],
     "timezone": "browser",
     "refresh": "30s",
     "schemaVersion": 38,
@@ -28,9 +34,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                { "value": 0, "color": "green" },
-                { "value": 1, "color": "yellow" },
-                { "value": 5, "color": "red" }
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 1,
+                  "color": "yellow"
+                },
+                {
+                  "value": 5,
+                  "color": "red"
+                }
               ]
             },
             "unit": "short",
@@ -40,14 +55,21 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"],
+            "calcs": [
+              "lastNotNull"
+            ],
             "fields": ""
           },
           "orientation": "auto",
           "textMode": "auto",
           "colorMode": "background"
         },
-        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 }
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        }
       },
       {
         "id": 2,
@@ -69,9 +91,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                { "value": 0, "color": "green" },
-                { "value": 1, "color": "yellow" },
-                { "value": 5, "color": "red" }
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 1,
+                  "color": "yellow"
+                },
+                {
+                  "value": 5,
+                  "color": "red"
+                }
               ]
             }
           }
@@ -80,7 +111,12 @@
           "colorMode": "background",
           "textMode": "auto"
         },
-        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 }
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 6,
+          "y": 0
+        }
       },
       {
         "id": 3,
@@ -102,9 +138,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                { "value": 0, "color": "green" },
-                { "value": 1, "color": "orange" },
-                { "value": 3, "color": "red" }
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 1,
+                  "color": "orange"
+                },
+                {
+                  "value": 3,
+                  "color": "red"
+                }
               ]
             }
           }
@@ -112,7 +157,12 @@
         "options": {
           "colorMode": "background"
         },
-        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 }
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 0
+        }
       },
       {
         "id": 4,
@@ -134,9 +184,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                { "value": 0, "color": "green" },
-                { "value": 1, "color": "yellow" },
-                { "value": 10, "color": "red" }
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 1,
+                  "color": "yellow"
+                },
+                {
+                  "value": 10,
+                  "color": "red"
+                }
               ]
             }
           }
@@ -144,7 +203,12 @@
         "options": {
           "colorMode": "background"
         },
-        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 }
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 0
+        }
       },
       {
         "id": 5,
@@ -168,7 +232,12 @@
             "label": "Total Risk"
           }
         ],
-        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 4
+        }
       },
       {
         "id": 6,
@@ -218,7 +287,12 @@
             }
           ]
         },
-        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 4
+        }
       },
       {
         "id": 7,
@@ -251,7 +325,10 @@
         "fieldConfig": {
           "overrides": [
             {
-              "matcher": { "id": "byName", "options": "Sharp Score" },
+              "matcher": {
+                "id": "byName",
+                "options": "Sharp Score"
+              },
               "properties": [
                 {
                   "id": "custom.cellOptions",
@@ -264,9 +341,18 @@
                   "value": {
                     "mode": "absolute",
                     "steps": [
-                      { "value": 0, "color": "green" },
-                      { "value": 50, "color": "yellow" },
-                      { "value": 70, "color": "red" }
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 50,
+                        "color": "yellow"
+                      },
+                      {
+                        "value": 70,
+                        "color": "red"
+                      }
                     ]
                   }
                 }
@@ -274,7 +360,12 @@
             }
           ]
         },
-        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 12
+        }
       },
       {
         "id": 8,
@@ -300,7 +391,12 @@
             "max": 20
           }
         ],
-        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 12
+        }
       },
       {
         "id": 9,
@@ -321,9 +417,18 @@
             "thresholds": {
               "mode": "percentage",
               "steps": [
-                { "value": 0, "color": "red" },
-                { "value": 20, "color": "orange" },
-                { "value": 50, "color": "green" }
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 20,
+                  "color": "orange"
+                },
+                {
+                  "value": 50,
+                  "color": "green"
+                }
               ]
             },
             "unit": "percent",
@@ -335,7 +440,12 @@
           "showThresholdLabels": true,
           "showThresholdMarkers": true
         },
-        "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 }
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 20
+        }
       },
       {
         "id": 10,
@@ -356,9 +466,18 @@
             "thresholds": {
               "mode": "percentage",
               "steps": [
-                { "value": 0, "color": "red" },
-                { "value": 20, "color": "orange" },
-                { "value": 50, "color": "green" }
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 20,
+                  "color": "orange"
+                },
+                {
+                  "value": 50,
+                  "color": "green"
+                }
               ]
             },
             "unit": "percent",
@@ -366,7 +485,12 @@
             "max": 100
           }
         },
-        "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 }
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 6,
+          "y": 20
+        }
       },
       {
         "id": 11,
@@ -387,9 +511,18 @@
             "thresholds": {
               "mode": "percentage",
               "steps": [
-                { "value": 0, "color": "red" },
-                { "value": 20, "color": "orange" },
-                { "value": 50, "color": "green" }
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 20,
+                  "color": "orange"
+                },
+                {
+                  "value": 50,
+                  "color": "green"
+                }
               ]
             },
             "unit": "percent",
@@ -397,7 +530,12 @@
             "max": 100
           }
         },
-        "gridPos": { "h": 6, "w": 6, "x": 12, "y": 20 }
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 12,
+          "y": 20
+        }
       },
       {
         "id": 12,
@@ -418,9 +556,18 @@
             "thresholds": {
               "mode": "percentage",
               "steps": [
-                { "value": 0, "color": "red" },
-                { "value": 20, "color": "orange" },
-                { "value": 50, "color": "green" }
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 20,
+                  "color": "orange"
+                },
+                {
+                  "value": 50,
+                  "color": "green"
+                }
               ]
             },
             "unit": "percent",
@@ -428,7 +575,12 @@
             "max": 100
           }
         },
-        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 }
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 18,
+          "y": 20
+        }
       },
       {
         "id": 13,
@@ -451,7 +603,12 @@
             "label": "req/s"
           }
         ],
-        "gridPos": { "h": 6, "w": 8, "x": 0, "y": 26 }
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 0,
+          "y": 26
+        }
       },
       {
         "id": 14,
@@ -484,7 +641,12 @@
             "label": "Latency"
           }
         ],
-        "gridPos": { "h": 6, "w": 8, "x": 8, "y": 26 }
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 8,
+          "y": 26
+        }
       },
       {
         "id": 15,
@@ -512,14 +674,20 @@
           "conditions": [
             {
               "evaluator": {
-                "params": [1],
+                "params": [
+                  1
+                ],
                 "type": "gt"
               },
               "operator": {
                 "type": "and"
               },
               "query": {
-                "params": ["A", "5m", "now"]
+                "params": [
+                  "A",
+                  "5m",
+                  "now"
+                ]
               },
               "reducer": {
                 "params": [],
@@ -535,7 +703,12 @@
           "noDataState": "no_data",
           "notifications": []
         },
-        "gridPos": { "h": 6, "w": 8, "x": 16, "y": 26 }
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 16,
+          "y": 26
+        }
       },
       {
         "id": 16,
@@ -558,7 +731,12 @@
             "label": "Messages"
           }
         ],
-        "gridPos": { "h": 6, "w": 12, "x": 0, "y": 32 }
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 0,
+          "y": 32
+        }
       },
       {
         "id": 17,
@@ -581,7 +759,200 @@
             "label": "Messages"
           }
         ],
-        "gridPos": { "h": 6, "w": 12, "x": 12, "y": 32 }
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 12,
+          "y": 32
+        }
+      },
+      {
+        "id": 20,
+        "title": "🌊 Steam Moves Detection",
+        "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
+        "targets": [
+          {
+            "dataset": "betting-metrics",
+            "query": "SELECT count() as steam_count FROM betting-metrics WHERE blob1 = 'steam_moves' AND timestamp > now() - INTERVAL '1' HOUR",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 5,
+                  "color": "yellow"
+                },
+                {
+                  "value": 20,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "background"
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 38
+        }
+      },
+      {
+        "id": 21,
+        "title": "💰 Agent Risk Distribution",
+        "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
+        "targets": [
+          {
+            "dataset": "betting-metrics",
+            "query": "SELECT count() as risk_events FROM betting-metrics WHERE blob1 = 'agent_risk' AND timestamp > now() - INTERVAL '1' HOUR",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 10,
+                  "color": "yellow"
+                },
+                {
+                  "value": 50,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "background"
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 6,
+          "y": 38
+        }
+      },
+      {
+        "id": 22,
+        "title": "💳 Transaction Analytics",
+        "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
+        "targets": [
+          {
+            "dataset": "betting-metrics",
+            "query": "SELECT count() as tx_events FROM betting-metrics WHERE blob1 = 'transaction_analytics' AND timestamp > now() - INTERVAL '1' HOUR",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 5,
+                  "color": "yellow"
+                },
+                {
+                  "value": 20,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "background"
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 38
+        }
+      },
+      {
+        "id": 23,
+        "title": "⏳ Pending Wagers Analysis",
+        "type": "stat",
+        "datasource": {
+          "type": "cloudflare-analytics-engine",
+          "uid": "${DS_ANALYTICS_ENGINE}"
+        },
+        "targets": [
+          {
+            "dataset": "betting-metrics",
+            "query": "SELECT count() as pending_events FROM betting-metrics WHERE blob1 = 'pending_wagers' AND timestamp > now() - INTERVAL '1' HOUR",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 3,
+                  "color": "yellow"
+                },
+                {
+                  "value": 10,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "background"
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 38
+        }
       }
     ],
     "templating": {
@@ -611,8 +982,22 @@
       "to": "now"
     },
     "timepicker": {
-      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m"],
-      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "7d"]
+      "refresh_intervals": [
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "7d"
+      ]
     },
     "annotations": {
       "list": [

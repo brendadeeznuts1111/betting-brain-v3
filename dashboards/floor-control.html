@@ -102,6 +102,22 @@
       gap: 0.5rem;
     }
 
+    .expand-icon {
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.875rem;
+      margin-left: 0.5rem;
+      transition: transform 0.2s;
+    }
+
+    .expand-icon:hover {
+      transform: scale(1.1);
+    }
+
+    .expand-icon.expanded {
+      transform: rotate(90deg);
+    }
+
     .label {
       font-size: 0.75rem;
       opacity: 0.7;
@@ -359,11 +375,22 @@
 
     <!-- Live Bets -->
     <section class="card">
-      <h2>🎲 Live Bets</h2>
+      <h2>🎲 Live Bets <span id="live-bets-expand" class="expand-icon" style="display:none;">▸</span></h2>
       <div class="label">In-flight / Last 5 min</div>
       <div id="live-bets" class="value">—</div>
       <canvas id="bets-chart"></canvas>
       <div id="bets-error" class="error" style="display:none;"></div>
+
+      <!-- Analytics Drill-down -->
+      <details id="live-bets-analytics" style="display:none; margin-top: 1rem;">
+        <summary style="cursor: pointer; color: var(--accent); font-size: 0.875rem;">📊 Steam Alerts & Risk Analysis
+        </summary>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem;">
+          <div id="steam-alerts" style="margin-bottom: 0.5rem;"></div>
+          <div id="risk-by-agent" style="margin-bottom: 0.5rem;"></div>
+          <div id="exposure-by-side"></div>
+        </div>
+      </details>
     </section>
 
     <!-- Agent Performance -->
@@ -427,10 +454,16 @@
         <span class="val" id="cache-total-requests">—</span>
       </div>
       <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-        <button onclick="exportMetrics('json')" style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">📥 JSON</button>
-        <button onclick="exportMetrics('csv')" style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">📥 CSV</button>
+        <button onclick="exportMetrics('json')"
+          style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">📥
+          JSON</button>
+        <button onclick="exportMetrics('csv')"
+          style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">📥
+          CSV</button>
       </div>
-      <button onclick="warmCacheNow()" id="btn-warm-cache" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: var(--yellow); color: var(--bg); border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">🔥 Warm Cache</button>
+      <button onclick="warmCacheNow()" id="btn-warm-cache"
+        style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: var(--yellow); color: var(--bg); border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">🔥
+        Warm Cache</button>
     </section>
 
     <!-- Agent Tree -->
@@ -438,10 +471,14 @@
       <h2>🌳 Agent Hierarchy</h2>
       <div class="label">Agent Tree Structure</div>
       <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-        <button onclick="toggleTreeView('ascii')" id="btn-ascii" style="flex: 1; padding: 0.5rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">ASCII</button>
-        <button onclick="toggleTreeView('d3')" id="btn-d3" style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">Interactive</button>
+        <button onclick="toggleTreeView('ascii')" id="btn-ascii"
+          style="flex: 1; padding: 0.5rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">ASCII</button>
+        <button onclick="toggleTreeView('d3')" id="btn-d3"
+          style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">Interactive</button>
       </div>
-      <div id="agent-tree-ascii" style="overflow: auto; max-height: 400px; font-family: monospace; font-size: 0.85rem; line-height: 1.6; white-space: pre;"></div>
+      <div id="agent-tree-ascii"
+        style="overflow: auto; max-height: 400px; font-family: monospace; font-size: 0.85rem; line-height: 1.6; white-space: pre;">
+      </div>
       <div id="agent-tree-d3" style="overflow: auto; max-height: 400px; display: none;"></div>
       <div class="mini-stat" style="margin-top: 0.5rem;">
         <span class="label">Total Agents</span>
@@ -577,11 +614,14 @@
     /* ========== CONFIG ========== */
     const WORKER_URL = window.location.hostname === 'localhost'
       ? 'http://localhost:8787'
-      : 'https://' + window.location.hostname;
+      : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
 
     // Still show config box for manual override
     let overrideURL = localStorage.getItem('worker_url') || WORKER_URL;
     document.getElementById('worker-url').value = overrideURL;
+
+    // Extension secret for production requests
+    const EXTENSION_SECRET = 'default-dev-secret-change-me';
 
     function saveConfig() {
       overrideURL = document.getElementById('worker-url').value;
@@ -592,8 +632,8 @@
     const REFRESH_MS = 30_000;
     let tickCount = 0;
 
-    /* ========== HELPERS ========== */
-    const $ = (s) => document.querySelector(s);
+    /* ====== ==== H ELPERS ========== */
+     c onst $ = (s) => document.querySelector(s);
     const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
     const fmtNum = (n) => new Intl.NumberFormat().format(n);
     const updateTime = () => {
@@ -683,10 +723,10 @@
     const pendingCtx = $('#pending-chart').getContext('2d');
     const pendingChart = new Chart(pendingCtx, {
       type: 'doughnut',
-      data: { labels: [], datasets: [] },
+      data: { labels: [], atasets: [] },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio false,
         plugins: {
           legend: {
             position: 'bottom',
@@ -700,9 +740,9 @@
     const analysisCtx = $('#analysis-chart').getContext('2d');
     const analysisChart = new Chart(analysisCtx, {
       type: 'bar',
-      data: { labels: [], datasets: [] },
+      daa: { labels: [], datsets: [] },
       options: {
-        responsive: true,
+        responsive: true
         maintainAspectRatio: false,
         plugins: {
           legend: {
@@ -730,13 +770,14 @@
           method: options.method || 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'X-Extension-Secret': EXTENSION_SECRET,
             ...options.headers
           },
           body: options.body ? JSON.stringify(options.body) : undefined
         });
         const duration = Date.now() - start;
 
-        // Update perf chart
+        // Update perf chart with actual response time
         perfChart.data.labels.push(new Date().toLocaleTimeString());
         perfChart.data.datasets[0].data.push(duration);
         if (perfChart.data.labels.length > 20) {
@@ -948,7 +989,7 @@
       const d = await getJSON('/api/database-metrics', 'db');
       if (d && d.metrics) {
         $('#db-total').textContent = fmtNum(d.metrics.totalRecords || 0);
-        $('#db-lines').textContent = fmtNum(d.metrics.lineMovements || 0);
+        $('#db-lines').textContent = fmtNum(d.metrneMovements || 0);
         $('#db-sharp').textContent = fmtNum(d.metrics.sharpIndicators || 0);
         $('#db-exposure').textContent = fmtNum(d.metrics.exposureTracking || 0);
         $('#db-fantasy').textContent = fmtNum(d.metrics.fantasy402Raw || 0);
@@ -984,8 +1025,7 @@
           const statusData = JSON.parse(mcpResponse.result.content[0].text);
           if (statusData && statusData.infrastructure) {
             const infra = statusData.infrastructure;
-            $('#infra-status').textContent = infra.overall || 'operational';
-            $('#infra-kv').textContent = infra.kv ? '✅ Active' : '❌ Down';
+            $('#infra-status').textContent = infra.overall || 'operational         $('#infra - kv').textContent = infra.kv ? '✅ Active' : '❌ Down';
             $('#infra-queues').textContent = infra.queues ? '✅ Active' : '❌ Down';
             $('#infra-analytics').textContent = infra.analytics ? '✅ Active' : '❌ Down';
             $('#infra-d1').textContent = infra.d1 ? '✅ Active' : '❌ Down';
@@ -1007,7 +1047,7 @@
         $('#infra-analytics').textContent = infra.analytics ? '✅ Active' : '❌ Down';
         $('#infra-d1').textContent = infra.d1 ? '✅ Active' : '❌ Down';
       } else {
-        // Mock data fallback
+        // Mocallback
         $('#infra-status').textContent = 'operational';
         $('#infra-kv').textContent = '✅ Active';
         $('#infra-queues').textContent = '✅ Active';
@@ -1017,26 +1057,66 @@
     }
 
     async function loadActivity() {
-      // Mock recent activity - in production this could be from Analytics Engine
-      const activities = [
-        '🔄 Line movement detected: NBA_123 (spread)',
-        '⚡ Steam move: NFL_456 (+3.5 → +5.0)',
-        '📊 Sharp indicator updated: CID_789',
-        '💰 High exposure alert: NBA_234',
-        '🎯 CLV threshold crossed: CID_345',
-        '📈 Hold % update: MLB_567',
-        '🔔 Queue processed: 15 messages',
-        '✅ Health check passed',
-        '🌲 Forest status: All services up',
-        '🤖 Floor health: 95%'
-      ];
+      // Get real analytics data
+      const analytics = await getJSON('/api/analytics/metrics', 'activity');
+      if (analytics && analytics.metrics) {
+        const activities = [];
 
-      $('#activity-list').textContent = activities.join('\n');
+        // Steam move alerts
+        if (analytics.metrics.steamMoves.alerts.length > 0) {
+          analytics.metrics.steamMoves.alerts.forEach(alert => {
+            const timeAgo = Math.round((Date.now() - new Date(alert.timestamp).getTime()) / 60000);
+            activities.push(`⚡ Steam move: ${alert.gameId} (${alert.oldLine} → ${alert.newLine}) ${timeAgo}m ago`);
+          });
+        }
+
+        // Agent risk alerts
+        if (analytics.metrics.agentRisk.topAgents.length > 0) {
+          analytics.metrics.agentRisk.topAgents.slice(0, 2).forEach(agent => {
+            activities.push(`💰 High risk: ${agent.agentId} ($${fmtNum(agent.risk)})`);
+          });
+        }
+
+        // Transaction analytics
+        activities.push(`💳 Transactions: ${fmtNum(analytics.metrics.transactionAnalytics.totalTransactions)} total`);
+        activities.push(`📊 Volume: ${fmt(analytics.metrics.transactionAnalytics.totalVolume)}`);
+
+        // Performance metrics
+        activities.push(`⚡ Avg response: ${analytics.metrics.performance.avgResponseTime}ms`);
+        activities.push(`📈 Total requests: ${fmtNum(analytics.metrics.performance.totalRequests)}`);
+        activities.push(`❌ Error rate: ${(analytics.metrics.performance.errorRate * 100).toFixed(1)}%`);
+
+        // System status
+        activities.push('✅ Health check passed');
+        activities.push('🌲 Forest status: All services up');
+        activities.push('🤖 Floor health: 95%');
+
+        $('#activity-list').textContent = activities.join('\n');
+      } else {
+        // Fallback to mock data
+        const activities = [
+          '🔄 Line movement detected: NBA_123 (spread)',
+          '⚡ Steam move: NFL_456 (+3.5 → +5.0)',
+          '📊 Sharp indicator updated: CID_789',
+          '💰 High exposure alert: NBA_234',
+          '🎯 CLV threshold crossed: CID_345',
+          '📈 Hold % update: MLB_567',
+          '🔔 Queue processed: 15 messages',
+          '✅ Health check passed',
+          '🌲 Forest status: All services up',
+          '🤖 Floor health: 95%'
+        ];
+        $('#activity-list').textContent = activities.join('\n');
+      }
     }
 
     /* ========== FANTASY402 FETCHERS (UNIFIED) ========== */
     async function loadFantasy402Data() {
-      const d = await getJSON('/api/f402/mission-control', 'bets');
+      // Check if any card should be expanded
+      const shouldExpand = document.querySelector('.expand-icon[style*="inline"null;
+      const expandParam = shouldExpand ? '?expand=true' : '';
+
+      const d = await getJSON(`/api/f402/mission-control${expandParam}`, 'bets');
       if (!d) return;
 
       // Live Bets
@@ -1051,6 +1131,62 @@
         borderWidth: 1
       }];
       betsChart.update();
+
+      // Handle analytics expand functionality
+      if (d.liveBets?.analytics) {
+        $('#live-bets-expand').style.display = 'inline';
+        $('#live-bets-analytics').style.display = 'block';
+
+        // Steam Alerts
+        const steamAlerts = d.liveBets.analytics.steamAlerts || [];
+        if (steamAlerts.length > 0) {
+          $('#steam-alerts').innerHTML = `
+            <div style="color: var(--warn); font-weight: 600;">🔥 Steam Alerts (${steamAlerts.length})</div>
+            ${steamAlerts.map(alert =>
+            `<div style="margin-left: 1rem; color: var(--text);">
+                Game ${alert.gameId}: ${alert.oldLine} → ${alert.newLine} (${alert.seconds}s ago)
+              </div>`
+          ).join('')}
+          `;
+        } else {
+          $('#steam-alerts').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No steam alerts</div>';
+        }
+
+        // Risk by Agent
+        const riskByAgent = d.liveBets.analytics.riskByAgent || {};
+        const agentEntries = Object.entries(riskByAgent).sort((a, [1] - a[1]);
+        if (agentEntries.length > 0) {
+          $('#risk-by-agent').innerHTML = `
+            <div style="color: var(--accent); font-weight: 600;">💰 Top Risk by Agent</div>
+            ${agentEntries.slice(0, 3).map(([agent, risk]) =>
+            `<div style="margin-left: 1rem; color: var(--text);">
+                Agent ${agent}: $${risk.toFixed(2)}
+              </div>`
+          ).join('')}
+          `;
+        } else {
+          $('#risk-by-agent').innerHTML = '<div style="color: var(--text); opacity: 0.7;">Nage data</div>';
+        }
+
+        // Exposure by Side
+        const exposureBySide = d.liveBets.analytics.exposureBySide || {};
+        const gameEntries = Object.entries(exposureBySide);
+        if (gameEntries.length > 0) {
+          $('#exposure-by-side').innerHTML = `
+            <div style="color: var(--yellow); font-weight: 600;">⚖️ Exposure by Game</div>
+            ${gameEntries.slice(0, 3).map(([game, sides]) =>
+            `<div style="margin-left: 1rem; color: var(--text);">
+                Game ${game}: Home $${sides.home.toFixed(2)} | Away $${sides.away.toFixed(2)}
+              </div>`
+          ).join('')}
+          `;
+        } else {
+          $('#exposure-by-side').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No exposure data</div>';
+        }
+      } else {
+        $('#live-bets-expand').style.display = 'none';
+        $('#live-bets-analytics').style.display = 'none';
+      }
 
       // Agent Performance
       const pnl = d.agents?.totalPnl ?? 0;
@@ -1095,19 +1231,36 @@
     let currentTreeView = 'ascii';
 
     async function loadAgentTree() {
-      // Try to get owner from URL or default to BILLY666
-      const urlParams = new URLSearchParams(window.location.search);
-      const owner = urlParams.get('owner') || 'BILLY666';
-
-      const d = await getJSON(`/api/f402/agents/tree?owner=${owner}`, 'agent-tree');
-      if (!d || !d.tree) {
-        $('#agent-tree-ascii').textContent = 'No agent data available. Trigger login flow to populate cache.';
+      // Use the new agent graph endpoint
+      const d = await getJSON('/api/f402/graph', 'agent-tree');
+      if (!d || !d.nodes || d.nodes.length === 0) {
+        $('#agent-tree-ascii').textContent = 'No agent data available. Agent graph will populate at 3 AM UTC daily.';
         $('#agent-tree-count').textContent = '0';
         return;
       }
 
       // Store for view switching
       currentTreeData = d;
+
+      // Convert graph nodes to tree structure for ASCII display
+      const nodeMap = new Map();
+      d.nodes.forEach(node => {
+        nodeMap.set(node.id, { ...node, children: [] });
+      });
+
+      // Build tree structure from edges
+      d.edges.forEach(edge => {
+        const parent = nodeMap.get(edge.source);
+        const child = nodeMap.get(edge.target);
+        if (parent && child) {
+          parent.children.push(child);
+        }
+      });
+
+      // Find root nodes (nodes with no incoming edges)
+      const rootNodes = d.nodes.filter(node =>
+        !d.edges.some(edge => edge.target === node.id)
+      );
 
       // Render ASCII tree
       const lines = [];
@@ -1118,7 +1271,7 @@
         // Node line with metadata
         const meta = node.type ? `[${node.type}]` : '';
         const requests = node.totalRequests > 0 ? ` (${fmtNum(node.totalRequests)} req)` : '';
-        lines.push(`${prefix}${connector}${node.name} ${meta}${requests}`);
+        lines.push(`${prefix}${connector}${node.name || node.id} ${meta}${requests}`);
 
         // Render children
         if (node.children && node.children.length > 0) {
@@ -1129,13 +1282,19 @@
         }
       }
 
-      renderTree(d.tree);
+      rootNodes.forEach((root, i) => {
+        const rootNode = nodeMap.get(root.id);
+        if (rootNode) {
+          renderTree(rootNode, '', i === rootNodes.length - 1);
+        }
+      });
+
       $('#agent-tree-ascii').textContent = lines.join('\n');
-      $('#agent-tree-count').textContent = fmtNum(d.totalAgents || 0);
+      $('#agent-tree-count').textContent = fmtNum(d.metadata?.totalNodes || 0);
 
       // Render D3 tree if in D3 view
       if (currentTreeView === 'd3') {
-        renderD3Tree(d.tree);
+        renderD3Graph(d);
       }
 
       hideError('agent-tree');
@@ -1164,14 +1323,19 @@
         $('#btn-ascii').style.border = '1px solid var(--border)';
 
         if (currentTreeData) {
-          renderD3Tree(currentTreeData.tree);
+          renderD3Graph(currentTreeData);
         }
       }
     }
 
-    function renderD3Tree(root) {
+    function renderD3Graph(graphData) {
       const container = $('#agent-tree-d3');
       container.innerHTML = '';
+
+      if (!graphData.nodes || graphData.nodes.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.7;">No agent graph data available</div>';
+        return;
+      }
 
       const width = container.clientWidth || 800;
       const height = 400;
@@ -1182,70 +1346,81 @@
         .attr('height', height)
         .style('background', 'var(--bg)');
 
-      const g = svg.append('g')
-        .attr('transform', 'translate(40, 20)');
+      const g = svg.append('g');
 
-      // Create tree layout
-      const treeLayout = d3.tree().size([height - 40, width - 160]);
-
-      // Convert data to d3 hierarchy
-      const hierarchy = d3.hierarchy(root);
-      const treeData = treeLayout(hierarchy);
+      // Create force simulation
+      const simulation = d3.forceSimulation(graphData.nodes)
+        .force('link', d3.forceLink(graphData.edges).id(d => d.id).distance(100))
+        .force('charge', d3.forceManyBody().strength(-300))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(20));
 
       // Draw links
-      g.selectAll('.link')
-        .data(treeData.links())
+      const links = g.selectAll('.link')
+        .data(graphData.edges)
         .enter()
-        .append('path')
+        .append('line')
         .attr('class', 'link')
-        .attr('d', d3.linkHorizontal()
-          .x(d => d.y)
-          .y(d => d.x))
-        .style('fill', 'none')
         .style('stroke', '#30363d')
         .style('stroke-width', 2);
 
       // Draw nodes
       const nodes = g.selectAll('.node')
-        .data(treeData.descendants())
+        .data(graphData.nodes)
         .enter()
         .append('g')
         .attr('class', 'node')
-        .attr('transform', d => `translate(${d.y}, ${d.x})`)
         .style('cursor', 'pointer')
-        .on('click', (event, d) => {
-          // Toggle children on click
-          if (d.children) {
-            d._children = d.children;
-            d.children = null;
-          } else {
-            d.children = d._children;
-            d._children = null;
-          }
-          renderD3Tree(root);
-        });
+        .call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended));
 
       // Add circles
       nodes.append('circle')
-        .attr('r', 6)
-        .style('fill', d => d.children || d._children ? '#238636' : '#58a6ff')
+        .attr('r', 8)
+        .style('fill', d => d.type === 'super-agent' ? '#238636' : '#58a6ff')
         .style('stroke', '#c9d1d9')
         .style('stroke-width', 2);
 
       // Add labels
       nodes.append('text')
         .attr('dy', '0.31em')
-        .attr('x', d => d.children || d._children ? -10 : 10)
-        .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
-        .text(d => {
-          const name = d.data.name || d.data.id;
-          const type = d.data.type ? ` [${d.data.type}]` : '';
-          const req = d.data.totalRequests > 0 ? ` (${d.data.totalRequests})` : '';
-          return name + type + req;
-        })
+        .attr('text-anchor', 'middle')
+        .text(d => d.name || d.id)
         .style('fill', '#c9d1d9')
-        .style('font-size', '12px')
+        .style('font-size', '10px')
         .style('font-family', 'monospace');
+
+      // Update positions on simulation tick
+      simulation.on('tick', () => {
+        links
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+
+        nodes
+          .attr('transform', d => `translate(${d.x}, ${d.y})`);
+      });
+
+      // Drag functions
+      function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
+
+      function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
     }
 
     /* ========== EXPORT FUNCTIONS ========== */

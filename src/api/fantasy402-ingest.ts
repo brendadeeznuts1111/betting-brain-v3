@@ -5,6 +5,7 @@ import { Errors, createErrorResponse } from '../utils/error-handler';
 import type { Env } from '../types/cloudflare';
 import { extractAllTokens, parseJWT, getTokenInfo } from '../utils/jwt-parser';
 import { extractOperationData, normalizeObject } from '../utils/fantasy402-parser';
+import { generateAnalyticsRollup, type BetData } from '../utils/analytics-rollups';
 
 interface Fantasy402Packet {
     timestamp: string;
@@ -75,16 +76,29 @@ export async function handleFantasy402Ingest(
         // If this is a BetTicker call, store in BET_TICKER_RAW for mission-control
         if (packet.operation === 'getBetTicker' && packet.response?.body && env.BET_TICKER_RAW) {
             const kvKey = `raw:getBetTicker:${Date.now()}`;
-            await env.BET_TICKER_RAW.put(kvKey, JSON.stringify(packet.response.body), {
+
+            // Extract bet data for analytics
+            const betData = extractBetDataFromBetTicker(packet.response.body);
+            const analytics = generateAnalyticsRollup(betData);
+
+            // Store raw data with analytics
+            const enrichedData = {
+                raw: packet.response.body,
+                analytics,
+                timestamp: packet.timestamp,
+                capturedAt: new Date().toISOString()
+            };
+
+            await env.BET_TICKER_RAW.put(kvKey, JSON.stringify(enrichedData), {
                 expirationTtl: 604800, // 7 days
             });
 
             // Also store as latest for quick access
-            await env.BET_TICKER_RAW.put('betTicker:latest', JSON.stringify(packet.response.body), {
+            await env.BET_TICKER_RAW.put('betTicker:latest', JSON.stringify(enrichedData), {
                 expirationTtl: 604800,
             });
 
-            console.log(`[${requestId}] 💾 Stored BetTicker in KV: ${kvKey}`);
+            console.log(`[${requestId}] 💾 Stored BetTicker with analytics in KV: ${kvKey}`);
         }
 
         // If this is a Scores call, store in SPORTS_CACHE for live-scores endpoint
@@ -142,10 +156,15 @@ export async function handleFantasy402Ingest(
             try {
                 const transactions = packet.response.body.LIST || packet.response.body.list || [];
 
+                // Extract bet data for analytics
+                const betData = extractBetDataFromTransactions(transactions, packet.metadata);
+                const analytics = generateAnalyticsRollup(betData);
+
                 await env.FANTASY_CACHE.put(
                     'transactionHistory:latest',
                     JSON.stringify({
                         raw: packet.response.body,
+                        analytics,
                         timestamp: packet.timestamp,
                         capturedAt: new Date().toISOString(),
                         count: transactions.length,
@@ -165,7 +184,7 @@ export async function handleFantasy402Ingest(
                     { expirationTtl: 1800 } // 30 minutes
                 );
 
-                console.log(`[${requestId}] 💳 Stored ${transactions.length} transactions in FANTASY_CACHE`);
+                console.log(`[${requestId}] 💳 Stored ${transactions.length} transactions with analytics in FANTASY_CACHE`);
             } catch (error) {
                 console.warn(`[${requestId}] ⚠️ Failed to store transaction history:`, error);
             }
@@ -203,10 +222,15 @@ export async function handleFantasy402Ingest(
             try {
                 const pending = packet.response.body.LIST || packet.response.body.list || [];
 
+                // Extract bet data for analytics
+                const betData = extractBetDataFromPendingWagers(pending, packet.metadata);
+                const analytics = generateAnalyticsRollup(betData);
+
                 await env.FANTASY_CACHE.put(
                     'pendingWagers:latest',
                     JSON.stringify({
                         raw: packet.response.body,
+                        analytics,
                         timestamp: packet.timestamp,
                         capturedAt: new Date().toISOString(),
                         count: pending.length,
@@ -221,7 +245,7 @@ export async function handleFantasy402Ingest(
                     { expirationTtl: 300 } // 5 minutes (live data)
                 );
 
-                console.log(`[${requestId}] 🎲 Stored ${pending.length} pending wagers in FANTASY_CACHE`);
+                console.log(`[${requestId}] 🎲 Stored ${pending.length} pending wagers with analytics in FANTASY_CACHE`);
             } catch (error) {
                 console.warn(`[${requestId}] ⚠️ Failed to store pending wagers:`, error);
             }
@@ -276,8 +300,8 @@ export async function handleFantasy402Ingest(
         console.log(`[${requestId}] ⚠️ Queue unavailable, processing directly`);
 
         // Extract and parse JWT tokens
-        const authHeader = packet.request.headers?.authorization;
-        const tokens = extractAllTokens(authHeader, packet.request.body);
+        const jwtAuthHeader = packet.request.headers?.authorization;
+        const tokens = extractAllTokens(jwtAuthHeader, packet.request.body);
         let jwtInfo = null;
 
         if (tokens.length > 0) {
@@ -407,7 +431,7 @@ export async function handleFantasy402Ingest(
             // Add more operation handlers as needed
         }
 
-        // Send to Analytics Engine
+        // Send to Analytics Engine - Basic packet metrics
         if (env.ANALYTICS_ENGINE) {
             env.ANALYTICS_ENGINE.writeDataPoint({
                 blobs: [
@@ -421,6 +445,79 @@ export async function handleFantasy402Ingest(
                 ],
                 indexes: [packetId]
             });
+
+            // Additional analytics for specific operations
+            if (packet.operation === 'getBetTicker' && packet.response?.body) {
+                const betData = extractBetDataFromBetTicker(packet.response.body);
+                const analytics = generateAnalyticsRollup(betData);
+
+                // Steam move analytics
+                env.ANALYTICS_ENGINE.writeDataPoint({
+                    blobs: [
+                        'steam_moves',
+                        packet.metadata.agentID || 'system',
+                        'betTicker'
+                    ],
+                    doubles: [
+                        analytics.steamAlerts.length,
+                        analytics.steamAlerts.reduce((sum, alert) => sum + Math.abs(alert.newLine - alert.oldLine), 0)
+                    ],
+                    indexes: [`steam-${packetId}`]
+                });
+
+                // Risk analytics by agent
+                for (const [agentId, risk] of Object.entries(analytics.riskByAgent)) {
+                    env.ANALYTICS_ENGINE.writeDataPoint({
+                        blobs: [
+                            'agent_risk',
+                            agentId,
+                            'betTicker'
+                        ],
+                        doubles: [risk, analytics.steamAlerts.length],
+                        indexes: [`risk-${agentId}-${packetId}`]
+                    });
+                }
+            }
+
+            // Transaction analytics
+            if (packet.operation === 'getTransactionHistory' && packet.response?.body) {
+                const transactions = packet.response.body.LIST || packet.response.body.list || [];
+                const betData = extractBetDataFromTransactions(transactions, packet.metadata);
+                const analytics = generateAnalyticsRollup(betData);
+
+                env.ANALYTICS_ENGINE.writeDataPoint({
+                    blobs: [
+                        'transaction_analytics',
+                        packet.metadata.agentID || 'unknown',
+                        'transaction_history'
+                    ],
+                    doubles: [
+                        transactions.length,
+                        Object.keys(analytics.riskByAgent).length
+                    ],
+                    indexes: [`tx-${packetId}`]
+                });
+            }
+
+            // Pending wagers analytics
+            if (packet.endpoint?.includes('getPending') && packet.response?.body) {
+                const pending = packet.response.body.LIST || packet.response.body.list || [];
+                const betData = extractBetDataFromPendingWagers(pending, packet.metadata);
+                const analytics = generateAnalyticsRollup(betData);
+
+                env.ANALYTICS_ENGINE.writeDataPoint({
+                    blobs: [
+                        'pending_wagers',
+                        packet.metadata.agentID || 'unknown',
+                        'pending_analysis'
+                    ],
+                    doubles: [
+                        pending.length,
+                        Object.values(analytics.riskByAgent).reduce((sum, risk) => sum + risk, 0)
+                    ],
+                    indexes: [`pending-${packetId}`]
+                });
+            }
         }
 
         return new Response(JSON.stringify({
@@ -562,7 +659,7 @@ async function processAgentList(
                 )
             );
 
-            console.log(`[${requestId}] ✅ Cached ${agents.length} agents in ${cacheKeys.length} KV keys (24hr TTL)`);
+            console.log(`[${requestId}] ✅ Cached ${agents.length} agents in ${cacheKeys.length} KV keys (1hr TTL)`);
 
             // Track successful cache write
             await incrementCacheMetric(env, 'agent_list_cache_writes');
@@ -1695,5 +1792,141 @@ async function processPlayerAnalysis(
     } catch (error) {
         console.error(`[${requestId}] ❌ Error processing player analysis:`, error);
     }
+}
+
+/**
+ * Extract bet data from BetTicker response for analytics
+ * @param betTickerResponse Raw BetTicker API response
+ * @returns Array of bet data for analytics processing
+ */
+function extractBetDataFromBetTicker(betTickerResponse: any): BetData[] {
+    const betData: BetData[] = [];
+
+    try {
+        // BetTicker response structure varies, try common patterns
+        const events = betTickerResponse.events || betTickerResponse.Events || betTickerResponse.data || [];
+
+        for (const event of events) {
+            if (!event || typeof event !== 'object') continue;
+
+            const gameId = event.gameId || event.game_id || event.id;
+            const lines = event.lines || event.Lines || [];
+
+            for (const line of lines) {
+                if (!line || typeof line !== 'object') continue;
+
+                // Extract line movement data
+                const oldLine = line.oldLine || line.old_line || line.previousLine;
+                const newLine = line.newLine || line.new_line || line.currentLine;
+                const timestamp = line.timestamp || line.updated_at || line.time;
+
+                if (oldLine !== undefined && newLine !== undefined) {
+                    betData.push({
+                        gameId: gameId?.toString(),
+                        oldLine: Number(oldLine),
+                        newLine: Number(newLine),
+                        timestamp: timestamp?.toString(),
+                        // BetTicker doesn't have agent/customer info, use defaults
+                        agentId: 'betTicker',
+                        customerId: 'system',
+                        stake: 0,
+                        odds: 1,
+                        side: 'home' // Default side
+                    });
+                }
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to extract bet data from BetTicker response:', error);
+    }
+
+    return betData;
+}
+
+/**
+ * Extract bet data from pending wagers for analytics
+ * @param pendingWagers Array of pending wager data
+ * @param metadata Packet metadata containing agent/customer info
+ * @returns Array of bet data for analytics processing
+ */
+function extractBetDataFromPendingWagers(pendingWagers: any[], metadata: any): BetData[] {
+    const betData: BetData[] = [];
+
+    try {
+        for (const wager of pendingWagers) {
+            if (!wager || typeof wager !== 'object') continue;
+
+            betData.push({
+                agentId: metadata.agentID || wager.agentID,
+                customerId: metadata.customerID || wager.customerID,
+                gameId: wager.gameId || wager.eventId || wager.event_id,
+                stake: wager.stake || wager.amount || 0,
+                odds: wager.odds || wager.line || 1,
+                side: wager.side || (wager.betType === 'home' ? 'home' : 'away'),
+                timestamp: wager.timestamp || wager.createdAt || wager.date,
+                // Pending wagers don't have line movement data
+                oldLine: undefined,
+                newLine: undefined
+            });
+        }
+    } catch (error) {
+        console.warn('Failed to extract bet data from pending wagers:', error);
+    }
+
+    return betData;
+}
+
+/**
+ * Extract bet data from transaction history for analytics
+ * @param transactions Array of transaction data
+ * @param metadata Packet metadata containing agent/customer info
+ * @returns Array of bet data for analytics processing
+ */
+function extractBetDataFromTransactions(transactions: any[], metadata: any): BetData[] {
+    const betData: BetData[] = [];
+
+    try {
+        for (const transaction of transactions) {
+            if (!transaction || typeof transaction !== 'object') continue;
+
+            // Only process betting transactions (not deposits/withdrawals)
+            const tranCode = transaction.tranCode || '';
+            const tranType = transaction.tranType || '';
+
+            if (tranCode === 'D' && (tranType === 'L' || tranType === 'X')) {
+                // Betting loss transaction
+                betData.push({
+                    agentId: metadata.agentID || transaction.agentID,
+                    customerId: metadata.customerID || transaction.customerID,
+                    gameId: transaction.eventId || transaction.gameId,
+                    stake: Math.abs(transaction.amount || 0),
+                    odds: 1.0, // Default odds for transaction data
+                    side: 'home', // Default side
+                    timestamp: transaction.tranDateTime || transaction.timestamp,
+                    // Transactions don't have line movement data
+                    oldLine: undefined,
+                    newLine: undefined
+                });
+            } else if (tranCode === 'C' && (tranType === 'W' || tranType === 'X')) {
+                // Betting win transaction
+                betData.push({
+                    agentId: metadata.agentID || transaction.agentID,
+                    customerId: metadata.customerID || transaction.customerID,
+                    gameId: transaction.eventId || transaction.gameId,
+                    stake: Math.abs(transaction.amount || 0),
+                    odds: 1.0, // Default odds for transaction data
+                    side: 'away', // Default side
+                    timestamp: transaction.tranDateTime || transaction.timestamp,
+                    // Transactions don't have line movement data
+                    oldLine: undefined,
+                    newLine: undefined
+                });
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to extract bet data from transactions:', error);
+    }
+
+    return betData;
 }
 

@@ -18,6 +18,7 @@ import { warmCache } from '../routes/api/cache-warm';
 import { getActiveCustomers, getStakedTotal } from '../routes/api/f402-customers';
 import { getLatestTransactions } from '../routes/api/f402-transactions';
 import { getMissionControl } from '../routes/api/f402-mission-control';
+import { getAgentGraph } from '../routes/api/f402-graph';
 
 /**
  * Handle REST API routes
@@ -126,6 +127,9 @@ export async function handleAPIRoute(
       case '/f402/transactions/latest':
         return await getLatestTransactions(request, env, requestId);
 
+      case '/f402/graph':
+        return await getAgentGraph(request, env, requestId);
+
       case '/live-odds':
         const { getLiveOdds } = await import('../routes/api/live-odds');
         return await getLiveOdds(request, env, requestId);
@@ -137,6 +141,10 @@ export async function handleAPIRoute(
       case '/database/metrics':
         const { getDatabaseMetrics } = await import('../routes/api/database-metrics');
         return await getDatabaseMetrics(request, env, requestId);
+
+      case '/analytics/metrics':
+        const { getAnalyticsMetrics } = await import('../routes/api/analytics-metrics');
+        return await getAnalyticsMetrics(request, env, requestId);
 
       case '/activity':
         const { getActivity } = await import('../routes/api/activity');

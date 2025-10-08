@@ -1,0 +1,874 @@
+# 🏗️ Betting-Brain v3 Architecture Diagrams
+
+## System Overview
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        BE[Browser Extension]
+        DC[Dashboard Client]
+        AI[AI Assistant]
+    end
+    
+    subgraph "Cloudflare Edge"
+        W[Workers]
+        D1[D1 Databases]
+        KV[KV Cache]
+        Q[Queues]
+        AE[Analytics Engine]
+    end
+    
+    subgraph "External APIs"
+        F402[Fantasy402 API]
+        BT[BetTicker API]
+        SD[SportsData.io]
+    end
+    
+    BE --> W
+    DC --> W
+    AI --> W
+    
+    W --> D1
+    W --> KV
+    W --> Q
+    W --> AE
+    
+    W --> F402
+    W --> BT
+    W --> SD
+```
+
+## Data Flow Architecture
+
+```mermaid
+flowchart TD
+    subgraph "Ingestion Layer"
+        EXT[Browser Extension]
+        API[External APIs]
+    end
+    
+    subgraph "Processing Layer"
+        W[Workers]
+        Q1[Line Ingress Queue]
+        Q2[Steam Webhook Queue]
+        Q3[Exposure Queue]
+    end
+    
+    subgraph "Storage Layer"
+        D1[D1 Databases]
+        KV[KV Cache]
+        AE[Analytics Engine]
+    end
+    
+    subgraph "Output Layer"
+        DASH[Dashboard]
+        MCP[MCP Tools]
+        GRAF[Grafana]
+    end
+    
+    EXT --> W
+    API --> W
+    
+    W --> Q1
+    W --> Q2
+    W --> Q3
+    
+    Q1 --> D1
+    Q2 --> D1
+    Q3 --> D1
+    
+    W --> KV
+    W --> AE
+    
+    D1 --> DASH
+    KV --> DASH
+    AE --> DASH
+    
+    D1 --> MCP
+    KV --> MCP
+    AE --> MCP
+    
+    AE --> GRAF
+```
+
+## Database Schema
+
+```mermaid
+erDiagram
+    LINE_MOVEMENTS {
+        string eid
+        string mt
+        real lb
+        real la
+        integer vb
+        integer va
+        string ts
+        string ing
+    }
+    
+    SHARP_INDICATORS {
+        string cid PK
+        real clv
+        real wr
+        integer ao
+        real nb
+        string upd
+    }
+    
+    EXPOSURE_TRACKING {
+        string eid PK
+        string side PK
+        integer risk
+        integer net
+        string ts
+        string upd
+    }
+    
+    BET_HISTORY {
+        integer id PK
+        string cid
+        real stake
+        real payout
+        string result
+        string ts
+        string market_type
+        string event_id
+        integer time_to_event
+        string created_at
+    }
+    
+    HOLD_TRACKING {
+        integer id PK
+        string eid
+        string mt
+        real hold_pct
+        real volume
+        string ts
+        string created_at
+    }
+    
+    AGENT_GRAPH {
+        integer id PK
+        string parent_id
+        string child_id
+        string edge_type
+        real weight
+        real customer_overlap
+        real steam_correlation
+        real credit_risk_score
+        string created_at
+        string updated_at
+    }
+    
+    FANTASY402_RAW_FEED {
+        integer id PK
+        string packet_id
+        string timestamp
+        string endpoint
+        string operation
+        string method
+        string url
+        string request_body
+        integer response_status
+        string response_body
+        integer duration_ms
+        string agent_id
+        string customer_id
+        string jwt_user_id
+        string jwt_office
+        string jwt_expires_at
+        boolean jwt_valid
+        string metadata
+        string created_at
+    }
+    
+    FANTASY402_AGENT_PERFORMANCE {
+        integer id PK
+        string agent_id
+        string agent_owner
+        string period_start
+        string period_end
+        string period_type
+        integer period_number
+        string period_name
+        real total_risk
+        real total_win
+        real total_commission
+        real net_income
+        integer total_wagers
+        integer pending_wagers
+        integer settled_wagers
+        real free_play_used
+        real free_play_win
+        string sport_breakdown_json
+        string captured_at
+        string raw_response_json
+    }
+    
+    FANTASY402_PLAYERS {
+        integer id PK
+        string customer_id UK
+        string agent_id
+        string player_name
+        string player_type
+        string office
+        string status
+        string registration_date
+        string last_login
+        integer total_wagers
+        real total_risk
+        real total_win
+        real net_income
+        real commission_rate
+        real credit_limit
+        real available_balance
+        real pending_balance
+        real free_play_balance
+        string currency_code
+        boolean active
+        boolean suspend_sportsbook
+        boolean read_only
+        real wager_limit
+        real minimum_wager
+        real max_prop_payout
+        string permissions_json
+        string preferences_json
+        string contact_info_json
+        string raw_response_json
+        string captured_at
+        string created_at
+        string updated_at
+    }
+    
+    FANTASY402_TRANSACTIONS {
+        integer id PK
+        string document_number UK
+        string customer_id
+        string agent_id
+        string tran_code
+        string tran_type
+        real amount
+        string description
+        string tran_date_time
+        real hold_amount
+        string grade_num
+        string entered_by
+        real balance
+        string captured_at
+        string created_at
+    }
+    
+    FANTASY402_PENDING_WAGERS {
+        integer id PK
+        string wager_id UK
+        string customer_id
+        string agent_id
+        string sport
+        string bet_type
+        real stake
+        real odds
+        real risk
+        real potential_win
+        string event_id
+        string event_name
+        string wager_date
+        string status
+        string description
+        string captured_at
+        string created_at
+    }
+```
+
+## MCP Tools Architecture
+
+```mermaid
+graph LR
+    subgraph "MCP Server"
+        MCP[MCP Server]
+        TR[Tool Registry]
+        TH[Tool Handlers]
+    end
+    
+    subgraph "Available Tools"
+        FS[forest-status]
+        DD[deploy-dashboards]
+        REL[release]
+        LO[live-odds]
+        LS[live-scores]
+        PSD[push-sports-data]
+    end
+    
+    subgraph "Data Sources"
+        D1[D1 Databases]
+        KV[KV Cache]
+        AE[Analytics Engine]
+        EXT[External APIs]
+    end
+    
+    MCP --> TR
+    TR --> TH
+    
+    TH --> FS
+    TH --> DD
+    TH --> REL
+    TH --> LO
+    TH --> LS
+    TH --> PSD
+    
+    FS --> D1
+    DD --> KV
+    LO --> EXT
+    LS --> EXT
+    PSD --> AE
+```
+
+## Queue Processing Flow
+
+```mermaid
+flowchart TD
+    subgraph "Queue Producers"
+        W[Workers]
+        CRON[Cron Jobs]
+        WEBHOOK[Webhooks]
+    end
+    
+    subgraph "Queues"
+        Q1[Line Ingress]
+        Q2[Steam Webhook]
+        Q3[Steam Processor]
+        Q4[Exposure Calculator]
+        Q5[Fantasy402 Logs]
+    end
+    
+    subgraph "Queue Consumers"
+        C1[Line Processor]
+        C2[Steam Handler]
+        C3[Steam Processor]
+        C4[Exposure Calculator]
+        C5[Log Processor]
+    end
+    
+    subgraph "Outputs"
+        D1[D1 Database]
+        KV[KV Cache]
+        AE[Analytics Engine]
+        NOTIF[Notifications]
+    end
+    
+    W --> Q1
+    CRON --> Q2
+    WEBHOOK --> Q3
+    W --> Q4
+    W --> Q5
+    
+    Q1 --> C1
+    Q2 --> C2
+    Q3 --> C3
+    Q4 --> C4
+    Q5 --> C5
+    
+    C1 --> D1
+    C2 --> KV
+    C3 --> AE
+    C4 --> D1
+    C5 --> AE
+    
+    C2 --> NOTIF
+    C3 --> NOTIF
+```
+
+## Security Architecture
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        BE[Browser Extension]
+        DC[Dashboard Client]
+        AI[AI Assistant]
+    end
+    
+    subgraph "Security Layer"
+        AUTH[Authentication]
+        RATE[Rate Limiting]
+        VALID[Input Validation]
+        CORS[CORS Headers]
+    end
+    
+    subgraph "Worker Layer"
+        W[Workers]
+        GUARD[Cost Guards]
+        CIRCUIT[Circuit Breakers]
+    end
+    
+    subgraph "Data Layer"
+        D1[D1 Databases]
+        KV[KV Cache]
+        AE[Analytics Engine]
+    end
+    
+    BE --> AUTH
+    DC --> AUTH
+    AI --> AUTH
+    
+    AUTH --> RATE
+    RATE --> VALID
+    VALID --> CORS
+    
+    CORS --> W
+    W --> GUARD
+    GUARD --> CIRCUIT
+    
+    CIRCUIT --> D1
+    CIRCUIT --> KV
+    CIRCUIT --> AE
+```
+
+## Monitoring & Observability
+
+```mermaid
+graph TB
+    subgraph "Data Sources"
+        W[Workers]
+        D1[D1 Databases]
+        KV[KV Cache]
+        Q[Queues]
+        AE[Analytics Engine]
+    end
+    
+    subgraph "Metrics Collection"
+        MC[Metrics Collector]
+        LC[Log Collector]
+        TC[Trace Collector]
+    end
+    
+    subgraph "Storage"
+        TS[Time Series DB]
+        LS[Log Storage]
+        CS[Cache Storage]
+    end
+    
+    subgraph "Visualization"
+        GRAF[Grafana]
+        DASH[Dashboard]
+        ALERT[Alerts]
+    end
+    
+    W --> MC
+    D1 --> MC
+    KV --> MC
+    Q --> MC
+    AE --> MC
+    
+    W --> LC
+    D1 --> LC
+    KV --> LC
+    
+    W --> TC
+    D1 --> TC
+    
+    MC --> TS
+    LC --> LS
+    TC --> CS
+    
+    TS --> GRAF
+    LS --> GRAF
+    CS --> GRAF
+    
+    GRAF --> DASH
+    GRAF --> ALERT
+```
+
+## Deployment Architecture
+
+```mermaid
+graph TB
+    subgraph "Development"
+        DEV[Local Development]
+        TEST[Testing]
+        LINT[Linting]
+    end
+    
+    subgraph "CI/CD"
+        CI[Continuous Integration]
+        CD[Continuous Deployment]
+        ROLLBACK[Rollback]
+    end
+    
+    subgraph "Environments"
+        STAGING[Staging]
+        PROD[Production]
+    end
+    
+    subgraph "Cloudflare Edge"
+        W[Workers]
+        D1[D1 Databases]
+        KV[KV Cache]
+        Q[Queues]
+        AE[Analytics Engine]
+    end
+    
+    DEV --> TEST
+    TEST --> LINT
+    LINT --> CI
+    
+    CI --> CD
+    CD --> STAGING
+    STAGING --> PROD
+    
+    CD --> ROLLBACK
+    ROLLBACK --> STAGING
+    
+    PROD --> W
+    PROD --> D1
+    PROD --> KV
+    PROD --> Q
+    PROD --> AE
+```
+
+## Fantasy402 Integration Flow
+
+```mermaid
+sequenceDiagram
+    participant BE as Browser Extension
+    participant W as Worker
+    participant KV as KV Cache
+    participant D1 as D1 Database
+    participant AE as Analytics Engine
+    participant DASH as Dashboard
+    
+    BE->>W: Intercept API Call
+    W->>W: Validate X-Extension-Secret
+    W->>KV: Check Cache
+    alt Cache Hit
+        KV-->>W: Return Cached Data
+    else Cache Miss
+        W->>BE: Forward to Fantasy402
+        BE->>W: Return Response
+        W->>KV: Store in Cache
+        W->>D1: Store Raw Feed
+        W->>AE: Send Analytics
+    end
+    W->>DASH: Return Data
+    DASH->>DASH: Update UI
+```
+
+## Agent Graph Population Flow
+
+```mermaid
+flowchart TD
+    subgraph "Scheduled Job"
+        CRON[3 AM UTC Cron]
+        PG[Populate Graph]
+    end
+    
+    subgraph "Data Sources"
+        D1[D1 Database]
+        AE[Analytics Engine]
+        KV[KV Cache]
+    end
+    
+    subgraph "Processing"
+        ANALYZE[Analyze Relationships]
+        CALC[Calculate Weights]
+        BUILD[Build Graph]
+    end
+    
+    subgraph "Output"
+        AG[Agent Graph Table]
+        API[Graph API]
+        DASH[Dashboard]
+    end
+    
+    CRON --> PG
+    PG --> D1
+    PG --> AE
+    PG --> KV
+    
+    D1 --> ANALYZE
+    AE --> ANALYZE
+    KV --> ANALYZE
+    
+    ANALYZE --> CALC
+    CALC --> BUILD
+    BUILD --> AG
+    
+    AG --> API
+    API --> DASH
+```
+
+## Cache Warming Flow
+
+```mermaid
+flowchart TD
+    subgraph "Cache Warming"
+        CW[Cache Warmer]
+        ENDPOINTS[API Endpoints]
+    end
+    
+    subgraph "Cache Layer"
+        KV[KV Cache]
+        METRICS[Cache Metrics]
+    end
+    
+    subgraph "Data Sources"
+        D1[D1 Database]
+        EXT[External APIs]
+    end
+    
+    subgraph "Output"
+        DASH[Dashboard]
+        API[Cache API]
+    end
+    
+    CW --> ENDPOINTS
+    ENDPOINTS --> KV
+    ENDPOINTS --> D1
+    ENDPOINTS --> EXT
+    
+    KV --> METRICS
+    METRICS --> API
+    API --> DASH
+    
+    DASH --> CW
+```
+
+## Error Handling & Circuit Breakers
+
+```mermaid
+graph TB
+    subgraph "Request Flow"
+        REQ[Request]
+        VALID[Validation]
+        PROCESS[Processing]
+        RESP[Response]
+    end
+    
+    subgraph "Error Handling"
+        TRY[Try Block]
+        CATCH[Catch Block]
+        LOG[Logging]
+        RETRY[Retry Logic]
+    end
+    
+    subgraph "Circuit Breakers"
+        CB[Circuit Breaker]
+        THRESHOLD[Threshold Check]
+        FALLBACK[Fallback]
+    end
+    
+    subgraph "Monitoring"
+        METRICS[Metrics]
+        ALERTS[Alerts]
+        DASH[Dashboard]
+    end
+    
+    REQ --> VALID
+    VALID --> PROCESS
+    PROCESS --> RESP
+    
+    PROCESS --> TRY
+    TRY --> CATCH
+    CATCH --> LOG
+    LOG --> RETRY
+    RETRY --> CB
+    
+    CB --> THRESHOLD
+    THRESHOLD --> FALLBACK
+    THRESHOLD --> METRICS
+    
+    METRICS --> ALERTS
+    ALERTS --> DASH
+```
+
+## Performance Monitoring
+
+```mermaid
+graph TB
+    subgraph "Performance Metrics"
+        RT[Response Time]
+        THROUGHPUT[Throughput]
+        ERROR[Error Rate]
+        CPU[CPU Usage]
+        MEM[Memory Usage]
+    end
+    
+    subgraph "Data Collection"
+        COLLECT[Collector]
+        AGGREGATE[Aggregator]
+        STORE[Storage]
+    end
+    
+    subgraph "Analysis"
+        ANALYZE[Analyzer]
+        TREND[Trend Analysis]
+        ANOMALY[Anomaly Detection]
+    end
+    
+    subgraph "Output"
+        DASH[Dashboard]
+        ALERT[Alerts]
+        REPORT[Reports]
+    end
+    
+    RT --> COLLECT
+    THROUGHPUT --> COLLECT
+    ERROR --> COLLECT
+    CPU --> COLLECT
+    MEM --> COLLECT
+    
+    COLLECT --> AGGREGATE
+    AGGREGATE --> STORE
+    
+    STORE --> ANALYZE
+    ANALYZE --> TREND
+    ANALYZE --> ANOMALY
+    
+    TREND --> DASH
+    ANOMALY --> ALERT
+    DASH --> REPORT
+```
+
+## Data Retention & TTL
+
+```mermaid
+graph TB
+    subgraph "Data Sources"
+        D1[D1 Databases]
+        KV[KV Cache]
+        AE[Analytics Engine]
+    end
+    
+    subgraph "Retention Policies"
+        TTL7[7-Day TTL]
+        TTL30[30-Day TTL]
+        TTL365[365-Day TTL]
+        PERMANENT[Permanent]
+    end
+    
+    subgraph "Cleanup Jobs"
+        CLEANUP[Cleanup Job]
+        ARCHIVE[Archive Job]
+        DELETE[Delete Job]
+    end
+    
+    subgraph "Storage Tiers"
+        HOT[Hot Storage]
+        WARM[Warm Storage]
+        COLD[Cold Storage]
+    end
+    
+    D1 --> TTL7
+    KV --> TTL7
+    AE --> TTL30
+    
+    TTL7 --> CLEANUP
+    TTL30 --> ARCHIVE
+    TTL365 --> DELETE
+    
+    CLEANUP --> HOT
+    ARCHIVE --> WARM
+    DELETE --> COLD
+```
+
+## Backup & Recovery
+
+```mermaid
+graph TB
+    subgraph "Backup Sources"
+        D1[D1 Databases]
+        KV[KV Cache]
+        AE[Analytics Engine]
+        CONFIG[Configuration]
+    end
+    
+    subgraph "Backup Jobs"
+        DAILY[Daily Backup]
+        WEEKLY[Weekly Backup]
+        MONTHLY[Monthly Backup]
+    end
+    
+    subgraph "Storage"
+        LOCAL[Local Storage]
+        CLOUD[Cloud Storage]
+        REPLICA[Replica]
+    end
+    
+    subgraph "Recovery"
+        RESTORE[Restore]
+        VALIDATE[Validate]
+        DEPLOY[Deploy]
+    end
+    
+    D1 --> DAILY
+    KV --> DAILY
+    AE --> WEEKLY
+    CONFIG --> MONTHLY
+    
+    DAILY --> LOCAL
+    WEEKLY --> CLOUD
+    MONTHLY --> REPLICA
+    
+    LOCAL --> RESTORE
+    CLOUD --> RESTORE
+    REPLICA --> RESTORE
+    
+    RESTORE --> VALIDATE
+    VALIDATE --> DEPLOY
+```
+
+## Compliance & Audit
+
+```mermaid
+graph TB
+    subgraph "Audit Sources"
+        LOGS[Logs]
+        METRICS[Metrics]
+        TRANSACTIONS[Transactions]
+        ACCESS[Access Logs]
+    end
+    
+    subgraph "Audit Processing"
+        COLLECT[Collect]
+        PROCESS[Process]
+        ANALYZE[Analyze]
+        REPORT[Report]
+    end
+    
+    subgraph "Compliance"
+        GDPR[GDPR]
+        SOX[SOX]
+        PCI[PCI DSS]
+        INTERNAL[Internal]
+    end
+    
+    subgraph "Output"
+        AUDIT[Audit Reports]
+        ALERT[Compliance Alerts]
+        DASH[Compliance Dashboard]
+    end
+    
+    LOGS --> COLLECT
+    METRICS --> COLLECT
+    TRANSACTIONS --> COLLECT
+    ACCESS --> COLLECT
+    
+    COLLECT --> PROCESS
+    PROCESS --> ANALYZE
+    ANALYZE --> REPORT
+    
+    REPORT --> GDPR
+    REPORT --> SOX
+    REPORT --> PCI
+    REPORT --> INTERNAL
+    
+    GDPR --> AUDIT
+    SOX --> ALERT
+    PCI --> DASH
+    INTERNAL --> AUDIT
+```
+
+---
+
+**Last Updated:** 2025-10-08  
+**Version:** 3.0.0  
+**Status:** Production Ready ✅

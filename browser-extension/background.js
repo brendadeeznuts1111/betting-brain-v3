@@ -2,6 +2,7 @@
 
 const WORKER_URL = 'http://localhost:8787';
 const TARGET_PATH = '/cloud/api/Manager/getBetTicker';
+const EXTENSION_SECRET = 'default-dev-secret-change-me'; // ⚠️ PRODUCTION: Replace with your secret
 
 /* ======  Enterprise Circuit Breaker & Health Monitoring  ====== */
 const ALARM_HEALTH = 'health-ping';
@@ -264,6 +265,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'X-Extension-Secret': EXTENSION_SECRET,
           },
           body: JSON.stringify(data),
         });

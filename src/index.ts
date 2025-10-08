@@ -354,6 +354,11 @@ export default {
     } else if (cron === '*/30 * * * * *') {
       // 30-second exposure calculation
       await handleExposureCalculation(env, ctx);
+    } else if (cron === '0 3 * * *') {
+      // Daily at 3 AM UTC - Agent graph population
+      console.log('🌳 Running agent graph population');
+      const { populateAgentGraph } = await import('./schedules/populateGraph');
+      await populateAgentGraph(env, ctx);
     }
   }
 };
@@ -706,4 +711,4 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
       headers: corsHeaders
     });
   }
-}
+};
