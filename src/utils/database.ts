@@ -6,7 +6,7 @@
 import { Env } from '../types/api';
 
 export class DatabaseHelper {
-  constructor(private env: Env) {}
+  constructor(private env: Env) { }
 
   /**
    * Execute a query with automatic retry logic
@@ -17,27 +17,26 @@ export class DatabaseHelper {
     options: { retry?: number; timeout?: number } = {}
   ): Promise<T[]> {
     const { retry = 3, timeout = 5000 } = options;
-    
+
     // Handle null/undefined params
     const safeParams = params || [];
-    
+
     for (let attempt = 0; attempt < retry; attempt++) {
       try {
         const stmt = this.env.ANALYTICS.prepare(query);
         const bound = safeParams.length > 0 ? stmt.bind(...safeParams) : stmt;
-        
+
         // Add timeout handling
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => reject(new Error('Timeout')), timeout);
         });
-        
+
         const result = await Promise.race([
           bound.all(),
           timeoutPromise
         ]);
-        
-        // D1 returns { results: [...] }, extract the array
-        return (result as any).results as T[];
+
+        return result as unknown as T[];
       } catch (error) {
         if (attempt === retry - 1) {
           console.error(`Query failed after ${retry} attempts:`, error);
@@ -46,7 +45,7 @@ export class DatabaseHelper {
         await this.sleep(Math.pow(2, attempt) * 100); // Exponential backoff
       }
     }
-    
+
     throw new Error('Query failed after all retry attempts');
   }
 
@@ -59,25 +58,25 @@ export class DatabaseHelper {
     options: { retry?: number; timeout?: number } = {}
   ): Promise<T | null> {
     const { retry = 3, timeout = 5000 } = options;
-    
+
     // Handle null/undefined params
     const safeParams = params || [];
-    
+
     for (let attempt = 0; attempt < retry; attempt++) {
       try {
         const stmt = this.env.ANALYTICS.prepare(query);
         const bound = safeParams.length > 0 ? stmt.bind(...safeParams) : stmt;
-        
+
         // Add timeout handling
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => reject(new Error('Timeout')), timeout);
         });
-        
+
         const result = await Promise.race([
           bound.first(),
           timeoutPromise
         ]);
-        
+
         return result as T | null;
       } catch (error) {
         if (attempt === retry - 1) {
@@ -87,7 +86,7 @@ export class DatabaseHelper {
         await this.sleep(Math.pow(2, attempt) * 100); // Exponential backoff
       }
     }
-    
+
     return null;
   }
 
@@ -123,15 +122,15 @@ export class DatabaseHelper {
       if (operations.length === 0) {
         return { success: true, rowsAffected: 0 };
       }
-      
+
       const statements = operations.map(op => {
         const stmt = this.env.ANALYTICS.prepare(op.query);
         return op.params.length > 0 ? stmt.bind(...op.params) : stmt;
       });
-      
+
       const results = await this.env.ANALYTICS.batch(statements);
       const totalRows = results.reduce((sum, r) => sum + (r.meta?.changes || 0), 0);
-      
+
       return {
         success: results.every(r => r.success),
         rowsAffected: totalRows
