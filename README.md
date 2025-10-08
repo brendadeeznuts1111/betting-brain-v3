@@ -496,6 +496,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[Database & Cron Verification](docs/DATABASE_CRON_VERIFICATION.md)** - System verification
 
 ### Quality & Testing
+- **[Quality Standards](docs/QUALITY_STANDARDS.md)** - Code quality standards & best practices (NEW!) 📏
 - **[Test Audit Report](docs/TEST_AUDIT_REPORT.md)** - Quality score: 100/100
 - **[Error Path Testing](docs/ERROR_PATH_TESTING.md)** - Comprehensive error path test suite (299 tests, 81% coverage) 🆕
 - **[Code Quality Audit](docs/CODE_QUALITY_AUDIT.md)** - Comprehensive review

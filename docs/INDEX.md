@@ -52,7 +52,7 @@
 | [ZOMBIE_PROCESS_FIX.md](ZOMBIE_PROCESS_FIX.md) | Zombie process fix technical details 🆕 | DevOps | ✅ Complete |
 | [TESTING_STATUS.md](TESTING_STATUS.md) | Test health & coverage | QA, Devs | ✅ Complete |
 | **[ERROR_PATH_TESTING.md](ERROR_PATH_TESTING.md)** | **📋 Comprehensive error path test suite (299 tests, 81% coverage)** 🆕⭐ | QA, Devs, Tech Leads | ✅ Complete |
-| [testing/TESTING_GUIDE.md](testing/TESTING_GUIDE.md) | Testing patterns & best practices | All Devs | ✅ Complete |
+| [testing/TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | Testing patterns & best practices | All Devs | ✅ Complete |
 
 ### MCP Integration ✨ NEW
 | Document | Purpose | Audience | Status |
@@ -78,7 +78,7 @@
 | [CONFIG_CACHING_STRATEGY.md](CONFIG_CACHING_STRATEGY.md) | **Multi-tier configuration caching** 🆕📦⚡ | All Teams | ✅ Complete |
 | [ARCHITECTURE_UPGRADE_COMPLETE.md](ARCHITECTURE_UPGRADE_COMPLETE.md) | Queue-based architecture upgrade 🆕⚡ | Architects | ✅ Complete |
 | [QUEUE_BASED_LOGGING.md](QUEUE_BASED_LOGGING.md) | Async logging architecture guide 🆕⚡ | Developers | ✅ Complete |
-| [FANTASY402_AUTHENTICATED_API.md](FANTASY402_AUTHENTICATED_API.md) | Server-side API client guide 🆕🔐 | Developers | ✅ Complete |
+| [FANTASY402_AUTHENTICATED_API.md](API.md) | Server-side API client guide 🆕🔐 | Developers | ✅ Complete |
 | [WEBSOCKET_IMPLEMENTATION_COMPLETE.md](WEBSOCKET_IMPLEMENTATION_COMPLETE.md) | WebSocket implementation guide 🆕🔌 | Developers | ✅ Complete |
 | [WEBSOCKET_ENHANCEMENT_PLAN.md](WEBSOCKET_ENHANCEMENT_PLAN.md) | Future WebSocket enhancements 🆕 | Architects | 📋 Planned |
 | [guides/FANTASY402_INTEGRATION_GUIDE.md](guides/FANTASY402_INTEGRATION_GUIDE.md) | Setup & testing guide 🆕 | Developers | ✅ Complete |
