@@ -1,23 +1,48 @@
 # Bun configuration for betting-brain-v3
 # https://bun.sh/docs/runtime/bunfig
 
-[install]
-# Force use of public npm registry
-registry = "https://registry.npmjs.org/"
+# ========== REGISTRY & AUTHENTICATION ==========
+[install.registry]
+url = "https://registry.npmjs.org/"   # Public npm registry (default)
+# For private registries, uncomment and configure:
+# url      = "https://npm.acme.corp"
+# username = "ci"
+# password = "$NPM_TOKEN"              # Environment variable
+# token    = "Bearer $GITHUB_TOKEN"    # Alternative: Bearer token
 
-# Install configuration optimizations
+# ========== SHARED REMOTE CACHE (S3-compatible) ==========
+# [install.cache]
+# dir             = ".bun-cache"       # Local fallback cache directory
+# url             = "https://minio.acme.corp/bun-cache"
+# accessKeyID     = "$AWS_ACCESS_KEY_ID"
+# secretAccessKey = "$AWS_SECRET_ACCESS_KEY"
+
+# ========== INSTALL CONFIGURATION ==========
+[install]
+# Dependency types
 optional = true          # Install optionalDependencies
 dev = true              # Install devDependencies
 peer = true             # Install peerDependencies (Bun default)
 production = false      # Not in production mode
-frozenLockfile = false  # Allow lockfile updates
+
+# Lockfile & behavior
+frozenLockfile = false  # Allow lockfile updates (set true in CI)
 dryRun = false         # Actually install packages
+saveTextLockfile = false # Use binary bun.lock (faster)
 
-# Performance optimizations
+# Monorepo & binaries
+linker = "hoisted"     # Hoist to root node_modules (or "isolated" for pnpm-style)
+binLinks = true        # Expose bins in root node_modules/.bin
+
+# Patches (like patch-package)
+patchDir = "patches"   # Directory for *.patch files
+
+# Security - disable lifecycle scripts
+trustLevel = "low"     # Never run preinstall/postinstall scripts
+# allowedScripts = ["esbuild", "@prisma/engines"]  # Opt-in whitelist
+
+# Performance
 # concurrentScripts = 16  # Concurrent lifecycle scripts (default: CPU cores * 2)
-
-# Installation strategy: "hoisted" (default) or "isolated" (like pnpm)
-linker = "hoisted"     # Use hoisted node_modules structure
 
 [test]
 # Default timeout for all tests (10 seconds)
