@@ -11,6 +11,8 @@ import { setCurrentTestName, setTestResult } from '../setup/test-setup';
 
 describe('Quiet Testing System', () => {
     beforeEach(() => {
+        // Set test environment to bypass rate limiting
+        process.env.NODE_ENV = 'test';
         setCurrentTestName('quiet-testing-system');
     });
 

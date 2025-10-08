@@ -18,6 +18,8 @@ describe('BetTicker Sniffer', () => {
   let waitUntilPromises: Promise<any>[];
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     // Mock KV storage
     kvStore = new Map();
     waitUntilPromises = [];
@@ -188,7 +190,7 @@ describe('BetTicker Sniffer', () => {
       );
 
       await handleBetTickerInterception(request, mockEnv, mockContext);
-      
+
       // Wait for all waitUntil promises to complete
       await Promise.all(waitUntilPromises);
 
@@ -370,7 +372,7 @@ describe('BetTicker Sniffer', () => {
 
     test('should handle missing headers gracefully', async () => {
       global.fetch = vi.fn(async () =>
-        new Response(JSON.stringify({ ok: true }), { 
+        new Response(JSON.stringify({ ok: true }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
         })
@@ -388,7 +390,7 @@ describe('BetTicker Sniffer', () => {
       );
 
       expect(response.status).toBe(200);
-      
+
       // Wait for all waitUntil promises to complete
       await Promise.all(waitUntilPromises);
 

@@ -54,6 +54,8 @@ describe('SQLite In-Memory Database Tests', () => {
   let db: Database;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     // Fresh in-memory database for each test (same as production Cloudflare D1)
     db = new Database(':memory:');
 

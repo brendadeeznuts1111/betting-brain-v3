@@ -16,6 +16,8 @@ describe('BetTicker Sniffer Error Paths', () => {
   let mockContext: ExecutionContext;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     mockEnv = {
       BET_TICKER_RAW: {
         put: vi.fn().mockResolvedValue(undefined),

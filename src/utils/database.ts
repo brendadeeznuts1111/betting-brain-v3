@@ -6,7 +6,7 @@
 import { Env } from '../types/api';
 
 export class DatabaseHelper {
-  constructor(private env: Env) { }
+  constructor(private env: Env) {}
 
   /**
    * Execute a query with automatic retry logic
@@ -36,7 +36,9 @@ export class DatabaseHelper {
           timeoutPromise
         ]);
 
-        return result as unknown as T[];
+        // Handle D1 result format: { results: T[] }
+        const d1Result = result as unknown as { results: T[] };
+        return d1Result.results || [];
       } catch (error) {
         if (attempt === retry - 1) {
           console.error(`Query failed after ${retry} attempts:`, error);

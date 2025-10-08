@@ -79,7 +79,7 @@ export function getRequestId(request: Request): string {
 export const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, hx-current-url, hx-request, hx-target, hx-trigger',
   'Access-Control-Max-Age': '86400', // 24 hours
 } as const;
 

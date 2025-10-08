@@ -18,6 +18,9 @@ describe('CLV Calculations', () => {
   let mockRequest: Request;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
+
     // Create fresh mock environment for each test
     mockEnv = createMockEnv();
 

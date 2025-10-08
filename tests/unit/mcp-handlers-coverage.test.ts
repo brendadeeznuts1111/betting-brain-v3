@@ -6,6 +6,9 @@ import { describe, test, expect, beforeEach } from 'bun:test';
  */
 
 describe('Intelligence Tools Coverage Expansion', () => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
+
     // Mock environment for all tests
     const mockEnv = {
         ANALYTICS: {

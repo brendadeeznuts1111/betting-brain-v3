@@ -12,6 +12,8 @@ describe('Guards Error Path Tests', () => {
   let mockEnv: Env;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     mockEnv = {
       ANALYTICS: {
         prepare: vi.fn().mockReturnValue({
@@ -108,7 +110,7 @@ describe('Guards Error Path Tests', () => {
         run: vi.fn().mockRejectedValue(new Error('TTL cleanup failed')),
         all: vi.fn().mockResolvedValue({ results: [] })
       });
-      
+
       mockEnv.ANALYTICS.prepare = mockPrepare as any;
 
       // Should not throw
@@ -124,14 +126,14 @@ describe('Guards Error Path Tests', () => {
     test('should handle sampling with invalid data', () => {
       const invalidData = null as any;
       const result = costCapGuard.applySampling(invalidData);
-      
+
       expect(result).toEqual([]);
     });
 
     test('should handle sampling with empty array', () => {
       const emptyData: any[] = [];
       const result = costCapGuard.applySampling(emptyData);
-      
+
       expect(result).toEqual([]);
     });
 
@@ -139,7 +141,7 @@ describe('Guards Error Path Tests', () => {
       const config = { ...defaultCostCapConfig, analytics: { ...defaultCostCapConfig.analytics, samplingRate: 0 } };
       const guard = new CostCapGuard(config);
       const data = [1, 2, 3, 4, 5];
-      
+
       const result = guard.applySampling(data);
       expect(result).toEqual([]);
     });
@@ -148,7 +150,7 @@ describe('Guards Error Path Tests', () => {
       const config = { ...defaultCostCapConfig, analytics: { ...defaultCostCapConfig.analytics, samplingRate: 1 } };
       const guard = new CostCapGuard(config);
       const data = [1, 2, 3, 4, 5];
-      
+
       const result = guard.applySampling(data);
       expect(result).toEqual(data);
     });
@@ -156,9 +158,9 @@ describe('Guards Error Path Tests', () => {
     test('should handle cost limits exceeded scenarios', async () => {
       // Mock high usage
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockResolvedValue({ 
+        first: vi.fn().mockResolvedValue({
           size: defaultCostCapConfig.d1.maxSize * 0.95, // 95% of limit
-          rows: defaultCostCapConfig.d1.maxRows * 0.95 
+          rows: defaultCostCapConfig.d1.maxRows * 0.95
         }),
         run: vi.fn().mockResolvedValue({ success: true }),
         all: vi.fn().mockResolvedValue({ results: [] })
@@ -202,7 +204,7 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle burst limit exceeded', async () => {
       const request = new Request('https://test.com');
-      
+
       // Exceed burst limit
       for (let i = 0; i < defaultRateLimitConfig.burstLimit + 5; i++) {
         await rateLimitGuard.checkRateLimit(request);
@@ -215,7 +217,7 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle rate limit exceeded', async () => {
       const request = new Request('https://test.com');
-      
+
       // Simulate high rate
       const promises = [];
       for (let i = 0; i < defaultRateLimitConfig.requestsPerSecond * 2; i++) {
@@ -240,14 +242,14 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle concurrent rate limit checks', async () => {
       const request = new Request('https://test.com');
-      
+
       // Simulate concurrent requests
-      const promises = Array.from({ length: 50 }, () => 
+      const promises = Array.from({ length: 50 }, () =>
         rateLimitGuard.checkRateLimit(request)
       );
-      
+
       const results = await Promise.all(promises);
-      
+
       // All should complete without errors
       expect(results).toHaveLength(50);
       results.forEach(result => {
@@ -259,12 +261,12 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle probabilistic cleanup', async () => {
       const request = new Request('https://test.com');
-      
+
       // Make many requests to trigger probabilistic cleanup
       for (let i = 0; i < 1000; i++) {
         await rateLimitGuard.checkRateLimit(request);
       }
-      
+
       // Should not throw and should have cleaned up some data
       expect(() => rateLimitGuard.cleanup()).not.toThrow();
     });
@@ -276,10 +278,10 @@ describe('Guards Error Path Tests', () => {
           throw new Error('Key generator failed');
         }
       };
-      
+
       const guard = new RateLimitGuard(config);
       const request = new Request('https://test.com');
-      
+
       // Should handle key generator errors gracefully
       await expect(guard.checkRateLimit(request)).rejects.toThrow('Key generator failed');
     });
@@ -289,23 +291,23 @@ describe('Guards Error Path Tests', () => {
         ...defaultRateLimitConfig,
         windowSize: 0 // Invalid window size
       };
-      
+
       const guard = new RateLimitGuard(config);
       const request = new Request('https://test.com');
-      
+
       const result = await guard.checkRateLimit(request);
       expect(result.allowed).toBe(true);
     });
 
     test('should handle negative request counts', async () => {
       const request = new Request('https://test.com');
-      
+
       // Force negative request count scenario
       const data = (rateLimitGuard as any).store.get('unknown');
       if (data) {
         data.requests = [-1, -2, -3]; // Negative timestamps
       }
-      
+
       const result = await rateLimitGuard.checkRateLimit(request);
       expect(result.allowed).toBe(true);
     });
@@ -315,7 +317,7 @@ describe('Guards Error Path Tests', () => {
     test('should handle both guards failing simultaneously', async () => {
       const costCapGuard = new CostCapGuard(defaultCostCapConfig);
       const rateLimitGuard = new RateLimitGuard(defaultRateLimitConfig);
-      
+
       // Mock both guards to fail
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
@@ -324,12 +326,12 @@ describe('Guards Error Path Tests', () => {
       } as any);
 
       const request = new Request('https://test.com');
-      
+
       const [costResult, rateResult] = await Promise.all([
         costCapGuard.checkRequest(request, mockEnv),
         rateLimitGuard.checkRateLimit(request)
       ]);
-      
+
       // Both should handle errors gracefully
       expect(costResult.allowed).toBe(true); // Safe default
       expect(rateResult.allowed).toBe(true);
@@ -337,10 +339,10 @@ describe('Guards Error Path Tests', () => {
 
     test('should handle guard timeout scenarios', async () => {
       const costCapGuard = new CostCapGuard(defaultCostCapConfig);
-      
+
       // Mock slow database response that never resolves
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockImplementation(() => 
+        first: vi.fn().mockImplementation(() =>
           new Promise(() => {}) // Never resolves
         ),
         run: vi.fn().mockResolvedValue({ success: true }),
@@ -348,12 +350,12 @@ describe('Guards Error Path Tests', () => {
       } as any);
 
       const request = new Request('https://test.com');
-      
+
       // Should not hang indefinitely
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Timeout')), 1000)
       );
-      
+
       await expect(Promise.race([
         costCapGuard.checkRequest(request, mockEnv),
         timeoutPromise

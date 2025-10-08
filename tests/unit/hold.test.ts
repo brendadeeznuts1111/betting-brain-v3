@@ -11,6 +11,8 @@ describe('Hold Percentage Calculations', () => {
   let mockRequest: Request;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     mockEnv = {
       ANALYTICS: {
         prepare: (query: string) => ({
@@ -126,7 +128,7 @@ describe('Hold Percentage Calculations', () => {
   test('should validate market type', async () => {
     const invalidRequest = new Request('https://test.com/getHoldPercentage?eid=nba_123&mt=INVALID');
     const response = await getHoldPercentage(invalidRequest, mockEnv);
-    
+
     expect(response.status).toBe(400);
   });
 });

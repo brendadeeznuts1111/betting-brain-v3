@@ -10,6 +10,8 @@ describe('ProcessManager', () => {
   let manager: ProcessManager;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     manager = new ProcessManager();
   });
 
@@ -21,9 +23,9 @@ describe('ProcessManager', () => {
   test('should track spawned processes', async () => {
     const proc = manager.spawn(['sleep', '0.1']);
     expect(manager.count()).toBe(1);
-    
+
     await proc.exited;
-    
+
     // Wait a bit for cleanup
     await new Promise(resolve => setTimeout(resolve, 100));
     expect(manager.count()).toBe(0);
@@ -35,7 +37,7 @@ describe('ProcessManager', () => {
 
     // Kill immediately
     await manager.kill(proc, 15, 1000);
-    
+
     expect(manager.count()).toBe(0);
   });
 
@@ -61,19 +63,19 @@ describe('ProcessManager', () => {
 
   test('should handle process that exits normally', async () => {
     const proc = manager.spawn(['echo', 'test']);
-    
+
     await proc.exited;
-    
+
     // Wait a bit for cleanup
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     expect(manager.count()).toBe(0);
   });
 
   test('should handle killing already dead process', async () => {
     const proc = manager.spawn(['echo', 'test']);
     await proc.exited;
-    
+
     // Should not throw
     await expect(manager.kill(proc, 15, 1000)).resolves.toBeUndefined();
   });
@@ -82,7 +84,7 @@ describe('ProcessManager', () => {
     // This test is tricky - we need a process that ignores SIGTERM
     // For now, just test that the method completes
     const proc = manager.spawn(['sleep', '1']);
-    
+
     await expect(manager.kill(proc, 15, 100)).resolves.toBeUndefined();
     expect(manager.count()).toBe(0);
   });
@@ -102,27 +104,27 @@ describe('ProcessManager', () => {
 
   test('should auto-remove process when it exits', async () => {
     const proc = manager.spawn(['sh', '-c', 'exit 0']);
-    
+
     expect(manager.count()).toBe(1);
-    
+
     await proc.exited;
-    
+
     // Wait for auto-cleanup
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     expect(manager.count()).toBe(0);
   });
 
   test('should auto-remove process on error', async () => {
     const proc = manager.spawn(['sh', '-c', 'exit 1']);
-    
+
     expect(manager.count()).toBe(1);
-    
+
     await proc.exited;
-    
+
     // Wait for auto-cleanup
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     expect(manager.count()).toBe(0);
   });
 });
@@ -141,9 +143,9 @@ describe('ProcessManager - spawn wrapper', () => {
 
   test('should spawn and track process', async () => {
     const proc = manager.spawn(['echo', 'hello']);
-    
+
     expect(manager.count()).toBe(1);
-    
+
     const exitCode = await proc.exited;
     expect(exitCode).toBe(0);
   });
@@ -163,7 +165,7 @@ describe('ProcessManager - spawn wrapper', () => {
     expect(() => {
       manager.spawn(['this-command-does-not-exist-12345']);
     }).toThrow();
-    
+
     // No process should be tracked since spawn failed
     expect(manager.count()).toBe(0);
   });

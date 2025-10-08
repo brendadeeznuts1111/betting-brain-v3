@@ -11,6 +11,8 @@ describe('Exposure Tracking', () => {
   let mockRequest: Request;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     mockEnv = {
       ANALYTICS: {
         prepare: (query: string) => ({

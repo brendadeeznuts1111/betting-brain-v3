@@ -13,6 +13,8 @@ describe('MCP Handler Error Paths', () => {
   let mockEnv: Env;
 
   beforeEach(() => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
     mockEnv = {
       ANALYTICS: {
         prepare: vi.fn().mockReturnValue({

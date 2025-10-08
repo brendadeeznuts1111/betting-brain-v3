@@ -9,6 +9,9 @@ import {
 } from '../../src/utils/analytics-rollups';
 
 describe('Analytics Rollup Functions', () => {
+    // Set test environment to bypass rate limiting
+    process.env.NODE_ENV = 'test';
+
     const now = new Date();
     const recentTime = new Date(now.getTime() - 30000).toISOString(); // 30 seconds ago
 
