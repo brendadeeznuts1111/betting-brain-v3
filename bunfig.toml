@@ -1,6 +1,24 @@
 # Bun configuration for betting-brain-v3
 # https://bun.sh/docs/runtime/bunfig
 
+[install]
+# Force use of public npm registry
+registry = "https://registry.npmjs.org/"
+
+# Install configuration optimizations
+optional = true          # Install optionalDependencies
+dev = true              # Install devDependencies
+peer = true             # Install peerDependencies (Bun default)
+production = false      # Not in production mode
+frozenLockfile = false  # Allow lockfile updates
+dryRun = false         # Actually install packages
+
+# Performance optimizations
+# concurrentScripts = 16  # Concurrent lifecycle scripts (default: CPU cores * 2)
+
+# Installation strategy: "hoisted" (default) or "isolated" (like pnpm)
+linker = "hoisted"     # Use hoisted node_modules structure
+
 [test]
 # Default timeout for all tests (10 seconds)
 timeout = 10000
