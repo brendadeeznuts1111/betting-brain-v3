@@ -214,13 +214,13 @@ export async function getAgentList(
             LIMIT 100
           `).bind(owner).all()
         : agentID
-        ? await env.RAW_FEED_DB.prepare(`
+          ? await env.RAW_FEED_DB.prepare(`
             SELECT * FROM fantasy402_agents
             WHERE agent_id = ?
             ORDER BY last_active DESC
             LIMIT 100
           `).bind(agentID).all()
-        : null;
+          : null;
 
       if (query && query.results.length > 0) {
         console.log(`[${requestId}] 📊 D1 fallback: ${query.results.length} agents`);
@@ -435,23 +435,33 @@ export async function getAgentTree(
       throw new Error('FANTASY_CACHE not configured');
     }
 
-    // Try to get cached agent list
-    const cacheKey = owner ? `fantasy402:agents:by-owner:${owner}` : null;
-    const cached = cacheKey ? await env.FANTASY_CACHE.get(cacheKey) : null;
+    // Try cache keys in priority order (latest sync → owner-specific → D1)
+    const cacheKeys = [
+      'fantasy402:agents:tree:latest',                          // From sync script
+      owner ? `fantasy402:agents:by-owner:${owner}` : null,     // From interceptor
+    ].filter(Boolean) as string[];
 
     let agents: any[] = [];
+    let cacheHit = false;
 
-    if (cached) {
-      const data = JSON.parse(cached);
-      agents = data.agents || [];
-      console.log(`[${requestId}] ✅ Cache HIT: ${agents.length} agents`);
-    } else if (env.RAW_FEED_DB) {
-      // Fallback to D1
+    for (const cacheKey of cacheKeys) {
+      const cached = await env.FANTASY_CACHE.get(cacheKey);
+      if (cached) {
+        const data = JSON.parse(cached);
+        agents = data.agents || [];
+        console.log(`[${requestId}] ✅ Cache HIT (${cacheKey}): ${agents.length} agents`);
+        cacheHit = true;
+        break;
+      }
+    }
+
+    // Fallback to D1 if no cache hit
+    if (!cacheHit && env.RAW_FEED_DB) {
       const query = await env.RAW_FEED_DB.prepare(`
         SELECT * FROM fantasy402_agents
         ${owner ? 'WHERE agent_owner = ?' : ''}
         ORDER BY agent_owner, agent_id
-        LIMIT 500
+        LIMIT 2000
       `);
 
       const result = owner ? await query.bind(owner).all() : await query.all();
@@ -509,30 +519,38 @@ export async function getAgentTree(
  * Build hierarchical tree from flat agent list
  */
 function buildAgentTree(agents: any[], rootOwner: string | null): any {
-  // Group agents by owner
-  const byOwner = new Map<string, any[]>();
+  // Group agents by parent_id
+  const byParent = new Map<string, any[]>();
   const agentMap = new Map<string, any>();
 
   for (const agent of agents) {
     const id = agent.agentID || agent.agent_id;
+    const parentId = agent.parentID || agent.parent_id;
     const owner = agent.agentOwner || agent.agent_owner;
 
     agentMap.set(id, {
       id,
-      name: id,
+      name: agent.agent_name || agent.agentName || id,
       owner,
+      parent: parentId,
       type: agent.agentType || agent.agent_type,
       office: agent.office,
       totalRequests: agent.totalRequests || agent.total_requests || 0,
       lastActive: agent.lastActive || agent.last_active,
+      // Generate mock risk/steam scores (TODO: calculate from real data)
+      risk: agent.risk_score || (Math.random() * 100),
+      steam: agent.steam_percentage || (Math.random() * 100),
+      velocity: agent.velocity || (Math.random() * 20),
+      sharpness: agent.sharpness || (Math.random() * 100),
       children: [],
     });
 
-    if (owner) {
-      if (!byOwner.has(owner)) {
-        byOwner.set(owner, []);
+    // Group by parent_id for hierarchy
+    if (parentId) {
+      if (!byParent.has(parentId)) {
+        byParent.set(parentId, []);
       }
-      byOwner.get(owner)!.push(id);
+      byParent.get(parentId)!.push(id);
     }
   }
 
@@ -549,7 +567,7 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
 
   // Recursive function to build children
   function buildChildren(parentId: string): any[] {
-    const childIds = byOwner.get(parentId) || [];
+    const childIds = byParent.get(parentId) || [];
     return childIds.map((childId) => {
       const child = agentMap.get(childId);
       if (!child) return null;
@@ -563,7 +581,7 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
   if (rootOwner) {
     root.children = buildChildren(rootOwner);
 
-    // Add the root owner's direct children
+    // Add the root owner's info
     const rootAgent = agentMap.get(rootOwner);
     if (rootAgent) {
       root.totalRequests = rootAgent.totalRequests;
@@ -571,10 +589,10 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
       root.office = rootAgent.office;
     }
   } else {
-    // No root specified - find top-level agents (agents with no owner in the set)
+    // No root specified - find top-level agents (agents with no parent in the set)
     const allIds = new Set(agentMap.keys());
     const childIds = new Set<string>();
-    for (const children of byOwner.values()) {
+    for (const children of byParent.values()) {
       children.forEach(id => childIds.add(id));
     }
 
@@ -587,6 +605,116 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
   }
 
   return root;
+}
+
+/**
+ * POST /api/f402/agents/sync
+ * Bulk upsert agents from Fantasy402 sync
+ */
+export async function syncAgents(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
+  const requestId = Date.now().toString(36);
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    const body = await request.json() as { agents: any[]; source?: string; timestamp?: string };
+    const agents = body.agents || [];
+
+    if (!Array.isArray(agents) || agents.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request: agents array required' }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    console.log(`[${requestId}] 🔄 Syncing ${agents.length} agents from ${body.source || 'unknown'}`);
+
+    if (!env.RAW_FEED_DB) {
+      return new Response(
+        JSON.stringify({ error: 'Database not available' }),
+        { status: 503, headers: corsHeaders }
+      );
+    }
+
+    let inserted = 0;
+    let updated = 0;
+    let errors = 0;
+
+    // Batch upsert agents
+    for (const agent of agents) {
+      try {
+        const stmt = env.RAW_FEED_DB.prepare(`
+          INSERT OR REPLACE INTO fantasy402_agents (
+            agent_id, parent_id, agent_type, agent_owner, agent_name,
+            level, path, credit_limit, outstanding_balance, hold_percentage,
+            active, site_id, synced_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          agent.agent_id,
+          agent.parent_id || null,
+          agent.agent_type,
+          agent.agent_owner,
+          agent.agent_name || agent.agent_id,
+          agent.level || 0,
+          agent.path || `/${agent.agent_id}`,
+          agent.credit_limit || 0,
+          agent.outstanding_balance || 0,
+          agent.hold_percentage || 0,
+          agent.active !== undefined ? agent.active : 1,
+          agent.site_id || 1,
+          agent.synced_at || Date.now(),
+          Date.now()
+        );
+
+        await stmt.run();
+        inserted++;
+      } catch (error) {
+        console.error(`[${requestId}] ❌ Error upserting agent ${agent.agent_id}:`, error);
+        errors++;
+      }
+    }
+
+    console.log(`[${requestId}] ✅ Sync complete: ${inserted} upserted, ${errors} errors`);
+
+    // Invalidate cache
+    ctx.waitUntil(
+      Promise.all([
+        env.LIVEBETS_STORE.delete('fantasy402:agents:tree:all'),
+        env.LIVEBETS_STORE.delete(`fantasy402:agents:tree:${agents[0]?.agent_owner}`)
+      ])
+    );
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        total: agents.length,
+        upserted: inserted,
+        errors,
+        requestId,
+        timestamp: new Date().toISOString()
+      }),
+      { headers: corsHeaders }
+    );
+
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Sync error:`, error);
+    return new Response(
+      JSON.stringify({
+        error: 'Sync failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        requestId
+      }),
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }
 
 /**
@@ -665,15 +793,15 @@ export async function getCacheMetrics(
         hitRate:
           (metrics.agent_detail_cache_hits || 0) +
             (metrics.agent_detail_cache_misses || 0) >
-          0
+            0
             ? parseFloat(
-                (
-                  ((metrics.agent_detail_cache_hits || 0) /
-                    ((metrics.agent_detail_cache_hits || 0) +
-                      (metrics.agent_detail_cache_misses || 0))) *
-                  100
-                ).toFixed(2)
-              )
+              (
+                ((metrics.agent_detail_cache_hits || 0) /
+                  ((metrics.agent_detail_cache_hits || 0) +
+                    (metrics.agent_detail_cache_misses || 0))) *
+                100
+              ).toFixed(2)
+            )
             : 0,
       },
       requestId,

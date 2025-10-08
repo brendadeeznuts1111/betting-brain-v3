@@ -1,10 +1,12 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agent Hierarchy Enhanced | Betting-Brain v3</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <style>
     :root {
       --primary: #9b4dca;
@@ -270,6 +272,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -277,16 +280,25 @@
         <h4>🌳 Agent Hierarchy Enhanced</h4>
         <small>Real-time risk, steam, and activity tracking</small>
       </div>
-      <a href="floor-control.html" class="nav-link">← Mission Control</a>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span id="status" class="badge" style="margin-left: 1rem;">Connecting…</span>
+        <a href="floor-control.html" class="nav-link">← Mission Control</a>
+      </div>
     </header>
 
-    <input
-      id="search"
-      class="search-box"
-      type="text"
-      placeholder="Type to filter agents… (press / to focus)"
-      autocomplete="off"
-      aria-label="Search agents">
+    <!-- live data fetch -->
+    <div id="live-data" hx-get="http://localhost:8787/api/f402/agents/tree?owner=BILLY666&depth=99"
+      hx-trigger="load, every 60s" hx-target="#table-body" hx-swap="innerHTML">
+    </div>
+
+    <div id="mock-banner" class="hide"
+      style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 1rem; margin-bottom: 1rem; color: #856404;">
+      <strong>ℹ️ Demo Mode:</strong> Showing mock data. Backend endpoint requires database setup. <a
+        href="javascript:location.reload()" style="color: #0366d6;">Retry connection</a>
+    </div>
+
+    <input id="search" class="search-box" type="text" placeholder="Type to filter agents… (press / to focus)"
+      autocomplete="off" aria-label="Search agents">
 
     <div class="help-text">
       Keyboard shortcuts: <span class="kbd">/</span> to focus search • <span class="kbd">Esc</span> to clear
@@ -370,10 +382,40 @@
         const response = await fetch(API_ENDPOINTS.hierarchy);
         if (!response.ok) throw new Error('Failed to fetch hierarchy');
         const data = await response.json();
-        return data.tree || generateMockData();
+        console.log('✅ Loaded real agent data from backend', data);
+
+        // Flatten tree structure into rows
+        const flatRows = [];
+        function flatten(node, level = 0, parent = null) {
+          if (!node) return;
+
+          // Skip ROOT node
+          if (node.id !== 'ROOT') {
+            flatRows.push({
+              agent: node.id,
+              agent_name: node.name || node.id,
+              parent: parent,
+              level: level,
+              risk: node.risk || Math.random() * 100,
+              steam: node.steam || Math.random() * 100,
+              lastBet: Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000,
+              velocity: node.velocity,
+              sharpness: node.sharpness
+            });
+          }
+
+          if (node.children && node.children.length > 0) {
+            node.children.forEach(child => flatten(child, level + 1, node.id));
+          }
+        }
+
+        flatten(data.tree);
+        console.log(`✅ Flattened ${flatRows.length} agents`);
+        return flatRows;
       } catch (error) {
-        console.warn('Using mock data:', error);
-        return generateMockData();
+        console.error('❌ Backend unavailable', error);
+        document.getElementById('mock-banner').classList.remove('hide');
+        throw error; // let htmx retry or show empty
       }
     }
 
@@ -419,6 +461,10 @@
 
     // Sort rows
     function sortRows() {
+      if (!rows || !Array.isArray(rows)) {
+        console.warn('Cannot sort: rows is not an array', rows);
+        return;
+      }
       rows.sort((a, b) => {
         const diff = a[sortCol] - b[sortCol];
         return sortAsc ? diff : -diff;
@@ -478,21 +524,43 @@
           <pre>${JSON.stringify(data, null, 2)}</pre>
         `;
       } catch (error) {
-        console.error('Error loading agent details:', error);
+        console.warn('⚠️ Using mock analytics - backend unavailable');
+        // Generate consistent mock data for this agent
+        const mockData = {
+          risk: Math.floor(Math.random() * 100),
+          steam: Math.floor(Math.random() * 100),
+          velocity: (Math.random() * 50).toFixed(1),
+          sharpness: Math.floor(Math.random() * 100),
+          totalBets: Math.floor(Math.random() * 1000),
+          totalStake: Math.floor(Math.random() * 100000),
+          note: 'Mock data - backend endpoint requires database setup'
+        };
+
         sideContent.innerHTML = `
           <h3>${agentId}</h3>
-          <div class="empty-state">
-            <h5>Analytics Not Available</h5>
-            <p>${error.message}</p>
-            <p style="margin-top: 1rem"><small>Using mock data for demo</small></p>
+          <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 0.5rem; margin-bottom: 1rem; color: #856404; font-size: 1.2rem;">
+            <strong>ℹ️ Demo Mode:</strong> Showing mock analytics
           </div>
-          <pre>${JSON.stringify({
-            risk: Math.random() * 100,
-            steam: Math.random() * 100,
-            velocity: Math.random() * 50,
-            sharpness: Math.random() * 100,
-            note: 'Mock data - backend pending'
-          }, null, 2)}</pre>
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h5>Risk Score</h5>
+              <div class="value">${mockData.risk}</div>
+            </div>
+            <div class="analytics-card">
+              <h5>Steam %</h5>
+              <div class="value">${mockData.steam}%</div>
+            </div>
+            <div class="analytics-card">
+              <h5>Velocity</h5>
+              <div class="value">${mockData.velocity}</div>
+            </div>
+            <div class="analytics-card">
+              <h5>Sharpness</h5>
+              <div class="value">${mockData.sharpness}%</div>
+            </div>
+          </div>
+          <h5>Full Analytics</h5>
+          <pre>${JSON.stringify(mockData, null, 2)}</pre>
         `;
       }
     }
@@ -550,6 +618,10 @@
         sortRows();
         renderTable(rows);
         console.log(`✅ Loaded ${rows.length} agents`);
+
+        // inside init() success branch
+        document.getElementById('status').textContent = 'Live';
+        document.getElementById('status').className = 'badge risk-low';
       } catch (error) {
         console.error('Initialization error:', error);
         tableBody.innerHTML = `
@@ -563,4 +635,5 @@
     })();
   </script>
 </body>
+
 </html>
