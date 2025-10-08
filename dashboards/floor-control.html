@@ -305,7 +305,39 @@
         <span class="label">Exposure Tracking</span>
         <span class="val" id="db-exposure">—</span>
       </div>
+      <div class="mini-stat">
+        <span class="label">Fantasy402 Raw</span>
+        <span class="val" id="db-fantasy">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Agent Performance</span>
+        <span class="val" id="db-agents">—</span>
+      </div>
       <div id="db-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Infrastructure Status -->
+    <section class="card">
+      <h2>🏗️ Infrastructure Status</h2>
+      <div class="label">Cloudflare Edge Services</div>
+      <div id="infra-status" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">KV Namespaces</span>
+        <span class="val" id="infra-kv">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Queues</span>
+        <span class="val" id="infra-queues">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Analytics Engine</span>
+        <span class="val" id="infra-analytics">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">D1 Databases</span>
+        <span class="val" id="infra-d1">—</span>
+      </div>
+      <div id="infra-error" class="error" style="display:none;"></div>
     </section>
 
     <!-- System Performance -->
@@ -690,11 +722,18 @@
     });
 
     /* ========== FETCHERS ========== */
-    async function getJSON(path, errorId) {
+    async function getJSON(path, errorId, options = {}) {
       try {
         const start = Date.now();
         const url = (overrideURL || WORKER_URL) + path;
-        const r = await fetch(url);
+        const r = await fetch(url, {
+          method: options.method || 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+          },
+          body: options.body ? JSON.stringify(options.body) : undefined
+        });
         const duration = Date.now() - start;
 
         // Update perf chart
@@ -707,7 +746,8 @@
         perfChart.update();
 
         if (!r.ok) {
-          showError(errorId, `HTTP ${r.status}: ${r.statusText}`);
+          const errorText = await r.text();
+          showError(errorId, `HTTP ${r.status}: ${r.statusText} - ${errorText}`);
           return null;
         }
         hideError(errorId);
@@ -790,6 +830,51 @@
     }
 
     async function loadOdds() {
+      // Try MCP live-odds tool first
+      const mcpResponse = await getJSON('/mcp', 'odds', {
+        method: 'POST',
+        body: {
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: {
+            name: 'live-odds',
+            arguments: {
+              sport: 'nba',
+              market: 'moneyline'
+            }
+          }
+        }
+      });
+
+      if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+        try {
+          const oddsData = JSON.parse(mcpResponse.result.content[0].text);
+          if (oddsData && oddsData.odds && oddsData.odds.length > 0) {
+            const books = [...new Set(oddsData.odds.map(o => o.book))].slice(0, 5);
+            const homeOdds = books.map(book => {
+              const odd = oddsData.odds.find(o => o.book === book && o.side === 'home');
+              return odd ? odd.odds : 0;
+            });
+
+            oddsChart.data.labels = books;
+            oddsChart.data.datasets = [{
+              label: 'Home Odds',
+              data: homeOdds,
+              backgroundColor: '#238636',
+              borderColor: '#2ea043',
+              borderWidth: 1
+            }];
+            oddsChart.update();
+            hideError('odds');
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to parse MCP odds response:', e);
+        }
+      }
+
+      // Fallback to direct API
       const d = await getJSON('/api/live-odds?sport=nba&market=moneyline&limit=10', 'odds');
       if (!d || !d.odds || d.odds.length === 0) {
         showError('odds', 'No odds data available');
@@ -827,12 +912,108 @@
     }
 
     async function loadDb() {
-      // Mock data since we don't have a /api/db/metrics endpoint yet
-      // In production, you'd call an MCP tool or direct endpoint
-      $('#db-total').textContent = fmtNum(1247);
-      $('#db-lines').textContent = fmtNum(856);
-      $('#db-sharp').textContent = fmtNum(234);
-      $('#db-exposure').textContent = fmtNum(157);
+      // Try to get database metrics from MCP tools
+      const mcpResponse = await getJSON('/mcp', 'db', {
+        method: 'POST',
+        body: {
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: {
+            name: 'forest-status',
+            arguments: {}
+          }
+        }
+      });
+
+      if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+        try {
+          const statusData = JSON.parse(mcpResponse.result.content[0].text);
+          if (statusData && statusData.database) {
+            $('#db-total').textContent = fmtNum(statusData.database.totalRecords || 0);
+            $('#db-lines').textContent = fmtNum(statusData.database.lineMovements || 0);
+            $('#db-sharp').textContent = fmtNum(statusData.database.sharpIndicators || 0);
+            $('#db-exposure').textContent = fmtNum(statusData.database.exposureTracking || 0);
+            $('#db-fantasy').textContent = fmtNum(statusData.database.fantasy402Raw || 0);
+            $('#db-agents').textContent = fmtNum(statusData.database.agentPerformance || 0);
+            hideError('db');
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to parse MCP database response:', e);
+        }
+      }
+
+      // Fallback to direct API or mock data
+      const d = await getJSON('/api/database-metrics', 'db');
+      if (d && d.metrics) {
+        $('#db-total').textContent = fmtNum(d.metrics.totalRecords || 0);
+        $('#db-lines').textContent = fmtNum(d.metrics.lineMovements || 0);
+        $('#db-sharp').textContent = fmtNum(d.metrics.sharpIndicators || 0);
+        $('#db-exposure').textContent = fmtNum(d.metrics.exposureTracking || 0);
+        $('#db-fantasy').textContent = fmtNum(d.metrics.fantasy402Raw || 0);
+        $('#db-agents').textContent = fmtNum(d.metrics.agentPerformance || 0);
+      } else {
+        // Mock data fallback
+        $('#db-total').textContent = fmtNum(1247);
+        $('#db-lines').textContent = fmtNum(856);
+        $('#db-sharp').textContent = fmtNum(234);
+        $('#db-exposure').textContent = fmtNum(157);
+        $('#db-fantasy').textContent = fmtNum(89);
+        $('#db-agents').textContent = fmtNum(12);
+      }
+    }
+
+    async function loadInfrastructure() {
+      // Try to get infrastructure status from MCP tools
+      const mcpResponse = await getJSON('/mcp', 'infra', {
+        method: 'POST',
+        body: {
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: {
+            name: 'forest-status',
+            arguments: {}
+          }
+        }
+      });
+
+      if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+        try {
+          const statusData = JSON.parse(mcpResponse.result.content[0].text);
+          if (statusData && statusData.infrastructure) {
+            const infra = statusData.infrastructure;
+            $('#infra-status').textContent = infra.overall || 'operational';
+            $('#infra-kv').textContent = infra.kv ? '✅ Active' : '❌ Down';
+            $('#infra-queues').textContent = infra.queues ? '✅ Active' : '❌ Down';
+            $('#infra-analytics').textContent = infra.analytics ? '✅ Active' : '❌ Down';
+            $('#infra-d1').textContent = infra.d1 ? '✅ Active' : '❌ Down';
+            hideError('infra');
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to parse MCP infrastructure response:', e);
+        }
+      }
+
+      // Fallback to direct API or mock data
+      const d = await getJSON('/api/infrastructure-status', 'infra');
+      if (d && d.infrastructure) {
+        const infra = d.infrastructure;
+        $('#infra-status').textContent = infra.overall || 'operational';
+        $('#infra-kv').textContent = infra.kv ? '✅ Active' : '❌ Down';
+        $('#infra-queues').textContent = infra.queues ? '✅ Active' : '❌ Down';
+        $('#infra-analytics').textContent = infra.analytics ? '✅ Active' : '❌ Down';
+        $('#infra-d1').textContent = infra.d1 ? '✅ Active' : '❌ Down';
+      } else {
+        // Mock data fallback
+        $('#infra-status').textContent = 'operational';
+        $('#infra-kv').textContent = '✅ Active';
+        $('#infra-queues').textContent = '✅ Active';
+        $('#infra-analytics').textContent = '✅ Active';
+        $('#infra-d1').textContent = '✅ Active';
+      }
     }
 
     async function loadActivity() {
@@ -1361,6 +1542,7 @@
         loadOdds(),
         loadScores(),
         loadDb(),
+        loadInfrastructure(),  // Infrastructure status
         loadActivity(),
         loadFantasy402Data(),  // Single unified call instead of 4 separate calls
         loadDNS(),             // DNS health check

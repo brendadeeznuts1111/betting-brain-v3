@@ -1,0 +1,590 @@
+---
+version: "1.0.0"
+lastUpdated: "2025-10-08"
+dependencies: ["cloudflare-workers", "database-patterns", "security-patterns"]
+description: "Cloudflare infrastructure patterns and best practices"
+scope: ["typescript", "javascript", "toml", "sql"]
+---
+
+# Cloudflare Infrastructure Rules
+
+## 🔍 Code Searchability Patterns
+
+### Find Cloudflare Infrastructure Issues with ast-grep
+
+```bash
+# Find D1 database bindings
+ast-grep --pattern 'env.$DB.prepare($QUERY)' src/
+ast-grep --pattern 'env.ANALYTICS.prepare' src/
+ast-grep --pattern 'env.RAW_FEED_DB.prepare' src/
+sg -p 'env.$DB.prepare' src/
+sg -p 'env.ANALYTICS' src/
+sg -p 'env.RAW_FEED_DB' src/
+
+# Find KV namespace usage
+ast-grep --pattern 'env.$KV.get($KEY)' src/
+ast-grep --pattern 'env.$KV.put($KEY, $VALUE)' src/
+sg -p 'env.$KV.get' src/
+sg -p 'env.$KV.put' src/
+
+# Find queue operations
+ast-grep --pattern 'env.$QUEUE.send($MESSAGE)' src/
+ast-grep --pattern 'env.LINE_INGRESS.send' src/
+sg -p 'env.$QUEUE.send' src/
+sg -p 'env.LINE_INGRESS' src/
+
+# Find Analytics Engine usage
+ast-grep --pattern 'env.ANALYTICS_ENGINE.writeDataPoint' src/
+sg -p 'env.ANALYTICS_ENGINE' src/
+```
+
+### Cloudflare Infrastructure Discovery Commands
+
+```bash
+sg search "env.ANALYTICS" src/
+sg search "env.RAW_FEED_DB" src/
+sg search "env.BET_TICKER_RAW" src/
+sg search "env.LINE_INGRESS" src/
+sg search "env.ANALYTICS_ENGINE" src/
+```
+
+### Search Examples
+
+```bash
+# Find all D1 database operations
+sg search 'env.$DB.prepare' src/
+# Find KV operations
+sg search 'env.$KV.get' src/
+# Find queue operations
+sg search 'env.$QUEUE.send' src/
+# Find Analytics Engine usage
+sg search 'env.ANALYTICS_ENGINE' src/
+```
+
+## 🏗️ Infrastructure Patterns
+
+### D1 Database Operations
+
+#### Parameterized Queries (CRITICAL)
+```typescript
+// ✅ CORRECT: Parameterized query
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM line_movements 
+  WHERE eid = ? AND ts > ?
+  LIMIT ?
+`).bind(eventID, timestamp, limit).all();
+
+// ❌ WRONG: String interpolation (SQL injection risk)
+const result = await env.ANALYTICS.prepare(`
+  SELECT * FROM line_movements 
+  WHERE eid = '${eventID}' AND ts > '${timestamp}'
+  LIMIT ${limit}
+`).all();
+```
+
+#### Type Safety with D1 Results
+```typescript
+import { normalizeD1Result } from '../utils/request';
+
+// ✅ CORRECT: Type-safe D1 results
+const result = await env.ANALYTICS.prepare(`
+  SELECT eid, mt, ts, old_line, new_line
+  FROM line_movements
+  WHERE eid = ?
+  ORDER BY ts DESC
+  LIMIT ?
+`).bind(eventID, limit).all();
+
+type Movement = {
+  eid: string;
+  mt: string;
+  ts: string;
+  old_line: number;
+  new_line: number;
+};
+
+const movements = normalizeD1Result<Movement>(result);
+```
+
+#### Database Error Handling
+```typescript
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger(request);
+
+try {
+  const result = await env.ANALYTICS.prepare(query).bind(...params).all();
+  return normalizeD1Result(result);
+} catch (error) {
+  logger.error('database_query_failed', {
+    query: query.substring(0, 100), // Truncate for logging
+    errorType: error instanceof Error ? error.name : 'Unknown'
+  }, error as Error);
+
+  throw new Error(`Database query failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+}
+```
+
+### KV Namespace Operations
+
+#### KV Get Operations
+```typescript
+// ✅ CORRECT: KV get with error handling
+async function getKVData(env: Env, key: string): Promise<any> {
+  try {
+    const value = await env.BET_TICKER_RAW.get(key);
+    if (!value) {
+      return null;
+    }
+    return JSON.parse(value);
+  } catch (error) {
+    console.error('KV get failed:', error);
+    return null;
+  }
+}
+
+// ❌ WRONG: No error handling
+const data = await env.BET_TICKER_RAW.get(key);
+```
+
+#### KV Put Operations
+```typescript
+// ✅ CORRECT: KV put with TTL
+async function setKVData(env: Env, key: string, data: any, ttl: number = 3600): Promise<void> {
+  try {
+    await env.BET_TICKER_RAW.put(key, JSON.stringify(data), {
+      expirationTtl: ttl
+    });
+  } catch (error) {
+    console.error('KV put failed:', error);
+    throw error;
+  }
+}
+
+// ❌ WRONG: No TTL or error handling
+await env.BET_TICKER_RAW.put(key, JSON.stringify(data));
+```
+
+#### KV Batch Operations
+```typescript
+// ✅ CORRECT: Batch KV operations
+async function batchKVOperations(env: Env, operations: Array<{key: string, value: any, ttl?: number}>): Promise<void> {
+  const promises = operations.map(op => 
+    env.BET_TICKER_RAW.put(op.key, JSON.stringify(op.value), {
+      expirationTtl: op.ttl || 3600
+    })
+  );
+  
+  await Promise.all(promises);
+}
+```
+
+### Queue Operations
+
+#### Queue Send Operations
+```typescript
+// ✅ CORRECT: Queue send with error handling
+async function sendToQueue(env: Env, queue: string, message: any): Promise<void> {
+  try {
+    await env.LINE_INGRESS.send(message);
+  } catch (error) {
+    console.error('Queue send failed:', error);
+    throw error;
+  }
+}
+
+// ❌ WRONG: No error handling
+await env.LINE_INGRESS.send(message);
+```
+
+#### Queue Consumer Pattern
+```typescript
+// ✅ CORRECT: Queue consumer with proper error handling
+export default {
+  async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext): Promise<void> {
+    for (const message of batch.messages) {
+      try {
+        // Process message
+        await processMessage(message.body, env);
+        message.ack();
+      } catch (error) {
+        console.error('Message processing failed:', error);
+        message.retry();
+      }
+    }
+  }
+};
+```
+
+### Analytics Engine Operations
+
+#### Analytics Data Points
+```typescript
+// ✅ CORRECT: Analytics Engine with proper structure
+async function writeAnalytics(env: Env, eventType: string, eventId: string, data: any): Promise<void> {
+  try {
+    await env.ANALYTICS_ENGINE.writeDataPoint({
+      blobs: [
+        eventType,           // Event type
+        eventId,             // Event ID
+        data.marketType,     // Market type
+        data.bookmaker       // Bookmaker
+      ],
+      doubles: [
+        data.oldLine,        // Old line
+        data.newLine,        // New line
+        data.volume,         // Volume
+        data.confidence      // Confidence
+      ],
+      indexes: [
+        `event_${Date.now()}`, // Unique index
+        data.sport,           // Sport
+        data.market           // Market
+      ]
+    });
+  } catch (error) {
+    console.error('Analytics write failed:', error);
+    // Don't throw - analytics failures shouldn't break the flow
+  }
+}
+```
+
+## 🔧 Infrastructure Configuration
+
+### Wrangler.toml Patterns
+
+#### Database Bindings
+```toml
+# ✅ CORRECT: Proper database binding
+[[d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics"
+database_id = "1fd6d6d3-7b0f-4488-a651-a234c61705b1"
+migrations_dir = "migrations"
+
+# ❌ WRONG: Missing binding or ID
+[[d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics"
+```
+
+#### KV Namespace Bindings
+```toml
+# ✅ CORRECT: Proper KV binding with preview ID
+[[kv_namespaces]]
+binding = "BET_TICKER_RAW"
+id = "8b9618cb00c647f18ad83458e0061018"
+preview_id = "0d4410da8b824c70834a0f105654029e"
+
+# ❌ WRONG: Missing preview ID for development
+[[kv_namespaces]]
+binding = "BET_TICKER_RAW"
+id = "8b9618cb00c647f18ad83458e0061018"
+```
+
+#### Queue Configuration
+```toml
+# ✅ CORRECT: Proper queue configuration
+[[queues.producers]]
+binding = "LINE_INGRESS"
+queue = "line-ingress"
+
+[[queues.consumers]]
+queue = "line-ingress"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 2
+
+# ❌ WRONG: Missing consumer configuration
+[[queues.producers]]
+binding = "LINE_INGRESS"
+queue = "line-ingress"
+```
+
+### Environment Configuration
+
+#### Development vs Production
+```toml
+# ✅ CORRECT: Environment-specific configuration
+[env.production]
+name = "betting-brain-v3-prod"
+
+[[env.production.d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics"
+database_id = "1fd6d6d3-7b0f-4488-a651-a234c61705b1"
+migrations_dir = "migrations"
+
+# ❌ WRONG: No environment separation
+[[d1_databases]]
+binding = "ANALYTICS"
+database_name = "betting-analytics"
+database_id = "1fd6d6d3-7b0f-4488-a651-a234c61705b1"
+```
+
+## 🚀 Deployment Patterns
+
+### Migration Management
+```bash
+# ✅ CORRECT: Apply migrations before deployment
+wrangler d1 migrations apply betting-analytics --remote
+wrangler d1 migrations apply fantasy42-raw-feed --remote
+wrangler deploy --env production
+
+# ❌ WRONG: Deploy without migrations
+wrangler deploy --env production
+```
+
+### Secret Management
+```bash
+# ✅ CORRECT: Set secrets for production
+wrangler secret put JWT_SECRET --env production
+wrangler secret put PINNACLE_API_KEY --env production
+wrangler secret put BET365_API_KEY --env production
+
+# ❌ WRONG: Hardcode secrets in wrangler.toml
+[vars]
+JWT_SECRET = "hardcoded-secret"
+```
+
+### Health Checks
+```typescript
+// ✅ CORRECT: Health check endpoint
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    if (request.url.endsWith('/health')) {
+      return new Response(JSON.stringify({
+        status: 'healthy',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        database: await checkDatabase(env),
+        kv: await checkKV(env),
+        queue: await checkQueue(env)
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    // ... rest of handler
+  }
+};
+```
+
+## 🔒 Security Patterns
+
+### Input Validation
+```typescript
+import { z } from 'zod';
+
+// ✅ CORRECT: Validate all inputs
+const LineMovementSchema = z.object({
+  eid: z.string().min(1),
+  mt: z.enum(['SPREAD', 'MONEYLINE', 'TOTAL', 'PROP']),
+  lb: z.number(),
+  la: z.number(),
+  vb: z.number().int().min(0),
+  va: z.number().int().min(0),
+  ts: z.string().datetime()
+});
+
+function validateLineMovement(data: unknown) {
+  return LineMovementSchema.parse(data);
+}
+```
+
+### Rate Limiting
+```typescript
+// ✅ CORRECT: Rate limiting with KV
+async function checkRateLimit(env: Env, ip: string): Promise<boolean> {
+  const key = `rate_limit:${ip}`;
+  const current = await env.RATE_LIMITER.get(key);
+  
+  if (current) {
+    const count = parseInt(current);
+    if (count >= 10) { // 10 requests per minute
+      return false;
+    }
+    await env.RATE_LIMITER.put(key, (count + 1).toString(), { expirationTtl: 60 });
+  } else {
+    await env.RATE_LIMITER.put(key, '1', { expirationTtl: 60 });
+  }
+  
+  return true;
+}
+```
+
+### CORS Configuration
+```typescript
+// ✅ CORRECT: Proper CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400'
+};
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+    
+    // ... handle request
+    
+    return new Response(data, { headers: corsHeaders });
+  }
+};
+```
+
+## 📊 Performance Patterns
+
+### Caching Strategy
+```typescript
+// ✅ CORRECT: Cache with TTL
+async function getCachedData(env: Env, key: string): Promise<any> {
+  const cached = await env.SPORTS_CACHE.get(key);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+  
+  const data = await fetchData();
+  await env.SPORTS_CACHE.put(key, JSON.stringify(data), { expirationTtl: 30 });
+  return data;
+}
+```
+
+### Batch Operations
+```typescript
+// ✅ CORRECT: Batch database operations
+async function batchInsert(env: Env, records: any[]): Promise<void> {
+  const stmt = env.ANALYTICS.prepare(`
+    INSERT INTO line_movements (eid, mt, lb, la, vb, va, ts)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  for (const record of records) {
+    await stmt.bind(
+      record.eid,
+      record.mt,
+      record.lb,
+      record.la,
+      record.vb,
+      record.va,
+      record.ts
+    ).run();
+  }
+}
+```
+
+### Error Handling
+```typescript
+// ✅ CORRECT: Comprehensive error handling
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    try {
+      // Handle request
+      const response = await handleRequest(request, env);
+      return response;
+    } catch (error) {
+      console.error('Request failed:', error);
+      
+      return new Response(JSON.stringify({
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  }
+};
+```
+
+## 🧪 Testing Patterns
+
+### Infrastructure Testing
+```typescript
+// ✅ CORRECT: Test infrastructure components
+import { describe, test, expect, beforeEach } from 'bun:test';
+
+describe('Infrastructure', () => {
+  let mockEnv: any;
+
+  beforeEach(() => {
+    mockEnv = {
+      ANALYTICS: {
+        prepare: vi.fn().mockReturnValue({
+          bind: vi.fn().mockReturnValue({
+            all: vi.fn().mockResolvedValue({ results: [] }),
+            first: vi.fn().mockResolvedValue(null),
+            run: vi.fn().mockResolvedValue({ success: true })
+          })
+        })
+      },
+      BET_TICKER_RAW: {
+        get: vi.fn().mockResolvedValue(null),
+        put: vi.fn().mockResolvedValue(undefined)
+      },
+      LINE_INGRESS: {
+        send: vi.fn().mockResolvedValue(undefined)
+      }
+    };
+  });
+
+  test('should handle database operations', async () => {
+    const result = await mockEnv.ANALYTICS.prepare('SELECT * FROM test').bind().all();
+    expect(result).toEqual({ results: [] });
+  });
+
+  test('should handle KV operations', async () => {
+    await mockEnv.BET_TICKER_RAW.put('key', 'value');
+    const value = await mockEnv.BET_TICKER_RAW.get('key');
+    expect(value).toBeNull();
+  });
+});
+```
+
+## 📚 Best Practices
+
+### Infrastructure Best Practices
+1. **Always use parameterized queries** - Prevent SQL injection
+2. **Handle all errors gracefully** - Don't let infrastructure failures break the app
+3. **Use proper TTL for KV** - Prevent storage bloat
+4. **Batch operations when possible** - Improve performance
+5. **Monitor resource usage** - Set up alerts for cost control
+6. **Use environment-specific configs** - Separate dev/prod
+7. **Test infrastructure locally** - Use `wrangler dev --local`
+8. **Document all bindings** - Keep infrastructure docs updated
+9. **Use proper error handling** - Comprehensive error responses
+10. **Monitor performance** - Track response times and resource usage
+
+### Deployment Best Practices
+1. **Apply migrations before deployment** - Ensure database schema is current
+2. **Set secrets properly** - Use `wrangler secret put`
+3. **Test in staging first** - Validate changes before production
+4. **Monitor deployment** - Check logs and metrics after deployment
+5. **Have rollback plan** - Keep previous versions available
+6. **Health check after deployment** - Verify all services are working
+7. **Document deployment process** - Keep deployment docs updated
+8. **Use proper environment separation** - Don't mix dev/prod configs
+
+## 🔗 Related Rules
+
+- [Cloudflare Workers](mdc:.cursor/rules/cloudflare-workers.mdc) - Workers-specific patterns
+- [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - Database best practices
+- [Security Patterns](mdc:.cursor/rules/security-patterns.mdc) - Security considerations
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API design patterns
+
+## 📖 Related Documentation
+
+- [Cloudflare Infrastructure Guide](mdc:docs/CLOUDFLARE_INFRASTRUCTURE_GUIDE.md) - Complete infrastructure guide
+- [Floor Control Dashboard](mdc:dashboards/floor-control.html) - Infrastructure monitoring
+- [API Reference](mdc:docs/REST_API_REFERENCE.md) - API documentation
+- [MCP Integration](mdc:docs/MCP_INTEGRATION_STATUS.md) - MCP server status
+
+---
+
+**Status:** Production Ready ✅  
+**Last Updated:** 2025-10-08  
+**Infrastructure:** Cloudflare Edge (100% Edge-Native)  
+**Coverage:** D1, KV, Queues, Analytics Engine, Workers

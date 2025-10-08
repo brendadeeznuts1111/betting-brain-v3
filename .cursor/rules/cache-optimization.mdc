@@ -1,0 +1,593 @@
+---
+version: "1.0.0"
+globs: "src/**/*.ts,dashboards/*.html"
+alwaysApply: false
+description: "Fantasy402 cache optimization patterns and performance guidelines"
+lastUpdated: "2025-10-08"
+dependencies: ["api-patterns", "database-patterns", "quality-standards"]
+---
+
+# Cache Optimization Patterns
+
+**Metadata:**
+- **Status:** ✅ Active (v1.0)
+- **Always Apply:** false (Fantasy402-specific)
+- **Topics:** #caching #performance #kv #optimization
+- **Last Updated:** 2025-10-08
+
+## 🔍 Code Searchability Patterns
+
+### Find cache-optimization Issues with ast-grep
+
+```bash
+# Find KV cache writes
+ast-grep --pattern 'env.FANTASY_CACHE.put($KEY, $VALUE, { expirationTtl: $TTL })' src/
+sg -p 'env.FANTASY_CACHE.put($KEY, $VALUE, { expirationTtl: $TTL })' src/
+
+# Find hash-based change detection
+ast-grep --pattern 'JSON.stringify($$$)' src/
+sg -p 'JSON.stringify($$$)' src/
+
+# Find cache metric increments
+ast-grep --pattern 'incrementCacheMetric($$$)' src/
+sg -p 'incrementCacheMetric($$$)' src/
+
+# Find cache key patterns
+ast-grep --pattern 'fantasy402:$$$:$$$' src/
+sg -p 'fantasy402:' src/
+```
+
+### cache-optimization Discovery Commands
+
+```bash
+sg search "FANTASY_CACHE.put" src/
+sg search "expirationTtl" src/
+sg search "incrementCacheMetric" src/
+sg search "fantasy402:" src/
+sg search "hash:" src/
+```
+
+### Search Examples
+
+```bash
+# Find all KV cache operations
+sg search 'env.FANTASY_CACHE.put($KEY, $VALUE, { expirationTtl: $TTL })' src/
+
+# Find change detection patterns
+sg search 'JSON.stringify($$$)' src/
+
+# Find cache metrics
+sg search 'incrementCacheMetric($$$)' src/
+
+# Find cache keys
+sg search 'fantasy402:' src/
+```
+
+## Overview
+
+Fantasy402 cache optimization patterns implemented in **v1.0-cache-optimization** achieving:
+- **90%+ cache hit rate**
+- **93.3% D1 write reduction**
+- **1-hour TTL** (safe during iteration, 24h in production)
+
+## Critical Performance Patterns
+
+### 1. Multi-Key KV Caching (CRITICAL)
+
+**Why:** Fantasy402 agent lists need multiple lookup patterns for different use cases.
+
+```typescript
+// ✅ CORRECT: Multi-key caching with 3 lookup patterns
+const agentOwner = agents[0]?.agentOwner;
+const agentID = agents[0]?.agentID;
+
+const cacheKeys = [
+  `fantasy402:agents:by-owner:${agentOwner}`,   // Primary: lookup by owner
+  `fantasy402:agents:by-agent:${agentID}`,       // Secondary: lookup by agent
+  `fantasy402:agents:latest:${agentOwner}`       // Fallback: latest data
+].filter(Boolean);
+
+const cacheData = {
+  agents,
+  timestamp: new Date().toISOString(),
+  requestId
+};
+
+// Write to all keys in parallel
+await Promise.all(
+  cacheKeys.map(key =>
+    env.FANTASY_CACHE!.put(key, JSON.stringify(cacheData), {
+      expirationTtl: 3600 // 1 hour (adjust to 86400 for 24h in production)
+    })
+  )
+);
+
+// ❌ WRONG: Single key only
+await env.FANTASY_CACHE.put(
+  `fantasy402:agents:${agentOwner}`,
+  JSON.stringify(cacheData)
+);
+```
+
+**Cache Key Naming Convention:**
+```
+fantasy402:{resource}:{lookup_type}:{identifier}
+
+Examples:
+- fantasy402:agents:by-owner:BILLY666
+- fantasy402:agents:by-agent:AGENT_123
+- fantasy402:agents:latest:BILLY666
+- fantasy402:agent:AGENT_123              # Individual agent
+- fantasy402:agents:hash:BILLY666         # Change detection
+- fantasy402:agentTree:BILLY666           # Dashboard tree
+```
+
+### 2. Hash-Based Change Detection (CRITICAL)
+
+**Why:** Avoid unnecessary D1 writes when data hasn't changed. Achieves 93.3% write reduction.
+
+```typescript
+// ✅ CORRECT: Hash-based change detection
+const hashKey = `fantasy402:agents:hash:${agentOwner}`;
+
+// Create deterministic hash from essential fields only
+const agentHash = JSON.stringify(
+  agents.map((a: any) => ({
+    id: a.agentID,
+    owner: a.agentOwner,
+    type: a.agentType,
+    office: a.office
+  }))
+);
+
+// Check if data changed
+const currentHash = await env.FANTASY_CACHE.get(hashKey);
+
+if (currentHash === agentHash) {
+  console.log(`[${requestId}] Agent list unchanged, skipping D1 writes`);
+  await incrementCacheMetric(env, 'agent_list_d1_writes_skipped');
+  return; // Skip D1 writes
+}
+
+// Data changed, update hash and write to D1
+await env.FANTASY_CACHE.put(hashKey, agentHash, {
+  expirationTtl: 3600 // Same TTL as data
+});
+
+await incrementCacheMetric(env, 'agent_list_d1_writes_executed');
+
+// Proceed with D1 writes...
+
+// ❌ WRONG: No change detection, always write to D1
+for (const agent of agents) {
+  await env.RAW_FEED_DB.prepare(`
+    INSERT OR REPLACE INTO fantasy402_agents ...
+  `).bind(...).run();
+}
+```
+
+### 3. Cache Metrics Tracking (HIGH)
+
+**Why:** Measure cache performance and identify optimization opportunities.
+
+```typescript
+// ✅ CORRECT: Track metrics for every cache operation
+async function incrementCacheMetric(env: Env, metricName: string): Promise<void> {
+  try {
+    const key = `fantasy402:metrics:${metricName}`;
+    const current = await env.FANTASY_CACHE.get(key);
+    const count = current ? parseInt(current) : 0;
+
+    await env.FANTASY_CACHE.put(key, String(count + 1), {
+      expirationTtl: 86400 * 7 // 7 days retention
+    });
+  } catch (error) {
+    // Non-blocking: don't fail request if metrics fail
+    console.error(`Metric increment failed: ${metricName}`, error);
+  }
+}
+
+// Track in request handler
+await incrementCacheMetric(env, 'agent_list_requests');
+
+// Check cache
+const cached = await env.FANTASY_CACHE.get(cacheKey);
+if (cached) {
+  await incrementCacheMetric(env, 'agent_list_cache_hits');
+  return JSON.parse(cached);
+}
+
+await incrementCacheMetric(env, 'agent_list_cache_misses');
+
+// ❌ WRONG: No metrics tracking
+const cached = await env.FANTASY_CACHE.get(cacheKey);
+if (cached) {
+  return JSON.parse(cached);
+}
+```
+
+**Metric Names:**
+```
+fantasy402:metrics:agent_list_requests           # Total requests
+fantasy402:metrics:agent_list_cache_hits         # Cache hits
+fantasy402:metrics:agent_list_cache_misses       # Cache misses
+fantasy402:metrics:agent_list_d1_writes_skipped  # Writes avoided
+fantasy402:metrics:agent_list_d1_writes_executed # Writes performed
+```
+
+### 4. Individual Agent Indexing (MEDIUM)
+
+**Why:** Fast lookups for single agents without loading entire hierarchy.
+
+```typescript
+// ✅ CORRECT: Index each agent individually
+for (const agent of agents) {
+  const agentKey = `fantasy402:agent:${agent.agentID}`;
+
+  await env.FANTASY_CACHE.put(agentKey, JSON.stringify({
+    agentID: agent.agentID,
+    agentOwner: agent.agentOwner,
+    agentType: agent.agentType,
+    office: agent.office,
+    timestamp: new Date().toISOString()
+  }), {
+    expirationTtl: 3600 // 1 hour
+  });
+}
+
+// Fast single-agent lookup
+const agentData = await env.FANTASY_CACHE.get(`fantasy402:agent:${agentID}`);
+
+// ❌ WRONG: Only cache full list, require full load for single agent
+const allAgents = await env.FANTASY_CACHE.get(`fantasy402:agents:all`);
+const agent = JSON.parse(allAgents).find(a => a.agentID === agentID);
+```
+
+## Cache Warming Patterns
+
+### Manual Cache Warming
+
+**API Endpoint:** `POST /api/f402/cache/warm`
+
+```typescript
+// Cache warming handler
+export async function warmCache(
+  request: Request,
+  env: Env,
+  requestId: string
+): Promise<Response> {
+  const startTime = Date.now();
+
+  // 1. Query D1 for all unique owners
+  const owners = await env.RAW_FEED_DB.prepare(`
+    SELECT DISTINCT agent_owner
+    FROM fantasy402_agents
+    WHERE agent_owner IS NOT NULL
+    LIMIT 100
+  `).all();
+
+  const warmed = { owners: 0, agents: 0, lists: 0 };
+
+  // 2. Load each owner's agent list
+  for (const ownerRow of owners.results) {
+    const owner = (ownerRow as any).agent_owner;
+
+    const agents = await env.RAW_FEED_DB.prepare(`
+      SELECT * FROM fantasy402_agents
+      WHERE agent_owner = ?
+    `).bind(owner).all();
+
+    if (agents.results.length === 0) continue;
+
+    // 3. Write to cache with multi-key pattern
+    const cacheData = {
+      agents: agents.results,
+      timestamp: new Date().toISOString(),
+      source: 'cache_warm'
+    };
+
+    const cacheKeys = [
+      `fantasy402:agents:by-owner:${owner}`,
+      `fantasy402:agents:latest:${owner}`
+    ];
+
+    await Promise.all(
+      cacheKeys.map(key =>
+        env.FANTASY_CACHE.put(key, JSON.stringify(cacheData), {
+          expirationTtl: 3600
+        })
+      )
+    );
+
+    warmed.owners++;
+    warmed.agents += agents.results.length;
+    warmed.lists += cacheKeys.length;
+  }
+
+  return new Response(JSON.stringify({
+    success: true,
+    warmed,
+    duration: Date.now() - startTime,
+    requestId
+  }), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+```
+
+## D3.js Visualization Patterns
+
+### Interactive Agent Tree
+
+**Dashboard Integration:** `dashboards/floor-control.html`
+
+```javascript
+// ✅ CORRECT: D3.js collapsible tree
+function renderD3Tree(root) {
+  const width = 800;
+  const height = 600;
+  const margin = { top: 20, right: 90, bottom: 30, left: 90 };
+
+  // Clear previous render
+  d3.select('#agent-tree-d3').selectAll('*').remove();
+
+  const svg = d3.select('#agent-tree-d3')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Create hierarchy
+  const treeLayout = d3.tree().size([height - 40, width - 160]);
+  const hierarchy = d3.hierarchy(root);
+
+  // Generate tree nodes
+  const treeData = treeLayout(hierarchy);
+
+  // Draw links
+  svg.selectAll('.link')
+    .data(treeData.links())
+    .enter()
+    .append('path')
+    .attr('class', 'link')
+    .attr('d', d3.linkHorizontal()
+      .x(d => d.y)
+      .y(d => d.x)
+    )
+    .style('fill', 'none')
+    .style('stroke', '#ccc')
+    .style('stroke-width', 2);
+
+  // Draw nodes
+  const nodes = svg.selectAll('.node')
+    .data(treeData.descendants())
+    .enter()
+    .append('g')
+    .attr('class', 'node')
+    .attr('transform', d => `translate(${d.y},${d.x})`);
+
+  // Add circles
+  nodes.append('circle')
+    .attr('r', 6)
+    .style('fill', d => d.children ? '#4CAF50' : '#2196F3')
+    .style('cursor', 'pointer')
+    .on('click', (event, d) => {
+      // Toggle children on click
+      if (d.children) {
+        d._children = d.children;
+        d.children = null;
+      } else {
+        d.children = d._children;
+        d._children = null;
+      }
+      renderD3Tree(root);
+    });
+
+  // Add labels
+  nodes.append('text')
+    .attr('dy', '.31em')
+    .attr('x', d => d.children ? -13 : 13)
+    .style('text-anchor', d => d.children ? 'end' : 'start')
+    .text(d => d.data.name);
+}
+
+// ❌ WRONG: Static tree without interactivity
+function renderStaticTree(root) {
+  let html = '<ul>';
+  for (const child of root.children) {
+    html += `<li>${child.name}</li>`;
+  }
+  html += '</ul>';
+  document.getElementById('tree').innerHTML = html;
+}
+```
+
+## TTL Configuration
+
+### Development vs Production
+
+```typescript
+// Development (fast iteration)
+const DEV_TTL = 3600; // 1 hour
+
+// Production (stable data)
+const PROD_TTL = 86400; // 24 hours
+
+// Use environment-aware TTL
+const cacheTTL = env.ENVIRONMENT === 'production' ? PROD_TTL : DEV_TTL;
+
+await env.FANTASY_CACHE.put(key, value, {
+  expirationTtl: cacheTTL
+});
+```
+
+### TTL Tuning Guidelines
+
+| Scenario | TTL | Reason |
+|----------|-----|--------|
+| **Active Development** | 1 hour | Fast iteration, frequent schema changes |
+| **Staging/Testing** | 6 hours | Balance between freshness and performance |
+| **Production (stable)** | 24 hours | Agent hierarchies rarely change |
+| **Production (volatile)** | 1 hour | Frequently changing data (live bets) |
+
+## Export Patterns
+
+### JSON Export
+
+```javascript
+function exportMetrics(format) {
+  if (format === 'json') {
+    const blob = new Blob(
+      [JSON.stringify(cachedMetrics, null, 2)],
+      { type: 'application/json' }
+    );
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `cache-metrics-${timestamp}.json`;
+
+    downloadBlob(blob, filename);
+  }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+```
+
+### CSV Export
+
+```javascript
+function exportMetrics(format) {
+  if (format === 'csv') {
+    const summary = cachedMetrics.summary;
+
+    const rows = [
+      ['Metric', 'Value'],
+      ['Total Requests', summary.totalRequests],
+      ['Cache Hits', summary.cacheHits],
+      ['Cache Misses', summary.cacheMisses],
+      ['Cache Hit Rate (%)', summary.cacheHitRate],
+      ['D1 Writes Skipped', summary.d1WritesSkipped],
+      ['D1 Writes Executed', summary.d1WritesExecuted],
+      ['D1 Write Reduction (%)', summary.d1WriteReduction],
+      ['Timestamp', new Date().toISOString()]
+    ];
+
+    const csv = rows.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    downloadBlob(blob, `cache-metrics-${timestamp}.csv`);
+  }
+}
+```
+
+## Security Patterns
+
+### Ingest Endpoint Protection
+
+```typescript
+// ✅ CORRECT: Secret-based authentication
+export async function handleFantasy402Ingest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
+  const requestId = generateRequestId();
+
+  // 1. Validate secret header
+  const authHeader = request.headers.get('X-Extension-Secret');
+  const expectedSecret = env.EXTENSION_SECRET || 'default-dev-secret-change-me';
+
+  if (!authHeader || authHeader !== expectedSecret) {
+    return new Response(JSON.stringify({
+      error: 'Unauthorized',
+      message: 'Valid X-Extension-Secret header required',
+      requestId
+    }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  // 2. Proceed with ingestion...
+}
+
+// ❌ WRONG: No authentication
+export async function handleFantasy402Ingest(request: Request, env: Env) {
+  // Anyone can POST data
+  const data = await request.json();
+  // ...
+}
+```
+
+## Performance Benchmarks
+
+### Target Metrics (v1.0)
+
+| Metric | Target | Achieved | Status |
+|--------|--------|----------|--------|
+| **Cache Hit Rate** | 80%+ | 90.0% | 🟢 Excellent |
+| **D1 Write Reduction** | 80%+ | 93.3% | 🟢 Excellent |
+| **Cache Warm Duration** | <1s | 450ms | 🟢 Excellent |
+| **D3 Render Time** | <100ms | 50ms | 🟢 Excellent |
+
+### Monitoring
+
+```bash
+# Check cache metrics
+curl -s http://localhost:8787/api/f402/cache/metrics | jq '.summary'
+
+# Warm cache
+curl -X POST http://localhost:8787/api/f402/cache/warm | jq '.warmed'
+
+# Monitor KV operations in Wrangler dashboard
+wrangler tail --format json
+```
+
+## Key Files
+
+- **[fantasy402-ingest.ts](mdc:src/api/fantasy402-ingest.ts)** - Main ingestion handler with caching
+- **[f402-agents.ts](mdc:src/routes/api/f402-agents.ts)** - Agent tree and metrics endpoints
+- **[cache-warm.ts](mdc:src/routes/api/cache-warm.ts)** - Cache warming handler
+- **[floor-control.html](mdc:dashboards/floor-control.html)** - Dashboard with D3 visualization
+
+## Rules Summary
+
+1. ✅ **Always** use multi-key caching (3+ lookup patterns)
+2. ✅ **Always** implement hash-based change detection before D1 writes
+3. ✅ **Always** track cache metrics (hits/misses/writes)
+4. ✅ **Always** use non-blocking metrics (catch errors)
+5. ✅ **Always** set appropriate TTLs (1h dev, 24h prod)
+6. ✅ **Always** index individual resources
+7. ✅ **Always** protect ingest endpoints with secrets
+8. ❌ **Never** write to D1 without checking cache first
+9. ❌ **Never** use single-key caching
+10. ❌ **Never** skip change detection for idempotent operations
+
+## Related Rules
+
+- [API Patterns](mdc:.cursor/rules/api-patterns.mdc) - API validation & error handling
+- [Database Patterns](mdc:.cursor/rules/database-patterns.mdc) - D1 query patterns
+- [Quality Standards](mdc:.cursor/rules/quality-standards.mdc) - Code quality standards
+- [Production Security](mdc:.cursor/rules/production-security.mdc) - Security patterns
+
+## Related Documentation
+
+- [RELEASE_v1.0.md](mdc:RELEASE_v1.0.md) - v1.0 release notes and benchmarks
+- [deployment/docs/PRODUCTION_CONFIG.md](mdc:deployment/docs/PRODUCTION_CONFIG.md) - Production configuration
+- [deployment/docs/CACHE_ARCHITECTURE.md](mdc:deployment/docs/CACHE_ARCHITECTURE.md) - Architecture diagram
+
+---
+
+**Status:** Production-Ready (v1.0-cache-optimization)
+**Last Updated:** 2025-10-08
+**Benchmarks:** 90% cache hit rate, 93.3% write reduction
