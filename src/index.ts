@@ -88,6 +88,19 @@ export default {
       return handleIngest(request, env as SportsEnv);
     }
 
+    // DNS health endpoints
+    if (url.pathname === '/api/health/dns' && request.method === 'GET') {
+      console.log(`[${requestId}] 🔍 DNS health check`);
+      const { dnsHealth } = await import('./routes/health');
+      return dnsHealth(request, env);
+    }
+
+    if (url.pathname === '/api/health/dns/batch' && request.method === 'GET') {
+      console.log(`[${requestId}] 🔍 Batch DNS health check`);
+      const { dnsBatchHealth } = await import('./routes/health');
+      return dnsBatchHealth(request, env);
+    }
+
     // Live odds API endpoint
     if (url.pathname === '/api/live-odds' && request.method === 'GET') {
       console.log(`[${requestId}] 🎲 Live odds API`);
