@@ -9,7 +9,7 @@
  */
 
 // Worker API Configuration
-export const WORKER_URL = 'config.workerUrl';
+export const WORKER_URL = 'http://localhost:8787';
 
 // API Endpoints
 export const API_ENDPOINTS = {

@@ -210,11 +210,87 @@ Auto-generated, typed APIs with Zod validation:
 ---
 
 ### 8. **Browser Extension** (`browser-extension/`)
-Chrome extension:
-- Injects content scripts on target domains
-- Forwards logs to worker `/logs` endpoint
-- Captures betting data in real-time
-- Popup UI for configuration
+Chrome extension (v1.0.9):
+- Injects content scripts on target domains (world: MAIN)
+- Routes data via background service worker (bypasses CORS)
+- Captures Fantasy402 API calls in real-time
+- Forwards to worker `/api/fantasy402/ingest` endpoint
+- Circuit breaker pattern with health monitoring
+- Popup UI for statistics and configuration
+
+**Key Files:**
+- `fantasy402-interceptor.js` - Main interception logic (fetch/XHR hijacking)
+- `background.js` - Service worker with network privileges
+- `manifest.json` - v3 with alarms, notifications, storage permissions
+- `popup.html/js` - Extension statistics UI
+
+**Data Flow:**
+```
+Fantasy402.com API call
+  → fantasy402-interceptor.js intercepts
+  → chrome.runtime.sendMessage (CORS-safe)
+  → background.js forwards
+  → POST http://localhost:8787/api/fantasy402/ingest
+  → Worker queues data
+  → Dashboard displays live metrics
+```
+
+---
+
+### 9. **Mission Control Dashboard** (`dashboards/floor-control.html`)
+Unified real-time dashboard with 13 monitoring cards:
+
+**System Health (3 cards):**
+1. **🤖 Floor Health** - Version, test pass rate (239/299), coverage (81%)
+2. **🌲 Forest Grove** - Worker/Database/Queue health status
+3. **🛠️ MCP Tools** - 6 available tools list
+
+**Live Data (5 cards):**
+4. **📊 Live Odds (NBA)** - Real-time odds movements (Chart.js)
+5. **🏀 Live Scores** - Active game count and details
+6. **💾 Database Metrics** - Line movements, sharp indicators, exposure tracking
+7. **⚡ System Performance** - API latency chart (rolling 20 requests)
+8. **📡 Recent Activity** - Last 10 events log
+
+**Fantasy402 Integration (5 cards):**
+9. **🎲 Live Bets** - In-flight wagers + volume chart (last 5 min buckets)
+10. **🤖 Agent Performance** - Total PNL + top 3 agents leaderboard
+11. **👥 Customer Pulse** - Active customers (30 min) + total staked today
+12. **💸 Transaction Ticker** - Last 10 transactions stream
+13. **🔍 DNS Resolve** - fantasy402.com IP + DoH latency
+
+**Configuration:**
+- Auto-detects localhost (`http://localhost:8787`) vs production
+- Editable worker URL in header
+- Real-time updates every 5 seconds
+- Performance tracking with Chart.js visualizations
+
+**Access:**
+```bash
+# Serve dashboard (requires separate web server)
+# Example with Python:
+cd dashboards && python3 -m http.server 8080
+# Access: http://localhost:8080/floor-control.html
+
+# Or use any static file server:
+npx serve dashboards -p 8080
+```
+
+**Unified Endpoint:**
+```bash
+# Dashboard calls single endpoint for all Fantasy402 data:
+curl -s http://localhost:8787/api/f402/mission-control | jq '.'
+```
+
+Returns:
+- `floor` - Floor health metrics
+- `grove` - Worker/DB/Queue status
+- `mcp` - MCP tools count and list
+- `liveBets` - Count, volume, 5-min buckets
+- `agents` - Total PNL, top performers
+- `customers` - Active count, total staked
+- `transactions` - Last 10 transaction stream
+- `timestamp`, `requestId`, `dataSource` (kv/mock)
 
 ---
 
@@ -404,6 +480,7 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
 - **[docs/IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md)** - Technical deep-dive
 - **[docs/BET_TICKER_SNIFFER.md](docs/BET_TICKER_SNIFFER.md)** - API interception
 - **[docs/MCP_TESTING_GUIDE.md](docs/guides/TESTING_GUIDE.md)** - MCP testing guide ✨ **NEW**
+- **[docs/DASHBOARD_API_STATUS.md](docs/DASHBOARD_API_STATUS.md)** - Dashboard endpoint status & fixes ✨ **NEW**
 
 ### MCP Integration Docs (Current) ✨ **NEW**
 - **[docs/MCP_INTEGRATION_STATUS.md](docs/MCP_INTEGRATION_STATUS.md)** - Current MCP status
@@ -595,5 +672,73 @@ Anomaly Detection: |value - μ| > 2σ
 
 ---
 
-*Last Updated: 2025-10-07*
+## 🚀 Quick Start Guide
+
+### Local Development Setup
+```bash
+# 1. Start the worker
+wrangler dev --local
+# Worker available at: http://localhost:8787
+
+# 2. Serve the dashboard (separate terminal)
+cd dashboards && python3 -m http.server 8080
+# Dashboard available at: http://localhost:8080/floor-control.html
+
+# 3. Install browser extension
+# - Open chrome://extensions/
+# - Enable "Developer mode"
+# - Click "Load unpacked"
+# - Select browser-extension/ folder
+# - Extension v1.0.9 will intercept Fantasy402 API calls
+
+# 4. Test the flow
+curl http://localhost:8787/health
+curl -s http://localhost:8787/api/f402/mission-control | jq '.liveBets'
+```
+
+### Extension Testing
+```bash
+# 1. Visit https://fantasy402.com/
+# 2. Check browser console (F12) for:
+[Fantasy402] 🚀 Interceptor initialized
+[Fantasy402] 🔍 Intercepting: /cloud/api/Manager/getBetTicker
+[Fantasy402] ✅ Forwarded to worker: /cloud/api/... (200)
+
+# 3. Check background console (chrome://extensions → Inspect):
+POST http://localhost:8787/api/fantasy402/ingest 200 OK
+
+# 4. Dashboard should show live data populating
+```
+
+### Common URLs
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **Worker Health** | `http://localhost:8787/health` | Check worker status |
+| **MCP Endpoint** | `http://localhost:8787/mcp` | JSON-RPC 2.0 tools |
+| **Mission Control** | `http://localhost:8787/api/f402/mission-control` | Unified dashboard API |
+| **Dashboard** | `http://localhost:8080/floor-control.html` | Real-time monitoring UI |
+| **Extension** | `chrome://extensions/` | Manage browser extension |
+
+### Troubleshooting
+```bash
+# Worker not responding?
+lsof -i :8787  # Check if port is in use
+wrangler dev --local  # Restart worker
+
+# Dashboard shows zeros?
+# → No data intercepted yet (extension needs real Fantasy402 traffic)
+
+# Extension CORS errors?
+# → Make sure background.js has forwardToWorker handler (v1.0.9+)
+# → Reload extension after manifest changes
+
+# KV data not persisting?
+# → wrangler dev --local uses ephemeral storage
+# → Data flows through but doesn't persist between restarts
+```
+
+---
+
+*Last Updated: 2025-10-08*
 *Betting-Brain v3 - Production-Ready Edge-Native Betting Intelligence with MCP Integration*
+*Extension v1.0.9 - Mission Control Dashboard - 13 Live Cards*

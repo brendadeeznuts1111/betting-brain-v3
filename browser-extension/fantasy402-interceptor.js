@@ -1,7 +1,7 @@
 // Fantasy402.com Data Interceptor
 // Intercepts API calls and forwards to Cloudflare Worker
 
-const WORKER_URL = 'config.workerUrl';
+const WORKER_URL = 'http://localhost:3000';
 const DEBUG = true;
 
 // Store original fetch
@@ -39,24 +39,57 @@ function parseFormBody(body) {
   return result;
 }
 
-// Forward intercepted data to worker
+// Forward intercepted data to worker via background script (bypasses CORS)
 async function forwardToWorker(data) {
   try {
-    await originalFetch(`${WORKER_URL}/api/fantasy402/ingest`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      // Don't wait for response
-      keepalive: true
-    });
+    // Check if Chrome runtime API is available (world: MAIN might not have it)
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      // Route through background service worker (has network privileges)
+      chrome.runtime.sendMessage(
+        {
+          action: 'forwardToWorker',
+          data: data,
+          workerUrl: WORKER_URL
+        },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('[Fantasy402] ❌ Background script error:', chrome.runtime.lastError.message);
+            return;
+          }
 
-    if (DEBUG) {
-      console.log('[Fantasy402] ✅ Forwarded to worker:', data.endpoint);
+          if (DEBUG && response) {
+            if (response.success) {
+              console.log('[Fantasy402] ✅ Forwarded to worker:', data.endpoint, `(${response.status})`);
+            } else {
+              console.warn('[Fantasy402] ⚠️ Worker responded with:', response.status, response.error);
+            }
+          }
+        }
+      );
+    } else {
+      // Fallback: Direct fetch (will fail with CORS but at least we try)
+      console.warn('[Fantasy402] ⚠️ Chrome API unavailable, trying direct fetch (may fail with CORS)');
+      const response = await originalFetch(`${WORKER_URL}/api/fantasy402/ingest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        keepalive: true
+      });
+
+      if (DEBUG) {
+        if (response.ok) {
+          console.log('[Fantasy402] ✅ Forwarded to worker:', data.endpoint, `(${response.status})`);
+        } else {
+          console.warn('[Fantasy402] ⚠️ Worker responded with:', response.status, response.statusText);
+        }
+      }
     }
   } catch (error) {
     console.error('[Fantasy402] ❌ Failed to forward:', error);
+    console.error('[Fantasy402] 🔍 Worker URL:', WORKER_URL);
+    console.error('[Fantasy402] 💡 Make sure the worker is running: bun run dev');
   }
 }
 

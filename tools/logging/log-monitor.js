@@ -4,7 +4,7 @@
  * Monitors logs from the Cloudflare Worker and displays them in real-time
  */
 
-const WORKER_URL = 'config.workerUrl';
+const WORKER_URL = 'http://localhost:8787';
 const LOG_ENDPOINT = `${WORKER_URL}/logs`;
 const MONITOR_INTERVAL_MS = 2000; // Fetch logs every 2 seconds
 const SESSION_ID = `monitor-${Date.now()}`;

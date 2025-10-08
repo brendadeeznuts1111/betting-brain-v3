@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <title>🌲 Floor Control | Forest Grove Mission Control</title>
@@ -15,12 +16,14 @@
       --text: #c9d1d9;
       --border: #30363d;
     }
+
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
     }
+
     header {
       display: flex;
       align-items: center;
@@ -32,6 +35,7 @@
       top: 0;
       z-index: 100;
     }
+
     header h1 {
       font-size: 1.5rem;
       margin: 0;
@@ -39,12 +43,14 @@
       align-items: center;
       gap: 0.5rem;
     }
+
     .config-box {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       font-size: 0.875rem;
     }
+
     .config-box input {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -53,6 +59,7 @@
       border-radius: 4px;
       width: 300px;
     }
+
     .config-box button {
       background: var(--accent);
       color: white;
@@ -61,15 +68,18 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .config-box button:hover {
       opacity: 0.8;
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 1rem;
       padding: 1rem;
     }
+
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -77,9 +87,11 @@
       padding: 1rem;
       transition: border-color 0.2s;
     }
+
     .card:hover {
       border-color: var(--accent);
     }
+
     .card h2 {
       margin: 0 0 0.75rem;
       font-size: 1rem;
@@ -88,19 +100,31 @@
       align-items: center;
       gap: 0.5rem;
     }
+
     .label {
       font-size: 0.75rem;
       opacity: 0.7;
       margin-bottom: 0.25rem;
     }
+
     .value {
       font-size: 1.75rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
     }
-    .status-green { color: var(--accent); }
-    .status-yellow { color: var(--yellow); }
-    .status-red { color: var(--warn); }
+
+    .status-green {
+      color: var(--accent);
+    }
+
+    .status-yellow {
+      color: var(--yellow);
+    }
+
+    .status-red {
+      color: var(--warn);
+    }
+
     .mini-stat {
       display: flex;
       justify-content: space-between;
@@ -110,12 +134,15 @@
       margin-bottom: 0.5rem;
       font-size: 0.875rem;
     }
+
     .mini-stat .label {
       margin: 0;
     }
+
     .mini-stat .val {
       font-weight: 600;
     }
+
     pre {
       font-size: 0.75rem;
       overflow: auto;
@@ -125,9 +152,11 @@
       border-radius: 4px;
       margin: 0.5rem 0 0;
     }
+
     canvas {
       max-height: 200px;
     }
+
     .error {
       color: var(--warn);
       font-size: 0.875rem;
@@ -136,9 +165,11 @@
       border-radius: 4px;
       margin-top: 0.5rem;
     }
+
     .loading {
       opacity: 0.5;
     }
+
     .badge {
       display: inline-block;
       padding: 0.125rem 0.5rem;
@@ -147,10 +178,17 @@
       font-weight: 600;
       background: var(--accent);
     }
-    .badge-warn { background: var(--warn); }
-    .badge-yellow { background: var(--yellow); }
+
+    .badge-warn {
+      background: var(--warn);
+    }
+
+    .badge-yellow {
+      background: var(--yellow);
+    }
   </style>
 </head>
+
 <body>
   <header>
     <h1>
@@ -159,12 +197,7 @@
       <span id="status-badge" class="badge">●</span>
     </h1>
     <div class="config-box">
-      <input
-        type="text"
-        id="worker-url"
-        placeholder="https://your-worker.workers.dev"
-        value="http://localhost:8787"
-      />
+      <input type="text" id="worker-url" placeholder="https://your-worker.workers.dev" value="http://localhost:8787" />
       <button onclick="saveConfig()">Save</button>
       <span id="last-update" style="opacity: 0.7;">—</span>
     </div>
@@ -322,6 +355,129 @@
       </div>
       <div id="dns-error" class="error" style="display:none;"></div>
     </section>
+
+    <!-- ===== Fantasy402 Individual Operation Cards ===== -->
+
+    <!-- Player Info -->
+    <section class="card">
+      <h2>👤 Player Info</h2>
+      <div class="label">Active Players</div>
+      <div id="player-info-count" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Last Updated</span>
+        <span class="val" id="player-info-time">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Status</span>
+        <span class="val" id="player-info-status">—</span>
+      </div>
+      <pre id="player-info-list"></pre>
+      <div id="player-info-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Player Performance -->
+    <section class="card">
+      <h2>📊 Player Performance</h2>
+      <div class="label">Performance Period</div>
+      <div id="player-perf-period" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Total Risk</span>
+        <span class="val" id="player-perf-risk">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Net Income</span>
+        <span class="val" id="player-perf-income">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Win Rate</span>
+        <span class="val" id="player-perf-winrate">—</span>
+      </div>
+      <div id="player-perf-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Transaction List -->
+    <section class="card">
+      <h2>💳 Transaction List</h2>
+      <div class="label">Recent Transactions</div>
+      <div id="tx-list-count" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Wager Loss</span>
+        <span class="val" id="tx-list-loss">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Wager Win</span>
+        <span class="val" id="tx-list-win">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Net Balance</span>
+        <span class="val" id="tx-list-balance">—</span>
+      </div>
+      <pre id="tx-list-recent"></pre>
+      <div id="tx-list-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Pending Wagers -->
+    <section class="card">
+      <h2>⏳ Pending Wagers</h2>
+      <div class="label">Active Wagers</div>
+      <div id="pending-count" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Total Risk</span>
+        <span class="val" id="pending-risk">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Potential Win</span>
+        <span class="val" id="pending-win">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Avg Odds</span>
+        <span class="val" id="pending-odds">—</span>
+      </div>
+      <canvas id="pending-chart"></canvas>
+      <div id="pending-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Player Analysis -->
+    <section class="card">
+      <h2>📈 Player Analysis</h2>
+      <div class="label">Analysis Report</div>
+      <div id="analysis-period" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Total Wagers</span>
+        <span class="val" id="analysis-wagers">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Win Rate</span>
+        <span class="val" id="analysis-winrate">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Net Income</span>
+        <span class="val" id="analysis-income">—</span>
+      </div>
+      <canvas id="analysis-chart"></canvas>
+      <div id="analysis-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- Transaction History -->
+    <section class="card">
+      <h2>📜 Transaction History</h2>
+      <div class="label">History Records</div>
+      <div id="tx-history-count" class="value">—</div>
+      <div class="mini-stat">
+        <span class="label">Deposits</span>
+        <span class="val" id="tx-history-deposits">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Withdrawals</span>
+        <span class="val" id="tx-history-withdrawals">—</span>
+      </div>
+      <div class="mini-stat">
+        <span class="label">Adjustments</span>
+        <span class="val" id="tx-history-adjustments">—</span>
+      </div>
+      <pre id="tx-history-recent"></pre>
+      <div id="tx-history-error" class="error" style="display:none;"></div>
+    </section>
   </main>
 
   <script>
@@ -345,7 +501,7 @@
 
     /* ========== HELPERS ========== */
     const $ = (s) => document.querySelector(s);
-    const fmt = (n) => new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(n);
+    const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
     const fmtNum = (n) => new Intl.NumberFormat().format(n);
     const updateTime = () => {
       $('#last-update').textContent = new Date().toLocaleTimeString();
@@ -418,6 +574,48 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#c9d1d9' }
+          },
+          x: {
+            ticks: { color: '#c9d1d9' }
+          }
+        }
+      }
+    });
+
+    // Pending Wagers Chart
+    const pendingCtx = $('#pending-chart').getContext('2d');
+    const pendingChart = new Chart(pendingCtx, {
+      type: 'doughnut',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#c9d1d9' }
+          }
+        }
+      }
+    });
+
+    // Player Analysis Chart
+    const analysisCtx = $('#analysis-chart').getContext('2d');
+    const analysisChart = new Chart(analysisCtx, {
+      type: 'bar',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#c9d1d9' }
+          }
+        },
         scales: {
           y: {
             beginAtZero: true,
@@ -649,6 +847,137 @@
       hideError('dns');
     }
 
+    /* ========== FANTASY402 INDIVIDUAL OPERATION CARDS ========== */
+
+    // Player Info Card
+    async function loadPlayerInfo() {
+      const d = await getJSON('/api/fantasy402/player-info', 'player-info');
+      if (!d) return;
+
+      $('#player-info-count').textContent = d.count || '0';
+      $('#player-info-time').textContent = d.lastUpdated ? new Date(d.lastUpdated).toLocaleTimeString() : '—';
+      $('#player-info-status').textContent = d.status || '—';
+
+      if (d.players && Array.isArray(d.players)) {
+        $('#player-info-list').textContent = d.players.slice(0, 5)
+          .map(p => `${p.customerID} - ${p.playerName} (${p.status})`)
+          .join('\n');
+      } else {
+        $('#player-info-list').textContent = 'No player data available';
+      }
+      hideError('player-info');
+    }
+
+    // Player Performance Card
+    async function loadPlayerPerformance() {
+      const d = await getJSON('/api/fantasy402/player-performance', 'player-perf');
+      if (!d) return;
+
+      $('#player-perf-period').textContent = d.period ? `${d.period.start} → ${d.period.end}` : '—';
+      $('#player-perf-risk').textContent = d.totalRisk ? fmt(d.totalRisk) : '—';
+      $('#player-perf-income').textContent = d.netIncome ? fmt(d.netIncome) : '—';
+      $('#player-perf-winrate').textContent = d.winRate ? `${(d.winRate * 100).toFixed(1)}%` : '—';
+      hideError('player-perf');
+    }
+
+    // Transaction List Card
+    async function loadTransactionList() {
+      const d = await getJSON('/api/fantasy402/transaction-list', 'tx-list');
+      if (!d) return;
+
+      $('#tx-list-count').textContent = d.totalTransactions || '0';
+      $('#tx-list-loss').textContent = d.summary ? fmt(d.summary.totalWagerLoss) : '—';
+      $('#tx-list-win').textContent = d.summary ? fmt(d.summary.totalWagerWin) : '—';
+      $('#tx-list-balance').textContent = d.summary ? fmt(d.summary.netBalance) : '—';
+
+      if (d.transactions && Array.isArray(d.transactions)) {
+        $('#tx-list-recent').textContent = d.transactions.slice(0, 5)
+          .map(t => `${t.tranCode} ${t.tranType} ${fmt(t.amount)} - ${t.description}`)
+          .join('\n');
+      } else {
+        $('#tx-list-recent').textContent = 'No transactions available';
+      }
+      hideError('tx-list');
+    }
+
+    // Pending Wagers Card
+    async function loadPendingWagers() {
+      const d = await getJSON('/api/fantasy402/pending-wagers', 'pending');
+      if (!d) return;
+
+      $('#pending-count').textContent = d.totalWagers || '0';
+      $('#pending-risk').textContent = d.totalRisk ? fmt(d.totalRisk) : '—';
+      $('#pending-win').textContent = d.totalPotentialWin ? fmt(d.totalPotentialWin) : '—';
+      $('#pending-odds').textContent = d.averageOdds ? d.averageOdds.toFixed(2) : '—';
+
+      // Update chart with sport breakdown
+      if (d.sportBreakdown && Object.keys(d.sportBreakdown).length > 0) {
+        const sports = Object.keys(d.sportBreakdown);
+        const risks = sports.map(sport => d.sportBreakdown[sport]);
+
+        pendingChart.data.labels = sports;
+        pendingChart.data.datasets = [{
+          label: 'Risk by Sport',
+          data: risks,
+          backgroundColor: [
+            '#238636', '#2ea043', '#3fb950', '#56d364', '#7ee787'
+          ],
+          borderColor: '#161b22',
+          borderWidth: 1
+        }];
+        pendingChart.update();
+      }
+      hideError('pending');
+    }
+
+    // Player Analysis Card
+    async function loadPlayerAnalysis() {
+      const d = await getJSON('/api/fantasy402/player-analysis', 'analysis');
+      if (!d) return;
+
+      $('#analysis-period').textContent = d.period ? `${d.startDate} → ${d.endDate}` : '—';
+      $('#analysis-wagers').textContent = d.totalWagers || '0';
+      $('#analysis-winrate').textContent = d.winRate ? `${(d.winRate * 100).toFixed(1)}%` : '—';
+      $('#analysis-income').textContent = d.netIncome ? fmt(d.netIncome) : '—';
+
+      // Update chart with bet types breakdown
+      if (d.betTypesBreakdown && Object.keys(d.betTypesBreakdown).length > 0) {
+        const betTypes = Object.keys(d.betTypesBreakdown);
+        const risks = betTypes.map(type => d.betTypesBreakdown[type].totalRisk);
+
+        analysisChart.data.labels = betTypes;
+        analysisChart.data.datasets = [{
+          label: 'Risk by Bet Type',
+          data: risks,
+          backgroundColor: '#238636',
+          borderColor: '#2ea043',
+          borderWidth: 1
+        }];
+        analysisChart.update();
+      }
+      hideError('analysis');
+    }
+
+    // Transaction History Card
+    async function loadTransactionHistory() {
+      const d = await getJSON('/api/fantasy402/transaction-history', 'tx-history');
+      if (!d) return;
+
+      $('#tx-history-count').textContent = d.count || '0';
+      $('#tx-history-deposits').textContent = d.summary ? fmt(d.summary.totalDeposits) : '—';
+      $('#tx-history-withdrawals').textContent = d.summary ? fmt(d.summary.totalWithdrawals) : '—';
+      $('#tx-history-adjustments').textContent = d.summary ? fmt(d.summary.totalAdjustments) : '—';
+
+      if (d.transactions && Array.isArray(d.transactions)) {
+        $('#tx-history-recent').textContent = d.transactions.slice(0, 5)
+          .map(t => `${t.tranCode} ${t.tranType} ${fmt(t.amount)} - ${t.description}`)
+          .join('\n');
+      } else {
+        $('#tx-history-recent').textContent = 'No history available';
+      }
+      hideError('tx-history');
+    }
+
     /* ========== MAIN LOOP ========== */
     async function tick() {
       updateTime();
@@ -663,7 +992,15 @@
         loadDb(),
         loadActivity(),
         loadFantasy402Data(),  // Single unified call instead of 4 separate calls
-        loadDNS()              // DNS health check
+        loadDNS(),             // DNS health check
+
+        // Fantasy402 Individual Operation Cards
+        loadPlayerInfo(),
+        loadPlayerPerformance(),
+        loadTransactionList(),
+        loadPendingWagers(),
+        loadPlayerAnalysis(),
+        loadTransactionHistory()
       ]);
     }
 
@@ -679,4 +1016,5 @@
     }
   </script>
 </body>
+
 </html>

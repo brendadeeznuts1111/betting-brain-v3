@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fantasy402 Extension Tester</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0052a3;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            color: #666;
+            margin-top: 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-green {
+            background: #28a745;
+        }
+
+        .status-red {
+            background: #dc3545;
+        }
+
+        .status-yellow {
+            background: #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Fantasy402 Extension Tester</h1>
+    <p>Use this page to test the extension without needing access to Fantasy402.com</p>
+
+    <div class="test-section">
+        <h2>1. Worker Connectivity Test</h2>
+        <p>Tests if the Cloudflare Worker is running and accessible</p>
+        <button onclick="testWorkerHealth()">Test Worker /health</button>
+        <button onclick="testWorkerIngest()">Test Worker /ingest</button>
+        <div id="worker-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Extension Message Test</h2>
+        <p>Tests if the extension's background script can receive messages</p>
+        <button onclick="testExtensionMessage()">Test Extension Communication</button>
+        <div id="extension-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. End-to-End Forward Test</h2>
+        <p>Simulates the full flow: Content Script → Background Script → Worker</p>
+        <button onclick="testFullForward()">Test Full Forward Flow</button>
+        <div id="e2e-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Extension Stats</h2>
+        <button onclick="getExtensionStats()">Get Current Stats</button>
+        <button onclick="resetExtensionStats()">Reset Stats</button>
+        <div id="stats-result"></div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'http://localhost:8787';
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+        }
+
+        async function testWorkerHealth() {
+            showResult('worker-result', 'Testing...', 'info');
+            try {
+                const response = await fetch(`${WORKER_URL}/health`);
+                const data = await response.json();
+                showResult('worker-result',
+                    `✅ Worker is running!\n\n${JSON.stringify(data, null, 2)}`,
+                    'success'
+                );
+            } catch (error) {
+                showResult('worker-result',
+                    `❌ Worker connection failed!\n\n${error.message}\n\n💡 Start the worker with: bun run dev`,
+                    'error'
+                );
+            }
+        }
+
+        async function testWorkerIngest() {
+            showResult('worker-result', 'Testing ingestion endpoint...', 'info');
+            try {
+                const testPacket = {
+                    timestamp: new Date().toISOString(),
+                    endpoint: '/test',
+                    operation: 'test',
+                    method: 'POST',
+                    url: 'http://test',
+                    request: { test: true },
+                    response: { status: 200, test: true },
+                    metadata: { duration: 100 }
+                };
+
+                const response = await fetch(`${WORKER_URL}/api/fantasy402/ingest`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testPacket)
+                });
+
+                const data = await response.json();
+                showResult('worker-result',
+                    `✅ Ingestion endpoint working!\n\n${JSON.stringify(data, null, 2)}`,
+                    'success'
+                );
+            } catch (error) {
+                showResult('worker-result',
+                    `❌ Ingestion test failed!\n\n${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        function testExtensionMessage() {
+            showResult('extension-result', 'Testing extension...', 'info');
+
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showResult('extension-result',
+                    '❌ Extension not detected!\n\nMake sure the extension is installed and enabled.',
+                    'error'
+                );
+                return;
+            }
+
+            chrome.runtime.sendMessage({ action: 'getStats' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showResult('extension-result',
+                        `❌ Extension communication failed!\n\n${chrome.runtime.lastError.message}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                showResult('extension-result',
+                    `✅ Extension is responding!\n\n${JSON.stringify(response, null, 2)}`,
+                    'success'
+                );
+            });
+        }
+
+        function testFullForward() {
+            showResult('e2e-result', 'Testing full forward flow...', 'info');
+
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showResult('e2e-result',
+                    '❌ Extension not detected!',
+                    'error'
+                );
+                return;
+            }
+
+            const testData = {
+                timestamp: new Date().toISOString(),
+                endpoint: '/cloud/api/test',
+                operation: 'e2e-test',
+                method: 'POST',
+                url: 'https://fantasy402.com/test',
+                request: { test: 'data' },
+                response: { status: 200, test: 'response' },
+                metadata: { duration: 123, source: 'extension-tester' }
+            };
+
+            chrome.runtime.sendMessage({
+                action: 'forwardToWorker',
+                data: testData,
+                workerUrl: WORKER_URL
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showResult('e2e-result',
+                        `❌ Message send failed!\n\n${chrome.runtime.lastError.message}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                if (response && response.success) {
+                    showResult('e2e-result',
+                        `✅ Full flow successful!\n\nStatus: ${response.status}\n\n${JSON.stringify(response.data || response, null, 2)}`,
+                        'success'
+                    );
+                } else {
+                    showResult('e2e-result',
+                        `⚠️ Forward completed but worker reported error:\n\n${JSON.stringify(response, null, 2)}`,
+                        'error'
+                    );
+                }
+            });
+        }
+
+        function getExtensionStats() {
+            showResult('stats-result', 'Getting stats...', 'info');
+
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showResult('stats-result', '❌ Extension not detected!', 'error');
+                return;
+            }
+
+            chrome.runtime.sendMessage({ action: 'getStats' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showResult('stats-result',
+                        `❌ Failed to get stats!\n\n${chrome.runtime.lastError.message}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                const stats = `
+Extension Stats:
+================
+Enabled: ${response.enabled ? '✅ Yes' : '❌ No'}
+Total Intercepts: ${response.interceptCount || 0}
+Success Count: ${response.successCount || 0}
+Failure Count: ${response.failureCount || 0}
+Fallback Count: ${response.fallbackCount || 0}
+Success Rate: ${response.successRate || 0}%
+Last Intercept: ${response.lastIntercept || 'Never'}
+Last Error: ${response.lastError ? JSON.stringify(response.lastError, null, 2) : 'None'}
+                `.trim();
+
+                showResult('stats-result', stats, 'success');
+            });
+        }
+
+        function resetExtensionStats() {
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                showResult('stats-result', '❌ Extension not detected!', 'error');
+                return;
+            }
+
+            chrome.runtime.sendMessage({ action: 'reset' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    showResult('stats-result',
+                        `❌ Failed to reset stats!\n\n${chrome.runtime.lastError.message}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                showResult('stats-result', '✅ Stats reset successfully!', 'success');
+            });
+        }
+
+        // Auto-run health check on load
+        window.addEventListener('load', () => {
+            setTimeout(testWorkerHealth, 500);
+        });
+    </script>
+</body>
+
+</html>

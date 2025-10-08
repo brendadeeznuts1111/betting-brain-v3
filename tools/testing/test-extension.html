@@ -204,7 +204,7 @@
 
         try {
           const response = await fetch(
-            "config.workerUrl/health",
+            "http://localhost:8787/health",
           );
           const data = await response.json();
 

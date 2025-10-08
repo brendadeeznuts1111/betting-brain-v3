@@ -19,6 +19,9 @@ import { handleMCPRequest } from './mcp/server';
 import { handleAPIRoute } from './api/routes';
 import { handleWebSocketUpgrade } from './websocket/fantasy402-ws-handler';
 import { handleIngest } from './routes/ingest';
+import { handleLiveAnalytics } from './api/analytics-live';
+import { handleLiveSports } from './api/sports-live';
+import { handleLiveSessions } from './api/session-live';
 
 // See .cursor/rules/endpoint-routing.mdc for routing patterns
 // See .cursor/rules/cloudflare-workers.mdc for Workers patterns
@@ -203,6 +206,39 @@ export default {
     // MCP Protocol endpoint (JSON-RPC 2.0)
     if (url.pathname === '/mcp') {
       console.log(`[${requestId}] 🤖 MCP Protocol request`);
+
+      // GET request → return tools list (convenience for dashboard)
+      if (request.method === 'GET') {
+        return new Response(JSON.stringify({
+          protocol: 'MCP',
+          version: '1.0',
+          toolsCount: 13,
+          tools: [
+            'getBettingExposure',
+            'getCLV',
+            'getHoldPercentage',
+            'getSharpScore',
+            'getSteamMoves',
+            'getRiskConcentration',
+            'getSharpActivity',
+            'getTimeSeriesCLV',
+            'getEnhancedSharpScore',
+            'getHoldForecast',
+            'getHandleAndHold',
+            'getCustomerVolume',
+            'getTimeSeriesAnalytics'
+          ],
+          timestamp: new Date().toISOString(),
+          requestId
+        }), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      }
+
+      // POST request → full JSON-RPC 2.0 protocol
       try {
         return await handleMCPRequest(request, env as MCPEnv);
       } catch (error) {
@@ -216,6 +252,24 @@ export default {
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       }
+    }
+
+    // Analytics routes
+    if (url.pathname === '/api/analytics/live') {
+      console.log(`[${requestId}] 📊 Live analytics request`);
+      return handleLiveAnalytics(request, env, requestId);
+    }
+
+    // Sports routes
+    if (url.pathname === '/api/sports/live') {
+      console.log(`[${requestId}] 🏈 Live sports data request`);
+      return handleLiveSports(request, env, requestId);
+    }
+
+    // Session routes
+    if (url.pathname === '/api/sessions/live') {
+      console.log(`[${requestId}] 👥 Live session data request`);
+      return handleLiveSessions(request, env, requestId);
     }
 
     // REST API routes (/api/*)

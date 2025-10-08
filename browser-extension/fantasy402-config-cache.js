@@ -17,7 +17,7 @@ const DB_NAME = 'fantasy402-cache';
 const DB_VERSION = 1;
 const STORE_NAME = 'appConfig';
 const CONFIG_KEY = 'bootstrap';
-const WORKER_URL = 'config.workerUrl';
+const WORKER_URL = 'http://localhost:8787';
 
 class Fantasy402ConfigCache {
     constructor() {

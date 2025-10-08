@@ -110,6 +110,30 @@ export async function handleAPIRoute(
       case '/f402/transactions/latest':
         return await getLatestTransactions(request, env, requestId);
 
+      case '/live-odds':
+        const { getLiveOdds } = await import('../routes/api/live-odds');
+        return await getLiveOdds(request, env, requestId);
+
+      case '/live-scores':
+        const { getLiveScores } = await import('../routes/api/live-scores');
+        return await getLiveScores(request, env, requestId);
+
+      case '/database/metrics':
+        const { getDatabaseMetrics } = await import('../routes/api/database-metrics');
+        return await getDatabaseMetrics(request, env, requestId);
+
+      case '/activity':
+        const { getActivity } = await import('../routes/api/activity');
+        return await getActivity(request, env, requestId);
+
+      case '/player-analysis':
+        const { getPlayerAnalysis } = await import('../routes/api/player-analysis');
+        return await getPlayerAnalysis(request, env, requestId);
+
+      case '/transaction-history':
+        const { getTransactionHistory } = await import('../routes/api/transaction-history');
+        return await getTransactionHistory(request, env, requestId);
+
       default:
         throw Errors.notFound('API endpoint');
     }

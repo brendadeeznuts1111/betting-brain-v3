@@ -7,7 +7,7 @@ console.log('🍪 Available cookies:', document.cookie ? document.cookie.length 
 console.log('📄 Page URL:', window.location.href);
 console.log('🔧 Extension ID:', chrome.runtime.id);
 
-const WORKER_URL = 'config.workerUrl';
+const WORKER_URL = 'http://localhost:3000';
 const TARGET_PATH = '/cloud/api/Manager/getBetTicker';
 const ORIGIN_URL = 'https://fantasy402.com';
 const MAX_RETRIES = 3;
@@ -84,7 +84,7 @@ logger.debug('Testing fetch interception', {
 function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  
+
   return Promise.race([
     originalFetch(url, { ...options, signal: controller.signal }),
     new Promise((_, reject) =>
@@ -96,11 +96,11 @@ function fetchWithTimeout(url, options, timeoutMs) {
 // Circuit breaker logic
 function checkCircuitBreaker() {
   const now = Date.now();
-  
+
   switch (circuitBreaker.state) {
     case 'CLOSED':
       return true; // Allow requests
-      
+
     case 'OPEN':
       if (now >= circuitBreaker.nextAttemptTime) {
         circuitBreaker.state = 'HALF_OPEN';
@@ -108,10 +108,10 @@ function checkCircuitBreaker() {
         return true; // Allow one test request
       }
       return false; // Block requests
-      
+
     case 'HALF_OPEN':
       return true; // Allow test request
-      
+
     default:
       return true;
   }
@@ -128,25 +128,25 @@ function recordCircuitBreakerSuccess() {
 function recordCircuitBreakerFailure(error) {
   circuitBreaker.failureCount++;
   circuitBreaker.lastFailureTime = Date.now();
-  
+
   if (circuitBreaker.failureCount >= CIRCUIT_BREAKER_THRESHOLD) {
     circuitBreaker.state = 'OPEN';
     circuitBreaker.nextAttemptTime = Date.now() + CIRCUIT_BREAKER_RESET_TIME;
     stats.circuitBreakerTrips++;
-    
+
     logger.error('Circuit breaker OPENED', {
       failureCount: circuitBreaker.failureCount,
       threshold: CIRCUIT_BREAKER_THRESHOLD,
       nextAttemptTime: new Date(circuitBreaker.nextAttemptTime).toISOString(),
       error: error.message
     });
-    
+
     // Notify background script of circuit breaker trip
     chrome.runtime.sendMessage({
       action: 'circuitBreakerOpened',
       error: error.message,
       failureCount: circuitBreaker.failureCount
-    }).catch(() => {});
+    }).catch(() => { });
   }
 }
 
@@ -155,23 +155,23 @@ function classifyError(error, response) {
   if (error.name === 'AbortError' || error.message.includes('timeout')) {
     return ErrorTypes.TIMEOUT;
   }
-  
+
   if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
     return ErrorTypes.NETWORK;
   }
-  
+
   if (response && response.status === 401) {
     return ErrorTypes.AUTH;
   }
-  
+
   if (response && response.status >= 500) {
     return ErrorTypes.SERVER;
   }
-  
+
   if (response && response.status >= 400 && response.status < 500) {
     return ErrorTypes.CLIENT;
   }
-  
+
   return ErrorTypes.UNKNOWN;
 }
 
@@ -191,9 +191,9 @@ async function performHealthCheck() {
       method: 'GET',
       headers: { 'Accept': 'application/json' }
     }, 5000);
-    
+
     const latency = Date.now() - startTime;
-    
+
     if (response.ok) {
       const data = await response.json();
       stats.lastHealthCheck = {
@@ -223,25 +223,25 @@ async function performHealthCheck() {
 }
 
 // Enhanced fetch interceptor with circuit breaker and comprehensive error handling
-window.fetch = async function(...args) {
+window.fetch = async function (...args) {
   const [resource, config] = args;
   const url = typeof resource === 'string' ? resource : resource.url;
-  
+
   // Only intercept getBetTicker requests
   if (!url.includes(TARGET_PATH)) {
     return originalFetch(...args);
   }
-  
+
   stats.intercepted++;
   const interceptId = `${stats.intercepted}-${Date.now()}`;
   const startTime = Date.now();
-  
+
   logger.info('Intercepting getBetTicker request', {
     interceptId,
     url,
     attempt: 1
   });
-  
+
   try {
     // Check if extension is enabled
     const enabled = await chrome.storage.local.get(['enabled']).then(r => r.enabled !== false);
@@ -249,7 +249,7 @@ window.fetch = async function(...args) {
       logger.info('Extension disabled, passing through', { interceptId });
       return originalFetch(...args);
     }
-    
+
     // Check circuit breaker state
     if (!checkCircuitBreaker()) {
       logger.warn('Circuit breaker OPEN, falling back to origin', {
@@ -260,30 +260,30 @@ window.fetch = async function(...args) {
       stats.fallback++;
       return originalFetch(...args);
     }
-    
+
     // Get cookies and validate
     const cookies = document.cookie;
     if (!cookies) {
       logger.warn('No cookies found - request may fail auth', { interceptId });
     } else {
       const cookieNames = cookies.split(';').map(c => c.trim().split('=')[0]).join(', ');
-      logger.info('Cookies available', { 
-        interceptId, 
-        cookieCount: cookies.length, 
+      logger.info('Cookies available', {
+        interceptId,
+        cookieCount: cookies.length,
         cookieNames,
         domain: window.location.hostname,
         url: window.location.href
       });
-      
+
       // Debug: Show first few cookie values (without sensitive data)
       const cookiePreview = cookies.substring(0, 200) + (cookies.length > 200 ? '...' : '');
       logger.debug('Cookie preview', { interceptId, cookiePreview });
     }
-    
+
     // Build worker URL and config
     const queryParams = url.includes('?') ? '?' + url.split('?')[1] : '';
     const workerUrl = WORKER_URL + TARGET_PATH + queryParams;
-    
+
     const modifiedConfig = {
       ...config,
       headers: {
@@ -296,45 +296,45 @@ window.fetch = async function(...args) {
       },
       credentials: 'include',
     };
-    
+
     logger.debug('Redirecting to worker', { interceptId, workerUrl });
-    
+
     // Attempt request with retries and circuit breaker integration
     let lastError, lastResponse;
     let success = false;
-    
+
     for (let attempt = 1; attempt <= MAX_RETRIES && !success; attempt++) {
       try {
         const attemptStartTime = Date.now();
         const response = await fetchWithTimeout(workerUrl, modifiedConfig, TIMEOUT_MS);
         const attemptLatency = Date.now() - attemptStartTime;
-        
+
         lastResponse = response;
-        
+
         // Validate response
         const contentType = response.headers.get('content-type');
         if (!contentType?.includes('application/json')) {
           throw new Error(`Invalid content type: ${contentType}`);
         }
-        
+
         if (!response.ok) {
           const errorType = classifyError(null, response);
           throw new Error(`${errorType} error: ${response.status} ${response.statusText}`);
         }
-        
+
         // Success!
         const totalLatency = Date.now() - startTime;
         stats.successful++;
         updatePerformanceMetrics(totalLatency);
         recordCircuitBreakerSuccess();
-        
+
         logger.success('Request successful', {
           interceptId,
           attempt,
           latency: totalLatency,
           status: response.status
         });
-        
+
         // Notify background script
         chrome.runtime.sendMessage({
           action: 'interceptSuccess',
@@ -342,31 +342,31 @@ window.fetch = async function(...args) {
           url: workerUrl,
           attempt,
           latency: totalLatency
-        }).catch(() => {});
-        
+        }).catch(() => { });
+
         success = true;
         return response;
-        
+
       } catch (error) {
         lastError = error;
         const errorType = classifyError(error, lastResponse);
-        
+
         logger.warn('Request attempt failed', {
           interceptId,
           attempt,
           errorType,
           error: error.message
         });
-        
+
         // Record circuit breaker failure
         recordCircuitBreakerFailure(error);
-        
+
         // Don't retry certain error types
         if (errorType === ErrorTypes.CLIENT || errorType === ErrorTypes.AUTH) {
           logger.info('Non-retryable error, stopping attempts', { interceptId, errorType });
           break;
         }
-        
+
         // Exponential backoff for retries
         if (attempt < MAX_RETRIES) {
           const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
@@ -375,12 +375,12 @@ window.fetch = async function(...args) {
         }
       }
     }
-    
+
     // All attempts failed - fall back to origin
     const totalLatency = Date.now() - startTime;
     stats.failed++;
     stats.fallback++;
-    
+
     const errorRecord = {
       time: new Date().toISOString(),
       interceptId,
@@ -391,11 +391,11 @@ window.fetch = async function(...args) {
       latency: totalLatency,
       circuitBreakerState: circuitBreaker.state
     };
-    
+
     stats.errors.push(errorRecord);
-    
+
     logger.error('All attempts failed, falling back to origin', errorRecord);
-    
+
     // Notify background script
     chrome.runtime.sendMessage({
       action: 'interceptFailed',
@@ -404,17 +404,17 @@ window.fetch = async function(...args) {
       errorType: errorRecord.errorType,
       fallback: true,
       attempts: MAX_RETRIES
-    }).catch(() => {});
-    
+    }).catch(() => { });
+
     // Fallback to origin
     return originalFetch(...args);
-    
+
   } catch (error) {
     // Catastrophic error - fall back gracefully
     const totalLatency = Date.now() - startTime;
     stats.failed++;
     stats.fallback++;
-    
+
     const errorRecord = {
       time: new Date().toISOString(),
       interceptId,
@@ -423,11 +423,11 @@ window.fetch = async function(...args) {
       stack: error.stack,
       latency: totalLatency
     };
-    
+
     stats.errors.push(errorRecord);
-    
+
     logger.error('Catastrophic interceptor error', errorRecord);
-    
+
     // Always fall back to origin on error
     return originalFetch(...args);
   }
@@ -441,12 +441,12 @@ async function testCookieForwarding() {
     cookieCount: cookies ? cookies.length : 0,
     hasCookies: !!cookies
   });
-  
+
   if (!cookies) {
     logger.warn('No cookies available for testing');
     return false;
   }
-  
+
   try {
     const testUrl = WORKER_URL + '/health';
     const response = await fetch(testUrl, {
@@ -457,13 +457,13 @@ async function testCookieForwarding() {
         'X-Test-Request': 'true'
       }
     });
-    
+
     logger.info('Cookie forwarding test result', {
       status: response.status,
       ok: response.ok,
       url: testUrl
     });
-    
+
     return response.ok;
   } catch (error) {
     logger.error('Cookie forwarding test failed', { error: error.message });
@@ -486,7 +486,7 @@ setInterval(async () => {
   if (stats.intercepted > 0) {
     const successRate = ((stats.successful / stats.intercepted) * 100).toFixed(1);
     const avgLatency = stats.performance.avgLatency.toFixed(1);
-    
+
     logger.info('Periodic stats report', {
       intercepted: stats.intercepted,
       successful: stats.successful,
@@ -499,7 +499,7 @@ setInterval(async () => {
       circuitBreakerState: circuitBreaker.state
     });
   }
-  
+
   // Perform health check every 5 minutes
   if (!stats.lastHealthCheck || Date.now() - new Date(stats.lastHealthCheck.timestamp).getTime() > 300000) {
     await performHealthCheck();
@@ -551,11 +551,11 @@ else hijack();
     try {
       let st = await chrome.storage.session.get(STORAGE_KEY);
       const cb = st[STORAGE_KEY] || { state: 'closed' };
-      
+
       if (cb.state === 'open') {
         const left = Math.max(0, (cb.lastOpen || 0) + 60_000 - Date.now());
         if (left > 0) {
-          logger.warn('Circuit breaker OPEN, waiting', { 
+          logger.warn('Circuit breaker OPEN, waiting', {
             waitTime: `${left}ms`,
             nextAttemptTime: new Date(cb.lastOpen + 60_000).toISOString()
           });
@@ -569,28 +569,28 @@ else hijack();
 
   // Enhanced fetch wrapper with circuit breaker integration
   const _origFetch = window.fetch;
-  window.fetch = async function(...args) {
+  window.fetch = async function (...args) {
     await waitIfOpen();
-    
+
     try {
       const res = await _origFetch.apply(this, args);
-      
+
       // Check for server errors
       if (!res.ok && res.status >= 500) {
         throw new Error(`Server error: ${res.status}`);
       }
-      
+
       // Success → reset consecutive fails
-      chrome.runtime.sendMessage({ type: 'fetch-success' }).catch(() => {});
+      chrome.runtime.sendMessage({ type: 'fetch-success' }).catch(() => { });
       return res;
-      
+
     } catch (error) {
       // Report failure to circuit breaker
-      chrome.runtime.sendMessage({ type: 'fetch-fail' }).catch(() => {});
+      chrome.runtime.sendMessage({ type: 'fetch-fail' }).catch(() => { });
       throw error; // Let original caller handle
     }
   };
-  
+
   logger.info('Circuit breaker guard wrapper installed');
 })();
 

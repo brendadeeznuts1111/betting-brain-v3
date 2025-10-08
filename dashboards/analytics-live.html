@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy402 Live Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <link rel="stylesheet" href="shared/styles.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+
+        .positive {
+            color: #10b981;
+        }
+
+        .negative {
+            color: #ef4444;
+        }
+
+        .neutral {
+            color: #6b7280;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            grid-column: span 2;
+        }
+
+        .alerts-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+
+        .alert-high-value {
+            border-left-color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .alert-steam {
+            border-left-color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .alert-unusual {
+            border-left-color: #8b5cf6;
+            background: #f3e8ff;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-live {
+            background: #10b981;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+        }
+
+        .status-error {
+            background: #ef4444;
+        }
+
+        .agent-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .agent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .agent-name {
+            font-weight: 500;
+        }
+
+        .agent-volume {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎯 Fantasy402 Live Analytics</h1>
+            <div class="status">
+                <span class="status-indicator status-live"></span>
+                <span id="connection-status">Connected</span>
+                <span id="last-update" class="text-muted"></span>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Key Metrics -->
+            <div class="metric-card">
+                <div class="metric-label">Live Bet Volume</div>
+                <div class="metric-value" id="live-volume">$0</div>
+                <div class="metric-change" id="volume-change">+0% vs last hour</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Active Agents</div>
+                <div class="metric-value" id="active-agents">0</div>
+                <div class="metric-change" id="agents-change">+0 new this hour</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Bets/Min</div>
+                <div class="metric-value" id="bets-per-minute">0</div>
+                <div class="metric-change" id="bets-change">Peak: 0/min</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Avg Bet Size</div>
+                <div class="metric-value" id="avg-bet-size">$0</div>
+                <div class="metric-change" id="size-change">+0% vs yesterday</div>
+            </div>
+
+            <!-- Volume Chart -->
+            <div class="chart-container">
+                <h3>📈 Real-Time Bet Volume</h3>
+                <canvas id="volumeChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Sports Breakdown -->
+            <div class="chart-container">
+                <h3>🏈 Sports Distribution</h3>
+                <canvas id="sportsChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Live Alerts -->
+            <div class="alerts-panel">
+                <h3>🚨 Live Alerts</h3>
+                <div id="alerts-container">
+                    <div class="alert-item alert-high-value">
+                        <strong>High Value Alert:</strong> Agent ADAM placed $59,400 bet on Soccer Over 3.5
+                        <small class="text-muted">2 minutes ago</small>
+                    </div>
+                    <div class="alert-item alert-steam">
+                        <strong>Steam Move:</strong> Football #161 Alabama line moved from -3 to -3.5
+                        <small class="text-muted">5 minutes ago</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Agents -->
+            <div class="metric-card">
+                <h3>🏆 Top Agents (Last Hour)</h3>
+                <div class="agent-list" id="top-agents">
+                    <div class="agent-item">
+                        <span class="agent-name">ADAM</span>
+                        <span class="agent-volume">$59,400</span>
+                    </div>
+                    <div class="agent-item">
+                        <span class="agent-name">CSUTT</span>
+                        <span class="agent-volume">$140,000</span>
+                    </div>
+                    <div class="agent-item">
+                        <span class="agent-name">JACRAI50</span>
+                        <span class="agent-volume">$15,000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const WORKER_URL = 'http://localhost:8787';
+        const UPDATE_INTERVAL = 5000; // 5 seconds
+
+        // Global state
+        let volumeChart, sportsChart;
+        let lastUpdateTime = Date.now();
+        let betHistory = [];
+        let agentStats = {};
+        let alertHistory = [];
+
+        // Initialize dashboard
+        async function initDashboard() {
+            console.log('🚀 Initializing Fantasy402 Analytics Dashboard');
+
+            // Initialize charts
+            initVolumeChart();
+            initSportsChart();
+
+            // Start data polling
+            startDataPolling();
+
+            // Update UI
+            updateConnectionStatus();
+            updateLastUpdateTime();
+        }
+
+        // Initialize volume chart
+        function initVolumeChart() {
+            const ctx = document.getElementById('volumeChart').getContext('2d');
+            volumeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Bet Volume ($)',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize sports chart
+        function initSportsChart() {
+            const ctx = document.getElementById('sportsChart').getContext('2d');
+            sportsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Football', 'Baseball', 'Basketball', 'Tennis', 'Hockey', 'Soccer'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b',
+                            '#ef4444', '#8b5cf6', '#06b6d4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Start polling for data
+        function startDataPolling() {
+            console.log('📡 Starting data polling...');
+
+            // Initial data load
+            loadAnalyticsData();
+
+            // Set up interval
+            setInterval(loadAnalyticsData, UPDATE_INTERVAL);
+        }
+
+        // Load analytics data from worker
+        async function loadAnalyticsData() {
+            try {
+                // Fetch recent betting data
+                const response = await fetch(`${WORKER_URL}/api/analytics/live`);
+                const data = await response.json();
+
+                if (data.success) {
+                    processAnalyticsData(data.data);
+                    updateConnectionStatus('live');
+                } else {
+                    console.warn('⚠️ Analytics data unavailable:', data.error);
+                    updateConnectionStatus('warning');
+                }
+            } catch (error) {
+                console.error('❌ Failed to load analytics data:', error);
+                updateConnectionStatus('error');
+            }
+        }
+
+        // Process analytics data
+        function processAnalyticsData(data) {
+            console.log('📊 Processing analytics data:', data);
+
+            // Update metrics
+            updateMetrics(data.metrics);
+
+            // Update charts
+            updateVolumeChart(data.volumeHistory);
+            updateSportsChart(data.sportsBreakdown);
+
+            // Update alerts
+            updateAlerts(data.alerts);
+
+            // Update top agents
+            updateTopAgents(data.topAgents);
+
+            // Update timestamp
+            updateLastUpdateTime();
+        }
+
+        // Update key metrics
+        function updateMetrics(metrics) {
+            document.getElementById('live-volume').textContent = formatCurrency(metrics.liveVolume);
+            document.getElementById('active-agents').textContent = metrics.activeAgents;
+            document.getElementById('bets-per-minute').textContent = metrics.betsPerMinute;
+            document.getElementById('avg-bet-size').textContent = formatCurrency(metrics.avgBetSize);
+
+            // Update change indicators
+            updateChangeIndicator('volume-change', metrics.volumeChange);
+            updateChangeIndicator('agents-change', metrics.agentsChange);
+            updateChangeIndicator('bets-change', `Peak: ${metrics.peakBetsPerMinute}/min`);
+            updateChangeIndicator('size-change', metrics.sizeChange);
+        }
+
+        // Update volume chart
+        function updateVolumeChart(volumeData) {
+            if (!volumeChart || !volumeData) return;
+
+            const labels = volumeData.map(item => item.time);
+            const values = volumeData.map(item => item.volume);
+
+            volumeChart.data.labels = labels;
+            volumeChart.data.datasets[0].data = values;
+            volumeChart.update('none');
+        }
+
+        // Update sports chart
+        function updateSportsChart(sportsData) {
+            if (!sportsChart || !sportsData) return;
+
+            sportsChart.data.datasets[0].data = [
+                sportsData.football || 0,
+                sportsData.baseball || 0,
+                sportsData.basketball || 0,
+                sportsData.tennis || 0,
+                sportsData.hockey || 0,
+                sportsData.soccer || 0
+            ];
+            sportsChart.update('none');
+        }
+
+        // Update alerts
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-container');
+            if (!alerts || alerts.length === 0) return;
+
+            // Add new alerts
+            alerts.forEach(alert => {
+                if (!alertHistory.includes(alert.id)) {
+                    addAlert(alert);
+                    alertHistory.push(alert.id);
+                }
+            });
+
+            // Keep only last 10 alerts
+            if (alertHistory.length > 10) {
+                alertHistory = alertHistory.slice(-10);
+            }
+        }
+
+        // Add alert to UI
+        function addAlert(alert) {
+            const container = document.getElementById('alerts-container');
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert-item alert-${alert.type}`;
+            alertElement.innerHTML = `
+                <strong>${alert.title}:</strong> ${alert.message}
+                <small class="text-muted">${formatTimeAgo(alert.timestamp)}</small>
+            `;
+
+            container.insertBefore(alertElement, container.firstChild);
+
+            // Keep only 10 alerts visible
+            while (container.children.length > 10) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        // Update top agents
+        function updateTopAgents(agents) {
+            const container = document.getElementById('top-agents');
+            if (!agents || agents.length === 0) return;
+
+            container.innerHTML = agents.map(agent => `
+                <div class="agent-item">
+                    <span class="agent-name">${agent.name}</span>
+                    <span class="agent-volume">${formatCurrency(agent.volume)}</span>
+                </div>
+            `).join('');
+        }
+
+        // Update connection status
+        function updateConnectionStatus(status = 'live') {
+            const statusElement = document.getElementById('connection-status');
+            const indicatorElement = document.querySelector('.status-indicator');
+
+            statusElement.textContent = status === 'live' ? 'Connected' :
+                status === 'warning' ? 'Warning' : 'Error';
+
+            indicatorElement.className = `status-indicator status-${status}`;
+        }
+
+        // Update last update time
+        function updateLastUpdateTime() {
+            const element = document.getElementById('last-update');
+            element.textContent = `Last update: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // Update change indicator
+        function updateChangeIndicator(elementId, change) {
+            const element = document.getElementById(elementId);
+            if (!element || !change) return;
+
+            element.textContent = change;
+
+            // Add color class based on change
+            element.className = 'metric-change';
+            if (change.includes('+')) {
+                element.classList.add('positive');
+            } else if (change.includes('-')) {
+                element.classList.add('negative');
+            } else {
+                element.classList.add('neutral');
+            }
+        }
+
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+
+            if (minutes < 1) return 'just now';
+            if (minutes === 1) return '1 minute ago';
+            return `${minutes} minutes ago`;
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+
+</html>

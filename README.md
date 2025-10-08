@@ -213,6 +213,140 @@ CREATE TABLE fantasy402_agent_performance (
 );
 ```
 
+#### Player Information
+```sql
+CREATE TABLE fantasy402_players (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id TEXT UNIQUE NOT NULL,
+  agent_id TEXT,
+  player_name TEXT,
+  player_type TEXT,
+  office TEXT,
+  status TEXT,
+  registration_date TEXT,
+  last_login TEXT,
+  total_wagers INTEGER DEFAULT 0,
+  total_risk REAL DEFAULT 0,
+  total_win REAL DEFAULT 0,
+  net_income REAL DEFAULT 0,
+  commission_rate REAL DEFAULT 0,
+  credit_limit REAL DEFAULT 0,
+  available_balance REAL DEFAULT 0,
+  pending_balance REAL DEFAULT 0,
+  free_play_balance REAL DEFAULT 0,
+  currency_code TEXT DEFAULT 'USD',
+  active BOOLEAN DEFAULT 1,
+  suspend_sportsbook BOOLEAN DEFAULT 0,
+  read_only BOOLEAN DEFAULT 0,
+  wager_limit REAL DEFAULT 0,
+  minimum_wager REAL DEFAULT 0,
+  max_prop_payout REAL DEFAULT 0,
+  permissions_json TEXT,
+  preferences_json TEXT,
+  contact_info_json TEXT,
+  raw_response_json TEXT,
+  captured_at TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Player Performance
+```sql
+CREATE TABLE fantasy402_player_performance (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  period_start TEXT NOT NULL,
+  period_end TEXT NOT NULL,
+  period_type TEXT DEFAULT 'CP',
+  period_number INTEGER DEFAULT -1,
+  period_name TEXT DEFAULT 'Custom',
+  total_risk REAL DEFAULT 0,
+  total_win REAL DEFAULT 0,
+  total_commission REAL DEFAULT 0,
+  net_income REAL DEFAULT 0,
+  total_wagers INTEGER DEFAULT 0,
+  pending_wagers INTEGER DEFAULT 0,
+  settled_wagers INTEGER DEFAULT 0,
+  free_play_used REAL DEFAULT 0,
+  free_play_win REAL DEFAULT 0,
+  sport_breakdown_json TEXT,
+  captured_at TEXT NOT NULL,
+  raw_response_json TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Transaction Tracking
+```sql
+CREATE TABLE fantasy402_transactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  document_number TEXT UNIQUE NOT NULL,
+  customer_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  tran_code TEXT NOT NULL,
+  tran_type TEXT NOT NULL,
+  amount REAL NOT NULL,
+  description TEXT,
+  tran_date_time TEXT NOT NULL,
+  hold_amount REAL DEFAULT 0,
+  grade_num TEXT,
+  entered_by TEXT,
+  balance REAL NOT NULL,
+  captured_at TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Pending Wagers
+```sql
+CREATE TABLE fantasy402_pending_wagers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wager_id TEXT UNIQUE NOT NULL,
+  customer_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  sport TEXT,
+  bet_type TEXT,
+  stake REAL DEFAULT 0,
+  odds REAL DEFAULT 0,
+  risk REAL DEFAULT 0,
+  potential_win REAL DEFAULT 0,
+  event_id TEXT,
+  event_name TEXT,
+  wager_date TEXT,
+  status TEXT DEFAULT 'Pending',
+  description TEXT,
+  captured_at TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Player Analysis
+```sql
+CREATE TABLE fantasy402_player_analysis (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  report_type TEXT DEFAULT 'PlayerAnalysis',
+  start_date TEXT NOT NULL,
+  end_date TEXT NOT NULL,
+  line_type TEXT DEFAULT 'All',
+  total_wagers INTEGER DEFAULT 0,
+  total_risk REAL DEFAULT 0,
+  total_win REAL DEFAULT 0,
+  net_income REAL DEFAULT 0,
+  win_rate REAL DEFAULT 0,
+  average_odds REAL DEFAULT 0,
+  sports_breakdown_json TEXT,
+  bet_types_breakdown_json TEXT,
+  time_breakdown_json TEXT,
+  raw_analysis_json TEXT,
+  captured_at TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ### Database Bindings
 
 #### D1 Databases
@@ -539,6 +673,49 @@ bun run ci:bun      # ✅ Auto-detects Replit AI
 - 📊 **[Link Status Report](docs/LINK_STATUS.md)** - Complete link audit
 - **[Testing Guide](docs/guides/TESTING_GUIDE.md)** - Comprehensive testing documentation
 - **[Recovery Summary](docs/RECOVERY_SUMMARY.md)** - Complete recovery report
+
+## 🎯 Fantasy402 Integration
+
+**Complete Fantasy402.com API integration** with browser extension interception, data processing, and real-time monitoring.
+
+### Supported Operations
+- ✅ **getInfoPlayer** - Player information and status
+- ✅ **getPerformancePlayer** - Player performance metrics
+- ✅ **getTransactionList** - Transaction history and summaries
+- ✅ **getPending** - Pending wagers and risk exposure
+- ✅ **getReportPlayerAnalysis** - Comprehensive player analysis
+- ✅ **getTransactionHistory** - Historical transaction data
+
+### Features
+- 🔄 **Real-time Interception** - Browser extension captures all API calls
+- 📊 **Data Processing** - Parsed and normalized data storage
+- 💾 **Database Storage** - D1 tables for all operation types
+- 📈 **Dashboard Integration** - Floor Control dashboard cards
+- 🔍 **Analytics Engine** - Metrics tracking and monitoring
+- ⚡ **KV Caching** - Fast access to recent data
+
+### Quick Access
+```bash
+# View player information
+curl https://brain.mybook.com/api/fantasy402/player-info
+
+# Get player performance
+curl https://brain.mybook.com/api/fantasy402/player-performance
+
+# Check pending wagers
+curl https://brain.mybook.com/api/fantasy402/pending-wagers
+
+# View player analysis
+curl https://brain.mybook.com/api/fantasy402/player-analysis
+```
+
+### Dashboard Integration
+- **Floor Control Dashboard** - Individual cards for each operation
+- **Real-time Updates** - 30-second refresh rate
+- **Visual Analytics** - Charts and metrics display
+- **Error Handling** - Comprehensive error reporting
+
+📖 **[Fantasy402 Integration Guide](docs/FANTASY402_INTEGRATION_COMPLETE.md)** | **[Floor Control Cards](docs/FLOOR_CONTROL_FANTASY402_CARDS.md)**
 
 ## 🎯 BetTicker Sniffer
 

@@ -6,7 +6,7 @@ class LogForwarder {
     this.logs = [];
     this.maxLogs = 1000;
     this.forwardingEnabled = true;
-    this.endpoint = 'config.workerUrl/logs';
+    this.endpoint = 'http://localhost:8787/logs';
     this.sessionId = this.generateSessionId();
     
     this.init();

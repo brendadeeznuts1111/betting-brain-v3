@@ -1,10 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Fantasy402 Data Capture",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "description": "Captures Fantasy402 API calls and forwards to Cloudflare Worker",
   "permissions": [
-    "storage"
+    "storage",
+    "alarms",
+    "notifications"
   ],
   "host_permissions": [
     "https://fantasy402.com/*",
@@ -14,8 +16,7 @@
     "http://127.0.0.1/*"
   ],
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
