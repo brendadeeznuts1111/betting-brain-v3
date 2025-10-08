@@ -308,15 +308,17 @@
       <thead>
         <tr>
           <th>Agent</th>
-          <th data-sort="risk" title="Click to sort">Risk ▼</th>
+          <th data-sort="risk" title="Click to sort">Risk (Own) ▼</th>
+          <th data-sort="totalRisk" title="Click to sort">Total Risk ▼</th>
           <th data-sort="steam" title="Click to sort">Steam % ▲</th>
+          <th title="Children / Descendants">👥</th>
           <th data-sort="lastBet" title="Click to sort">Last Activity ▼</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="table-body">
         <tr>
-          <td colspan="5" class="empty-state">
+          <td colspan="7" class="empty-state">
             <h5>Loading agent data...</h5>
             <p>Fetching hierarchy from worker</p>
           </td>
@@ -396,11 +398,15 @@
               agent_name: node.name || node.id,
               parent: parent,
               level: level,
-              risk: node.risk || Math.random() * 100,
-              steam: node.steam || Math.random() * 100,
-              lastBet: Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000,
-              velocity: node.velocity,
-              sharpness: node.sharpness
+              risk: node.risk || 0,
+              totalRisk: node.totalRisk || node.risk || 0,
+              steam: node.steam || 0,
+              totalSteam: node.totalSteam || node.steam || 0,
+              velocity: node.velocity || 0,
+              sharpness: node.sharpness || 0,
+              childCount: node.childCount || 0,
+              descendantCount: node.descendantCount || 0,
+              lastBet: Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000
             });
           }
 
@@ -439,10 +445,16 @@
             ${r.parent ? `<br><small style="color: #606c76">↳ ${r.parent}</small>` : ''}
           </td>
           <td>
-            <span class="badge ${riskClass(r.risk)}">${r.risk.toFixed(1)}k</span>
+            <span class="badge ${riskClass(r.risk)}">${r.risk.toFixed(1)}</span>
+          </td>
+          <td>
+            <span class="badge ${riskClass(r.totalRisk)}" title="Includes ${r.descendantCount || 0} descendants">${r.totalRisk.toFixed(1)}</span>
           </td>
           <td>
             <span class="badge steam-badge">${r.steam.toFixed(0)}%</span>
+          </td>
+          <td style="text-align: center; font-size: 1.2rem; color: #606c76;">
+            ${r.childCount > 0 ? `${r.childCount} / ${r.descendantCount}` : '—'}
           </td>
           <td>${timeAgo(r.lastBet)}</td>
           <td>
@@ -500,27 +512,51 @@
 
         sideContent.innerHTML = `
           <h3>${agentId}</h3>
+          ${data.childCount > 0 ? `<p style="color: #606c76; margin-top: 0;">Parent: ${data.childCount} children, ${data.descendantCount} descendants</p>` : ''}
 
+          <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Own Metrics</h4>
           <div class="analytics-grid">
             <div class="analytics-card">
               <h5>Risk Score</h5>
-              <div class="value">${data.risk?.toFixed(1) || 'N/A'}</div>
+              <div class="value">${data.risk?.toFixed(1) || '0'}</div>
             </div>
             <div class="analytics-card">
               <h5>Steam %</h5>
-              <div class="value">${data.steam?.toFixed(0) || 'N/A'}%</div>
+              <div class="value">${data.steam?.toFixed(0) || '0'}%</div>
             </div>
             <div class="analytics-card">
               <h5>Velocity</h5>
-              <div class="value">${data.velocity?.toFixed(1) || 'N/A'}</div>
+              <div class="value">${data.velocity?.toFixed(1) || '0'}</div>
             </div>
             <div class="analytics-card">
               <h5>Sharpness</h5>
-              <div class="value">${data.sharpness?.toFixed(0) || 'N/A'}%</div>
+              <div class="value">${data.sharpness?.toFixed(0) || '0'}</div>
             </div>
           </div>
 
-          <h5>Full Analytics</h5>
+          ${data.childCount > 0 ? `
+            <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Total Metrics (with descendants)</h4>
+            <div class="analytics-grid">
+              <div class="analytics-card" style="border-left-color: var(--risk-critical);">
+                <h5>Total Risk</h5>
+                <div class="value">${data.totalRisk?.toFixed(1) || '0'}</div>
+              </div>
+              <div class="analytics-card" style="border-left-color: var(--risk-critical);">
+                <h5>Total Steam</h5>
+                <div class="value">${data.totalSteam?.toFixed(0) || '0'}</div>
+              </div>
+              <div class="analytics-card" style="border-left-color: var(--risk-critical);">
+                <h5>Total Velocity</h5>
+                <div class="value">${data.totalVelocity?.toFixed(1) || '0'}</div>
+              </div>
+              <div class="analytics-card" style="border-left-color: var(--risk-critical);">
+                <h5>Total Sharpness</h5>
+                <div class="value">${data.totalSharpness?.toFixed(0) || '0'}</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <h5 style="margin-top: 2rem;">Full Analytics</h5>
           <pre>${JSON.stringify(data, null, 2)}</pre>
         `;
       } catch (error) {
