@@ -5,6 +5,7 @@
  */
 
 import { resolveHost, resolveMultiple } from '../lib/dns-worker';
+import { CORS_HEADERS } from '../utils/request';
 import type { Env } from '../types/api';
 
 /**

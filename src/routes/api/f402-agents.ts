@@ -14,6 +14,7 @@
  */
 
 import { Env } from '../../types/api';
+import { CORS_HEADERS } from '../../utils/request';
 
 interface AgentPerformanceResponse {
   totalPnl: number;
@@ -56,12 +57,7 @@ export async function getAgentPerformance(
 
   console.log(`[${requestId}] 🤖 GET /api/f402/agents/performance?period=${period}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  const corsHeaders = CORS_HEADERS;
 
   try {
     if (!env.ANALYTICS) {
@@ -146,12 +142,7 @@ export async function getAgentList(
 
   console.log(`[${requestId}] 👥 GET /api/f402/agents/list?owner=${owner}&agentID=${agentID}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  const corsHeaders = CORS_HEADERS;
 
   try {
     if (!env.FANTASY_CACHE) {
@@ -289,12 +280,7 @@ export async function getAgentDetail(
 ): Promise<Response> {
   console.log(`[${requestId}] 👤 GET /api/f402/agents/${agentID}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  const corsHeaders = CORS_HEADERS;
 
   try {
     if (!env.FANTASY_CACHE) {
@@ -423,13 +409,6 @@ export async function getAgentTree(
 
   console.log(`[${requestId}] 🌳 GET /api/f402/agents/tree?owner=${owner}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
-
   try {
     if (!env.FANTASY_CACHE) {
       throw new Error('FANTASY_CACHE not configured');
@@ -478,7 +457,7 @@ export async function getAgentTree(
         }),
         {
           status: 404,
-          headers: corsHeaders,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -495,7 +474,7 @@ export async function getAgentTree(
         timestamp: new Date().toISOString(),
       }),
       {
-        headers: corsHeaders,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {
@@ -509,7 +488,7 @@ export async function getAgentTree(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );
   }
@@ -625,12 +604,7 @@ export async function syncAgents(
   ctx: ExecutionContext
 ): Promise<Response> {
   const requestId = Date.now().toString(36);
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  const corsHeaders = CORS_HEADERS;
 
   try {
     const body = await request.json() as { agents: any[]; source?: string; timestamp?: string };
@@ -736,12 +710,7 @@ export async function getCacheMetrics(
 ): Promise<Response> {
   console.log(`[${requestId}] 📊 GET /api/f402/cache/metrics`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  const corsHeaders = CORS_HEADERS;
 
   try {
     if (!env.FANTASY_CACHE) {

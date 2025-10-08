@@ -5,6 +5,7 @@
  */
 
 import { MCPEnv } from '../types/api';
+import { CORS_HEADERS } from '../utils/request';
 import {
   JSONRPCRequest,
   JSONRPCResponse,

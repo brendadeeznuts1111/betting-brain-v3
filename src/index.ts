@@ -15,6 +15,7 @@ import { getSharpScore } from './tools/intelligence/getSharpScore';
 import { getHoldPercentage } from './tools/intelligence/getHoldPercentage';
 import { getCLV } from './tools/intelligence/getCLV';
 import { handleBetTickerInterception, getBetTickerHistory, getBetTickerResponse } from './interceptors/bet-ticker-sniffer';
+import { getAgentTree } from './routes/api/f402-agents';
 import { handleMCPRequest } from './mcp/server';
 import { handleAPIRoute } from './api/routes';
 import { handleWebSocketUpgrade } from './websocket/fantasy402-ws-handler';
@@ -22,6 +23,7 @@ import { handleIngest } from './routes/ingest';
 import { handleLiveAnalytics } from './api/analytics-live';
 import { handleLiveSports } from './api/sports-live';
 import { handleLiveSessions } from './api/session-live';
+import { CORS_HEADERS } from './utils/request';
 
 // See .cursor/rules/endpoint-routing.mdc for routing patterns
 // See .cursor/rules/cloudflare-workers.mdc for Workers patterns
@@ -38,17 +40,13 @@ export default {
       cfRay: request.headers.get('cf-ray'),
     });
 
-    // CORS headers for dashboard
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    };
-
     // Handle OPTIONS preflight
     if (request.method === 'OPTIONS') {
       console.log(`[${requestId}] ✅ OPTIONS preflight request`);
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, {
+        status: 204,
+        headers: CORS_HEADERS
+      });
     }
 
     // WebSocket endpoint (must be first to check Upgrade header)
@@ -69,11 +67,8 @@ export default {
         duration: `${duration}ms`,
       }), {
         headers: {
-          ...corsHeaders,
+          ...CORS_HEADERS,
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type'
         }
       });
     }
@@ -160,8 +155,8 @@ export default {
           timestamp: new Date().toISOString()
         }), {
           headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
+            ...CORS_HEADERS,
+            'Content-Type': 'application/json'
           }
         });
 
@@ -173,8 +168,8 @@ export default {
         }), {
           status: 400,
           headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
+            ...CORS_HEADERS,
+            'Content-Type': 'application/json'
           }
         });
       }
@@ -232,8 +227,8 @@ export default {
           requestId
         }), {
           headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            ...CORS_HEADERS,
+            'Content-Type': 'application/json'
           }
         });
       }
@@ -249,7 +244,7 @@ export default {
           requestId,
         }), {
           status: 500,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
         });
       }
     }
@@ -270,6 +265,12 @@ export default {
     if (url.pathname === '/api/sessions/live') {
       console.log(`[${requestId}] 👥 Live session data request`);
       return handleLiveSessions(request, env, requestId);
+    }
+
+    // NEW: agent tree (fast path)
+    if (url.pathname === '/api/f402/agents/tree') {
+      console.log(`[${requestId}] 🌲 Agent tree: ${url.searchParams.get('owner') || 'self'}`);
+      return await getAgentTree(request, env, requestId);
     }
 
     // REST API routes (/api/*)
@@ -388,12 +389,6 @@ async function handleMCPTools(request: Request, env: Env, ctx: ExecutionContext)
 
 // Diagnostics handler
 async function handleDiagnostics(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
 
   try {
     const diagnostics = {
@@ -435,7 +430,7 @@ async function handleDiagnostics(request: Request, env: Env, ctx: ExecutionConte
     }
 
     return new Response(JSON.stringify(diagnostics, null, 2), {
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('Diagnostics error:', error);
@@ -444,19 +439,13 @@ async function handleDiagnostics(request: Request, env: Env, ctx: ExecutionConte
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 }
 
 // Logs handler
 async function handleLogs(request: Request, env: Env): Promise<Response> {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
 
   try {
     const url = new URL(request.url);
@@ -469,7 +458,7 @@ async function handleLogs(request: Request, env: Env): Promise<Response> {
         error: 'KV storage not available for log retrieval'
       }), {
         status: 503,
-        headers: corsHeaders
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -510,7 +499,7 @@ async function handleLogs(request: Request, env: Env): Promise<Response> {
       limit: limit,
       level: level
     }), {
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('Logs error:', error);
@@ -519,19 +508,13 @@ async function handleLogs(request: Request, env: Env): Promise<Response> {
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 }
 
 // System status handler
 async function handleSystemStatus(request: Request, env: Env): Promise<Response> {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
 
   try {
     const now = Date.now();
@@ -614,7 +597,7 @@ async function handleSystemStatus(request: Request, env: Env): Promise<Response>
     };
 
     return new Response(JSON.stringify(status, null, 2), {
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('System status error:', error);
@@ -623,26 +606,20 @@ async function handleSystemStatus(request: Request, env: Env): Promise<Response>
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 }
 
 // Interceptor API handler (for analysis/debugging)
 async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
 
   if (!env.BET_TICKER_RAW) {
     return new Response(JSON.stringify({
       error: 'BetTicker interception not configured'
     }), {
       status: 503,
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 
@@ -668,7 +645,7 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
         });
 
         return new Response(JSON.stringify(history), {
-          headers: corsHeaders
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
         });
       }
 
@@ -678,7 +655,7 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
         if (!key) {
           return new Response(JSON.stringify({ error: 'Missing key parameter' }), {
             status: 400,
-            headers: corsHeaders
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
           });
         }
 
@@ -686,19 +663,19 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
         if (!response) {
           return new Response(JSON.stringify({ error: 'Response not found' }), {
             status: 404,
-            headers: corsHeaders
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
           });
         }
 
         return new Response(JSON.stringify(response), {
-          headers: corsHeaders
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
         });
       }
 
       default:
         return new Response(JSON.stringify({ error: 'Invalid interceptor endpoint' }), {
           status: 404,
-          headers: corsHeaders
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
         });
     }
   } catch (error) {
@@ -708,7 +685,7 @@ async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionCo
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
-      headers: corsHeaders
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 };

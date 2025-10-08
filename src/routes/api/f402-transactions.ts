@@ -8,6 +8,7 @@
  */
 
 import { Env } from '../../types/api';
+import { CORS_HEADERS } from '../utils/request';
 
 interface Transaction {
   type: 'BET' | 'PAYOUT';

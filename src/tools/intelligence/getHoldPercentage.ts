@@ -52,6 +52,10 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
     }
 
     const latest = lineData[0];
+    if (!latest || typeof latest !== 'object') {
+      return createErrorResponse(Errors.notFound('Line movement data'), Date.now().toString(36), '/api/hold-percentage');
+    }
+
     const totalVolume = (latest.va || 0) + (latest.vb || 0);
     const totalRisk = totalVolume; // Simplified calculation
 
@@ -82,9 +86,6 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
 
   } catch (error) {
     console.error('Error in getHoldPercentage:', error);
-    return new Response(JSON.stringify(createErrorResponse(Errors.databaseError('getHoldPercentage query failed'), Date.now().toString(36), '/api/hold-percentage')), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return createErrorResponse(Errors.databaseError('getHoldPercentage query failed'), Date.now().toString(36), '/api/hold-percentage');
   }
 }

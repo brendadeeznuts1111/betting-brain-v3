@@ -26,6 +26,7 @@ import type {
   Market,
   AggregatedOdds,
 } from '../../types/api';
+import { CORS_HEADERS } from '../utils/request';
 import { aggregateOdds } from '../../utils/sports-api';
 
 export async function handleLiveOdds(

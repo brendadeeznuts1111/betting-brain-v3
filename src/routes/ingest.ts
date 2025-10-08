@@ -31,6 +31,7 @@ import type {
   IngestDataPoint,
   IngestResponse,
 } from '../types/api';
+import { CORS_HEADERS } from '../utils/request';
 import { validateJWT } from '../utils/jwt';
 
 export async function handleIngest(
@@ -161,8 +162,7 @@ export async function handleIngest(
         written++;
       } catch (error) {
         errors.push(
-          `Failed to write data point ${i}: ${
-            error instanceof Error ? error.message : String(error)
+          `Failed to write data point ${i}: ${error instanceof Error ? error.message : String(error)
           }`
         );
       }

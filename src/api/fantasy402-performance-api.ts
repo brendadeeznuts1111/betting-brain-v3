@@ -2,6 +2,7 @@
 // Query endpoints for agent performance data
 
 import { Errors, createErrorResponse } from '../utils/error-handler';
+import { CORS_HEADERS } from '../utils/request';
 import type { Env } from '../types/cloudflare';
 
 /**

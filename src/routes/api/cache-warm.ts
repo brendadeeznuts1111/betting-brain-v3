@@ -11,6 +11,7 @@
  */
 
 import { Env } from '../../types/api';
+import { CORS_HEADERS } from '../utils/request';
 
 interface CacheWarmResponse {
   success: boolean;

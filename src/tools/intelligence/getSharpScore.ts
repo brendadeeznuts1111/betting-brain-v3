@@ -4,7 +4,7 @@
  */
 
 import { Env, GetSharpScoreRequest as GetSharpScoreRequestSchema, SharpScoreResponse as SharpScoreResponseSchema } from '../../types/api';
-import { createErrorResponse } from '../../utils/error-handler';
+import { createErrorResponse, Errors } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
 import { costCapGuard } from '../../guards/costCap';
@@ -18,7 +18,7 @@ export async function getSharpScore(request: Request, env: Env): Promise<Respons
         retryAfter: rateLimitResult.retryAfter
       }), {
         status: 429,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Retry-After': String(rateLimitResult.retryAfter || 60)
         }
@@ -44,6 +44,10 @@ export async function getSharpScore(request: Request, env: Env): Promise<Respons
       timeWindow: parseInt(url.searchParams.get('timeWindow') || '24')
     };
 
+    // Validate required parameters
+    if (!params.cid) {
+      return createErrorResponse(Errors.validationError(['Customer ID (cid) is required']), Date.now().toString(36), '/api/sharp-score');
+    }
 
     // Query sharp score data
     const db = createDatabaseHelper(env);
@@ -53,10 +57,7 @@ export async function getSharpScore(request: Request, env: Env): Promise<Respons
     );
 
     if (!sharpData) {
-      return new Response(createErrorResponse('No sharp score data found for customer', 'NOT_FOUND'), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse(Errors.notFound('Customer'), Date.now().toString(36), '/api/sharp-score');
     }
 
     // Calculate sharp score
@@ -65,7 +66,7 @@ export async function getSharpScore(request: Request, env: Env): Promise<Respons
     const volumeScore = Math.min(Math.max(sharpData.ao / 10, 0), 20);
     const sharpScore = clvScore + winRateScore + volumeScore;
 
-    const response: SharpScoreResponse = {
+    const response: SharpScoreResponseSchema = {
       cid: params.cid,
       sharpScore,
       clv: sharpData.clv || 0,
