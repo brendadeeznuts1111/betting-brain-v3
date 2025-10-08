@@ -72,53 +72,173 @@ See [Zombie Process Fix](docs/ZOMBIE_PROCESS_FIX.md) for details.
 
 ## 🗄️ Database Schema
 
-### Line Movements (7-day TTL, ROWID+LZ4)
+### Core Analytics Tables
+
+#### Line Movements (7-day TTL, ROWID+LZ4)
 ```sql
 CREATE TABLE line_movements (
-  eid  TEXT NOT NULL,    -- Event ID
-  mt   TEXT NOT NULL,    -- Market Type
-  lb   SMALLINT,         -- Line Before
-  la   SMALLINT,         -- Line After
-  vb   INT,              -- Volume Before
-  va   INT,              -- Volume After
-  ts   DATETIME,         -- Timestamp
-  ing  DATETIME DEFAULT CURRENT_TIMESTAMP
-) STRICT, ROWID, LZ4;
+  eid  TEXT NOT NULL,           -- Event ID
+  mt   TEXT NOT NULL,           -- Market Type (SPREAD, MONEYLINE, TOTAL, PROP)
+  lb   REAL,                    -- Line Before
+  la   REAL,                    -- Line After
+  vb   INTEGER,                 -- Volume Before
+  va   INTEGER,                 -- Volume After
+  ts   TEXT NOT NULL,           -- Timestamp (ISO 8601)
+  ing  TEXT DEFAULT (datetime('now')) -- Ingestion timestamp
+) STRICT;
 ```
 
-### Sharp Indicators (hourly refresh)
+#### Sharp Indicators (hourly refresh)
 ```sql
 CREATE TABLE sharp_indicators (
-  cid TEXT PRIMARY KEY,  -- Customer ID
-  clv REAL,              -- Customer Lifetime Value
-  wr  REAL,              -- Win Rate
-  ao  SMALLINT,          -- Action Count
-  nb  INT,               -- Net Bet
-  upd DATETIME DEFAULT CURRENT_TIMESTAMP
-) STRICT, ROWID, LZ4;
+  cid  TEXT PRIMARY KEY,        -- Customer ID
+  clv  REAL NOT NULL,           -- Customer Lifetime Value
+  wr   REAL NOT NULL,           -- Win Rate (0-100)
+  ao   INTEGER NOT NULL,        -- Action Count
+  nb   REAL NOT NULL,           -- Net Bet
+  upd  TEXT DEFAULT (datetime('now')) -- Update timestamp
+) STRICT;
 ```
 
-### Exposure Tracking (30s refresh)
+#### Exposure Tracking (30s refresh)
 ```sql
 CREATE TABLE exposure_tracking (
-  eid  TEXT,             -- Event ID
-  side TEXT,             -- Side (HOME/AWAY)
-  risk INT,              -- Risk Amount
-  net  INT,              -- Net Exposure
-  upd  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  eid  TEXT NOT NULL,           -- Event ID
+  side TEXT NOT NULL,           -- Side (HOME/AWAY)
+  risk INTEGER NOT NULL,        -- Risk Amount (cents)
+  net  INTEGER NOT NULL,        -- Net Exposure (cents)
+  ts   TEXT NOT NULL,           -- Timestamp for time-series
+  upd  TEXT DEFAULT (datetime('now')), -- Update timestamp
   PRIMARY KEY (eid, side)
-) STRICT, WITHOUT ROWID, LZ4;
+) STRICT, WITHOUT ROWID;
 ```
 
-### Steam Dedupe (5min TTL)
+#### Steam Dedupe (5min TTL)
 ```sql
 CREATE TABLE steam_dedupe (
-  eid TEXT,              -- Event ID
-  mt  TEXT,              -- Market Type
-  ts  DATETIME,          -- Timestamp
+  eid  TEXT NOT NULL,           -- Event ID
+  mt   TEXT NOT NULL,           -- Market Type
+  ts   TEXT NOT NULL,           -- Timestamp
   PRIMARY KEY (eid, mt)
 ) STRICT, WITHOUT ROWID;
 ```
+
+### MCP Analytics Tables
+
+#### Bet History
+```sql
+CREATE TABLE bet_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cid TEXT NOT NULL,              -- Customer ID
+  stake REAL NOT NULL,            -- Bet amount (stake)
+  payout REAL NOT NULL,           -- Payout amount (0 if loss)
+  result TEXT,                    -- WIN, LOSS, PUSH, PENDING
+  ts TEXT NOT NULL,               -- Timestamp (ISO 8601)
+  market_type TEXT,               -- SPREAD, MONEYLINE, TOTAL, PROP
+  event_id TEXT,                  -- Event ID
+  time_to_event INTEGER,          -- Seconds until event start
+  created_at TEXT DEFAULT (datetime('now'))
+) STRICT;
+```
+
+#### Hold Tracking
+```sql
+CREATE TABLE hold_tracking (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  eid TEXT NOT NULL,              -- Event ID
+  mt TEXT NOT NULL,               -- Market Type
+  hold_pct REAL NOT NULL,         -- Hold percentage (0-100)
+  volume REAL NOT NULL,           -- Total betting volume
+  ts TEXT NOT NULL,               -- Timestamp (ISO 8601)
+  created_at TEXT DEFAULT (datetime('now'))
+) STRICT;
+```
+
+### Fantasy402 Data Ingestion Tables
+
+#### Raw Feed
+```sql
+CREATE TABLE fantasy402_raw_feed (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  packet_id TEXT UNIQUE NOT NULL,
+  timestamp TEXT NOT NULL,
+  endpoint TEXT NOT NULL,
+  operation TEXT NOT NULL,
+  method TEXT NOT NULL,
+  url TEXT NOT NULL,
+  request_body TEXT,
+  response_status INTEGER NOT NULL,
+  response_body TEXT,
+  duration_ms INTEGER,
+  agent_id TEXT,
+  customer_id TEXT,
+  jwt_user_id TEXT,
+  jwt_office TEXT,
+  jwt_expires_at TEXT,
+  jwt_valid BOOLEAN,
+  metadata TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Agent Performance
+```sql
+CREATE TABLE fantasy402_agent_performance (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agent_id TEXT NOT NULL,
+  agent_owner TEXT,
+  period_start TEXT NOT NULL,
+  period_end TEXT NOT NULL,
+  period_type TEXT,
+  period_number INTEGER,
+  period_name TEXT,
+  total_risk REAL DEFAULT 0,
+  total_win REAL DEFAULT 0,
+  total_commission REAL DEFAULT 0,
+  net_income REAL DEFAULT 0,
+  total_wagers INTEGER DEFAULT 0,
+  pending_wagers INTEGER DEFAULT 0,
+  settled_wagers INTEGER DEFAULT 0,
+  free_play_used REAL DEFAULT 0,
+  free_play_win REAL DEFAULT 0,
+  sport_breakdown_json TEXT,
+  captured_at TEXT NOT NULL,
+  raw_response_json TEXT,
+  CONSTRAINT unique_performance UNIQUE (agent_id, period_start, period_end, captured_at)
+);
+```
+
+### Database Bindings
+
+#### D1 Databases
+- **ANALYTICS**: `betting-analytics` (main analytics database)
+- **RAW_FEED_DB**: `fantasy42-raw-feed` (Fantasy402 data ingestion)
+
+#### KV Namespaces
+- **BET_TICKER_RAW**: Raw BetTicker API responses (7-day retention)
+- **TOKEN_STORE**: JWT token management
+- **USER_STORE**: User session data
+- **SESSION_STORE**: Active sessions
+- **REFRESH_STORE**: Token refresh data
+- **LIVEBETS_STORE**: Live betting data
+- **FANTASY_CACHE**: Fantasy402 API data cache
+- **FANTASY_CONFIG_CACHE**: Fantasy402 configuration cache
+
+#### Analytics Engine
+- **ANALYTICS_ENGINE**: `betting-metrics` dataset for time-series analytics
+
+#### Queues
+- **LINE_INGRESS**: Line movement ingestion (10 msg/batch, 5s timeout)
+- **STEAM_WEBHOOK**: Steam move notifications (5 msg/batch, 10s timeout)
+- **STEAM_QUEUE**: Steam processing (10 msg/batch, 2s timeout, 2 retries)
+- **EXPOSURE_QUEUE**: Exposure calculations (50 msg/batch, 10s timeout, 3 retries)
+- **FANTASY402_QUEUE**: Fantasy402 data processing (100 msg/batch, 5s timeout, 5 retries)
+
+### TTL Triggers
+- **Line Movements**: 7-day retention
+- **Steam Dedupe**: 5-minute retention
+- **Sharp Indicators**: 30-day retention
+- **Exposure Tracking**: 24-hour retention
 
 ## 🔧 Edge Pipeline
 
