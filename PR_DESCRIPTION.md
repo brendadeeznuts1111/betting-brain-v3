@@ -159,7 +159,7 @@ beforeEach(() => {
 **Updated:**
 - `README.md` - Added Bun CI features
 - `CHANGELOG.md` - v4.2.0 entry
-- `STYLE_GUIDE.md` - New style guide
+- `docs/STYLE_GUIDE.md` - New style guide
 - `docs/CURSOR_RULES.md` - Updated documentation
 
 ### 4. Cursor Rules (3 new, 7 updated)

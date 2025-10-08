@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Comprehensive Documentation**: 12 guides (~5,500 lines) covering all aspects
 - **Package.json Scripts**: precheck, precheck:quick, precheck:security, ci:bun variants
 - **Slack Integration**: Release notifications via GitHub Actions
-- **Style Guide**: Human-readable coding standards (STYLE_GUIDE.md)
+- **Style Guide**: Human-readable coding standards (docs/STYLE_GUIDE.md)
 - **Documentation Index**: Complete hierarchy (CURSOR_RULES_DOCUMENTATION_INDEX.md)
 - **Three New Rules**: browser-extension.mdc, database-patterns.mdc, security-patterns.mdc
 

@@ -350,7 +350,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 
 #### AI Development
 - **[Cursor Rules](.cursorrules)** - AI development standards and patterns 🤖
-- **[Style Guide](STYLE_GUIDE.md)** - Human-readable coding standards with examples 📚
+- **[Style Guide](docs/STYLE_GUIDE.md)** - Human-readable coding standards with examples 📚
 - **[Cursor Rules Guide](docs/CURSOR_RULES.md)** - Complete rules documentation
 - **[Code Searchability](docs/AST_GREP_QUICKSTART.md)** - ast-grep patterns for code discovery
 - **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
