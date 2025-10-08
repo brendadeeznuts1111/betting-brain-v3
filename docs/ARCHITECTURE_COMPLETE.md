@@ -749,7 +749,7 @@ async function archiveOldLogs() {
 
 - [Queue-Based Logging](QUEUE_BASED_LOGGING.md) - Async processing architecture
 - [WebSocket Implementation](WEBSOCKET_IMPLEMENTATION_COMPLETE.md) - Real-time connections
-- [Fantasy402 Authenticated API](FANTASY402_AUTHENTICATED_API.md) - Server-side API client
+- [Fantasy402 Authenticated API](API.md) - Server-side API client
 - [Architecture Upgrade](ARCHITECTURE_UPGRADE_COMPLETE.md) - Migration summary
 
 ---

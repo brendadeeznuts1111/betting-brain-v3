@@ -458,7 +458,7 @@ wrangler queues consumer add ...        # Add consumer
    - Add worker URL to Claude config
 
 2. **Install Browser Extension:**
-   - See [browser-extension/README.md](../../browser-extension/README.md)
+   - See [browser-extension/README.md](../../README.md)
    - Load extension in Chrome
    - Visit fantasy402.com
 

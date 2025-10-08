@@ -96,18 +96,18 @@ wrangler d1 migrations apply RAW_FEED_DB --remote
 
 ### Must-Read Before Deployment
 1. **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** ← Start here!
-2. [Complete System Summary](docs/COMPLETE_SYSTEM_SUMMARY.md)
-3. [Production Alerts Setup](docs/PRODUCTION_ALERTS_SETUP.md)
+2. [Complete System Summary](../COMPLETE_SYSTEM_SUMMARY.md)
+3. [Production Alerts Setup](../PRODUCTION_ALERTS_SETUP.md)
 
 ### Emergency Procedures
-1. [Emergency Rollback](docs/runbooks/rollback.md) - < 5 min
-2. [Queue Backlog Response](docs/runbooks/queue-backlog.md) - < 15 min
-3. [D1 SQLITE_BUSY Fix](docs/runbooks/d1-busy.md) - < 10 min
+1. [Emergency Rollback](../runbooks/rollback.md) - < 5 min
+2. [Queue Backlog Response](../runbooks/queue-backlog.md) - < 15 min
+3. [D1 SQLITE_BUSY Fix](../runbooks/d1-busy.md) - < 10 min
 
 ### Architecture & Design
-1. [Architecture Complete](docs/ARCHITECTURE_COMPLETE.md) - 7 diagrams
-2. [Config Caching Strategy](docs/CONFIG_CACHING_STRATEGY.md)
-3. [WebSocket Implementation](docs/WEBSOCKET_IMPLEMENTATION_COMPLETE.md)
+1. [Architecture Complete](../ARCHITECTURE_COMPLETE.md) - 7 diagrams
+2. [Config Caching Strategy](../CONFIG_CACHING_STRATEGY.md)
+3. [WebSocket Implementation](../WEBSOCKET_IMPLEMENTATION_COMPLETE.md)
 
 ---
 
@@ -193,12 +193,12 @@ cd /Users/nolarose/ffffff && bun run deploy
 
 **Documentation:**
 - [Deployment Checklist](DEPLOYMENT_CHECKLIST.md)
-- [Complete System Summary](docs/COMPLETE_SYSTEM_SUMMARY.md)
-- [All Documentation](docs/INDEX.md)
+- [Complete System Summary](../COMPLETE_SYSTEM_SUMMARY.md)
+- [All Documentation](../INDEX.md)
 
 **Emergency:**
-- [Emergency Rollback](docs/runbooks/rollback.md)
-- [Incident Response](docs/runbooks/)
+- [Emergency Rollback](../runbooks/rollback.md)
+- [Incident Response](../runbooks/)
 - Cloudflare Support: support@cloudflare.com
 
 ---

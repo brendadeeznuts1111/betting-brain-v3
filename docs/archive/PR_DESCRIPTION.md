@@ -187,9 +187,9 @@ This PR includes **comprehensive documentation**:
 - 🔧 **Troubleshooting guides** for common issues
 
 **Start Here:**
-- [Complete System Summary](docs/COMPLETE_SYSTEM_SUMMARY.md) ⭐
-- [Architecture Complete](docs/ARCHITECTURE_COMPLETE.md)
-- [Production Observability](docs/OBSERVABILITY_COMPLETE.md)
+- [Complete System Summary](../COMPLETE_SYSTEM_SUMMARY.md) ⭐
+- [Architecture Complete](../ARCHITECTURE_COMPLETE.md)
+- [Production Observability](../OBSERVABILITY_COMPLETE.md)
 
 ---
 
@@ -203,8 +203,8 @@ All code follows established project patterns:
 - ✅ [Security Patterns](.cursor/rules/security-patterns.mdc) - Production security
 - ✅ [Testing Patterns](.cursor/rules/testing-patterns.mdc) - Bun Test
 - ✅ [Database Patterns](.cursor/rules/database-patterns.mdc) - D1 queries
-- ✅ [File Naming](docs/CURSOR_RULES.md) - Kebab-case
-- ✅ [Documentation](docs/INDEX.md) - Complete index
+- ✅ [File Naming](../CURSOR_RULES.md) - Kebab-case
+- ✅ [Documentation](../INDEX.md) - Complete index
 
 ---
 
@@ -235,7 +235,7 @@ wrangler d1 execute RAW_FEED_DB --command "SELECT name FROM sqlite_master WHERE 
 ```
 
 ### Phase 3: Set Up Alerts (15 min)
-Follow [Production Alerts Setup](docs/PRODUCTION_ALERTS_SETUP.md):
+Follow [Production Alerts Setup](../PRODUCTION_ALERTS_SETUP.md):
 1. Create Telegram bot
 2. Configure Worker error rate alert
 3. Configure Queue back-pressure alert

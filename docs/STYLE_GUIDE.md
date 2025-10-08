@@ -2,7 +2,7 @@
 
 Welcome to the project's official style guide! This document explains the "why" behind our coding standards and provides clear examples for each rule.
 
-Our rules are enforced automatically and are defined in the [`.cursorrules`](./.cursorrules) file. For a history of changes to these rules, please see the [CHANGELOG.md](./CHANGELOG.md).
+Our rules are enforced automatically and are defined in the [`.cursorrules`](./.cursorrules) file. For a history of changes to these rules, please see the [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -505,8 +505,8 @@ bun test
 ### Key Files
 - **[.cursorrules](.cursorrules)** - Automated rule enforcement
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
-- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Team workflow
-- **[Automation Guide](docs/CURSOR_RULES_AUTOMATION.md)** - Automated versioning
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Team workflow
+- **[Automation Guide](../CURSOR_RULES_AUTOMATION.md)** - Automated versioning
 
 ---
 

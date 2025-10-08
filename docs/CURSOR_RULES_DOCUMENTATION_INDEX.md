@@ -10,7 +10,7 @@
 |----------|---------|----------|--------|
 | **[STYLE_GUIDE.md](../STYLE_GUIDE.md)** | Human-readable coding standards with examples | All developers | ✅ Active |
 | **[.cursorrules](../.cursorrules)** | Machine-readable rule enforcement | AI assistants, CI/CD | ✅ Active |
-| **[CHANGELOG.md](../CHANGELOG.md)** | Version history and changes | All contributors | ✅ Active |
+| **[CHANGELOG.md](CHANGELOG.md)** | Version history and changes | All contributors | ✅ Active |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | Team workflow and adoption guide | Contributors | ✅ Active |
 
 ---
@@ -140,14 +140,14 @@
 ### **For New Developers**
 1. Start with [STYLE_GUIDE.md](../STYLE_GUIDE.md) - understand the rules
 2. Review [CONTRIBUTING.md](CONTRIBUTING.md) - learn the workflow
-3. Check [CHANGELOG.md](../CHANGELOG.md) - see recent changes
+3. Check [CHANGELOG.md](CHANGELOG.md) - see recent changes
 4. Use [.cursorrules](../.cursorrules) - automated enforcement
 
 ### **For Making Changes**
 1. Edit [.cursorrules](../.cursorrules) - modify rules
 2. Update [STYLE_GUIDE.md](../STYLE_GUIDE.md) - add examples
 3. Run `./scripts/bump-version.sh` - automate versioning
-4. Update [CHANGELOG.md](../CHANGELOG.md) - document changes
+4. Update [CHANGELOG.md](CHANGELOG.md) - document changes
 
 ### **For Code Review**
 1. Reference [STYLE_GUIDE.md](../STYLE_GUIDE.md) - link to specific rules
@@ -161,7 +161,7 @@
 
 - **[Style Guide](../STYLE_GUIDE.md)** - Human-readable standards
 - **[Cursor Rules](../.cursorrules)** - Machine enforcement
-- **[Changelog](../CHANGELOG.md)** - Version history
+- **[Changelog](CHANGELOG.md)** - Version history
 - **[Contributing Guide](CONTRIBUTING.md)** - Team workflow
 - **[Automation Guide](CURSOR_RULES_AUTOMATION.md)** - Automated versioning
 - **[Versioning Guide](CURSOR_RULES_VERSIONING.md)** - SemVer guidelines

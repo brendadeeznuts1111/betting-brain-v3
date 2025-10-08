@@ -257,7 +257,7 @@ bun run ci:bun
 
 ## 📚 Documentation
 
-- [Bun CI Integration](docs/BUN_CI_INTEGRATION.md)
+- [Bun CI Integration](../BUN_CI_INTEGRATION.md)
 - [Style Guide](STYLE_GUIDE.md)
 - [Cursor Rules](.cursorrules)
 - [Changelog](CHANGELOG.md)
@@ -480,7 +480,7 @@ bun run precheck
 \`\`\`
 
 **Documentation:**
-- [Bun CI Integration](docs/BUN_CI_INTEGRATION.md)
+- [Bun CI Integration](../BUN_CI_INTEGRATION.md)
 - [Style Guide](STYLE_GUIDE.md)
 - [Changelog](CHANGELOG.md)
 
@@ -558,7 +558,7 @@ grep '^version:' .cursorrules
 - **[Cursor Rules Versioning](CURSOR_RULES_VERSIONING.md)** - SemVer guidelines
 - **[Cursor Rules Automation](CURSOR_RULES_AUTOMATION.md)** - Automation guide
 - **[Style Guide](../STYLE_GUIDE.md)** - Human-readable standards
-- **[Changelog](../CHANGELOG.md)** - Version history
+- **[Changelog](CHANGELOG.md)** - Version history
 
 ---
 

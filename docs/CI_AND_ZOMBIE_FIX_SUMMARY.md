@@ -280,7 +280,7 @@ ps aux | grep bun
 Comprehensive docs in:
 - [Zombie Process Fix](ZOMBIE_PROCESS_FIX.md) - Technical details
 - [CI Implementation](CI_AND_ZOMBIE_FIX_SUMMARY.md) - This doc
-- [Testing Guide](testing/TESTING_GUIDE.md) - Test patterns
+- [Testing Guide](guides/TESTING_GUIDE.md) - Test patterns
 - [Quick Start](QUICKSTART.md) - Getting started
 
 ---

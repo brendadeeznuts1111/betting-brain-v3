@@ -1,0 +1,57 @@
+# Code Owners for Betting-Brain v3
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @nolarose1968
+
+# Cursor Rules System - Requires approval for changes
+/.cursor/rules/ @nolarose1968
+/.cursor/rules/quality-standards.mdc @nolarose1968
+/.cursor/rules/bun-runtime.mdc @nolarose1968
+/.cursor/rules/cloudflare-workers.mdc @nolarose1968
+
+# Infrastructure and Quality Standards
+/src/shared/constants.ts @nolarose1968
+/src/utils/request.ts @nolarose1968
+/src/utils/logger.ts @nolarose1968
+/docs/QUALITY_STANDARDS.md @nolarose1968
+/docs/maintenance/CURSOR_RULES_MAINTENANCE.md @nolarose1968
+
+# ast-grep Configuration
+/.ast-grep.yml @nolarose1968
+/sgconfig.yml @nolarose1968
+/rules/ @nolarose1968
+
+# CI/CD and Security
+/.github/ @nolarose1968
+/wrangler.toml @nolarose1968
+/wrangler.*.toml @nolarose1968
+
+# Core MCP Integration
+/src/mcp/ @nolarose1968
+/src/mcp/server.ts @nolarose1968
+/src/mcp/toolRegistry.ts @nolarose1968
+
+# Database Migrations (Critical)
+/migrations/ @nolarose1968
+/migrations/*.sql @nolarose1968
+
+# Documentation
+/docs/ @nolarose1968
+/docs/CHANGELOG.md @nolarose1968
+/docs/CONTRIBUTING.md @nolarose1968
+/README.md @nolarose1968
+/CLAUDE.md @nolarose1968
+
+# Package Management
+/package.json @nolarose1968
+/bun.lock @nolarose1968
+/bunfig.toml @nolarose1968
+
+# TypeScript Configuration
+/tsconfig.json @nolarose1968
+
+# Testing Infrastructure
+/tests/ @nolarose1968
+/tests/setup/ @nolarose1968
+/tests/utils/ @nolarose1968

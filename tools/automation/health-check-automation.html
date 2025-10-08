@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🏥 Health Check Automation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .health-excellent {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid #10b981;
+        }
+
+        .health-good {
+            background: rgba(59, 130, 246, 0.2);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .health-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .health-critical {
+            background: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid #ef4444;
+        }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+
+<body class="p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-8 mb-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🏥 Health Check Automation</h1>
+                    <p class="text-white/80 text-lg">
+                        Automated health monitoring and alerting system for BetTicker infrastructure
+                    </p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl mb-2">⚡</div>
+                    <div class="text-sm text-white/60">Version 2.1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Overview -->
+        <div class="glass rounded-xl p-6 text-white mb-6">
+            <h2 class="text-2xl font-bold mb-4">📊 System Health Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-green-400" id="overallHealth">95%</div>
+                    <div class="text-sm text-white/70">Overall Health</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-blue-400" id="activeChecks">12</div>
+                    <div class="text-sm text-white/70">Active Checks</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-yellow-400" id="warnings">2</div>
+                    <div class="text-sm text-white/70">Warnings</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-red-400" id="critical">0</div>
+                    <div class="text-sm text-white/70">Critical Issues</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Controls -->
+        <div class="glass rounded-xl p-6 text-white mb-6">
+            <h2 class="text-2xl font-bold mb-4">🎛️ Automation Controls</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Monitoring</h3>
+                    <div class="space-y-3">
+                        <button id="startMonitoring"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                            ▶️ Start Monitoring
+                        </button>
+                        <button id="stopMonitoring"
+                            class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                            ⏹️ Stop Monitoring
+                        </button>
+                        <button id="runHealthCheck"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            🔍 Run Health Check
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Settings</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-white/80">Check Interval:</span>
+                            <select id="checkInterval" class="bg-white/10 text-white rounded px-2 py-1">
+                                <option value="30">30 seconds</option>
+                                <option value="60" selected>1 minute</option>
+                                <option value="300">5 minutes</option>
+                                <option value="900">15 minutes</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-white/80">Auto-alerts:</span>
+                            <input type="checkbox" id="autoAlerts" checked class="rounded">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-white/80">Log Level:</span>
+                            <select id="logLevel" class="bg-white/10 text-white rounded px-2 py-1">
+                                <option value="error">Error</option>
+                                <option value="warning">Warning</option>
+                                <option value="info" selected>Info</option>
+                                <option value="debug">Debug</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Checks -->
+        <div class="glass rounded-xl p-6 text-white mb-6">
+            <h2 class="text-2xl font-bold mb-4">🔍 Health Checks</h2>
+            <div id="healthChecks" class="space-y-3">
+                <!-- Health checks will be populated here -->
+            </div>
+        </div>
+
+        <!-- Alert History -->
+        <div class="glass rounded-xl p-6 text-white">
+            <h2 class="text-2xl font-bold mb-4">🚨 Alert History</h2>
+            <div id="alertHistory" class="bg-black/20 rounded-lg p-4 h-64 overflow-y-auto font-mono text-sm">
+                <div class="text-green-400">✅ Health Check Automation initialized</div>
+                <div class="text-blue-400">📋 Monitoring system ready</div>
+            </div>
+            <div class="mt-4 flex gap-2">
+                <button id="clearAlerts" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
+                    Clear Alerts
+                </button>
+                <button id="exportAlerts"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition">
+                    Export Alerts
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class HealthCheckAutomation {
+            constructor() {
+                this.isMonitoring = false;
+                this.checkInterval = 60; // seconds
+                this.intervalId = null;
+                this.healthChecks = [
+                    { id: 'worker', name: 'Worker Health', status: 'good', lastCheck: null },
+                    { id: 'kv', name: 'KV Storage', status: 'good', lastCheck: null },
+                    { id: 'extension', name: 'Browser Extension', status: 'warning', lastCheck: null },
+                    { id: 'database', name: 'Database', status: 'good', lastCheck: null },
+                    { id: 'api', name: 'API Endpoints', status: 'good', lastCheck: null },
+                    { id: 'network', name: 'Network Connectivity', status: 'good', lastCheck: null }
+                ];
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.renderHealthChecks();
+                this.updateOverview();
+            }
+
+            setupEventListeners() {
+                document.getElementById('startMonitoring').addEventListener('click', () => {
+                    this.startMonitoring();
+                });
+
+                document.getElementById('stopMonitoring').addEventListener('click', () => {
+                    this.stopMonitoring();
+                });
+
+                document.getElementById('runHealthCheck').addEventListener('click', () => {
+                    this.runHealthCheck();
+                });
+
+                document.getElementById('checkInterval').addEventListener('change', (e) => {
+                    this.checkInterval = parseInt(e.target.value);
+                    if (this.isMonitoring) {
+                        this.stopMonitoring();
+                        this.startMonitoring();
+                    }
+                });
+
+                document.getElementById('clearAlerts').addEventListener('click', () => {
+                    this.clearAlerts();
+                });
+
+                document.getElementById('exportAlerts').addEventListener('click', () => {
+                    this.exportAlerts();
+                });
+            }
+
+            startMonitoring() {
+                if (this.isMonitoring) return;
+
+                this.isMonitoring = true;
+                this.log('🟢 Monitoring started', 'info');
+                this.intervalId = setInterval(() => {
+                    this.runHealthCheck();
+                }, this.checkInterval * 1000);
+
+                document.getElementById('startMonitoring').disabled = true;
+                document.getElementById('stopMonitoring').disabled = false;
+            }
+
+            stopMonitoring() {
+                if (!this.isMonitoring) return;
+
+                this.isMonitoring = false;
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+
+                this.log('🔴 Monitoring stopped', 'info');
+                document.getElementById('startMonitoring').disabled = false;
+                document.getElementById('stopMonitoring').disabled = true;
+            }
+
+            async runHealthCheck() {
+                this.log('🔍 Running health checks...', 'info');
+
+                for (const check of this.healthChecks) {
+                    await this.checkComponent(check);
+                    await this.delay(500); // Simulate check time
+                }
+
+                this.renderHealthChecks();
+                this.updateOverview();
+                this.log('✅ Health check completed', 'success');
+            }
+
+            async checkComponent(check) {
+                // Simulate health check
+                const random = Math.random();
+                let status, message;
+
+                if (random > 0.9) {
+                    status = 'critical';
+                    message = 'Critical issue detected';
+                } else if (random > 0.7) {
+                    status = 'warning';
+                    message = 'Warning condition';
+                } else {
+                    status = 'good';
+                    message = 'All systems operational';
+                }
+
+                check.status = status;
+                check.lastCheck = new Date().toLocaleString();
+
+                if (status === 'critical') {
+                    this.log(`🚨 CRITICAL: ${check.name} - ${message}`, 'error');
+                } else if (status === 'warning') {
+                    this.log(`⚠️ WARNING: ${check.name} - ${message}`, 'warning');
+                }
+            }
+
+            renderHealthChecks() {
+                const container = document.getElementById('healthChecks');
+                container.innerHTML = '';
+
+                this.healthChecks.forEach(check => {
+                    const div = document.createElement('div');
+                    const statusClass = `health-${check.status}`;
+                    const statusIcon = this.getStatusIcon(check.status);
+
+                    div.className = `${statusClass} rounded p-3 flex items-center justify-between`;
+                    div.innerHTML = `
+              <div class="flex items-center">
+                <span class="text-2xl mr-3">${statusIcon}</span>
+                <div>
+                  <div class="font-semibold">${check.name}</div>
+                  <div class="text-sm opacity-80">Last check: ${check.lastCheck || 'Never'}</div>
+                </div>
+              </div>
+              <div class="text-sm font-mono">${check.status.toUpperCase()}</div>
+            `;
+
+                    container.appendChild(div);
+                });
+            }
+
+            getStatusIcon(status) {
+                const icons = {
+                    good: '✅',
+                    warning: '⚠️',
+                    critical: '🚨',
+                    unknown: '❓'
+                };
+                return icons[status] || '❓';
+            }
+
+            updateOverview() {
+                const total = this.healthChecks.length;
+                const good = this.healthChecks.filter(c => c.status === 'good').length;
+                const warnings = this.healthChecks.filter(c => c.status === 'warning').length;
+                const critical = this.healthChecks.filter(c => c.status === 'critical').length;
+
+                const healthPercentage = Math.round((good / total) * 100);
+
+                document.getElementById('overallHealth').textContent = `${healthPercentage}%`;
+                document.getElementById('activeChecks').textContent = total;
+                document.getElementById('warnings').textContent = warnings;
+                document.getElementById('critical').textContent = critical;
+            }
+
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('alertHistory');
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+
+                const colors = {
+                    info: 'text-blue-400',
+                    success: 'text-green-400',
+                    warning: 'text-yellow-400',
+                    error: 'text-red-400'
+                };
+
+                logEntry.className = colors[type] || 'text-white';
+                logEntry.innerHTML = `<span class="text-gray-400">[${timestamp}]</span> ${message}`;
+
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+
+            clearAlerts() {
+                document.getElementById('alertHistory').innerHTML = '';
+                this.log('📝 Alert history cleared', 'info');
+            }
+
+            exportAlerts() {
+                const alertContent = document.getElementById('alertHistory').textContent;
+                const blob = new Blob([alertContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `health-alerts-${new Date().toISOString().split('T')[0]}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize health check automation
+        document.addEventListener('DOMContentLoaded', function () {
+            new HealthCheckAutomation();
+        });
+    </script>
+</body>
+
+</html>

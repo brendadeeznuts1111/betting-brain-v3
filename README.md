@@ -1,4 +1,4 @@
-# 🧠 Betting-Brain v3.1.0
+# 🧠 Betting-Brain v3.2.0
 
 [![CI](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)
 [![Security](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml/badge.svg?job=security)](https://github.com/brendadeeznuts1111/betting-brain-v3/actions/workflows/deploy.yml)

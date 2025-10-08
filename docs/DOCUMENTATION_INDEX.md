@@ -70,7 +70,7 @@
 |----------|---------|----------|
 | **[CURSOR_RULES.md](CURSOR_RULES.md)** | AI development standards | AI developers |
 | **[STYLE_GUIDE.md](STYLE_GUIDE.md)** | Coding standards | Developers |
-| **[AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md)** | Code search patterns | Developers |
+| **[AST_GREP_QUICKSTART.md](QUICKSTART.md)** | Code search patterns | Developers |
 
 ---
 

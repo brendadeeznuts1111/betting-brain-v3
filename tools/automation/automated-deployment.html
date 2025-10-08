@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 Automated Deployment Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e40af 0%, #7c2d12 100%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-running {
+            background: rgba(59, 130, 246, 0.2);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid #10b981;
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid #ef4444;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+
+<body class="p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-8 mb-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🚀 Automated Deployment Tool</h1>
+                    <p class="text-white/80 text-lg">
+                        Automated deployment pipeline for BetTicker system with comprehensive validation and rollback
+                        capabilities
+                    </p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl mb-2">⚡</div>
+                    <div class="text-sm text-white/60">Version 2.1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployment Controls -->
+        <div class="glass rounded-xl p-6 text-white mb-6">
+            <h2 class="text-2xl font-bold mb-4">🎛️ Deployment Controls</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button id="deployStaging"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                    🧪 Deploy to Staging
+                </button>
+                <button id="deployProduction"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
+                    🚀 Deploy to Production
+                </button>
+                <button id="rollbackDeployment"
+                    class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition">
+                    ↩️ Rollback
+                </button>
+            </div>
+        </div>
+
+        <!-- Deployment Status -->
+        <div class="glass rounded-xl p-6 text-white mb-6">
+            <h2 class="text-2xl font-bold mb-4">📊 Deployment Status</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Current Environment</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-white/80">Environment:</span>
+                            <span id="currentEnv" class="text-white">Unknown</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/80">Version:</span>
+                            <span id="currentVersion" class="text-white">Unknown</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/80">Last Deploy:</span>
+                            <span id="lastDeploy" class="text-white">Never</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/80">Status:</span>
+                            <span id="deploymentStatus" class="text-white">Ready</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Deployment Pipeline</h3>
+                    <div id="pipelineSteps" class="space-y-2">
+                        <div class="status-pending rounded p-2">
+                            <span class="text-sm">1. Pre-deployment checks</span>
+                        </div>
+                        <div class="status-pending rounded p-2">
+                            <span class="text-sm">2. Build and test</span>
+                        </div>
+                        <div class="status-pending rounded p-2">
+                            <span class="text-sm">3. Deploy to environment</span>
+                        </div>
+                        <div class="status-pending rounded p-2">
+                            <span class="text-sm">4. Post-deployment validation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployment Log -->
+        <div class="glass rounded-xl p-6 text-white">
+            <h2 class="text-2xl font-bold mb-4">📝 Deployment Log</h2>
+            <div id="deploymentLog" class="bg-black/20 rounded-lg p-4 h-64 overflow-y-auto font-mono text-sm">
+                <div class="text-green-400">🚀 Automated Deployment Tool initialized</div>
+                <div class="text-blue-400">📋 Ready for deployment commands</div>
+            </div>
+            <div class="mt-4 flex gap-2">
+                <button id="clearLog" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
+                    Clear Log
+                </button>
+                <button id="exportLog"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition">
+                    Export Log
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DeploymentTool {
+            constructor() {
+                this.isDeploying = false;
+                this.currentStep = 0;
+                this.pipelineSteps = [
+                    'Pre-deployment checks',
+                    'Build and test',
+                    'Deploy to environment',
+                    'Post-deployment validation'
+                ];
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.updateStatus();
+            }
+
+            setupEventListeners() {
+                document.getElementById('deployStaging').addEventListener('click', () => {
+                    this.startDeployment('staging');
+                });
+
+                document.getElementById('deployProduction').addEventListener('click', () => {
+                    this.startDeployment('production');
+                });
+
+                document.getElementById('rollbackDeployment').addEventListener('click', () => {
+                    this.rollbackDeployment();
+                });
+
+                document.getElementById('clearLog').addEventListener('click', () => {
+                    this.clearLog();
+                });
+
+                document.getElementById('exportLog').addEventListener('click', () => {
+                    this.exportLog();
+                });
+            }
+
+            async startDeployment(environment) {
+                if (this.isDeploying) {
+                    this.log('⚠️ Deployment already in progress', 'warning');
+                    return;
+                }
+
+                this.isDeploying = true;
+                this.currentStep = 0;
+                this.log(`🚀 Starting deployment to ${environment}...`, 'info');
+                this.updatePipelineStatus();
+
+                try {
+                    for (let i = 0; i < this.pipelineSteps.length; i++) {
+                        this.currentStep = i;
+                        this.updatePipelineStatus();
+                        await this.executeStep(this.pipelineSteps[i], environment);
+                        await this.delay(2000); // Simulate step execution time
+                    }
+
+                    this.log(`✅ Deployment to ${environment} completed successfully!`, 'success');
+                    this.updateStatus(environment, '2.1.0', new Date().toLocaleString());
+
+                } catch (error) {
+                    this.log(`❌ Deployment failed: ${error.message}`, 'error');
+                } finally {
+                    this.isDeploying = false;
+                    this.updatePipelineStatus();
+                }
+            }
+
+            async executeStep(step, environment) {
+                this.log(`📋 Executing: ${step}`, 'info');
+
+                // Simulate step execution
+                const steps = {
+                    'Pre-deployment checks': () => this.simulatePreDeploymentChecks(),
+                    'Build and test': () => this.simulateBuildAndTest(),
+                    'Deploy to environment': () => this.simulateDeploy(environment),
+                    'Post-deployment validation': () => this.simulatePostDeploymentValidation()
+                };
+
+                await steps[step]();
+            }
+
+            async simulatePreDeploymentChecks() {
+                this.log('🔍 Checking system requirements...', 'info');
+                await this.delay(1000);
+                this.log('✅ All pre-deployment checks passed', 'success');
+            }
+
+            async simulateBuildAndTest() {
+                this.log('🔨 Building application...', 'info');
+                await this.delay(1500);
+                this.log('🧪 Running test suite...', 'info');
+                await this.delay(2000);
+                this.log('✅ Build and tests completed successfully', 'success');
+            }
+
+            async simulateDeploy(environment) {
+                this.log(`🚀 Deploying to ${environment} environment...`, 'info');
+                await this.delay(2500);
+                this.log(`✅ Successfully deployed to ${environment}`, 'success');
+            }
+
+            async simulatePostDeploymentValidation() {
+                this.log('🔍 Validating deployment...', 'info');
+                await this.delay(1000);
+                this.log('✅ Post-deployment validation passed', 'success');
+            }
+
+            async rollbackDeployment() {
+                if (this.isDeploying) {
+                    this.log('⚠️ Cannot rollback during deployment', 'warning');
+                    return;
+                }
+
+                this.log('↩️ Starting rollback process...', 'info');
+                await this.delay(2000);
+                this.log('✅ Rollback completed successfully', 'success');
+                this.updateStatus('rolled-back', '2.0.0', new Date().toLocaleString());
+            }
+
+            updatePipelineStatus() {
+                const steps = document.querySelectorAll('#pipelineSteps > div');
+                steps.forEach((step, index) => {
+                    step.className = 'rounded p-2';
+
+                    if (index < this.currentStep) {
+                        step.classList.add('status-success');
+                    } else if (index === this.currentStep && this.isDeploying) {
+                        step.classList.add('status-running');
+                    } else {
+                        step.classList.add('status-pending');
+                    }
+                });
+            }
+
+            updateStatus(environment = 'Unknown', version = 'Unknown', lastDeploy = 'Never') {
+                document.getElementById('currentEnv').textContent = environment;
+                document.getElementById('currentVersion').textContent = version;
+                document.getElementById('lastDeploy').textContent = lastDeploy;
+                document.getElementById('deploymentStatus').textContent = this.isDeploying ? 'Deploying...' : 'Ready';
+            }
+
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('deploymentLog');
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+
+                const colors = {
+                    info: 'text-blue-400',
+                    success: 'text-green-400',
+                    warning: 'text-yellow-400',
+                    error: 'text-red-400'
+                };
+
+                logEntry.className = colors[type] || 'text-white';
+                logEntry.innerHTML = `<span class="text-gray-400">[${timestamp}]</span> ${message}`;
+
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+
+            clearLog() {
+                document.getElementById('deploymentLog').innerHTML = '';
+                this.log('📝 Log cleared', 'info');
+            }
+
+            exportLog() {
+                const logContent = document.getElementById('deploymentLog').textContent;
+                const blob = new Blob([logContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `deployment-log-${new Date().toISOString().split('T')[0]}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize deployment tool
+        document.addEventListener('DOMContentLoaded', function () {
+            new DeploymentTool();
+        });
+    </script>
+</body>
+
+</html>

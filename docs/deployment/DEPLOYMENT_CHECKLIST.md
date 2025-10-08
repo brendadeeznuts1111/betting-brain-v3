@@ -123,7 +123,7 @@ wrangler d1 execute RAW_FEED_DB \
 
 ## 🚨 Phase 3: Configure Production Alerts (15 minutes)
 
-**Follow:** [docs/PRODUCTION_ALERTS_SETUP.md](docs/PRODUCTION_ALERTS_SETUP.md)
+**Follow:** [docs/PRODUCTION_ALERTS_SETUP.md](../PRODUCTION_ALERTS_SETUP.md)
 
 ### Step 3.1: Create Telegram Bot (5 min)
 1. Open Telegram
@@ -333,7 +333,7 @@ wrangler queues list
 
 ## 🚨 Rollback Procedure
 
-If any issues occur, follow [docs/runbooks/rollback.md](docs/runbooks/rollback.md):
+If any issues occur, follow [docs/runbooks/rollback.md](../runbooks/rollback.md):
 
 ### Quick Rollback (< 5 minutes)
 ```bash
@@ -353,15 +353,15 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 ## 📞 Support & Resources
 
 ### Documentation
-- [Complete System Summary](docs/COMPLETE_SYSTEM_SUMMARY.md)
-- [Architecture Guide](docs/ARCHITECTURE_COMPLETE.md)
-- [Production Alerts Setup](docs/PRODUCTION_ALERTS_SETUP.md)
-- [All Documentation](docs/INDEX.md)
+- [Complete System Summary](../COMPLETE_SYSTEM_SUMMARY.md)
+- [Architecture Guide](../ARCHITECTURE_COMPLETE.md)
+- [Production Alerts Setup](../PRODUCTION_ALERTS_SETUP.md)
+- [All Documentation](../INDEX.md)
 
 ### Runbooks
-- [Queue Backlog](docs/runbooks/queue-backlog.md) - < 15 min response
-- [D1 SQLITE_BUSY](docs/runbooks/d1-busy.md) - < 10 min response
-- [Emergency Rollback](docs/runbooks/rollback.md) - < 5 min response
+- [Queue Backlog](../runbooks/queue-backlog.md) - < 15 min response
+- [D1 SQLITE_BUSY](../runbooks/d1-busy.md) - < 10 min response
+- [Emergency Rollback](../runbooks/rollback.md) - < 5 min response
 
 ### Monitoring
 - Worker Logs: `wrangler tail`

@@ -196,8 +196,8 @@ Complete integration of cursor rules with Bun's built-in speed tools.
 
 ### Documentation
 
-- [Bun CI Integration](docs/BUN_CI_INTEGRATION.md)
-- [Release Guide](docs/CURSOR_RULES_RELEASE_GUIDE.md)
+- [Bun CI Integration](../BUN_CI_INTEGRATION.md)
+- [Release Guide](../CURSOR_RULES_RELEASE_GUIDE.md)
 - [Style Guide](STYLE_GUIDE.md)
 - [Complete Summary](CURSOR_RULES_COMPLETE.md)
 
@@ -294,9 +294,9 @@ bun run ci:bun
 
 ## 📚 Documentation
 
-- [Bun CI Integration](docs/BUN_CI_INTEGRATION.md) - Complete Bun CI guide
+- [Bun CI Integration](../BUN_CI_INTEGRATION.md) - Complete Bun CI guide
 - [Style Guide](STYLE_GUIDE.md) - Human-readable coding standards
-- [Release Guide](docs/CURSOR_RULES_RELEASE_GUIDE.md) - Step-by-step release process
+- [Release Guide](../CURSOR_RULES_RELEASE_GUIDE.md) - Step-by-step release process
 - [Cursor Rules](.cursorrules) - Canonical rules file
 - [Changelog](CHANGELOG.md) - Version history
 

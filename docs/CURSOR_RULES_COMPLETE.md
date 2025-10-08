@@ -363,14 +363,14 @@ git push origin feat/zombie-process-fix-and-ci --tags
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
 
 ### Integration Guides
-- **[Bun CI Integration](docs/BUN_CI_INTEGRATION.md)** - Complete Bun CI guide
-- **[Release Guide](docs/CURSOR_RULES_RELEASE_GUIDE.md)** - Release process
-- **[Automation Guide](docs/CURSOR_RULES_AUTOMATION.md)** - Automation workflow
+- **[Bun CI Integration](../BUN_CI_INTEGRATION.md)** - Complete Bun CI guide
+- **[Release Guide](../CURSOR_RULES_RELEASE_GUIDE.md)** - Release process
+- **[Automation Guide](../CURSOR_RULES_AUTOMATION.md)** - Automation workflow
 
 ### Quick References
-- **[Documentation Index](docs/CURSOR_RULES_DOCUMENTATION_INDEX.md)** - Complete hierarchy
-- **[Quick Reference](docs/CURSOR_RULES_QUICK_REFERENCE.md)** - One-page guide
-- **[Ship Checklist](docs/CURSOR_RULES_SHIP_CHECKLIST.md)** - Implementation checklist
+- **[Documentation Index](../CURSOR_RULES_DOCUMENTATION_INDEX.md)** - Complete hierarchy
+- **[Quick Reference](../CURSOR_RULES_QUICK_REFERENCE.md)** - One-page guide
+- **[Ship Checklist](../CURSOR_RULES_SHIP_CHECKLIST.md)** - Implementation checklist
 
 ---
 

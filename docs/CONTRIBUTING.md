@@ -1,4 +1,4 @@
-# Contributing to Betting-Brain v3
+# Contributing to Betting-Brain v3.2.0
 
 Thank you for your interest in contributing! 🎉
 
@@ -7,69 +7,134 @@ Thank you for your interest in contributing! 🎉
 1. Fork the repository
 2. Clone your fork
 3. Install dependencies: `bun install`
-4. Run bootstrap: `bun run bootstrap`
+4. Run tests: `bun test`
 5. Start development: `bun run dev`
 
 ## AI Development Standards
 
-AI code must follow [.cursorrules](https://github.com/nolarose1968/ffffff/blob/main/.cursorrules).
+AI code must follow the **24 Cursor rules** in `.cursor/rules/*.mdc` (2,200+ lines).
 
-Run `bun run ci` or read [.cursorrules](.cursorrules) before pushing.
+See [CURSOR_RULES.md](CURSOR_RULES.md) for overview and [maintenance/CURSOR_RULES_MAINTENANCE.md](maintenance/CURSOR_RULES_MAINTENANCE.md) for versioning procedures.
+
+Run `bun run ci` before pushing to ensure all quality checks pass.
 
 ## Coding Standards
 
-This project follows a strict set of coding standards to maintain quality and consistency. Please review our official [Style Guide](../STYLE_GUIDE.md) before contributing.
+This project follows strict coding standards to maintain quality and consistency:
 
-The style guide explains the "why" behind our coding standards and provides clear examples for each rule. Our rules are enforced automatically via [.cursorrules](.cursorrules).
+- **Quality Standards**: [quality-standards.mdc](.cursor/rules/quality-standards.mdc) - Core patterns and infrastructure
+- **Code Quality Audit**: [CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md) - Audit results and metrics
+- **ast-grep Rules**: [.ast-grep.yml](../.ast-grep.yml) - 23 rules for pattern detection (8 quality enforcement)
 
-## Making Changes to the Style Guide (`.cursorrules`)
+All rules are enforced automatically via:
+- **ast-grep scanning**: `sg scan src/` (23 rules, 2 ERROR-level blocking)
+- **CI/CD pipeline**: `bun run ci` (security, lint, type-check, tests, build)
+- **Pre-push hooks**: Security and migration validation
 
-Our `.cursorrules` file is a living document that defines the coding standards for this project. To ensure changes are tracked properly and communicated clearly, we use Semantic Versioning.
+## Making Changes to Cursor Rules (`.cursor/rules/*.mdc`)
+
+Our Cursor rules system consists of **24 MDC files** (2,200+ lines) defining coding standards. All rules use **Semantic Versioning** and have dependency relationships.
+
+See [maintenance/CURSOR_RULES_MAINTENANCE.md](maintenance/CURSOR_RULES_MAINTENANCE.md) for complete maintenance procedures.
+
+### Quick Reference
+
+**Current versions (v3.2.0):**
+- **v5.0.0** (3 rules): bun-runtime, file-naming, root-organization
+- **v2.0.0** (5 rules): cloudflare-workers, mcp-integration, security-patterns, testing-patterns, database-patterns
+- **v1.1.0** (7 rules): analytics-stub-api, analytics-testing, ci-integration, coverage-thresholds, test-setup-patterns
+- **v1.0.0** (9 rules): api-patterns, endpoint-routing, quality-standards, browser-extension, ci-patterns, etc.
 
 ### The Versioning Process
 
-When you make a change to the `.cursorrules` file, you **must** increment its version number. We have an automated script to handle this for you.
+When you modify any rule file, you **must** update its version number following SemVer:
 
 #### Step 1: Make Your Changes
-Edit the `.cursorrules` file to add, remove, or modify rules as needed.
+Edit the rule file(s) in `.cursor/rules/` as needed.
 
 #### Step 2: Determine the Type of Change
-Before bumping the version, identify the impact of your change:
 
-* **PATCH**: For small, non-breaking changes.
-    * *Example*: Adding a new, non-conflicting rule.
-* **MINOR**: For backward-compatible but significant changes.
-    * *Example*: Making an existing rule more strict, but without breaking existing compliant code.
-* **MAJOR**: For backward-incompatible changes that will require existing code to be refactored.
-    * *Example*: Changing the naming convention from `camelCase` to `snake_case`.
+* **MAJOR (X.0.0)**: Breaking changes (removing patterns, changing APIs)
+* **MINOR (X.Y.0)**: New features (adding patterns, new dependencies, 50+ line updates)
+* **PATCH (X.Y.Z)**: Bug fixes (typos, clarifications, small edits)
 
-#### Step 3: Run the Version Bump Script
-Instead of manually editing the version, committing, and tagging, run the helper script from the root of the repository:
+#### Step 3: Update Frontmatter
 
-```bash
-# Usage: ./scripts/bump-version.sh <major|minor|patch> "Your commit message"
-
-# For a patch change:
-./scripts/bump-version.sh patch "fix(rules): Corrected typo in regex"
-
-# For a minor change:
-./scripts/bump-version.sh minor "feat(rules): Add new rules for async/await"
-
-# For a major change:
-./scripts/bump-version.sh major "feat(rules): Restructure rule organization"
+```yaml
+---
+version: "2.1.0"  # Bump appropriately
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "api-patterns"]
+---
 ```
 
-The script will automatically update the version in the file, create a commit, and add a Git tag.
+#### Step 4: Update Documentation
 
-#### Step 4: Push and Create a Pull Request
+1. **CHANGELOG.md**: Add entry for rule changes
+2. **package.json**: Bump project version if multiple rules changed
+3. **Maintenance guide**: Update metrics if significant changes
 
-Push your commit and the new tag to the repository:
+#### Step 5: Run Quality Checks
+
+```bash
+# Verify ast-grep rules pass
+sg scan src/
+
+# Run full CI
+bun run ci
+
+# Check for duplicate metadata
+grep -c "^version:" .cursor/rules/your-file.mdc  # Should be 1
+```
+
+#### Step 6: Commit and Tag
+
+Follow conventional commits format:
+
+```bash
+git add .cursor/rules/your-file.mdc
+git commit -m "chore: update your-file.mdc to v2.1.0
+
+Description of changes...
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+For major releases affecting multiple rules, create an annotated tag:
+
+```bash
+git tag -a v3.3.0 -m "Release v3.3.0: Description
+
+Metrics and details...
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+```
+
+#### Step 7: Push and Create Pull Request
 
 ```bash
 git push origin <your-branch-name> --tags
 ```
 
-Then, open a Pull Request. The CI checks will verify that you have correctly incremented the version. Be sure to fill out the `.cursorrules` section in the PR template!
+Open a Pull Request with:
+- Summary of rule changes
+- Version bumps (list all files updated)
+- Impact analysis (which rules depend on your changes)
+- Test results (CI output)
+
+### Dependency Impact Analysis
+
+Before updating a root dependency, check impact:
+
+| Rule Updated | Direct Dependents | Total Impact |
+|--------------|-------------------|--------------|
+| quality-standards.mdc | 18 rules | ~23 rules |
+| bun-runtime.mdc | 7 rules | ~11 rules |
+| api-patterns.mdc | 5 rules | ~7 rules |
+
+See [maintenance/CURSOR_RULES_MAINTENANCE.md](maintenance/CURSOR_RULES_MAINTENANCE.md) for complete dependency graph.
 
 ## Development Workflow
 

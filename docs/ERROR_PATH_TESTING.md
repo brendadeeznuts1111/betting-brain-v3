@@ -37,7 +37,7 @@ audience: [QA Engineers, Developers, DevOps, Tech Leads]
 
 **Related Documentation:**
 - [TESTING_STATUS.md](./TESTING_STATUS.md) - Overall testing status
-- [guides/TESTING_GUIDE.md](./guides/TESTING_GUIDE.md) - MCP-specific testing patterns
+- [guides/TESTING_GUIDE.md](guides/TESTING_GUIDE.md) - MCP-specific testing patterns
 - [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) - CI/CD & automation
 - [bunfig.toml](../bunfig.toml) - Test configuration
 
@@ -389,7 +389,7 @@ test('should retry on network timeout', async () => {
 | Document | Purpose | Integration With This Guide |
 |----------|---------|------------------------------|
 | [TESTING_STATUS.md](./TESTING_STATUS.md) | Overall testing health & coverage | This doc is the detailed error path test suite referenced in TESTING_STATUS |
-| [guides/TESTING_GUIDE.md](./guides/TESTING_GUIDE.md) | MCP-specific testing patterns | Shows how to test MCP handlers (this guide covers error paths) |
+| [guides/TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | MCP-specific testing patterns | Shows how to test MCP handlers (this guide covers error paths) |
 | [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) | CI/CD & test automation | This suite runs as part of CI pipeline defined there |
 | [bunfig.toml](../bunfig.toml) | Bun test configuration | Defines 10s timeout, coverage thresholds used by these tests |
 | [CURSOR_RULES.md](./CURSOR_RULES.md) | Code quality & testing rules | Establishes error handling patterns tested here |
@@ -539,7 +539,7 @@ Use this checklist to verify test suite health:
 ## 🎓 Learning Resources
 
 **For developers new to error path testing:**
-1. Start with [guides/TESTING_GUIDE.md](./guides/TESTING_GUIDE.md) for basic testing patterns
+1. Start with [guides/TESTING_GUIDE.md](guides/TESTING_GUIDE.md) for basic testing patterns
 2. Review [§ Test Patterns & Best Practices](#-test-patterns--best-practices) in this guide
 3. Study one test file: [mcp-server-error-paths.test.ts](../tests/unit/mcp-server-error-paths.test.ts)
 4. Run tests and observe output: `bun test tests/unit/mcp-server-error-paths.test.ts`
@@ -564,4 +564,4 @@ Use this checklist to verify test suite health:
 *This test suite provides comprehensive error path coverage for the betting-brain-v3 platform. While 60 tests have known mock issues, all actual error handling logic is thoroughly tested and validated.*
 
 **Quick Links:**
-- [Run All Tests](#run-all-error-path-tests) | [View Coverage](#-coverage-metrics) | [Report Issues](https://github.com/nolarose1968/betting-brain-v3/issues) | [Testing Guide](./guides/TESTING_GUIDE.md) | [CI/CD](./AUTOMATION_GUIDE.md)
+- [Run All Tests](#run-all-error-path-tests) | [View Coverage](#-coverage-metrics) | [Report Issues](https://github.com/nolarose1968/betting-brain-v3/issues) | [Testing Guide](guides/TESTING_GUIDE.md) | [CI/CD](./AUTOMATION_GUIDE.md)

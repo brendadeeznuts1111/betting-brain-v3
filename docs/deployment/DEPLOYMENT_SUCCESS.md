@@ -163,7 +163,7 @@ name = "betting-brain-v3-prod"
    - Set up Telegram bot
    - Configure 3 critical alerts
    - Test webhook delivery
-   - See: [docs/PRODUCTION_ALERTS_SETUP.md](docs/PRODUCTION_ALERTS_SETUP.md)
+   - See: [docs/PRODUCTION_ALERTS_SETUP.md](../PRODUCTION_ALERTS_SETUP.md)
 
 2. **Deploy to Production** (30 min)
    - Test default environment thoroughly
@@ -193,19 +193,19 @@ name = "betting-brain-v3-prod"
 
 ### Essential Reading
 1. **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Complete deployment guide
-2. **[COMPLETE_SYSTEM_SUMMARY.md](docs/COMPLETE_SYSTEM_SUMMARY.md)** - System overview
-3. **[PRODUCTION_ALERTS_SETUP.md](docs/PRODUCTION_ALERTS_SETUP.md)** - Alert configuration
-4. **[ARCHITECTURE_COMPLETE.md](docs/ARCHITECTURE_COMPLETE.md)** - System architecture
+2. **[COMPLETE_SYSTEM_SUMMARY.md](../COMPLETE_SYSTEM_SUMMARY.md)** - System overview
+3. **[PRODUCTION_ALERTS_SETUP.md](../PRODUCTION_ALERTS_SETUP.md)** - Alert configuration
+4. **[ARCHITECTURE_COMPLETE.md](../ARCHITECTURE_COMPLETE.md)** - System architecture
 
 ### Emergency Procedures
-1. **[Emergency Rollback](docs/runbooks/rollback.md)** - < 5 min recovery
-2. **[Queue Backlog Response](docs/runbooks/queue-backlog.md)** - < 15 min response
-3. **[D1 SQLITE_BUSY Fix](docs/runbooks/d1-busy.md)** - < 10 min response
+1. **[Emergency Rollback](../runbooks/rollback.md)** - < 5 min recovery
+2. **[Queue Backlog Response](../runbooks/queue-backlog.md)** - < 15 min response
+3. **[D1 SQLITE_BUSY Fix](../runbooks/d1-busy.md)** - < 10 min response
 
 ### Integration Guides
-4. **[Fantasy402 Integration Complete](docs/FANTASY402_INTEGRATION_COMPLETE.md)** - API integration
-5. **[WebSocket Implementation](docs/WEBSOCKET_IMPLEMENTATION_COMPLETE.md)** - Real-time communication
-6. **[Config Caching Strategy](docs/CONFIG_CACHING_STRATEGY.md)** - Multi-tier caching
+4. **[Fantasy402 Integration Complete](../FANTASY402_INTEGRATION_COMPLETE.md)** - API integration
+5. **[WebSocket Implementation](../WEBSOCKET_IMPLEMENTATION_COMPLETE.md)** - Real-time communication
+6. **[Config Caching Strategy](../CONFIG_CACHING_STRATEGY.md)** - Multi-tier caching
 
 ---
 
@@ -324,9 +324,9 @@ wrangler kv key get --binding=FANTASY_CONFIG_CACHE test
 - **Dashboard:** https://dash.cloudflare.com
 
 ### Documentation
-- **Complete Guide:** [docs/INDEX.md](docs/INDEX.md)
-- **API Reference:** [docs/REST_API_REFERENCE.md](docs/REST_API_REFERENCE.md)
-- **Architecture:** [docs/ARCHITECTURE_COMPLETE.md](docs/ARCHITECTURE_COMPLETE.md)
+- **Complete Guide:** [docs/INDEX.md](../INDEX.md)
+- **API Reference:** [docs/REST_API_REFERENCE.md](../REST_API_REFERENCE.md)
+- **Architecture:** [docs/ARCHITECTURE_COMPLETE.md](../ARCHITECTURE_COMPLETE.md)
 
 ### Emergency
 - **Rollback:** `wrangler rollback --message "Emergency rollback"`

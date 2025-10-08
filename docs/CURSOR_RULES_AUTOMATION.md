@@ -263,8 +263,8 @@ git tag "v$NEW_VERSION"
 - **[Version Bump Script](scripts/bump-version.sh)** - Automation script
 - **[CI Workflow](.github/workflows/rules_version_check.yml)** - Automated validation
 - **[PR Template](.github/pull_request_template.md)** - Enhanced with versioning
-- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Team workflow guide
-- **[Versioning Guide](docs/CURSOR_RULES_VERSIONING.md)** - SemVer guidelines
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Team workflow guide
+- **[Versioning Guide](../CURSOR_RULES_VERSIONING.md)** - SemVer guidelines
 
 ---
 

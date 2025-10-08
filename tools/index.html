@@ -1,400 +1,986 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🛠️ Testing & Diagnostic Tools Hub</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      }
-      .glass {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      .tool-card {
-        transition: all 0.3s;
-      }
-      .tool-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      }
-      .badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: bold;
-      }
-      .badge-new {
-        background: #10b981;
-      }
-      .badge-essential {
-        background: #3b82f6;
-      }
-      .badge-advanced {
-        background: #8b5cf6;
-      }
-    </style>
-  </head>
-  <body class="p-6">
-    <div class="max-w-7xl mx-auto">
-      <!-- Header -->
-      <div class="glass rounded-2xl p-8 mb-6 text-white">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h1 class="text-4xl font-bold mb-2">
-              🛠️ Testing & Diagnostic Tools Hub
-            </h1>
-            <p class="text-white/80 text-lg">
-              Comprehensive suite for BetTicker system testing, debugging, and
-              monitoring
-            </p>
-          </div>
-          <div class="text-right">
-            <div class="text-3xl mb-2">🎯</div>
-            <div class="text-sm text-white/60">Version 2.0</div>
-          </div>
-        </div>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-4 gap-4 mt-6">
-          <div class="bg-white/10 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold">10</div>
-            <div class="text-sm text-white/70">Tools Available</div>
-          </div>
-          <div class="bg-white/10 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold">4</div>
-            <div class="text-sm text-white/70">Dashboards</div>
-          </div>
-          <div class="bg-white/10 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold">100%</div>
-            <div class="text-sm text-white/70">Test Coverage</div>
-          </div>
-          <div class="bg-white/10 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold" id="workerStatus">⏳</div>
-            <div class="text-sm text-white/70">Worker Status</div>
-          </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🛠️ Testing & Diagnostic Tools Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="config/tools-config.js"></script>
+  <script src="utils/performance-monitor.js"></script>
+  <script src="utils/automated-testing.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .tool-card {
+      transition: all 0.3s;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .badge-new {
+      background: #10b981;
+    }
+
+    .badge-essential {
+      background: #3b82f6;
+    }
+
+    .badge-advanced {
+      background: #8b5cf6;
+    }
+
+    .badge-legacy {
+      background: #6b7280;
+    }
+
+    .search-highlight {
+      background-color: #fbbf24;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .status-online {
+      background-color: #10b981;
+      box-shadow: 0 0 6px #10b981;
+    }
+
+    .status-offline {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    .status-unknown {
+      background-color: #6b7280;
+    }
+
+    .breadcrumb {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .breadcrumb a {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      color: white;
+    }
+  </style>
+</head>
+
+<body class="p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb mb-4">
+      <a href="../">🏠 Home</a> / <a href="../dashboards/">📊 Dashboards</a> / <span>🛠️ Tools Hub</span>
+    </div>
+
+    <!-- Header -->
+    <div class="glass rounded-2xl p-8 mb-6 text-white">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-4xl font-bold mb-2">
+            🛠️ Testing & Diagnostic Tools Hub
+          </h1>
+          <p class="text-white/80 text-lg">
+            Comprehensive suite for BetTicker system testing, debugging, and
+            monitoring
+          </p>
+        </div>
+        <div class="text-right">
+          <div class="text-3xl mb-2">🎯</div>
+          <div class="text-sm text-white/60">Version 2.1</div>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="grid grid-cols-3 gap-4 mb-6">
-        <a
-          href="system-health-monitor.html"
-          class="glass rounded-xl p-4 text-white text-center hover:bg-white/20 transition"
-        >
-          <div class="text-3xl mb-2">🏥</div>
-          <div class="font-bold">Health Check</div>
-        </a>
-        <a
-          href="extension-test-suite.html"
-          class="glass rounded-xl p-4 text-white text-center hover:bg-white/20 transition"
-        >
-          <div class="text-3xl mb-2">🧪</div>
-          <div class="font-bold">Run Tests</div>
-        </a>
-        <a
-          href="../dashboards/index.html"
-          class="glass rounded-xl p-4 text-white text-center hover:bg-white/20 transition"
-        >
-          <div class="text-3xl mb-2">📊</div>
-          <div class="font-bold">Dashboards</div>
-        </a>
-      </div>
-
-      <!-- Essential Tools -->
+      <!-- Search Bar -->
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-white mb-4">🎯 Essential Tools</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- System Health Monitor -->
-          <a
-            href="system-health-monitor.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🏥</div>
-              <span class="badge badge-essential">ESSENTIAL</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">System Health Monitor</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Real-time monitoring of all system components with comprehensive
-              health checks and diagnostics.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Live Monitoring</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Auto-refresh</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Alerts</span>
-            </div>
-          </a>
-
-          <!-- Extension Test Suite -->
-          <a
-            href="extension-test-suite.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🧪</div>
-              <span class="badge badge-new">NEW</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Extension Test Suite</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Comprehensive automated testing for the browser extension with
-              detailed reporting and stats tracking.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">10 Tests</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Automated</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Stats</span>
-            </div>
-          </a>
-
-          <!-- Flow Tester -->
-          <a
-            href="flow-tester.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🌊</div>
-              <span class="badge badge-essential">ESSENTIAL</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">End-to-End Flow Tester</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Complete data flow validation from browser to KV storage with
-              visual flow diagram.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Visual Flow</span>
-              <span class="bg-white/20 px-2 py-1 rounded">KV Inspector</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Live Monitor</span>
-            </div>
-          </a>
-
-          <!-- Troubleshooting Guide -->
-          <a
-            href="troubleshooting-guide.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🔧</div>
-              <span class="badge badge-essential">ESSENTIAL</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Automated Troubleshooting</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Intelligent problem diagnosis with step-by-step resolution guides
-              for common issues.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Smart Diagnosis</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Step-by-Step</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Reports</span>
-            </div>
-          </a>
+        <div class="relative">
+          <input type="text" id="searchInput" placeholder="🔍 Search tools by name, category, or description..."
+            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent" />
+          <div class="absolute right-3 top-3 text-white/60">
+            <span id="searchResultsCount" class="text-sm"></span>
+          </div>
         </div>
       </div>
 
-      <!-- Setup & Configuration -->
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold text-white mb-4">
-          ⚙️ Setup & Configuration
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Setup Wizard -->
-          <a
-            href="setup-wizard.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🧪</div>
-              <span class="badge badge-essential">ESSENTIAL</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Setup Wizard</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Complete system installation and verification from scratch with
-              5-step guided process.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">5 Steps</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Guided</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Verification</span>
-            </div>
-          </a>
-
-          <!-- Extension Checker -->
-          <a
-            href="extension-checker.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🔍</div>
-              <span class="badge badge-essential">ESSENTIAL</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Extension Checker</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Browser extension installation, configuration, and debugging with
-              live redirection tests.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Live Tests</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Manual Steps</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Quick Links</span>
-            </div>
-          </a>
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-4 gap-4 mt-6">
+        <div class="bg-white/10 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold" id="totalTools">16</div>
+          <div class="text-sm text-white/70">Tools Available</div>
+        </div>
+        <div class="bg-white/10 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold">4</div>
+          <div class="text-sm text-white/70">Categories</div>
+        </div>
+        <div class="bg-white/10 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold" id="onlineTools">⏳</div>
+          <div class="text-sm text-white/70">Online Tools</div>
+        </div>
+        <div class="bg-white/10 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold" id="workerStatus">⏳</div>
+          <div class="text-sm text-white/70">Worker Status</div>
         </div>
       </div>
 
-      <!-- Data Capture & Analysis -->
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold text-white mb-4">
-          📊 Data Capture & Analysis
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Capture Live Data -->
-          <a
-            href="capture-live-data.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">📡</div>
-              <span class="badge badge-advanced">ADVANCED</span>
+      <!-- Real-time Status Dashboard -->
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold mb-3 text-white">🔴 Real-time Status</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-white/5 rounded-lg p-3 flex items-center">
+            <span class="status-indicator status-online" id="workerStatusIndicator"></span>
+            <div>
+              <div class="text-sm font-medium text-white">Worker</div>
+              <div class="text-xs text-white/60" id="workerStatusText">Checking...</div>
             </div>
-            <h3 class="text-xl font-bold mb-2">Capture Live Data</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Capture fresh betting data directly from the live site for testing
-              and analysis.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Live Capture</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Real Data</span>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 flex items-center">
+            <span class="status-indicator status-unknown" id="kvStatusIndicator"></span>
+            <div>
+              <div class="text-sm font-medium text-white">KV Storage</div>
+              <div class="text-xs text-white/60" id="kvStatusText">Unknown</div>
             </div>
-          </a>
-
-          <!-- Diagnostic Suite -->
-          <a
-            href="diagnostic-suite.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🔬</div>
-              <span class="badge badge-advanced">ADVANCED</span>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 flex items-center">
+            <span class="status-indicator status-unknown" id="extensionStatusIndicator"></span>
+            <div>
+              <div class="text-sm font-medium text-white">Extension</div>
+              <div class="text-xs text-white/60" id="extensionStatusText">Unknown</div>
             </div>
-            <h3 class="text-xl font-bold mb-2">Diagnostic Suite</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Legacy comprehensive system diagnostics and data flow monitoring
-              tool.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Legacy</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Comprehensive</span>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 flex items-center">
+            <span class="status-indicator status-unknown" id="dataFlowStatusIndicator"></span>
+            <div>
+              <div class="text-sm font-medium text-white">Data Flow</div>
+              <div class="text-xs text-white/60" id="dataFlowStatusText">Unknown</div>
             </div>
-          </a>
-
-          <!-- Test Data Filtering -->
-          <a
-            href="test-data-filtering.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🎯</div>
-              <span class="badge badge-advanced">ADVANCED</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Test Data Filtering</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Test and validate data filtering logic for betting data
-              processing.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Filters</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Testing</span>
-            </div>
-          </a>
-
-          <!-- Test Interceptor -->
-          <a
-            href="test-interceptor-with-auth.html"
-            class="tool-card glass rounded-xl p-6 text-white block"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="text-3xl">🔐</div>
-              <span class="badge badge-advanced">ADVANCED</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Test Interceptor with Auth</h3>
-            <p class="text-white/80 text-sm mb-3">
-              Test the BetTicker interceptor with authentication and cookie
-              handling.
-            </p>
-            <div class="flex gap-2 text-xs">
-              <span class="bg-white/20 px-2 py-1 rounded">Auth</span>
-              <span class="bg-white/20 px-2 py-1 rounded">Cookies</span>
-            </div>
-          </a>
+          </div>
         </div>
       </div>
 
-      <!-- Documentation -->
-      <div class="glass rounded-xl p-6 text-white">
-        <h2 class="text-xl font-bold mb-4">📚 Documentation</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <a
-            href="README.md"
-            target="_blank"
-            class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition"
-          >
-            <div class="text-2xl mb-1">📖</div>
-            <div class="text-sm">Tools README</div>
-          </a>
-          <a
-            href="../docs/guides/DEBUGGING_DATA_CAPTURE.md"
-            target="_blank"
-            class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition"
-          >
-            <div class="text-2xl mb-1">🔧</div>
-            <div class="text-sm">Debugging Guide</div>
-          </a>
-          <a
-            href="../TESTING_GUIDE.md"
-            target="_blank"
-            class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition"
-          >
-            <div class="text-2xl mb-1">🧪</div>
-            <div class="text-sm">Testing Guide</div>
-          </a>
-          <a
-            href="../docs/INDEX.md"
-            target="_blank"
-            class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition"
-          >
-            <div class="text-2xl mb-1">📚</div>
-            <div class="text-sm">Full Docs</div>
-          </a>
+      <!-- Performance Metrics -->
+      <div class="mt-6" id="performanceMetrics" style="display: none;">
+        <h3 class="text-lg font-semibold mb-3 text-white">📊 Performance Metrics</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-white/5 rounded-lg p-3 text-center">
+            <div class="text-2xl font-bold text-white" id="avgLoadTime">-</div>
+            <div class="text-xs text-white/60">Avg Load Time</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 text-center">
+            <div class="text-2xl font-bold text-white" id="successRate">-</div>
+            <div class="text-xs text-white/60">Success Rate</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 text-center">
+            <div class="text-2xl font-bold text-white" id="healthScore">-</div>
+            <div class="text-xs text-white/60">Health Score</div>
+          </div>
+          <div class="bg-white/5 rounded-lg p-3 text-center">
+            <div class="text-2xl font-bold text-white" id="totalTests">-</div>
+            <div class="text-xs text-white/60">Tests Run</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <script>
-      // Check worker status on load
-      async function checkWorkerStatus() {
-        try {
-          const response = await fetch(
-            "config.workerUrl/health",
-          );
-          const statusEl = document.getElementById("workerStatus");
-          if (response.ok) {
-            statusEl.textContent = "✅";
-            statusEl.title = "Worker Online";
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <a href="diagnostics/system-health-monitor.html"
+        class="glass rounded-xl p-4 text-white text-center hover:bg-white/20 transition">
+        <div class="text-3xl mb-2">🏥</div>
+        <div class="font-bold">Health Check</div>
+      </a>
+      <a href="testing/extension-test-suite.html"
+        class="glass rounded-xl p-4 text-white text-center hover:bg-white/20 transition">
+        <div class="text-3xl mb-2">🧪</div>
+        <div class="font-bold">Run Tests</div>
+      </a>
+      <a href="../dashboards/index.html"
+        class="glass rounded-xl p-4 text-white text-center hover:bg-white/20 transition">
+        <div class="text-3xl mb-2">📊</div>
+        <div class="font-bold">Dashboards</div>
+      </a>
+    </div>
+
+    <!-- Diagnostics & Monitoring -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4">🏥 Diagnostics & Monitoring</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- System Health Monitor -->
+        <a href="diagnostics/system-health-monitor.html" class="tool-card glass rounded-xl p-6 text-white block"
+          data-search="system health monitor real-time monitoring components health checks diagnostics alerts auto-refresh live monitoring"
+          data-category="diagnostics" data-status="online">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🏥</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">System Health Monitor</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Real-time monitoring of all system components with comprehensive
+            health checks and diagnostics.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Live Monitoring</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Auto-refresh</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Alerts</span>
+          </div>
+        </a>
+
+        <!-- Troubleshooting Guide -->
+        <a href="diagnostics/troubleshooting-guide.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🔧</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Automated Troubleshooting</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Intelligent problem diagnosis with step-by-step resolution guides
+            for common issues.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Smart Diagnosis</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Step-by-Step</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Reports</span>
+          </div>
+        </a>
+
+        <!-- Diagnostic Suite -->
+        <a href="diagnostics/diagnostic-suite.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🔬</div>
+            <span class="badge badge-advanced">LEGACY</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Diagnostic Suite</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Legacy comprehensive system diagnostics and data flow monitoring
+            tool.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Legacy</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Comprehensive</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Setup & Configuration -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4">
+        ⚙️ Setup & Configuration
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Setup Wizard -->
+        <a href="setup/setup-wizard.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🧪</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Setup Wizard</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Complete system installation and verification from scratch with
+            5-step guided process.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">5 Steps</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Guided</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Verification</span>
+          </div>
+        </a>
+
+        <!-- Extension Checker -->
+        <a href="setup/extension-checker.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🔍</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Extension Checker</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Browser extension installation, configuration, and debugging with
+            live redirection tests.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Live Tests</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Manual Steps</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Quick Links</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Testing & Validation -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4">
+        🧪 Testing & Validation
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Extension Test Suite -->
+        <a href="testing/extension-test-suite.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🧪</div>
+            <span class="badge badge-new">NEW</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Extension Test Suite</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Comprehensive automated testing for the browser extension with
+            detailed reporting and stats tracking.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">10 Tests</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Automated</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Stats</span>
+          </div>
+        </a>
+
+        <!-- Flow Tester -->
+        <a href="testing/flow-tester.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🌊</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">End-to-End Flow Tester</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Complete data flow validation from browser to KV storage with
+            visual flow diagram.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Visual Flow</span>
+            <span class="bg-white/20 px-2 py-1 rounded">KV Inspector</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Live Monitor</span>
+          </div>
+        </a>
+
+        <!-- Test Interceptor -->
+        <a href="testing/test-interceptor-with-auth.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🔐</div>
+            <span class="badge badge-advanced">ADVANCED</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Test Interceptor with Auth</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Test the BetTicker interceptor with authentication and cookie
+            handling.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Auth</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Cookies</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Data Capture & Analysis -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4">
+        📊 Data Capture & Analysis
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Capture Live Data -->
+        <a href="data/capture-live-data.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">📡</div>
+            <span class="badge badge-advanced">ADVANCED</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Capture Live Data</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Capture fresh betting data directly from the live site for testing
+            and analysis.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Live Capture</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Real Data</span>
+          </div>
+        </a>
+
+        <!-- Test Data Filtering -->
+        <a href="data/test-data-filtering.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🎯</div>
+            <span class="badge badge-advanced">ADVANCED</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Test Data Filtering</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Test and validate data filtering logic for betting data
+            processing.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Filters</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Testing</span>
+          </div>
+        </a>
+
+        <!-- Test Dashboard -->
+        <a href="data/test-dashboard.html" class="tool-card glass rounded-xl p-6 text-white block">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">📊</div>
+            <span class="badge badge-advanced">ADVANCED</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Test Dashboard</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Test dashboard functionality and data visualization components.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Dashboard</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Visualization</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Logging & Monitoring -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4">
+        📝 Logging & Monitoring
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Log Viewer -->
+        <a href="logging/log-viewer.html" class="tool-card glass rounded-xl p-6 text-white block"
+          data-search="log viewer real-time logs monitoring extension logs worker logs" data-category="logging"
+          data-status="online">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">📊</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Log Viewer</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Real-time log monitoring and viewing for extension and worker logs with filtering and search capabilities.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Real-time</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Filtering</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Search</span>
+          </div>
+        </a>
+
+        <!-- Log Monitor -->
+        <a href="logging/log-monitor.js" class="tool-card glass rounded-xl p-6 text-white block"
+          data-search="log monitor console monitoring real-time logs extension monitoring" data-category="logging"
+          data-status="online">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🔍</div>
+            <span class="badge badge-advanced">ADVANCED</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Log Monitor (CLI)</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Command-line log monitoring tool for real-time extension and worker log analysis with statistics.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">CLI Tool</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Statistics</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Real-time</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Automation & DevOps -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4">
+        🤖 Automation & DevOps
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Automated Deployment -->
+        <a href="automation/automated-deployment.html" class="tool-card glass rounded-xl p-6 text-white block"
+          data-search="automated deployment pipeline staging production rollback devops" data-category="automation"
+          data-status="online">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🚀</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Automated Deployment</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Automated deployment pipeline for BetTicker system with comprehensive validation and rollback capabilities.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Pipeline</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Validation</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Rollback</span>
+          </div>
+        </a>
+
+        <!-- Health Check Automation -->
+        <a href="automation/health-check-automation.html" class="tool-card glass rounded-xl p-6 text-white block"
+          data-search="health check automation monitoring alerts system health" data-category="automation"
+          data-status="online">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🏥</div>
+            <span class="badge badge-essential">ESSENTIAL</span>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Health Check Automation</h3>
+          <p class="text-white/80 text-sm mb-3">
+            Automated health monitoring and alerting system for BetTicker infrastructure with real-time checks.
+          </p>
+          <div class="flex gap-2 text-xs">
+            <span class="bg-white/20 px-2 py-1 rounded">Monitoring</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Alerts</span>
+            <span class="bg-white/20 px-2 py-1 rounded">Real-time</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Documentation -->
+    <div class="glass rounded-xl p-6 text-white">
+      <h2 class="text-xl font-bold mb-4">📚 Documentation</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="README.md" target="_blank" class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition">
+          <div class="text-2xl mb-1">📖</div>
+          <div class="text-sm">Tools README</div>
+        </a>
+        <a href="../docs/guides/DEBUGGING_DATA_CAPTURE.md" target="_blank"
+          class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition">
+          <div class="text-2xl mb-1">🔧</div>
+          <div class="text-sm">Debugging Guide</div>
+        </a>
+        <a href="../TESTING_GUIDE.md" target="_blank"
+          class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition">
+          <div class="text-2xl mb-1">🧪</div>
+          <div class="text-sm">Testing Guide</div>
+        </a>
+        <a href="../docs/INDEX.md" target="_blank"
+          class="bg-white/10 hover:bg-white/20 rounded-lg p-3 text-center transition">
+          <div class="text-2xl mb-1">📚</div>
+          <div class="text-sm">Full Docs</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Automated Testing Controls -->
+    <div class="glass rounded-xl p-6 text-white mb-6">
+      <h2 class="text-xl font-bold mb-4">🧪 Automated Testing</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-semibold mb-3">Test Controls</h3>
+          <div class="space-y-3">
+            <button id="runAllTests"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+              🚀 Run All Tests
+            </button>
+            <button id="runQuickTests"
+              class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+              ⚡ Quick Tests
+            </button>
+            <button id="exportResults"
+              class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+              📊 Export Results
+            </button>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-3">Test Status</h3>
+          <div id="testStatus" class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-white/80">Last Run:</span>
+              <span id="lastTestRun" class="text-white">Never</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-white/80">Status:</span>
+              <span id="testStatusText" class="text-white">Ready</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-white/80">Success Rate:</span>
+              <span id="testSuccessRate" class="text-white">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tool data for search functionality
+    const toolsData = [
+      {
+        name: "System Health Monitor",
+        category: "diagnostics",
+        description: "Real-time monitoring of all system components with comprehensive health checks and diagnostics",
+        tags: ["monitoring", "health", "real-time", "alerts", "diagnostics"],
+        status: "online",
+        path: "diagnostics/system-health-monitor.html"
+      },
+      {
+        name: "Troubleshooting Guide",
+        category: "diagnostics",
+        description: "Intelligent problem diagnosis with step-by-step resolution guides for common issues",
+        tags: ["troubleshooting", "diagnosis", "problem-solving", "guides"],
+        status: "online",
+        path: "diagnostics/troubleshooting-guide.html"
+      },
+      {
+        name: "Diagnostic Suite",
+        category: "diagnostics",
+        description: "Legacy comprehensive system diagnostics and data flow monitoring tool",
+        tags: ["legacy", "comprehensive", "diagnostics", "monitoring"],
+        status: "unknown",
+        path: "diagnostics/diagnostic-suite.html"
+      },
+      {
+        name: "Setup Wizard",
+        category: "setup",
+        description: "Complete system installation and verification from scratch with 5-step guided process",
+        tags: ["setup", "installation", "wizard", "guided", "verification"],
+        status: "online",
+        path: "setup/setup-wizard.html"
+      },
+      {
+        name: "Extension Checker",
+        category: "setup",
+        description: "Browser extension installation, configuration, and debugging with live redirection tests",
+        tags: ["extension", "browser", "installation", "testing", "debugging"],
+        status: "online",
+        path: "setup/extension-checker.html"
+      },
+      {
+        name: "Extension Test Suite",
+        category: "testing",
+        description: "Comprehensive automated testing for the browser extension with detailed reporting and stats tracking",
+        tags: ["testing", "extension", "automated", "reporting", "stats"],
+        status: "online",
+        path: "testing/extension-test-suite.html"
+      },
+      {
+        name: "End-to-End Flow Tester",
+        category: "testing",
+        description: "Complete data flow validation from browser to KV storage with visual flow diagram",
+        tags: ["testing", "flow", "validation", "visual", "kv", "storage"],
+        status: "online",
+        path: "testing/flow-tester.html"
+      },
+      {
+        name: "Test Interceptor with Auth",
+        category: "testing",
+        description: "Test the BetTicker interceptor with authentication and cookie handling",
+        tags: ["testing", "interceptor", "auth", "authentication", "cookies"],
+        status: "online",
+        path: "testing/test-interceptor-with-auth.html"
+      },
+      {
+        name: "Capture Live Data",
+        category: "data",
+        description: "Capture fresh betting data directly from the live site for testing and analysis",
+        tags: ["data", "capture", "live", "betting", "analysis", "testing"],
+        status: "online",
+        path: "data/capture-live-data.html"
+      },
+      {
+        name: "Test Data Filtering",
+        category: "data",
+        description: "Test and validate data filtering logic for betting data processing",
+        tags: ["data", "filtering", "testing", "validation", "processing"],
+        status: "online",
+        path: "data/test-data-filtering.html"
+      },
+      {
+        name: "Test Dashboard",
+        category: "data",
+        description: "Test dashboard functionality and data visualization components",
+        tags: ["dashboard", "testing", "visualization", "components"],
+        status: "online",
+        path: "data/test-dashboard.html"
+      }
+    ];
+
+    // Search functionality
+    function initializeSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const searchResultsCount = document.getElementById('searchResultsCount');
+      const toolCards = document.querySelectorAll('.tool-card');
+
+      searchInput.addEventListener('input', function (e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        toolCards.forEach(card => {
+          const searchData = card.getAttribute('data-search') || '';
+          const title = card.querySelector('h3').textContent.toLowerCase();
+          const description = card.querySelector('p').textContent.toLowerCase();
+
+          const isMatch = searchTerm === '' ||
+            title.includes(searchTerm) ||
+            description.includes(searchTerm) ||
+            searchData.includes(searchTerm);
+
+          if (isMatch) {
+            card.style.display = 'block';
+            visibleCount++;
+
+            // Highlight search terms
+            if (searchTerm !== '') {
+              highlightSearchTerms(card, searchTerm);
+            } else {
+              removeHighlights(card);
+            }
           } else {
-            statusEl.textContent = "❌";
-            statusEl.title = "Worker Offline";
+            card.style.display = 'none';
+            removeHighlights(card);
           }
-        } catch (error) {
-          document.getElementById("workerStatus").textContent = "❌";
+        });
+
+        searchResultsCount.textContent = searchTerm === '' ? '' : `${visibleCount} results`;
+      });
+    }
+
+    function highlightSearchTerms(card, searchTerm) {
+      const title = card.querySelector('h3');
+      const description = card.querySelector('p');
+
+      [title, description].forEach(element => {
+        const text = element.textContent;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        const highlightedText = text.replace(regex, '<span class="search-highlight">$1</span>');
+        element.innerHTML = highlightedText;
+      });
+    }
+
+    function removeHighlights(card) {
+      const title = card.querySelector('h3');
+      const description = card.querySelector('p');
+
+      [title, description].forEach(element => {
+        element.innerHTML = element.textContent;
+      });
+    }
+
+    // Status monitoring
+    async function checkSystemStatus() {
+      try {
+        // Check worker status
+        const workerResponse = await fetch('/health');
+        const workerStatusEl = document.getElementById('workerStatus');
+        const workerStatusIndicator = document.getElementById('workerStatusIndicator');
+        const workerStatusText = document.getElementById('workerStatusText');
+
+        if (workerResponse.ok) {
+          workerStatusEl.textContent = "✅";
+          workerStatusEl.title = "Worker Online";
+          workerStatusIndicator.className = 'status-indicator status-online';
+          workerStatusText.textContent = 'Online';
+        } else {
+          workerStatusEl.textContent = "❌";
+          workerStatusEl.title = "Worker Offline";
+          workerStatusIndicator.className = 'status-indicator status-offline';
+          workerStatusText.textContent = 'Offline';
+        }
+
+        // Update online tools count
+        const onlineTools = document.querySelectorAll('[data-status="online"]').length;
+        document.getElementById('onlineTools').textContent = onlineTools;
+
+      } catch (error) {
+        document.getElementById('workerStatus').textContent = "❌";
+        document.getElementById('workerStatusIndicator').className = 'status-indicator status-offline';
+        document.getElementById('workerStatusText').textContent = 'Offline';
+      }
+    }
+
+    // Performance monitoring
+    function updatePerformanceMetrics() {
+      if (window.PerformanceMonitor) {
+        const dashboardData = window.PerformanceMonitor.getDashboardData();
+
+        document.getElementById('avgLoadTime').textContent =
+          dashboardData.averageLoadTime ? `${dashboardData.averageLoadTime}ms` : '-';
+        document.getElementById('successRate').textContent =
+          dashboardData.successRate ? `${dashboardData.successRate}%` : '-';
+        document.getElementById('healthScore').textContent =
+          dashboardData.healthScore ? `${dashboardData.healthScore}%` : '-';
+
+        // Show performance metrics if data is available
+        if (dashboardData.totalTools > 0) {
+          document.getElementById('performanceMetrics').style.display = 'block';
         }
       }
+    }
 
-      // Check on load
-      checkWorkerStatus();
-    </script>
-  </body>
+    // Testing functionality
+    function initializeTesting() {
+      const runAllTestsBtn = document.getElementById('runAllTests');
+      const runQuickTestsBtn = document.getElementById('runQuickTests');
+      const exportResultsBtn = document.getElementById('exportResults');
+
+      if (runAllTestsBtn) {
+        runAllTestsBtn.addEventListener('click', async function () {
+          if (window.AutomatedTesting.isTestRunning()) {
+            alert('Tests are already running. Please wait...');
+            return;
+          }
+
+          this.disabled = true;
+          this.textContent = '🔄 Running...';
+          document.getElementById('testStatusText').textContent = 'Running...';
+
+          try {
+            const results = await window.AutomatedTesting.runAllTests();
+
+            document.getElementById('lastTestRun').textContent =
+              new Date(results.timestamp).toLocaleString();
+            document.getElementById('testStatusText').textContent = 'Completed';
+            document.getElementById('testSuccessRate').textContent =
+              `${results.summary.successRate}%`;
+            document.getElementById('totalTests').textContent = results.summary.total;
+
+            // Update performance metrics
+            updatePerformanceMetrics();
+
+            alert(`Tests completed!\nPassed: ${results.summary.passed}\nFailed: ${results.summary.failed}\nSuccess Rate: ${results.summary.successRate}%`);
+
+          } catch (error) {
+            document.getElementById('testStatusText').textContent = 'Error';
+            alert('Test execution failed: ' + error.message);
+          } finally {
+            this.disabled = false;
+            this.textContent = '🚀 Run All Tests';
+          }
+        });
+      }
+
+      if (runQuickTestsBtn) {
+        runQuickTestsBtn.addEventListener('click', async function () {
+          if (window.AutomatedTesting.isTestRunning()) {
+            alert('Tests are already running. Please wait...');
+            return;
+          }
+
+          this.disabled = true;
+          this.textContent = '🔄 Running...';
+          document.getElementById('testStatusText').textContent = 'Running Quick Tests...';
+
+          try {
+            // Run only essential tests
+            const essentialTests = ['tool-availability', 'browser-compatibility', 'search-functionality'];
+            const results = [];
+
+            for (const testId of essentialTests) {
+              try {
+                const result = await window.AutomatedTesting.runTest(testId);
+                results.push(result);
+              } catch (error) {
+                results.push({
+                  testId,
+                  name: testId,
+                  status: 'error',
+                  error: error.message,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            }
+
+            const passed = results.filter(r => r.status === 'passed').length;
+            const total = results.length;
+
+            document.getElementById('lastTestRun').textContent =
+              new Date().toLocaleString();
+            document.getElementById('testStatusText').textContent = 'Completed';
+            document.getElementById('testSuccessRate').textContent =
+              `${Math.round((passed / total) * 100)}%`;
+            document.getElementById('totalTests').textContent = total;
+
+            alert(`Quick tests completed!\nPassed: ${passed}/${total}\nSuccess Rate: ${Math.round((passed / total) * 100)}%`);
+
+          } catch (error) {
+            document.getElementById('testStatusText').textContent = 'Error';
+            alert('Quick test execution failed: ' + error.message);
+          } finally {
+            this.disabled = false;
+            this.textContent = '⚡ Quick Tests';
+          }
+        });
+      }
+
+      if (exportResultsBtn) {
+        exportResultsBtn.addEventListener('click', function () {
+          if (window.AutomatedTesting) {
+            const results = window.AutomatedTesting.exportResults('json');
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `test-results-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
+        });
+      }
+    }
+
+    // Enhanced status monitoring with performance data
+    async function checkSystemStatus() {
+      try {
+        // Check worker status
+        const workerResponse = await fetch('/health');
+        const workerStatusEl = document.getElementById('workerStatus');
+        const workerStatusIndicator = document.getElementById('workerStatusIndicator');
+        const workerStatusText = document.getElementById('workerStatusText');
+
+        if (workerResponse.ok) {
+          workerStatusEl.textContent = "✅";
+          workerStatusEl.title = "Worker Online";
+          workerStatusIndicator.className = 'status-indicator status-online';
+          workerStatusText.textContent = 'Online';
+        } else {
+          workerStatusEl.textContent = "❌";
+          workerStatusEl.title = "Worker Offline";
+          workerStatusIndicator.className = 'status-indicator status-offline';
+          workerStatusText.textContent = 'Offline';
+        }
+
+        // Update online tools count
+        const onlineTools = document.querySelectorAll('[data-status="online"]').length;
+        document.getElementById('onlineTools').textContent = onlineTools;
+
+        // Update performance metrics
+        updatePerformanceMetrics();
+
+      } catch (error) {
+        document.getElementById('workerStatus').textContent = "❌";
+        document.getElementById('workerStatusIndicator').className = 'status-indicator status-offline';
+        document.getElementById('workerStatusText').textContent = 'Offline';
+      }
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function () {
+      initializeSearch();
+      checkSystemStatus();
+      initializeTesting();
+
+      // Refresh status every 30 seconds
+      setInterval(checkSystemStatus, 30000);
+
+      // Update performance metrics every 60 seconds
+      setInterval(updatePerformanceMetrics, 60000);
+    });
+  </script>
+</body>
+
 </html>

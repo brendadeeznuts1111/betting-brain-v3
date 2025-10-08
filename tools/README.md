@@ -4,16 +4,65 @@ A comprehensive suite of diagnostic tools designed to identify, troubleshoot, an
 
 ## 🎯 Quick Start
 
-**➡️ [Open Tools Hub](index.html)** - Single entry point for all testing and diagnostic tools
+**➡️ [Open Enhanced Tools Hub](index.html)** - Single entry point for all testing and diagnostic tools
+
+### 🆕 New in Version 2.1
+- **🔍 Enhanced Search** - Real-time search across all tools
+- **📊 Performance Metrics** - Automatic performance monitoring
+- **🧪 Automated Testing** - Built-in test suite with controls
+- **⚙️ Configuration Management** - Centralized tool configuration
+- **📈 Real-time Status** - Live system health monitoring
+- **🎨 Enhanced UI** - Modern glass morphism design
+
+**📚 [Enhanced Features Guide](docs/ENHANCED_FEATURES_GUIDE.md)** - Complete guide to new features
 
 ## 🎯 Problem Overview
 
 The primary issue being addressed is: **"New data isn't being captured"** - where the dashboard shows old or no data despite the system being deployed. This comprehensive diagnostic system helps identify the root cause and provides step-by-step solutions.
 
+## 📁 Directory Structure
+
+The tools are now organized into logical categories for better navigation and maintenance:
+
+```
+tools/
+├── index.html                    # Main tools hub
+├── README.md                     # This documentation
+├── organize-files.sh            # Organization script
+├── diagnostics/                  # System health & troubleshooting
+│   ├── system-health-monitor.html
+│   ├── troubleshooting-guide.html
+│   └── diagnostic-suite.html
+├── setup/                       # Installation & configuration
+│   ├── setup-wizard.html
+│   └── extension-checker.html
+├── testing/                     # Test suites & validation
+│   ├── extension-test-suite.html
+│   ├── flow-tester.html
+│   ├── test-interceptor-with-auth.html
+│   ├── extension-injection-tester.html
+│   ├── test-extension.html
+│   └── test-injection.html
+├── data/                        # Data capture & analysis
+│   ├── capture-live-data.html
+│   ├── test-data-filtering.html
+│   └── test-dashboard.html
+├── logging/                     # Log monitoring
+│   ├── log-monitor.js
+│   └── log-viewer.html
+└── automation/                  # Automation tools
+    └── (empty - ready for future tools)
+```
+
 ## 🛠️ Diagnostic Tools Suite
 
-### 1. 🏥 System Health Monitor
-**File:** `system-health-monitor.html`
+The tools are now organized into logical categories for better navigation and maintenance:
+
+### 🏥 Diagnostics & Monitoring
+**Location:** `diagnostics/`
+
+#### System Health Monitor
+**File:** `diagnostics/system-health-monitor.html`
 
 **Purpose:** Real-time monitoring of all system components with comprehensive health checks.
 
@@ -27,27 +76,8 @@ The primary issue being addressed is: **"New data isn't being captured"** - wher
 
 **Use When:** You need a complete overview of system health or want to monitor multiple components simultaneously.
 
----
-
-### 2. 🌊 End-to-End Flow Tester
-**File:** `flow-tester.html`
-
-**Purpose:** Complete data flow validation from browser to KV storage.
-
-**Features:**
-- 🔄 Visual flow diagram showing data path
-- 🧪 Individual component testing
-- 📡 Live monitoring with real-time updates
-- 🎯 Simulated BetTicker requests
-- 💾 KV storage inspector with record viewing
-- 🔧 Automated troubleshooting recommendations
-
-**Use When:** You need to test the complete data pipeline or identify where the flow is breaking.
-
----
-
-### 3. 🔧 Automated Troubleshooting Guide
-**File:** `troubleshooting-guide.html`
+#### Automated Troubleshooting Guide
+**File:** `diagnostics/troubleshooting-guide.html`
 
 **Purpose:** Intelligent problem diagnosis with step-by-step resolution guides.
 
@@ -61,10 +91,26 @@ The primary issue being addressed is: **"New data isn't being captured"** - wher
 
 **Use When:** You know there's a problem but need help identifying and fixing it systematically.
 
+#### Diagnostic Suite (Legacy)
+**File:** `diagnostics/diagnostic-suite.html`
+
+**Purpose:** Legacy comprehensive system diagnostics and data flow monitoring tool.
+
+**Features:**
+- 🔬 Comprehensive system analysis
+- 📊 Data flow monitoring
+- 🧪 Component testing
+- 📄 Detailed reporting
+
+**Use When:** You need legacy diagnostic functionality or comprehensive system analysis.
+
 ---
 
-### 4. 🧪 Setup Wizard
-**File:** `setup-wizard.html`
+### ⚙️ Setup & Configuration
+**Location:** `setup/`
+
+#### Setup Wizard
+**File:** `setup/setup-wizard.html`
 
 **Purpose:** Complete system installation and verification from scratch.
 
@@ -78,10 +124,8 @@ The primary issue being addressed is: **"New data isn't being captured"** - wher
 
 **Use When:** Setting up the system for the first time or verifying a complete installation.
 
----
-
-### 5. 🧩 Extension Checker
-**File:** `extension-checker.html`
+#### Extension Checker
+**File:** `setup/extension-checker.html`
 
 **Purpose:** Browser extension installation, configuration, and debugging.
 
@@ -93,6 +137,145 @@ The primary issue being addressed is: **"New data isn't being captured"** - wher
 - 🔗 Quick access to essential pages
 
 **Use When:** You suspect browser extension issues or need to verify extension functionality.
+
+---
+
+### 🧪 Testing & Validation
+**Location:** `testing/`
+
+#### Extension Test Suite
+**File:** `testing/extension-test-suite.html`
+
+**Purpose:** Comprehensive automated testing for the browser extension.
+
+**Features:**
+- 🧪 10 automated tests
+- 📊 Detailed reporting and stats tracking
+- 🔄 Real-time test execution
+- 📄 Comprehensive test results
+
+**Use When:** You need to validate extension functionality or run automated tests.
+
+#### End-to-End Flow Tester
+**File:** `testing/flow-tester.html`
+
+**Purpose:** Complete data flow validation from browser to KV storage.
+
+**Features:**
+- 🔄 Visual flow diagram showing data path
+- 🧪 Individual component testing
+- 📡 Live monitoring with real-time updates
+- 🎯 Simulated BetTicker requests
+- 💾 KV storage inspector with record viewing
+- 🔧 Automated troubleshooting recommendations
+
+**Use When:** You need to test the complete data pipeline or identify where the flow is breaking.
+
+#### Test Interceptor with Auth
+**File:** `testing/test-interceptor-with-auth.html`
+
+**Purpose:** Test the BetTicker interceptor with authentication and cookie handling.
+
+**Features:**
+- 🔐 Authentication testing
+- 🍪 Cookie handling validation
+- 🔄 Request interception testing
+- 📊 Auth flow analysis
+
+**Use When:** You need to test authentication flows or cookie handling in the interceptor.
+
+---
+
+### 📊 Data Capture & Analysis
+**Location:** `data/`
+
+#### Capture Live Data
+**File:** `data/capture-live-data.html`
+
+**Purpose:** Capture fresh betting data directly from the live site for testing and analysis.
+
+**Features:**
+- 📡 Live data capture
+- 🎯 Real betting data
+- 📊 Data analysis tools
+- 💾 Data storage options
+
+**Use When:** You need fresh data for testing or analysis purposes.
+
+#### Test Data Filtering
+**File:** `data/test-data-filtering.html`
+
+**Purpose:** Test and validate data filtering logic for betting data processing.
+
+**Features:**
+- 🎯 Filter testing
+- 📊 Data validation
+- 🔍 Filter logic analysis
+- 📄 Test results
+
+**Use When:** You need to test data filtering logic or validate data processing.
+
+#### Test Dashboard
+**File:** `data/test-dashboard.html`
+
+**Purpose:** Test dashboard functionality and data visualization components.
+
+**Features:**
+- 📊 Dashboard testing
+- 📈 Visualization validation
+- 🧪 Component testing
+- 📄 Test results
+
+**Use When:** You need to test dashboard functionality or data visualization components.
+
+---
+
+## 🆕 Enhanced Features (Version 2.1)
+
+### 🔍 Advanced Search & Navigation
+- **Real-time search** across all tools by name, description, or tags
+- **Search highlighting** with visual feedback
+- **Breadcrumb navigation** for better orientation
+- **Category-based filtering** with color coding
+
+### 📊 Performance Monitoring
+- **Automatic performance tracking** for all tools
+- **Load time monitoring** with thresholds
+- **Success rate calculation** and trending
+- **Health score assessment** with recommendations
+- **Performance dashboard** with real-time metrics
+
+### 🧪 Automated Testing System
+- **Comprehensive test suite** with 6 different test types
+- **Tool availability testing** - Verify all tools are accessible
+- **Performance testing** - Measure load times and success rates
+- **API endpoint testing** - Validate backend connectivity
+- **Browser compatibility testing** - Check feature support
+- **Search functionality testing** - Verify search works correctly
+- **Status monitoring testing** - Validate status indicators
+
+### ⚙️ Configuration Management
+- **Centralized configuration** for all tools and categories
+- **Tool metadata** with dependencies and performance data
+- **Category management** with visual properties
+- **Performance thresholds** and health criteria
+- **Search and filtering** capabilities across configuration
+
+### 📈 Real-time Status Dashboard
+- **Live system health** monitoring with visual indicators
+- **Worker status** with automatic updates
+- **KV Storage status** tracking
+- **Extension status** monitoring
+- **Data flow status** validation
+- **Auto-refresh** every 30 seconds
+
+### 🎨 Enhanced User Interface
+- **Glass morphism design** with backdrop blur effects
+- **Smooth animations** and transitions
+- **Responsive design** for all screen sizes
+- **Color-coded status** indicators
+- **Interactive elements** with hover effects
+- **Accessibility features** for better usability
 
 ---
 
@@ -121,31 +304,31 @@ The diagnostic system includes enhanced worker endpoints for comprehensive monit
 ## 🚀 Quick Start Guide
 
 ### Step 1: Initial Diagnosis
-1. Open **System Health Monitor** (`tools/system-health-monitor.html`)
+1. Open **System Health Monitor** (`tools/diagnostics/system-health-monitor.html`)
 2. Click "🔄 Run Full Check"
 3. Review critical alerts and component status
 4. Note any red indicators or error messages
 
 ### Step 2: Problem Identification
-1. If issues found, open **Troubleshooting Guide** (`tools/troubleshooting-guide.html`)
+1. If issues found, open **Troubleshooting Guide** (`tools/diagnostics/troubleshooting-guide.html`)
 2. Select the problem type that matches your symptoms
 3. Click "🚀 Run Diagnosis"
 4. Follow the automated troubleshooting steps
 
 ### Step 3: Flow Testing
-1. Open **Flow Tester** (`tools/flow-tester.html`)
+1. Open **Flow Tester** (`tools/testing/flow-tester.html`)
 2. Click "🚀 Run Full Test"
 3. Review the visual flow diagram for failures
 4. Use individual component tests if needed
 
 ### Step 4: Extension Verification
-1. Open **Extension Checker** (`tools/extension-checker.html`)
+1. Open **Extension Checker** (`tools/setup/extension-checker.html`)
 2. Follow the manual verification steps
 3. Test redirection functionality
 4. Verify extension status
 
 ### Step 5: Complete Setup (if needed)
-1. Open **Setup Wizard** (`tools/setup-wizard.html`)
+1. Open **Setup Wizard** (`tools/setup/setup-wizard.html`)
 2. Follow all 5 steps for complete system setup
 3. Generate setup completion report
 
@@ -159,7 +342,7 @@ The diagnostic system includes enhanced worker endpoints for comprehensive monit
 - Worker not receiving requests
 
 **Quick Fix:**
-1. Use Extension Checker to verify installation
+1. Use Extension Checker (`tools/setup/extension-checker.html`) to verify installation
 2. Visit fantasy402.com and navigate betting pages
 3. Check for redirected requests in DevTools
 
@@ -264,6 +447,12 @@ The diagnostic system integrates seamlessly with existing components:
 2. Use specific tools based on symptoms
 3. Follow automated troubleshooting guides
 4. Document issues and resolutions for future reference
+
+## 📚 Documentation
+
+- **[README.md](README.md)** - This comprehensive guide
+- **[Enhanced Features Guide](docs/ENHANCED_FEATURES_GUIDE.md)** - New features documentation
+- **[Complete Tools Index](docs/TOOLS_INDEX.md)** - Comprehensive index of all 18 tools
 
 ## 📚 Additional Resources
 

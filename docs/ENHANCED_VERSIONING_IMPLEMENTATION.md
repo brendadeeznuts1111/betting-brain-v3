@@ -225,8 +225,8 @@ Restructured rule organization fundamentally.
 - **[PR Template](.github/pull_request_template.md)** - Enhanced with versioning section
 - **[CHANGELOG.md](CHANGELOG.md)** - Complete version history
 - **[CI Workflow](.github/workflows/rules_version_check.yml)** - Automated validation
-- **[Versioning Guide](docs/CURSOR_RULES_VERSIONING.md)** - SemVer guidelines
-- **[Ship Checklist](docs/CURSOR_RULES_SHIP_CHECKLIST.md)** - Implementation checklist
+- **[Versioning Guide](../CURSOR_RULES_VERSIONING.md)** - SemVer guidelines
+- **[Ship Checklist](../CURSOR_RULES_SHIP_CHECKLIST.md)** - Implementation checklist
 
 ---
 
