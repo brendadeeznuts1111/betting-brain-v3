@@ -75,6 +75,13 @@ export default {
       });
     }
 
+    // Floor status endpoint
+    if (url.pathname === '/floor/status' && request.method === 'GET') {
+      console.log(`[${requestId}] 🤖 Floor status check`);
+      const { handleFloorStatus } = await import('./routes/floor-status');
+      return handleFloorStatus(request, env);
+    }
+
     // Data ingestion endpoint (MCP)
     if (url.pathname === '/ingest' && request.method === 'POST') {
       console.log(`[${requestId}] 📊 Data ingestion from MCP`);
