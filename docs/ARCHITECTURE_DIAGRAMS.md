@@ -1,3 +1,15 @@
+---
+version: "4.3.0"
+title: "Betting-Brain v3 Architecture Diagrams"
+description: "Comprehensive architecture documentation with ASCII ANSI colors, networking, KV cache, bindings, endpoints, and Cloudflare variables"
+lastUpdated: "2025-10-08"
+author: "Betting-Brain Team"
+account: "nolarose1968-806"
+status: "production-ready"
+dependencies: ["cloudflare-workers", "d1-databases", "kv-cache", "analytics-engine", "queues"]
+tags: ["architecture", "cloudflare", "edge-computing", "betting-intelligence", "real-time-analytics"]
+---
+
 # 🏗️ Betting-Brain v3 Architecture Diagrams
 
 ## System Overview
@@ -457,6 +469,229 @@ flowchart TD
 │                                                                                         │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+## 🔗 API Endpoints & Parameters
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🔗 API ENDPOINTS DOCUMENTATION (Account: nolarose1968-806)                           │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🌐 CORE SYSTEM ENDPOINTS                                                           │ │
+│ │                                                                                     │ │
+│ │ GET  /health                                                                        │ │
+│ │ ├── Purpose: System health check                                                    │ │
+│ │ ├── Parameters: None                                                               │ │
+│ │ ├── Response: { status, version, timestamp, requestId, duration }                   │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health    │ │
+│ │ └── Used by: All dashboards, monitoring tools, browser extension                   │ │
+│ │                                                                                     │ │
+│ │ POST /logs                                                                          │ │
+│ │ ├── Purpose: Centralized logging                                                    │ │
+│ │ ├── Parameters: { logs: Array, sessionId: string }                                  │ │
+│ │ ├── Response: { success: boolean, requestId: string }                              │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/logs      │ │
+│ │ └── Used by: Browser extension log forwarding                                      │ │
+│ │                                                                                     │ │
+│ │ GET  /diagnostics                                                                   │ │
+│ │ ├── Purpose: System diagnostics                                                    │ │
+│ │ ├── Parameters: None                                                               │ │
+│ │ ├── Response: { bindings, kv, lastChecks, requestId }                              │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/diagnostics│ │
+│ │ └── Used by: Setup wizard, health monitor                                          │ │
+│ │                                                                                     │ │
+│ │ GET  /system-status                                                                 │ │
+│ │ ├── Purpose: Detailed system status                                                │ │
+│ │ ├── Parameters: None                                                               │ │
+│ │ ├── Response: { uptime, memory, kvRecords, healthIndicators }                      │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/system-status│ │
+│ │ └── Used by: Dashboard stats                                                       │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🎲 FANTASY402 INTEGRATION ENDPOINTS                                               │ │
+│ │                                                                                     │ │
+│ │ GET  /api/fantasy402/player-info                                                   │ │
+│ │ ├── Purpose: Player information and status                                         │ │
+│ │ ├── Parameters: ?limit=20&includeHistory=false                                     │ │
+│ │ ├── Response: { count, players: Array, lastUpdated, status }                       │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/fantasy402/player-info│ │
+│ │ └── Used by: Floor Control dashboard                                              │ │
+│ │                                                                                     │ │
+│ │ GET  /api/fantasy402/player-performance                                            │ │
+│ │ ├── Purpose: Player performance metrics                                            │ │
+│ │ ├── Parameters: ?period=CP&startDate=2025-01-01&endDate=2025-01-31               │ │
+│ │ ├── Response: { period, totalRisk, netIncome, winRate, summary }                   │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/fantasy402/player-performance│ │
+│ │ └── Used by: Performance analytics dashboard                                      │ │
+│ │                                                                                     │ │
+│ │ GET  /api/fantasy402/transaction-list                                              │ │
+│ │ ├── Purpose: Transaction history and summaries                                      │ │
+│ │ ├── Parameters: ?limit=50&type=all&startDate=2025-01-01                          │ │
+│ │ ├── Response: { totalTransactions, transactions: Array, summary }               │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/fantasy402/transaction-list│ │
+│ │ └── Used by: Transaction monitoring dashboard                                     │ │
+│ │                                                                                     │ │
+│ │ GET  /api/fantasy402/pending-wagers                                                │ │
+│ │ ├── Purpose: Pending wagers and risk exposure                                      │ │
+│ │ ├── Parameters: ?limit=100&sport=all&status=pending                               │ │
+│ │ ├── Response: { totalWagers, wagers: Array, totalRisk, sportBreakdown }           │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/fantasy402/pending-wagers│ │
+│ │ └── Used by: Risk management dashboard                                           │ │
+│ │                                                                                     │ │
+│ │ GET  /api/fantasy402/player-analysis                                               │ │
+│ │ ├── Purpose: Comprehensive player analysis                                         │ │
+│ │ ├── Parameters: ?startDate=2025-01-01&endDate=2025-01-31&lineType=All            │ │
+│ │ ├── Response: { period, players: Array, summary, cached }                          │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/fantasy402/player-analysis│ │
+│ │ └── Used by: Player analytics dashboard                                           │ │
+│ │                                                                                     │ │
+│ │ GET  /api/fantasy402/transaction-history                                          │ │
+│ │ ├── Purpose: Historical transaction data                                           │ │
+│ │ ├── Parameters: ?startDate=2025-01-01&endDate=2025-01-31&type=all                │ │
+│ │ ├── Response: { transactions: Array, summary, cached }                            │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/fantasy402/transaction-history│ │
+│ │ └── Used by: Historical analysis dashboard                                        │ │
+│ │                                                                                     │ │
+│ │ POST /api/fantasy402/ingest                                                        │ │
+│ │ ├── Purpose: Fantasy402 data ingestion                                             │ │
+│ │ ├── Parameters: { packetId, timestamp, endpoint, operation, response }            │ │
+│ │ ├── Headers: X-Extension-Secret: default-dev-secret-change-me                     │ │
+│ │ ├── Response: { success: boolean, requestId: string, analytics: object }          │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/fantasy402/ingest│ │
+│ │ └── Used by: Browser extension data capture                                       │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 📊 ANALYTICS & MCP ENDPOINTS                                                       │ │
+│ │                                                                                     │ │
+│ │ GET  /api/analytics/metrics                                                        │ │
+│ │ ├── Purpose: Real-time analytics metrics                                           │ │
+│ │ ├── Parameters: ?timeRange=1h&includeAlerts=true                                  │ │
+│ │ ├── Response: { metrics: { steamMoves, agentRisk, transactionAnalytics, performance } }│ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/analytics/metrics│ │
+│ │ └── Used by: Floor Control dashboard, Recent Activity card                        │ │
+│ │                                                                                     │ │
+│ │ POST /mcp                                                                           │ │
+│ │ ├── Purpose: MCP (Model Context Protocol) server                                    │ │
+│ │ ├── Parameters: { jsonrpc: "2.0", id: number, method: string, params: object }   │ │
+│ │ ├── Methods: initialize, tools/list, tools/call                                   │ │
+│ │ ├── Response: { jsonrpc: "2.0", id: number, result: object }                     │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/mcp      │ │
+│ │ └── Used by: Claude Desktop, AI assistants, Dashboard Pro                        │ │
+│ │                                                                                     │ │
+│ │ GET  /api/f402/graph                                                               │ │
+│ │ ├── Purpose: Agent graph for D3 force-layout visualization                         │ │
+│ │ ├── Parameters: ?view=all&includeMetadata=true                                     │ │
+│ │ ├── Response: { nodes: Array, edges: Array, metadata: object }                    │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/f402/graph│ │
+│ │ └── Used by: Floor Control dashboard, Agent Tree card                              │ │
+│ │                                                                                     │ │
+│ │ GET  /api/f402/mission-control                                                     │ │
+│ │ ├── Purpose: Fantasy402 mission control dashboard                                  │ │
+│ │ ├── Parameters: ?expand=true&includeAnalytics=true                                 │ │
+│ │ ├── Response: { liveBets, agents, customers, transactions, analytics }           │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/f402/mission-control│ │
+│ │ └── Used by: Floor Control dashboard, unified Fantasy402 data                     │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🔍 BETTICKER SNIFFER ENDPOINTS                                                    │ │
+│ │                                                                                     │ │
+│ │ POST /cloud/api/Manager/getBetTicker                                               │ │
+│ │ ├── Purpose: Transparent proxy + KV interception                                   │ │
+│ │ ├── Parameters: { request: object } (original BetTicker request)                  │ │
+│ │ ├── Response: { response: object } (original BetTicker response)                  │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/cloud/api/Manager/getBetTicker│ │
+│ │ └── Used by: Browser extension, BetTicker interception                             │ │
+│ │                                                                                     │ │
+│ │ GET  /interceptor/history                                                          │ │
+│ │ ├── Purpose: BetTicker history/analysis API                                        │ │
+│ │ ├── Parameters: ?limit=100&startDate=2025-01-01&endDate=2025-01-31                │ │
+│ │ ├── Response: { responses: Array, totalCount, metadata }                          │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/interceptor/history│ │
+│ │ └── Used by: BetTicker analysis dashboard                                         │ │
+│ │                                                                                     │ │
+│ │ GET  /interceptor/response                                                         │ │
+│ │ ├── Purpose: Get specific BetTicker response                                        │ │
+│ │ ├── Parameters: ?key=raw:getBetTicker:1728300000000                                │ │
+│ │ ├── Response: { response: object, metadata: object }                               │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/interceptor/response│ │
+│ │ └── Used by: BetTicker response analysis                                          │ │
+│ │                                                                                     │ │
+│ │ GET  /interceptor/stats                                                            │ │
+│ │ ├── Purpose: BetTicker statistics                                                  │ │
+│ │ ├── Parameters: ?timeRange=24h&includeBreakdown=true                               │ │
+│ │ ├── Response: { totalResponses, avgResponseTime, errorRate, breakdown }             │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/interceptor/stats│ │
+│ │ └── Used by: BetTicker monitoring dashboard                                       │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │ ⚡ CACHE & PERFORMANCE ENDPOINTS                                                   │ │
+│ │                                                                                     │ │
+│ │ GET  /api/f402/cache/metrics                                                       │ │
+│ │ ├── Purpose: Cache performance metrics                                             │ │
+│ │ ├── Parameters: ?timeRange=1h&includeDetails=true                                 │ │
+│ │ ├── Response: { summary: object, agentDetail: object, requestId: string }         │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/f402/cache/metrics│ │
+│ │ └── Used by: Floor Control dashboard, Cache Performance card                      │ │
+│ │                                                                                     │ │
+│ │ POST /api/f402/cache/warm                                                           │ │
+│ │ ├── Purpose: Cache warming functionality                                           │ │
+│ │ ├── Parameters: { agents: Array, forceRefresh: boolean }                           │ │
+│ │ ├── Response: { warmed: object, requestId: string }                               │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/f402/cache/warm│ │
+│ │ └── Used by: Floor Control dashboard, Warm Cache button                            │ │
+│ │                                                                                     │ │
+│ │ GET  /api/database/metrics                                                          │ │
+│ │ ├── Purpose: Database performance metrics                                          │ │
+│ │ ├── Parameters: ?includeTables=true&includeIndexes=true                            │ │
+│ │ ├── Response: { metrics: object, tables: Array, indexes: Array }                  │ │
+│ │ ├── Example: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/database/metrics│ │
+│ │ └── Used by: Database monitoring dashboard                                        │ │
+│ └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                         │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 🔗 Endpoint Links & References
+
+### **Quick Access Links**
+- **Production Worker**: https://betting-brain-v3-prod.nolarose1968-806.workers.dev
+- **Health Check**: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health
+- **Floor Control Dashboard**: [dashboards/floor-control.html](dashboards/floor-control.html)
+- **Mission Control Dashboard**: [dashboards/dashboard-enhanced.html](dashboards/dashboard-enhanced.html)
+
+### **API Documentation**
+- **REST API Reference**: [docs/REST_API_REFERENCE.md](docs/REST_API_REFERENCE.md)
+- **MCP Endpoints**: [docs/MCP_ENDPOINTS.md](docs/MCP_ENDPOINTS.md)
+- **Fantasy402 Integration**: [docs/FANTASY402_INTEGRATION_COMPLETE.md](docs/FANTASY402_INTEGRATION_COMPLETE.md)
+- **BetTicker Sniffer**: [docs/BET_TICKER_SNIFFER.md](docs/BET_TICKER_SNIFFER.md)
+
+### **Configuration Files**
+- **Wrangler Config**: [wrangler.toml](wrangler.toml)
+- **Production Config**: [wrangler.production.toml](wrangler.production.toml)
+- **Staging Config**: [wrangler.staging.toml](wrangler.staging.toml)
+- **Environment Template**: [env.example](env.example)
+
+### **Database Schema**
+- **Migrations**: [migrations/](migrations/)
+- **Initial Schema**: [migrations/0001_initial_schema.sql](migrations/0001_initial_schema.sql)
+- **MCP Tables**: [migrations/0003_mcp_tables.sql](migrations/0003_mcp_tables.sql)
+- **Agent Graph**: [migrations/0004_agent_graph.sql](migrations/0004_agent_graph.sql)
+
+### **Testing & Development**
+- **Test Suite**: [tests/](tests/)
+- **Unit Tests**: [tests/unit/](tests/unit/)
+- **Integration Tests**: [tests/integration/](tests/integration/)
+- **Test Setup**: [tests/setup/](tests/setup/)
+
+### **Monitoring & Analytics**
+- **Grafana Dashboard**: [monitoring/grafana/dashboard.json](monitoring/grafana/dashboard.json)
+- **Grafana Setup**: [monitoring/grafana/README.md](monitoring/grafana/README.md)
+- **Analytics Engine**: [src/utils/analytics-rollups.ts](src/utils/analytics-rollups.ts)
 
 ## Database Schema
 
