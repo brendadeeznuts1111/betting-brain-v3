@@ -22,6 +22,7 @@ import { getHoldForecast } from './handlers/holdForecast';
 import { getHandleAndHold } from './handlers/handleAndHold';
 import { getCustomerVolume } from './handlers/customerVolume';
 import { getTimeSeriesAnalytics } from './handlers/timeSeriesAnalytics';
+import { placeHedgeBet } from './handlers/placeHedgeBet';
 
 /**
  * Tool Registry Map
@@ -177,6 +178,14 @@ function registerAnalyticsTools() {
 }
 
 /**
+ * Register Autonomous Trading Tools
+ */
+function registerTradingTools() {
+  // Place hedge bet (autonomous trading)
+  toolRegistry.set('placeHedgeBet', placeHedgeBet);
+}
+
+/**
  * Register Raw Feed Tools
  * Placeholder implementations - to be ported from fantasy402-mcp
  */
@@ -236,6 +245,7 @@ function initializeRegistry() {
     registerIntelligenceTools();
     registerLiveBettingTools();
     registerAnalyticsTools();
+    registerTradingTools();
     registerRawFeedTools();
     registerAdminTools();
     registerManagementTools();
