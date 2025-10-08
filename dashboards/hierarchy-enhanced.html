@@ -326,9 +326,13 @@
       </div>
     </header>
 
-    <!-- live data fetch -->
-    <div id="live-data" hx-get="http://localhost:8787/api/f402/agents/tree?owner=BILLY666&depth=99"
-      hx-trigger="load, every 60s" hx-target="#table-body" hx-swap="innerHTML">
+    <!-- live data fetch with graceful fallback -->
+    <div id="live-data"
+      hx-get="http://localhost:8787/api/f402/agents/tree?owner=BILLY666&depth=99"
+      hx-trigger="load delay:0.5s, every 60s"
+      hx-target="#table-body"
+      hx-swap="innerHTML"
+      hx-on::after-request="if (event.detail.successful === false) fallbackTree()">
     </div>
 
     <div id="mock-banner" class="hide"
@@ -916,6 +920,65 @@
           </tr>`;
       }
     })();
+
+    // ========== HTMX ERROR HANDLING ==========
+
+    /**
+     * Graceful fallback when htmx tree fetch fails
+     */
+    function fallbackTree() {
+      const tableBody = document.getElementById('table-body');
+      if (tableBody) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 2rem;">
+              <div style="color: #856404;">
+                <h5>🌳 Agent tree temporarily unavailable</h5>
+                <p style="margin: 1rem 0; opacity: 0.8;">The backend endpoint is not responding. This could be due to:</p>
+                <ul style="text-align: left; max-width: 400px; margin: 0 auto 1rem;">
+                  <li>Worker not running (start with <code>wrangler dev</code>)</li>
+                  <li>Database not initialized (run migrations)</li>
+                  <li>CORS configuration issue</li>
+                </ul>
+                <button onclick="location.reload()" class="button button-small" style="margin-right: 0.5rem;">🔄 Retry</button>
+                <a href="floor-control.html" class="button button-outline button-small">← Mission Control</a>
+              </div>
+            </td>
+          </tr>`;
+      }
+
+      // Stop further htmx retries to prevent console spam
+      const liveData = document.getElementById('live-data');
+      if (liveData) {
+        liveData.removeAttribute('hx-trigger');
+      }
+
+      // Show fallback banner
+      const banner = document.getElementById('mock-banner');
+      if (banner) {
+        banner.classList.remove('hide');
+      }
+    }
+
+    /**
+     * Suppress htmx network errors in console (production mode)
+     */
+    document.body.addEventListener('htmx:sendError', (e) => {
+      console.warn('[htmx] Network error suppressed:', e.detail.pathInfo.requestPath);
+      e.stopPropagation();
+    });
+
+    /**
+     * Log htmx response errors for debugging
+     */
+    document.body.addEventListener('htmx:responseError', (e) => {
+      console.error('[htmx] Response error:', {
+        status: e.detail.xhr.status,
+        statusText: e.detail.xhr.statusText,
+        path: e.detail.pathInfo.requestPath
+      });
+      e.stopPropagation();
+    });
   </script>
 </body>
 

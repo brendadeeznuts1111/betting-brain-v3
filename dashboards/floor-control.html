@@ -482,24 +482,113 @@
         Warm Cache</button>
     </section>
 
-    <!-- Agent Tree -->
+    <!-- Agent Hierarchy Analytics -->
     <section class="card" style="grid-column: span 2;">
-      <h2>🌳 Agent Hierarchy</h2>
-      <div class="label">Agent Tree Structure</div>
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-        <button onclick="toggleTreeView('ascii')" id="btn-ascii"
-          style="flex: 1; padding: 0.5rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">ASCII</button>
-        <button onclick="toggleTreeView('d3')" id="btn-d3"
-          style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">Interactive</button>
+      <h2>🌳 Agent Hierarchy Analytics <span id="agent-analytics-expand" class="expand-icon" onclick="toggleAgentAnalytics()">▸</span></h2>
+
+      <!-- Summary Stats Row -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+        <div style="background: var(--bg); padding: 0.75rem; border-radius: 4px; text-align: center;">
+          <div class="label" style="margin-bottom: 0.25rem;">Total Agents</div>
+          <div id="hierarchy-total" class="value" style="font-size: 1.5rem; margin: 0;">—</div>
+        </div>
+        <div style="background: var(--bg); padding: 0.75rem; border-radius: 4px; text-align: center;">
+          <div class="label" style="margin-bottom: 0.25rem;">Active</div>
+          <div id="hierarchy-active" class="value status-green" style="font-size: 1.5rem; margin: 0;">—</div>
+        </div>
+        <div style="background: var(--bg); padding: 0.75rem; border-radius: 4px; text-align: center;">
+          <div class="label" style="margin-bottom: 0.25rem;">Total Risk</div>
+          <div id="hierarchy-risk" class="value" style="font-size: 1.5rem; margin: 0;">—</div>
+        </div>
+        <div style="background: var(--bg); padding: 0.75rem; border-radius: 4px; text-align: center;">
+          <div class="label" style="margin-bottom: 0.25rem;">Max Depth</div>
+          <div id="hierarchy-depth" class="value" style="font-size: 1.5rem; margin: 0;">—</div>
+        </div>
       </div>
-      <div id="agent-tree-ascii"
-        style="overflow: auto; max-height: 400px; font-family: monospace; font-size: 0.85rem; line-height: 1.6; white-space: pre;">
+
+      <!-- Top Agents by Risk -->
+      <div class="label">Top 5 Agents by Total Risk</div>
+      <div style="background: var(--bg); padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem;">
+        <table id="top-agents-table" style="width: 100%; font-size: 0.875rem; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <th style="text-align: left; padding: 0.5rem;">Agent</th>
+              <th style="text-align: right; padding: 0.5rem;">Own Risk</th>
+              <th style="text-align: right; padding: 0.5rem;">Total Risk</th>
+              <th style="text-align: right; padding: 0.5rem;">Network</th>
+            </tr>
+          </thead>
+          <tbody id="top-agents-body">
+            <tr><td colspan="4" style="text-align: center; padding: 1rem; opacity: 0.7;">Loading...</td></tr>
+          </tbody>
+        </table>
       </div>
-      <div id="agent-tree-d3" style="overflow: auto; max-height: 400px; display: none;"></div>
-      <div class="mini-stat" style="margin-top: 0.5rem;">
-        <span class="label">Total Agents</span>
-        <span class="val" id="agent-tree-count">—</span>
+
+      <!-- Quick Actions -->
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="hierarchy-enhanced.html"
+          style="flex: 1; padding: 0.75rem; background: var(--accent); color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">
+          🔍 Full Hierarchy Dashboard
+        </a>
+        <button onclick="refreshAgentHierarchy()" id="btn-refresh-hierarchy"
+          style="flex: 1; padding: 0.75rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-weight: 600;">
+          🔄 Refresh Data
+        </button>
       </div>
+
+      <!-- Expanded Analytics (Hidden by default) -->
+      <details id="agent-analytics-details" style="margin-top: 1rem;" closed>
+        <summary style="cursor: pointer; color: var(--accent); font-size: 0.875rem; font-weight: 600; padding: 0.5rem 0;">
+          📊 Detailed Metrics & Distribution
+        </summary>
+        <div style="margin-top: 1rem; font-size: 0.875rem;">
+          <!-- Level Distribution -->
+          <div class="label" style="margin-top: 1rem;">Level Distribution</div>
+          <canvas id="level-chart" style="max-height: 150px; margin-bottom: 1rem;"></canvas>
+
+          <!-- Risk Heatmap -->
+          <div class="label">Risk Distribution</div>
+          <div id="risk-distribution" style="background: var(--bg); padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; font-size: 0.75rem;">
+              <div>
+                <div style="color: #4daf4a;">🟢 Low (<1.0)</div>
+                <div id="risk-low" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+              </div>
+              <div>
+                <div style="color: #ffed6f;">🟡 Medium (1-5)</div>
+                <div id="risk-medium" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+              </div>
+              <div>
+                <div style="color: #ff7f00;">🟠 High (5-10)</div>
+                <div id="risk-high" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+              </div>
+              <div>
+                <div style="color: #e41a1c;">🔴 Critical (>10)</div>
+                <div id="risk-critical" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agent Type Breakdown -->
+          <div class="label">Agent Type Breakdown</div>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <div class="mini-stat" style="flex: 1;">
+              <span class="label">Master (M)</span>
+              <span class="val" id="agent-type-m">—</span>
+            </div>
+            <div class="mini-stat" style="flex: 1;">
+              <span class="label">Agent (A)</span>
+              <span class="val" id="agent-type-a">—</span>
+            </div>
+            <div class="mini-stat" style="flex: 1;">
+              <span class="label">Player (P)</span>
+              <span class="val" id="agent-type-p">—</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div id="hierarchy-error" class="error" style="display:none;"></div>
     </section>
 
     <!-- ===== Fantasy402 Individual Operation Cards ===== -->
@@ -1241,201 +1330,193 @@
       hideError('dns');
     }
 
-    /* ========== CACHE PERFORMANCE & AGENT TREE ========== */
+    /* ========== CACHE PERFORMANCE & AGENT HIERARCHY ANALYTICS ========== */
 
-    let currentTreeData = null;
-    let currentTreeView = 'ascii';
+    let hierarchyData = null;
+    let levelChart = null;
 
-    async function loadAgentTree() {
-      // Use the new agent graph endpoint
-      const d = await getJSON('/api/f402/graph', 'agent-tree');
-      if (!d || !d.nodes || d.nodes.length === 0) {
-        $('#agent-tree-ascii').textContent = 'No agent data available. Agent graph will populate at 3 AM UTC daily.';
-        $('#agent-tree-count').textContent = '0';
-        return;
-      }
-
-      // Store for view switching
-      currentTreeData = d;
-
-      // Convert graph nodes to tree structure for ASCII display
-      const nodeMap = new Map();
-      d.nodes.forEach(node => {
-        nodeMap.set(node.id, { ...node, children: [] });
-      });
-
-      // Build tree structure from edges
-      d.edges.forEach(edge => {
-        const parent = nodeMap.get(edge.source);
-        const child = nodeMap.get(edge.target);
-        if (parent && child) {
-          parent.children.push(child);
-        }
-      });
-
-      // Find root nodes (nodes with no incoming edges)
-      const rootNodes = d.nodes.filter(node =>
-        !d.edges.some(edge => edge.target === node.id)
-      );
-
-      // Render ASCII tree
-      const lines = [];
-      function renderTree(node, prefix = '', isLast = true) {
-        const connector = isLast ? '└── ' : '├── ';
-        const indent = isLast ? '    ' : '│   ';
-
-        // Node line with metadata
-        const meta = node.type ? `[${node.type}]` : '';
-        const requests = node.totalRequests > 0 ? ` (${fmtNum(node.totalRequests)} req)` : '';
-        lines.push(`${prefix}${connector}${node.name || node.id} ${meta}${requests}`);
-
-        // Render children
-        if (node.children && node.children.length > 0) {
-          node.children.forEach((child, i) => {
-            const childIsLast = i === node.children.length - 1;
-            renderTree(child, prefix + indent, childIsLast);
+    // Initialize level chart
+    function initLevelChart() {
+      if (!levelChart) {
+        const levelCtx = $('#level-chart');
+        if (levelCtx) {
+          levelChart = new Chart(levelCtx.getContext('2d'), {
+            type: 'bar',
+            data: { labels: [], datasets: [] },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: '#c9d1d9' }
+                },
+                x: {
+                  ticks: { color: '#c9d1d9' }
+                }
+              }
+            }
           });
         }
       }
-
-      rootNodes.forEach((root, i) => {
-        const rootNode = nodeMap.get(root.id);
-        if (rootNode) {
-          renderTree(rootNode, '', i === rootNodes.length - 1);
-        }
-      });
-
-      $('#agent-tree-ascii').textContent = lines.join('\n');
-      $('#agent-tree-count').textContent = fmtNum(d.metadata?.totalNodes || 0);
-
-      // Render D3 tree if in D3 view
-      if (currentTreeView === 'd3') {
-        renderD3Graph(d);
-      }
-
-      hideError('agent-tree');
     }
 
-    function toggleTreeView(view) {
-      currentTreeView = view;
-
-      if (view === 'ascii') {
-        $('#agent-tree-ascii').style.display = 'block';
-        $('#agent-tree-d3').style.display = 'none';
-        $('#btn-ascii').style.background = 'var(--accent)';
-        $('#btn-ascii').style.color = 'white';
-        $('#btn-ascii').style.border = 'none';
-        $('#btn-d3').style.background = 'var(--card)';
-        $('#btn-d3').style.color = 'var(--text)';
-        $('#btn-d3').style.border = '1px solid var(--border)';
-      } else {
-        $('#agent-tree-ascii').style.display = 'none';
-        $('#agent-tree-d3').style.display = 'block';
-        $('#btn-d3').style.background = 'var(--accent)';
-        $('#btn-d3').style.color = 'white';
-        $('#btn-d3').style.border = 'none';
-        $('#btn-ascii').style.background = 'var(--card)';
-        $('#btn-ascii').style.color = 'var(--text)';
-        $('#btn-ascii').style.border = '1px solid var(--border)';
-
-        if (currentTreeData) {
-          renderD3Graph(currentTreeData);
-        }
-      }
-    }
-
-    function renderD3Graph(graphData) {
-      const container = $('#agent-tree-d3');
-      container.innerHTML = '';
-
-      if (!graphData.nodes || graphData.nodes.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text); opacity: 0.7;">No agent graph data available</div>';
+    async function loadAgentHierarchyAnalytics() {
+      // Fetch agent hierarchy data
+      const d = await getJSON('/api/f402/agents', 'hierarchy');
+      if (!d || !d.agents || d.agents.length === 0) {
+        $('#hierarchy-total').textContent = '0';
+        $('#hierarchy-active').textContent = '0';
+        $('#hierarchy-risk').textContent = '$0';
+        $('#hierarchy-depth').textContent = '0';
+        $('#top-agents-body').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 1rem; opacity: 0.7;">No agent data available</td></tr>';
         return;
       }
 
-      const width = container.clientWidth || 800;
-      const height = 400;
+      // Store for reference
+      hierarchyData = d.agents;
 
-      const svg = d3.select('#agent-tree-d3')
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .style('background', 'var(--bg)');
+      // Calculate summary stats
+      const totalAgents = d.agents.length;
+      const activeAgents = d.agents.filter(a => a.risk > 0 || a.steam > 0 || a.velocity > 0).length;
+      const totalRisk = d.agents.reduce((sum, a) => sum + (a.totalRisk || 0), 0);
+      const maxDepth = Math.max(...d.agents.map(a => a.level || 0), 0) + 1;
 
-      const g = svg.append('g');
+      // Update summary cards
+      $('#hierarchy-total').textContent = fmtNum(totalAgents);
+      $('#hierarchy-active').textContent = fmtNum(activeAgents);
+      $('#hierarchy-risk').textContent = fmt(totalRisk);
+      $('#hierarchy-depth').textContent = maxDepth;
 
-      // Create force simulation
-      const simulation = d3.forceSimulation(graphData.nodes)
-        .force('link', d3.forceLink(graphData.edges).id(d => d.id).distance(100))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(20));
+      // Top 5 agents by total risk
+      const topAgents = [...d.agents]
+        .sort((a, b) => (b.totalRisk || 0) - (a.totalRisk || 0))
+        .slice(0, 5);
 
-      // Draw links
-      const links = g.selectAll('.link')
-        .data(graphData.edges)
-        .enter()
-        .append('line')
-        .attr('class', 'link')
-        .style('stroke', '#30363d')
-        .style('stroke-width', 2);
+      const topAgentsHTML = topAgents.map(agent => {
+        const riskColor = (agent.totalRisk || 0) > 10 ? 'var(--warn)' :
+                         (agent.totalRisk || 0) > 5 ? 'var(--yellow)' : 'var(--text)';
+        return `
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 0.5rem;">
+              ${agent.name || agent.agent}
+              <span style="font-size: 0.75rem; opacity: 0.7; margin-left: 0.5rem;">[${agent.type || '?'}]</span>
+            </td>
+            <td style="padding: 0.5rem; text-align: right;">${(agent.risk || 0).toFixed(2)}</td>
+            <td style="padding: 0.5rem; text-align: right; color: ${riskColor}; font-weight: 600;">
+              ${(agent.totalRisk || 0).toFixed(2)}
+            </td>
+            <td style="padding: 0.5rem; text-align: right; font-size: 0.75rem; opacity: 0.8;">
+              ${agent.childCount || 0} / ${agent.descendantCount || 0}
+            </td>
+          </tr>
+        `;
+      }).join('');
 
-      // Draw nodes
-      const nodes = g.selectAll('.node')
-        .data(graphData.nodes)
-        .enter()
-        .append('g')
-        .attr('class', 'node')
-        .style('cursor', 'pointer')
-        .call(d3.drag()
-          .on('start', dragstarted)
-          .on('drag', dragged)
-          .on('end', dragended));
+      $('#top-agents-body').innerHTML = topAgentsHTML || '<tr><td colspan="4" style="text-align: center; padding: 1rem; opacity: 0.7;">No high-risk agents</td></tr>';
 
-      // Add circles
-      nodes.append('circle')
-        .attr('r', 8)
-        .style('fill', d => d.type === 'super-agent' ? '#238636' : '#58a6ff')
-        .style('stroke', '#c9d1d9')
-        .style('stroke-width', 2);
+      // Calculate detailed metrics for expanded view
+      calculateDetailedMetrics(d.agents);
 
-      // Add labels
-      nodes.append('text')
-        .attr('dy', '0.31em')
-        .attr('text-anchor', 'middle')
-        .text(d => d.name || d.id)
-        .style('fill', '#c9d1d9')
-        .style('font-size', '10px')
-        .style('font-family', 'monospace');
+      hideError('hierarchy');
+    }
 
-      // Update positions on simulation tick
-      simulation.on('tick', () => {
-        links
-          .attr('x1', d => d.source.x)
-          .attr('y1', d => d.source.y)
-          .attr('x2', d => d.target.x)
-          .attr('y2', d => d.target.y);
+    function calculateDetailedMetrics(agents) {
+      // Risk distribution
+      const riskLow = agents.filter(a => (a.totalRisk || 0) < 1).length;
+      const riskMedium = agents.filter(a => (a.totalRisk || 0) >= 1 && (a.totalRisk || 0) < 5).length;
+      const riskHigh = agents.filter(a => (a.totalRisk || 0) >= 5 && (a.totalRisk || 0) < 10).length;
+      const riskCritical = agents.filter(a => (a.totalRisk || 0) >= 10).length;
 
-        nodes
-          .attr('transform', d => `translate(${d.x}, ${d.y})`);
+      $('#risk-low').textContent = fmtNum(riskLow);
+      $('#risk-medium').textContent = fmtNum(riskMedium);
+      $('#risk-high').textContent = fmtNum(riskHigh);
+      $('#risk-critical').textContent = fmtNum(riskCritical);
+
+      // Agent type breakdown
+      const typeM = agents.filter(a => a.type === 'M').length;
+      const typeA = agents.filter(a => a.type === 'A').length;
+      const typeP = agents.filter(a => a.type === 'P').length;
+
+      $('#agent-type-m').textContent = fmtNum(typeM);
+      $('#agent-type-a').textContent = fmtNum(typeA);
+      $('#agent-type-p').textContent = fmtNum(typeP);
+
+      // Level distribution for chart
+      const levelCounts = {};
+      agents.forEach(a => {
+        const level = a.level || 0;
+        levelCounts[level] = (levelCounts[level] || 0) + 1;
       });
 
-      // Drag functions
-      function dragstarted(event, d) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-      }
+      const levels = Object.keys(levelCounts).sort((a, b) => a - b);
+      const counts = levels.map(l => levelCounts[l]);
 
-      function dragged(event, d) {
-        d.fx = event.x;
-        d.fy = event.y;
+      // Update level chart
+      initLevelChart();
+      if (levelChart) {
+        levelChart.data.labels = levels.map(l => `Level ${l}`);
+        levelChart.data.datasets = [{
+          label: 'Agents',
+          data: counts,
+          backgroundColor: '#238636',
+          borderColor: '#2ea043',
+          borderWidth: 1
+        }];
+        levelChart.update();
       }
+    }
 
-      function dragended(event, d) {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
+    function toggleAgentAnalytics() {
+      const details = $('#agent-analytics-details');
+      const icon = $('#agent-analytics-expand');
+
+      if (details.hasAttribute('open')) {
+        details.removeAttribute('open');
+        icon.textContent = '▸';
+        icon.classList.remove('expanded');
+      } else {
+        details.setAttribute('open', '');
+        icon.textContent = '▾';
+        icon.classList.add('expanded');
+      }
+    }
+
+    async function refreshAgentHierarchy() {
+      const btn = $('#btn-refresh-hierarchy');
+      const originalText = btn.textContent;
+
+      try {
+        btn.disabled = true;
+        btn.textContent = '🔄 Refreshing...';
+        btn.style.opacity = '0.6';
+
+        await loadAgentHierarchyAnalytics();
+
+        btn.textContent = '✅ Refreshed!';
+        btn.style.background = 'var(--accent)';
+        btn.style.color = 'white';
+
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = 'var(--card)';
+          btn.style.color = 'var(--text)';
+          btn.style.opacity = '1';
+          btn.disabled = false;
+        }, 2000);
+
+      } catch (error) {
+        console.error('[Hierarchy Refresh] Error:', error);
+        btn.textContent = '❌ Failed';
+        btn.style.background = 'var(--warn)';
+
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = 'var(--card)';
+          btn.style.opacity = '1';
+          btn.disabled = false;
+        }, 2000);
       }
     }
 
@@ -1738,7 +1819,7 @@
         loadFantasy402Data(),  // Single unified call instead of 4 separate calls
         loadDNS(),             // DNS health check
         loadCacheMetrics(),    // Cache performance metrics
-        loadAgentTree(),       // Agent hierarchy tree
+        loadAgentHierarchyAnalytics(),  // Agent hierarchy analytics
 
         // Fantasy402 Individual Operation Cards
         loadPlayerInfo(),
