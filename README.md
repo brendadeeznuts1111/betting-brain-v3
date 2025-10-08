@@ -20,13 +20,41 @@
 - ✅ **Dependencies**: All fresh (Bun 1.2.23)
 - ✅ **Release**: Up to date (v1.0-cache-optimization)
 
-### 🤖 **MCP Tools Available (6)**
+### 🤖 **MCP Tools Available (24)**
+
+**Core Analytics Tools:**
+- `getBettingExposure` - Real-time betting exposure metrics
+- `getCLV` - Closing Line Value analysis for customers
+- `getHoldPercentage` - Hold percentage and volume metrics
+- `getSharpScore` - Sharp customer scoring and identification
+- `getClosingLineValue` - Closing line value analysis
+- `getTimeSeriesCLV` - CLV trends over time with rolling metrics
+- `getEnhancedSharpScore` - Multi-dimensional customer profiling
+- `getHoldForecast` - Predictive hold percentage analytics
+- `getHandleAndHold` - Total betting handle and hold percentage
+- `getCustomerVolume` - Customer volume analytics with segmentation
+- `getTimeSeriesAnalytics` - Flexible time-series analysis with anomaly detection
+
+**Live Betting & Risk Tools:**
+- `getLiveBettingTicker` - Real-time betting ticker with active wagers
+- `getSteamMoves` - 3-sigma steam move detection with severity classification
+- `getRiskConcentration` - Risk clustering analysis by event/customer/market
+- `getSharpActivity` - Recent betting actions from identified sharp customers
+
+**Fantasy402 Integration Tools:**
+- `getRawFeedSamples` - Fantasy402 raw feed samples for exploration
+- `getParsedBetData` - Parsed betting data with ShortDesc analysis
+- `getRawFeedHealth` - Raw feed processing statistics and health metrics
+- `searchRawFeeds` - Search raw Fantasy402 feeds by content patterns
+- `searchCustomers` - Search customers by name/email/phone/ID
+- `getAgentProfile` - Detailed agent profile information
+- `getCommunicationMessages` - Communication messages and logs
+- `getAccountInfoOwner` - Account owner information
+
+**System Tools:**
 - `forest-status` - Grove health monitoring
 - `deploy-dashboards` - Dashboard deployment
 - `release` - Version management
-- `live-odds` - Aggregated odds (Pinnacle + Bet365)
-- `live-scores` - Live scores (SportsData.io)
-- `push-sports-data` - Analytics ingestion
 
 ### 📊 **Test Health Status**
 - **Test Files**: 25 total
