@@ -192,10 +192,11 @@ class BunCI {
       process.env.CLAUDECODE = '1';
     }
 
+    // Run tests with coverage and randomization for analytics testing
     return await this.runStep(
       'Tests',
       'bun',
-      ['test', '--concurrent']
+      ['test', '--coverage', '--randomize', '--concurrent']
     );
   }
 

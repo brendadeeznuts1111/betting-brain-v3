@@ -1,0 +1,15 @@
+name: analytics-smoke
+on:
+  schedule: [cron: "0 12 * * *"]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: wrangler deploy --dry-run
+      - run: bun test --test-name-pattern="analytics.*real"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          NODE_ENV: staging

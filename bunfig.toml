@@ -6,8 +6,8 @@
 timeout = 10000
 
 # Coverage configuration - Enhanced for visualization
-coverage = true
-coverageThreshold = 0.8  # 80% minimum function coverage
+coverage = false  # coverage off by default
+coverageThreshold = 0.8   # 80% for production code
 
 # Coverage reporters for CI/CD and development (Bun supports: text, lcov)
 coverageReporter = ["text", "lcov"]

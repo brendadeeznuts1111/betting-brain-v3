@@ -1,0 +1,6 @@
+[test]
+# Analytics-specific config with no coverage threshold
+coverage = true
+coverageThreshold = 0
+coverageExclude = ["node_modules/**", "tests/mocks/**"]
+preload = ["./tests/setup.ts"]

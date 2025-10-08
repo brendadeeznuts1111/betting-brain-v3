@@ -5,14 +5,19 @@
  * and common test patterns to prevent test pollution.
  */
 
-import { vi } from "bun:test";
+import { vi, expect } from "bun:test";
 import type { Env } from '../../src/types/api';
+import { createAnalyticsEngineStub, type AnalyticsEngineStub } from './analytics-engine-stub';
+import { getGlobalAnalyticsStub } from '../setup/test-setup';
 
 /**
  * Creates a clean mock environment for tests
+ * Returns both the mock environment and the analytics stub for call tracking
  */
-export function createMockEnv(): Env {
-  return {
+export function createMockEnv(): { env: Env; analytics: AnalyticsEngineStub } {
+  const analyticsStub = getGlobalAnalyticsStub() ?? createAnalyticsEngineStub();
+
+  const env: Env = {
     ANALYTICS: {
       prepare: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
@@ -33,7 +38,7 @@ export function createMockEnv(): Env {
       send: vi.fn().mockResolvedValue({ success: true })
     } as any,
     ANALYTICS_ENGINE: {
-      writeDataPoint: vi.fn().mockResolvedValue(undefined)
+      writeDataPoint: analyticsStub.writeDataPoint.bind(analyticsStub)
     } as any,
     BET_TICKER_RAW: {
       put: vi.fn().mockResolvedValue(undefined),
@@ -42,6 +47,8 @@ export function createMockEnv(): Env {
       list: vi.fn().mockResolvedValue({ keys: [] })
     } as any
   };
+
+  return { env, analytics: analyticsStub };
 }
 
 /**
@@ -215,4 +222,71 @@ export function createTestTimeout(ms: number = 5000): Promise<never> {
   return new Promise((_, reject) => {
     setTimeout(() => reject(new Error(`Test timeout after ${ms}ms`)), ms);
   });
+}
+
+/**
+ * Analytics testing helpers
+ */
+
+/**
+ * Assert that analytics was called with specific data
+ */
+export function expectAnalyticsCall(
+  analytics: AnalyticsEngineStub,
+  expectedCall: {
+    blobs?: string[];
+    doubles?: number[];
+    tags?: Record<string, string>;
+  }
+): void {
+  expect(analytics.wasCalledWith(expectedCall)).toBe(true);
+}
+
+/**
+ * Assert that analytics was called a specific number of times
+ */
+export function expectAnalyticsCallCount(analytics: AnalyticsEngineStub, expectedCount: number): void {
+  expect(analytics.callCount()).toBe(expectedCount);
+}
+
+/**
+ * Assert that analytics was called with a specific event type
+ */
+export function expectAnalyticsEventType(analytics: AnalyticsEngineStub, eventType: string): void {
+  const calls = analytics.callsWithBlob(eventType);
+  expect(calls.length).toBeGreaterThan(0);
+}
+
+/**
+ * Get analytics calls for a specific event type
+ */
+export function getAnalyticsCallsForEvent(analytics: AnalyticsEngineStub, eventType: string) {
+  return analytics.callsWithBlob(eventType);
+}
+
+/**
+ * Assert that analytics was called with specific doubles values
+ */
+export function expectAnalyticsDoubles(
+  analytics: AnalyticsEngineStub,
+  expectedDoubles: number[],
+  tolerance: number = 0.001
+): void {
+  const calls = analytics.getCalls();
+  const found = calls.some(call =>
+    call.doubles.length === expectedDoubles.length &&
+    call.doubles.every((val, index) =>
+      Math.abs(val - expectedDoubles[index]) < tolerance
+    )
+  );
+  expect(found).toBe(true);
+}
+
+/**
+ * Create a mock environment with analytics stub (backward compatibility)
+ * @deprecated Use createMockEnv() instead for better analytics testing
+ */
+export function createMockEnvLegacy(): Env {
+  const { env } = createMockEnv();
+  return env;
 }

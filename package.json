@@ -19,7 +19,6 @@
     "test:concurrent": "bun test --concurrent",
     "test:random": "bun test --randomize",
     "test:fast": "bun test --concurrent --randomize",
-    "test:ci": "bun test --concurrent --coverage",
     "test:ci:full": "bun test --coverage --coverage-report=text --coverage-report=lcov",
     "test:unit": "bun test tests/unit",
     "test:integration": "bun test tests/integration",
@@ -73,6 +72,11 @@
     "maintenance:cleanup": "bun run scripts/cleanup-repo.ts",
     "maintenance:version": "bun run scripts/bump-version.ts",
     "maintenance:all": "bun run maintenance:health && bun run maintenance:cleanup && echo '✅ Maintenance complete!'",
+    "analytics:test": "bun test tests/unit/analytics-testing-example.test.ts --randomize",
+    "analytics:test:coverage": "bun test --coverage --randomize tests/unit/analytics-testing-example.test.ts --config bunfig.analytics.toml",
+    "analytics:ci": "CI=true bun run analytics:test:coverage",
+    "analytics:nightly": "bun run scripts/nightly-analytics-test.ts",
+    "analytics:binding": "bun run scripts/test-analytics-binding.ts",
     "prepare": "husky"
   },
   "keywords": [

@@ -3,7 +3,20 @@
  * Runs before all tests to configure the testing environment
  */
 
-import { vi, beforeAll, beforeEach, afterEach } from 'bun:test';
+import { vi, beforeAll, beforeEach, afterEach, expect } from 'bun:test';
+import { createAnalyticsEngineStub } from '../utils/analytics-engine-stub';
+
+// Global analytics stub instance
+let globalAnalyticsStub: ReturnType<typeof createAnalyticsEngineStub> | null = null;
+let currentTestName: string = '';
+
+export function getGlobalAnalyticsStub() {
+  return globalAnalyticsStub;
+}
+
+export function setCurrentTestName(name: string) {
+  currentTestName = name;
+}
 
 // Global test configuration
 beforeAll(() => {
@@ -19,13 +32,18 @@ beforeEach(() => {
   vi.resetAllMocks();
 
   // Reset console methods to avoid test pollution
-  vi.spyOn(console, 'log').mockImplementation(() => { });
-  vi.spyOn(console, 'error').mockImplementation(() => { });
-  vi.spyOn(console, 'warn').mockImplementation(() => { });
+  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'error').mockImplementation(() => {});
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+  // Create fresh analytics stub for each test
+  globalAnalyticsStub = createAnalyticsEngineStub();
 });
 
-afterEach(() => {
-  // Restore console methods after each test
+afterEach(function () {
+  if (currentTestName.toLowerCase().includes('analytics') && globalAnalyticsStub) {
+    globalAnalyticsStub.flush();
+  }
   vi.restoreAllMocks();
 });
 
