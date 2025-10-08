@@ -61,6 +61,16 @@
 | [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md) | Complete API docs (13 tools) | Developers | ✅ Complete |
 | [MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | Testing procedures | QA, Developers | ✅ Complete |
 | [SPORTS_API_DEPLOYMENT.md](SPORTS_API_DEPLOYMENT.md) | Sports API production deployment | DevOps, All Devs | ✅ Complete |
+| [MCP_CONFIG_UPDATE.md](MCP_CONFIG_UPDATE.md) | MCP v3.3.0 status & configuration | All Teams | ✅ Complete |
+
+### AI Floor System 🤖 NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| **[FLOOR_SYSTEM.md](FLOOR_SYSTEM.md)** | **🤖 AI-native autonomous operations layer** 🆕⭐ | All Teams | ✅ Complete |
+| [.cursor/rules/99-floor.mdc](../.cursor/rules/99-floor.mdc) | Consolidated AI rules (highest priority) | AI Assistants | ✅ Complete |
+| [scripts/floor-health.ts](../scripts/floor-health.ts) | One-command health check & auto-fix | DevOps, AI | ✅ Complete |
+| [src/routes/floor-status.ts](../src/routes/floor-status.ts) | Live system status endpoint | Monitoring | ✅ Complete |
+| [.github/workflows/floor-badge.yml](../.github/workflows/floor-badge.yml) | Automated status badges | CI/CD | ✅ Complete |
 
 ### Fantasy402 Integration 🎯 NEW
 

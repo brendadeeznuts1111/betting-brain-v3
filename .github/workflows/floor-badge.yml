@@ -1,0 +1,107 @@
+name: Floor Status Badge
+
+on:
+  schedule:
+    # Update badge every 5 minutes
+    - cron: '*/5 * * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run floor health check
+        id: health
+        run: |
+          if bun run floor:health; then
+            echo "status=green" >> $GITHUB_OUTPUT
+            echo "health=passing" >> $GITHUB_OUTPUT
+          else
+            echo "status=yellow" >> $GITHUB_OUTPUT
+            echo "health=degraded" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Get test statistics
+        id: stats
+        run: |
+          TEST_OUTPUT=$(bun test --reporter=json 2>&1 || true)
+          PASS=$(echo "$TEST_OUTPUT" | grep -oP '\d+(?= pass)' | tail -1 || echo "0")
+          FAIL=$(echo "$TEST_OUTPUT" | grep -oP '\d+(?= fail)' | tail -1 || echo "0")
+          TOTAL=$((PASS + FAIL))
+          RATE=$((PASS * 100 / TOTAL))
+
+          echo "pass=$PASS" >> $GITHUB_OUTPUT
+          echo "fail=$FAIL" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "rate=$RATE" >> $GITHUB_OUTPUT
+
+      - name: Get coverage
+        id: coverage
+        run: |
+          COVERAGE=$(bun test --coverage --reporter=json 2>&1 | grep -oP 'All files\s+\|\s+[\d.]+' | grep -oP '[\d.]+' || echo "0")
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+
+      - name: Create badge data
+        id: badge
+        run: |
+          # Floor status badge
+          curl -o floor-status.svg "https://img.shields.io/badge/floor-3.3.0-${{ steps.health.outputs.status }}"
+
+          # Test status badge
+          curl -o test-status.svg "https://img.shields.io/badge/tests-${{ steps.stats.outputs.pass }}%2F${{ steps.stats.outputs.total }}-${{ steps.health.outputs.status }}"
+
+          # Coverage badge
+          COVERAGE_COLOR="red"
+          if [ "${{ steps.coverage.outputs.percentage }}" -ge "81" ]; then
+            COVERAGE_COLOR="green"
+          elif [ "${{ steps.coverage.outputs.percentage }}" -ge "70" ]; then
+            COVERAGE_COLOR="yellow"
+          fi
+          curl -o coverage.svg "https://img.shields.io/badge/coverage-${{ steps.coverage.outputs.percentage }}%25-$COVERAGE_COLOR"
+
+          # MCP tools badge
+          curl -o mcp-tools.svg "https://img.shields.io/badge/mcp--tools-6-blue"
+
+      - name: Commit badges
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          mkdir -p .github/badges
+          mv *.svg .github/badges/
+
+          git add .github/badges/
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update floor status badges [skip ci]"
+          git push
+        continue-on-error: true
+
+      - name: Update README badges
+        run: |
+          # Update README.md with latest badge links
+          sed -i 's|!\[Floor Status\](.*)|![Floor Status](.github/badges/floor-status.svg)|' README.md
+          sed -i 's|!\[Test Status\](.*)|![Test Status](.github/badges/test-status.svg)|' README.md
+          sed -i 's|!\[Coverage\](.*)|![Coverage](.github/badges/coverage.svg)|' README.md
+          sed -i 's|!\[MCP Tools\](.*)|![MCP Tools](.github/badges/mcp-tools.svg)|' README.md
+
+          if git diff --quiet; then
+            echo "No changes to README.md"
+          else
+            git add README.md
+            git commit -m "chore: update README badges [skip ci]"
+            git push
+          fi
+        continue-on-error: true
