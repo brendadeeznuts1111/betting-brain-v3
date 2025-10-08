@@ -408,6 +408,7 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
 ### MCP Integration Docs (Current) ✨ **NEW**
 - **[docs/MCP_INTEGRATION_STATUS.md](docs/MCP_INTEGRATION_STATUS.md)** - Current MCP status
 - **[docs/TESTING_STATUS.md](docs/TESTING_STATUS.md)** - Testing status and next steps
+- **[docs/ERROR_PATH_TESTING.md](docs/ERROR_PATH_TESTING.md)** - Error path test suite (299 tests, 81% coverage) ✨ **NEW**
 - **[docs/MCP_TESTING_GUIDE.md](docs/guides/TESTING_GUIDE.md)** - Comprehensive testing guide
 
 ### Code Organization & Rules ✨

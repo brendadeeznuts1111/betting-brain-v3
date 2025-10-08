@@ -377,6 +377,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 
 ### Quality & Testing
 - **[Test Audit Report](docs/TEST_AUDIT_REPORT.md)** - Quality score: 100/100
+- **[Error Path Testing](docs/ERROR_PATH_TESTING.md)** - Comprehensive error path test suite (299 tests, 81% coverage) 🆕
 - **[Code Quality Audit](docs/CODE_QUALITY_AUDIT.md)** - Comprehensive review
 - **[AI-Friendly Testing Guide](docs/testing/AI_FRIENDLY_TESTING.md)** - AI-optimized test patterns 🤖
 - **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
@@ -388,7 +389,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 - **[AI-Friendly Testing](.cursor/rules/ai-friendly-testing.mdc)** - AI-optimized test patterns 🤖
 - **[Style Guide](docs/STYLE_GUIDE.md)** - Human-readable coding standards with examples 📚
 - **[Cursor Rules Guide](docs/CURSOR_RULES.md)** - Complete rules documentation
-- **[Code Searchability](docs/AST_GREP_QUICKSTART.md)** - ast-grep patterns for code discovery
+- **[Code Searchability](docs/QUICKSTART.md)** - ast-grep patterns for code discovery
 - **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
 - **[Production Patterns](docs/PRODUCTION_PATTERNS.md)** - Scale & security guide (NEW!)
