@@ -403,20 +403,44 @@
     }
 
     async function loadGrove() {
-      const d = await getJSON('/health', 'grove');
-      if (!d) return;
+      // Use floor/status since it has detailed health info
+      const d = await getJSON('/floor/status', 'grove');
+      if (!d || !d.health) {
+        // Fallback to /health endpoint
+        const health = await getJSON('/health', 'grove');
+        if (health) {
+          $('#grove-status').textContent = health.status || 'unknown';
+          $('#grove-status').className = health.status === 'healthy' ? 'value status-green' : 'value status-red';
+        }
+        return;
+      }
 
-      $('#grove-status').textContent = d.status || 'unknown';
-      $('#grove-status').className = d.status === 'ok' ? 'value status-green' : 'value status-red';
-      $('#grove-worker').textContent = d.worker ? '✅ UP' : '❌ DOWN';
-      $('#grove-db').textContent = d.database ? '✅ UP' : '❌ DOWN';
-      $('#grove-queue').textContent = d.queue ? '✅ UP' : '❌ DOWN';
+      // Map status
+      const statusText = d.status === 'green' ? 'healthy' : d.status === 'yellow' ? 'degraded' : 'down';
+      $('#grove-status').textContent = statusText;
+      $('#grove-status').className = `value status-${d.status === 'green' ? 'green' : d.status === 'yellow' ? 'yellow' : 'red'}`;
+
+      // Update individual services
+      $('#grove-worker').textContent = d.health.worker === 'up' ? '✅ UP' : '❌ DOWN';
+      $('#grove-db').textContent = d.health.database === 'up' ? '✅ UP' : '❌ DOWN';
+      $('#grove-queue').textContent = d.health.queue === 'up' ? '✅ UP' : '❌ DOWN';
     }
 
     async function loadMcp() {
-      // Try MCP endpoint first, fall back to floor:voice
+      // Get MCP info from floor/status
+      const floorData = await getJSON('/floor/status', 'mcp');
+      if (floorData && floorData.mcpTools) {
+        $('#mcp-count').textContent = floorData.mcpTools;
+        // Show known tools
+        $('#mcp-list').textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
+        hideError('mcp');
+        return;
+      }
+
+      // Try MCP endpoint as fallback
       const d = await getJSON('/mcp', 'mcp');
       if (!d) {
+        // Show default tools
         $('#mcp-count').textContent = '6';
         $('#mcp-list').textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
         return;
