@@ -4,6 +4,10 @@ compatibility_date = "2023-12-01"
 compatibility_flags = ["nodejs_compat"]
 account_id = "80693377f3abb78e00820aa69a415ce4"
 
+# Environment variables
+[vars]
+EXTENSION_SECRET = "default-dev-secret-change-me"
+
 [[d1_databases]]
 binding = "ANALYTICS"
 database_name = "betting-analytics"

@@ -196,7 +196,7 @@ class BunCI {
     return await this.runStep(
       'Tests',
       'bun',
-      ['test', '--coverage', '--randomize', '--concurrent']
+      ['run', 'test:ci']
     );
   }
 

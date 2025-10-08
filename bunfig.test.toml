@@ -1,0 +1,41 @@
+# Bun Test Configuration - Quiet & Organized
+# https://bun.sh/docs/runtime/bunfig
+
+[test]
+# Quiet mode for AI environments
+timeout = 10000
+coverage = false
+randomize = true
+rerunEach = 1
+
+# Quiet output for AI assistants
+quiet = true
+verbose = false
+
+# Test organization
+root = "."
+testNamePattern = ".*"
+
+# Performance settings
+concurrent = true
+bail = false
+
+# Coverage settings (when enabled)
+coverageThreshold = 0.8
+coverageReporter = ["text"]
+coverageDirectory = "coverage"
+coverageExclude = [
+  "tests/**",
+  "scripts/**", 
+  "tools/**",
+  "docs/**",
+  "*.test.ts",
+  "*.spec.ts"
+]
+
+# Snapshot settings
+snapshot = true
+snapshotUpdate = false
+
+# Preload test setup
+preload = ["./tests/setup/test-setup.ts"]

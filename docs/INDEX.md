@@ -133,6 +133,12 @@
 | [TESTING_STATUS.md](TESTING_STATUS.md) | Current testing status | QA | ✅ Complete |
 | [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md) | API interception docs | Developers | ✅ Complete |
 
+### Integrated Testing System 🧪 NEW
+| Document | Purpose | Audience | Status |
+|----------|---------|----------|--------|
+| [testing/INTEGRATED_TESTING_SYSTEM.md](testing/INTEGRATED_TESTING_SYSTEM.md) | Complete testing system guide 🆕 | All Devs | ✅ Complete |
+| [archive/testing-cleanup/CLEANUP_SUMMARY.md](archive/testing-cleanup/CLEANUP_SUMMARY.md) | Testing system cleanup summary 🗑️ | All Teams | ✅ Complete |
+
 ### Developer Resources ✨ NEW
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|

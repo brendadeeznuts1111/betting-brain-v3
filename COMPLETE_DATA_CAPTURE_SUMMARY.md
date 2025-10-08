@@ -152,13 +152,14 @@ Tier 3: Mock data fallback → ALWAYS AVAILABLE
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Dashboard Cards Working** | 13/13 (100%) | ✅ |
-| **Fantasy402 Endpoints Captured** | 4 (Scores, BetTicker, PlayerAnalysis, Transactions) | ✅ |
+| **Dashboard Cards Working** | 15/15 (100%) | ✅ |
+| **Fantasy402 Endpoints Captured** | 5 (Scores, BetTicker, PlayerAnalysis, Transactions, NewUsers) | ✅ |
 | **Scores Fields Captured** | 32 per game | ✅ |
 | **Transactions Captured** | 176 in example | ✅ |
+| **New Users Captured** | 400+ in example (7 days) | ✅ |
 | **Data Loss** | 0% | ✅ |
 | **Cache Strategy** | 3-tier with TTLs | ✅ |
-| **API Endpoints** | 13 operational | ✅ |
+| **API Endpoints** | 16 operational | ✅ |
 | **Extension Version** | 1.0.9 (CORS fixed) | ✅ |
 
 ---
@@ -207,18 +208,30 @@ Tier 3: Mock data fallback → ALWAYS AVAILABLE
 - ✅ Metadata extraction (dates, agentID, filters)
 - ✅ All transaction types captured (deposits, withdrawals, adjustments, transfers)
 - ✅ Raw response preserved
-- 📋 Ready for financial dashboard integration
+- ✅ API endpoint `/api/transaction-history` created
+
+### Request #4: New Users Info Capture ✨ **NEW** ✅
+> *User shared `getNewUsersInfo` API call with 400+ signups over 7 days*
+
+**Delivered:**
+- ✅ Ingest handler updated (`getNewUsersInfo` detection)
+- ✅ KV storage with 1-hour TTL
+- ✅ User count tracking (players vs agents)
+- ✅ Metadata extraction (agentID, days, agentOwner)
+- ✅ Agent hierarchy preserved (IsAgent, OpenedBy)
+- ✅ API endpoint `/api/new-users` created with analytics
 
 ---
 
 ## 🎉 Summary
 
-**All user requests complete!** The system now captures **4 major Fantasy402 endpoints**:
+**All user requests complete!** The system now captures **5 major Fantasy402 endpoints**:
 
 1. **Live Scores** (`getScoresLiveDynamic`) - 32 fields per game, 5-min cache
 2. **Bet Ticker** (`getBetTicker`) - Live betting data, 7-day retention
 3. **Player Analysis** (`getReportPlayerAnalysis`) - Performance reports, 1-hour cache ✨ **NEW**
 4. **Transaction History** (`getTransactionHistory`) - Financial transactions, 30-min cache ✨ **NEW**
+5. **New Users Info** (`getNewUsersInfo`) - User signups with agent hierarchy, 1-hour cache ✨ **NEW**
 
 **Transaction Types Captured:**
 - Deposits (C/E) - Customer deposits via various methods (Zelle, VM, BTC, etc.)

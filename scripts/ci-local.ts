@@ -95,21 +95,21 @@ class LocalCI {
       {
         name: 'Unit Tests',
         emoji: '🧪',
-        command: ['bun', 'test', 'tests/unit', '--timeout', '10000'],
+        command: ['bun', 'run', 'test:unit'],
         timeout: 120000,
         required: true
       },
       {
         name: 'Integration Tests',
         emoji: '🔗',
-        command: ['bun', 'test', 'tests/integration', '--timeout', '20000'],
+        command: ['bun', 'run', 'test:integration'],
         timeout: 180000,
         required: true
       },
       {
         name: 'Test Coverage',
         emoji: '📊',
-        command: ['bun', 'test', '--coverage'],
+        command: ['bun', 'run', 'test:coverage'],
         timeout: 120000,
         required: false,
         skip: this.quickMode
@@ -234,7 +234,7 @@ class LocalCI {
     } catch (error) {
       // Kill process on timeout/error
       if (proc) {
-        await processManager.kill(proc, 15, 2000).catch(() => { });
+        await processManager.kill(proc, 15, 2000).catch(() => {});
       }
 
       const duration = Date.now() - startTime;

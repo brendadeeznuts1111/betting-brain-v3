@@ -1,1 +1,15 @@
-bun test
+#!/bin/sh
+# Pre-commit hook with integrated testing system
+
+echo "🔍 Running pre-commit checks..."
+
+# Run integrated pre-commit tests
+bun run test:integration:pre-commit
+
+# Run security checks
+bun run security
+
+# Run linting
+bun run lint
+
+echo "✅ Pre-commit checks passed!"

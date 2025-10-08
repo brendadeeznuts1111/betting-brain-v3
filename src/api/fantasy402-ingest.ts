@@ -41,6 +41,27 @@ export async function handleFantasy402Ingest(
     requestId: string
 ): Promise<Response> {
     try {
+        // 🔒 SECRET CHECK: Only allow extension requests
+        const authHeader = request.headers.get('X-Extension-Secret');
+        const expectedSecret = env.EXTENSION_SECRET || 'default-dev-secret-change-me';
+
+        if (!authHeader || authHeader !== expectedSecret) {
+            console.warn(`[${requestId}] ⚠️ Unauthorized ingest attempt`);
+            return new Response(JSON.stringify({
+                error: 'Unauthorized',
+                message: 'Valid X-Extension-Secret header required',
+                requestId
+            }), {
+                status: 401,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
+        }
+
+        console.log(`[${requestId}] ✅ Authorized ingest request`);
+
         // Parse request body
         const packet: Fantasy402Packet = await request.json();
 
@@ -147,6 +168,87 @@ export async function handleFantasy402Ingest(
                 console.log(`[${requestId}] 💳 Stored ${transactions.length} transactions in FANTASY_CACHE`);
             } catch (error) {
                 console.warn(`[${requestId}] ⚠️ Failed to store transaction history:`, error);
+            }
+        }
+
+        // If this is New Users Info, store in FANTASY_CACHE for signup tracking
+        if (packet.operation === 'getNewUsersInfo' && packet.response?.body && env.FANTASY_CACHE) {
+            try {
+                const users = packet.response.body.LIST || packet.response.body.list || [];
+
+                await env.FANTASY_CACHE.put(
+                    'newUsersInfo:latest',
+                    JSON.stringify({
+                        raw: packet.response.body,
+                        timestamp: packet.timestamp,
+                        capturedAt: new Date().toISOString(),
+                        count: users.length,
+                        metadata: {
+                            agentID: packet.request?.body?.agentID,
+                            days: packet.request?.body?.days,
+                            agentOwner: packet.request?.body?.agentOwner,
+                        }
+                    }),
+                    { expirationTtl: 3600 } // 1 hour
+                );
+
+                console.log(`[${requestId}] 👥 Stored ${users.length} new users in FANTASY_CACHE`);
+            } catch (error) {
+                console.warn(`[${requestId}] ⚠️ Failed to store new users info:`, error);
+            }
+        }
+
+        // If this is Pending Wagers (detected by path param), store in FANTASY_CACHE
+        if (packet.endpoint?.includes('getPending') && packet.response?.body && env.FANTASY_CACHE) {
+            try {
+                const pending = packet.response.body.LIST || packet.response.body.list || [];
+
+                await env.FANTASY_CACHE.put(
+                    'pendingWagers:latest',
+                    JSON.stringify({
+                        raw: packet.response.body,
+                        timestamp: packet.timestamp,
+                        capturedAt: new Date().toISOString(),
+                        count: pending.length,
+                        metadata: {
+                            agentID: packet.request?.body?.agentID,
+                            date: packet.request?.body?.date,
+                            wagerType: packet.request?.body?.wagerType,
+                            customerID: packet.request?.body?.customerID,
+                            agentOwner: packet.request?.body?.agentOwner,
+                        }
+                    }),
+                    { expirationTtl: 300 } // 5 minutes (live data)
+                );
+
+                console.log(`[${requestId}] 🎲 Stored ${pending.length} pending wagers in FANTASY_CACHE`);
+            } catch (error) {
+                console.warn(`[${requestId}] ⚠️ Failed to store pending wagers:`, error);
+            }
+        }
+
+        // Store Fantasy402 configuration data (for all getConfig* operations)
+        if (packet.operation?.startsWith('getConfig') && packet.response?.body && env.FANTASY_CONFIG_CACHE) {
+            try {
+                const configKey = packet.operation.replace('getConfig', '').toLowerCase();
+
+                await env.FANTASY_CONFIG_CACHE.put(
+                    `config:${configKey}`,
+                    JSON.stringify({
+                        raw: packet.response.body,
+                        timestamp: packet.timestamp,
+                        capturedAt: new Date().toISOString(),
+                        metadata: {
+                            agentID: packet.request?.body?.agentID,
+                            operation: packet.operation,
+                        }
+                    }),
+                    { expirationTtl: 86400 } // 24 hours (config rarely changes)
+                );
+
+                console.log(`[${requestId}] ⚙️ Stored ${packet.operation} config in FANTASY_CONFIG_CACHE`);
+            } catch (error) {
+                console.warn(`[${requestId}] ⚠️ Failed to store config:`, error);
             }
         }
 
@@ -421,10 +523,92 @@ async function processAgentList(
 
         if (!agents || !Array.isArray(agents)) return;
 
-        console.log(`[${requestId}] 👥 Processing agent list: ${agents.length} agents`);
+        const agentOwner = packet.request?.body?.agentOwner || packet.metadata?.agentID;
+        const agentID = packet.request?.body?.agentID;
 
-        // Store agents in D1
-        if (env.RAW_FEED_DB) {
+        console.log(`[${requestId}] 👥 Processing agent list: ${agents.length} agents (Owner: ${agentOwner})`);
+
+        // Track cache metrics
+        await incrementCacheMetric(env, 'agent_list_requests');
+
+        // 🚀 FAST PATH: Cache in KV immediately (critical for login flow)
+        if (env.FANTASY_CACHE) {
+            // Create multiple cache keys for different lookup patterns
+            const cacheKeys = [
+                // Primary key: agent hierarchy by owner
+                `fantasy402:agents:by-owner:${agentOwner}`,
+                // Secondary key: by requesting agentID
+                agentID && `fantasy402:agents:by-agent:${agentID}`,
+                // Latest agents list (fallback)
+                agentOwner && `fantasy402:agents:latest:${agentOwner}`
+            ].filter(Boolean) as string[];
+
+            const cacheData = {
+                agents,
+                agentOwner,
+                agentID,
+                count: agents.length,
+                capturedAt: packet.timestamp,
+                offices: [...new Set(agents.map((a: any) => a.office).filter(Boolean))],
+                agentTypes: [...new Set(agents.map((a: any) => a.agentType).filter(Boolean))]
+            };
+
+            // Store in all cache keys (fast parallel writes)
+            await Promise.all(
+                cacheKeys.map(key =>
+                    env.FANTASY_CACHE!.put(key, JSON.stringify(cacheData), {
+                        expirationTtl: 3600 // 1 hour (safe during iteration)
+                    })
+                )
+            );
+
+            console.log(`[${requestId}] ✅ Cached ${agents.length} agents in ${cacheKeys.length} KV keys (24hr TTL)`);
+
+            // Track successful cache write
+            await incrementCacheMetric(env, 'agent_list_cache_writes');
+
+            // Create indexed lookups for individual agents
+            const indexPromises = agents.map((agent: any) => {
+                if (!agent.agentID) return null;
+                return env.FANTASY_CACHE!.put(
+                    `fantasy402:agent:${agent.agentID}`,
+                    JSON.stringify({
+                        ...agent,
+                        agentOwner,
+                        capturedAt: packet.timestamp
+                    }),
+                    { expirationTtl: 3600 } // 1 hour TTL
+                );
+            }).filter(Boolean);
+
+            await Promise.all(indexPromises);
+            console.log(`[${requestId}] 🔍 Indexed ${indexPromises.length} individual agents`);
+        }
+
+        // 🐌 SLOW PATH: Only write to D1 if data changed (check cache first)
+        if (env.RAW_FEED_DB && env.FANTASY_CACHE) {
+            // Check if we have cached hash to detect changes
+            const hashKey = `fantasy402:agents:hash:${agentOwner}`;
+            const agentHash = JSON.stringify(agents.map((a: any) => ({
+                id: a.agentID,
+                owner: a.agentOwner,
+                type: a.agentType,
+                office: a.office
+            })));
+            const currentHash = await env.FANTASY_CACHE.get(hashKey);
+
+            if (currentHash === agentHash) {
+                console.log(`[${requestId}] ⚡ Agent list unchanged, skipping D1 writes`);
+                await incrementCacheMetric(env, 'agent_list_d1_writes_skipped');
+                return; // Skip D1 writes if data hasn't changed
+            }
+
+            // Track D1 write (data changed)
+            await incrementCacheMetric(env, 'agent_list_d1_writes_executed');
+
+            // Data changed - update hash and write to D1
+            await env.FANTASY_CACHE.put(hashKey, agentHash, { expirationTtl: 3600 });
+
             for (const agent of agents) {
                 try {
                     await env.RAW_FEED_DB.prepare(`
@@ -438,7 +622,7 @@ async function processAgentList(
               total_requests = total_requests + 1
           `).bind(
                         agent.agentID,
-                        agent.agentOwner || null,
+                        agent.agentOwner || agentOwner || null,
                         agent.agentType || null,
                         agent.office || null,
                         packet.timestamp,
@@ -449,11 +633,31 @@ async function processAgentList(
                 }
             }
 
-            console.log(`[${requestId}] ✅ Stored ${agents.length} agents in D1`);
+            console.log(`[${requestId}] ✅ Stored ${agents.length} agents in D1 (data changed)`);
         }
 
     } catch (error) {
         console.error(`[${requestId}] ❌ Error processing agent list:`, error);
+    }
+}
+
+/**
+ * Increment cache metric counter
+ */
+async function incrementCacheMetric(env: Env, metricName: string): Promise<void> {
+    try {
+        if (!env.FANTASY_CACHE) return;
+
+        const key = `fantasy402:metrics:${metricName}`;
+        const current = await env.FANTASY_CACHE.get(key);
+        const count = current ? parseInt(current) : 0;
+
+        await env.FANTASY_CACHE.put(key, String(count + 1), {
+            expirationTtl: 86400 * 7 // 7 days
+        });
+    } catch (error) {
+        // Don't fail the request if metrics fail
+        console.warn('Failed to increment metric:', metricName, error);
     }
 }
 

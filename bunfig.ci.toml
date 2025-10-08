@@ -1,0 +1,37 @@
+# Bun Test Configuration - CI/CD Environment
+# https://bun.sh/docs/runtime/bunfig
+
+[test]
+# CI-specific settings
+timeout = 30000
+coverage = true
+randomize = true
+rerunEach = 1
+
+# Quiet output for CI
+quiet = true
+verbose = false
+
+# Performance settings
+concurrent = true
+bail = false
+
+# Coverage settings
+coverageThreshold = 0.8
+coverageReporter = ["text", "lcov"]
+coverageDirectory = "coverage"
+coverageExclude = [
+  "tests/**",
+  "scripts/**", 
+  "tools/**",
+  "docs/**",
+  "*.test.ts",
+  "*.spec.ts"
+]
+
+# Snapshot settings
+snapshot = true
+snapshotUpdate = false
+
+# Preload test setup
+preload = ["./tests/setup/test-setup.ts"]

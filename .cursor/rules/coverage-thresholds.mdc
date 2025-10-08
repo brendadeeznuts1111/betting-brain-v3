@@ -1,7 +1,9 @@
 ---
-globs: bunfig.toml,bunfig.*.toml,package.json
-description: Coverage threshold configuration patterns
 version: "1.1.0"
+globs: bunfig.toml,bunfig.*.toml,package.json
+description: "Coverage threshold configuration patterns"
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "testing-patterns"]
 ---
 
 # Coverage Threshold Rules

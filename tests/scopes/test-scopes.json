@@ -1,0 +1,112 @@
+{
+    "scopes": {
+        "unit": {
+            "description": "Fast, isolated unit tests",
+            "timeout": 5000,
+            "parallel": true,
+            "priority": 1,
+            "patterns": [
+                "tests/unit/**/*.test.ts",
+                "tests/unit/**/*.spec.ts"
+            ],
+            "exclude": [
+                "**/*.integration.test.ts",
+                "**/*.e2e.test.ts"
+            ]
+        },
+        "integration": {
+            "description": "Integration tests with external dependencies",
+            "timeout": 15000,
+            "parallel": true,
+            "priority": 2,
+            "patterns": [
+                "tests/integration/**/*.test.ts",
+                "tests/integration/**/*.spec.ts"
+            ],
+            "exclude": [
+                "**/*.unit.test.ts",
+                "**/*.e2e.test.ts"
+            ]
+        },
+        "e2e": {
+            "description": "End-to-end tests",
+            "timeout": 30000,
+            "parallel": false,
+            "priority": 3,
+            "patterns": [
+                "tests/e2e/**/*.test.ts",
+                "tests/e2e/**/*.spec.ts"
+            ],
+            "exclude": [
+                "**/*.unit.test.ts",
+                "**/*.integration.test.ts"
+            ]
+        },
+        "performance": {
+            "description": "Performance and benchmark tests",
+            "timeout": 60000,
+            "parallel": false,
+            "priority": 4,
+            "patterns": [
+                "tests/benchmark/**/*.test.ts",
+                "tests/performance/**/*.test.ts"
+            ],
+            "exclude": [
+                "**/*.unit.test.ts",
+                "**/*.integration.test.ts"
+            ]
+        },
+        "snapshot": {
+            "description": "Snapshot and visual regression tests",
+            "timeout": 10000,
+            "parallel": true,
+            "priority": 2,
+            "patterns": [
+                "tests/snapshot/**/*.test.ts",
+                "tests/snapshot/**/*.spec.ts"
+            ],
+            "exclude": [
+                "**/*.unit.test.ts",
+                "**/*.integration.test.ts"
+            ]
+        }
+    },
+    "environments": {
+        "development": {
+            "quiet": false,
+            "skipPassing": true,
+            "coverage": false,
+            "parallel": true
+        },
+        "ci": {
+            "quiet": true,
+            "skipPassing": false,
+            "coverage": true,
+            "parallel": true
+        },
+        "ai": {
+            "quiet": true,
+            "skipPassing": true,
+            "coverage": false,
+            "parallel": true
+        }
+    },
+    "preCommit": {
+        "scopes": [
+            "unit"
+        ],
+        "timeout": 30000,
+        "quiet": true
+    },
+    "ci": {
+        "scopes": [
+            "unit",
+            "integration",
+            "performance",
+            "snapshot"
+        ],
+        "timeout": 300000,
+        "quiet": true,
+        "coverage": true
+    }
+}

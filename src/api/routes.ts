@@ -13,7 +13,8 @@ import { getHoldPercentage } from '../tools/intelligence/getHoldPercentage';
 import { handleFantasy402Ingest } from './fantasy402-ingest';
 import { getAgentPerformance, getSportPerformance, getPerformanceSummary } from './fantasy402-performance-api';
 import { getLiveBets } from '../routes/api/f402-bets';
-import { getAgentPerformance as getF402AgentPerformance } from '../routes/api/f402-agents';
+import { getAgentPerformance as getF402AgentPerformance, getAgentList, getAgentDetail, getAgentTree, getCacheMetrics } from '../routes/api/f402-agents';
+import { warmCache } from '../routes/api/cache-warm';
 import { getActiveCustomers, getStakedTotal } from '../routes/api/f402-customers';
 import { getLatestTransactions } from '../routes/api/f402-transactions';
 import { getMissionControl } from '../routes/api/f402-mission-control';
@@ -101,6 +102,21 @@ export async function handleAPIRoute(
       case '/f402/agents/performance':
         return await getF402AgentPerformance(request, env, requestId);
 
+      case '/f402/agents/list':
+        return await getAgentList(request, env, requestId);
+
+      case '/f402/agents/tree':
+        return await getAgentTree(request, env, requestId);
+
+      case '/f402/cache/metrics':
+        return await getCacheMetrics(request, env, requestId);
+
+      case '/f402/cache/warm':
+        if (request.method !== 'POST') {
+          throw Errors.validationError(['Method must be POST']);
+        }
+        return await warmCache(request, env, requestId);
+
       case '/f402/customers/active':
         return await getActiveCustomers(request, env, requestId);
 
@@ -134,7 +150,18 @@ export async function handleAPIRoute(
         const { getTransactionHistory } = await import('../routes/api/transaction-history');
         return await getTransactionHistory(request, env, requestId);
 
+      case '/new-users':
+        const { getNewUsers } = await import('../routes/api/new-users');
+        return await getNewUsers(request, env, requestId);
+
       default:
+        // Check if it's an agent detail request (/f402/agents/:agentID)
+        const agentDetailMatch = path.match(/^\/f402\/agents\/([a-zA-Z0-9_-]+)$/);
+        if (agentDetailMatch) {
+          const agentID = agentDetailMatch[1];
+          return await getAgentDetail(request, env, requestId, agentID);
+        }
+
         throw Errors.notFound('API endpoint');
     }
   } catch (error) {

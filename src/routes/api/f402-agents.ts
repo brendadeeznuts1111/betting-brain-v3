@@ -1,10 +1,16 @@
 /**
- * Fantasy402 Agent Performance API
+ * Fantasy402 Agent APIs
  *
  * GET /api/f402/agents/performance?period=today
  * Returns: { totalPnl: number, top: [{id: string, pnl: number}] }
  *
- * Data source: fantasy402_agent_performance table
+ * GET /api/f402/agents/list?owner=BILLY666
+ * Returns: { agents: [...], count: number, cached: boolean }
+ *
+ * GET /api/f402/agents/:agentID
+ * Returns: { agent: {...}, cached: boolean }
+ *
+ * Data source: fantasy402_agent_performance table, FANTASY_CACHE KV
  */
 
 import { Env } from '../../types/api';
@@ -15,6 +21,25 @@ interface AgentPerformanceResponse {
     id: string;
     pnl: number;
   }>;
+}
+
+interface AgentListResponse {
+  agents: any[];
+  count: number;
+  agentOwner?: string;
+  agentID?: string;
+  cached: boolean;
+  capturedAt?: string;
+  offices?: string[];
+  agentTypes?: string[];
+  requestId: string;
+}
+
+interface AgentDetailResponse {
+  agent: any;
+  cached: boolean;
+  capturedAt?: string;
+  requestId: string;
 }
 
 /**
@@ -95,6 +120,575 @@ export async function getAgentPerformance(
     return new Response(
       JSON.stringify({
         error: 'Failed to fetch agent performance',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        requestId,
+      }),
+      {
+        status: 500,
+        headers: corsHeaders,
+      }
+    );
+  }
+}
+
+/**
+ * GET /api/f402/agents/list?owner=BILLY666
+ * Returns cached agent list by owner (fast login flow)
+ */
+export async function getAgentList(
+  request: Request,
+  env: Env,
+  requestId: string
+): Promise<Response> {
+  const url = new URL(request.url);
+  const owner = url.searchParams.get('owner');
+  const agentID = url.searchParams.get('agentID');
+
+  console.log(`[${requestId}] 👥 GET /api/f402/agents/list?owner=${owner}&agentID=${agentID}`);
+
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    if (!env.FANTASY_CACHE) {
+      throw new Error('FANTASY_CACHE not configured');
+    }
+
+    // Try cache keys in priority order
+    const cacheKeys = [
+      owner && `fantasy402:agents:by-owner:${owner}`,
+      agentID && `fantasy402:agents:by-agent:${agentID}`,
+      owner && `fantasy402:agents:latest:${owner}`,
+    ].filter(Boolean) as string[];
+
+    console.log(`[${requestId}] 🔍 Checking ${cacheKeys.length} cache keys...`);
+
+    // Try each cache key until we find data
+    for (const key of cacheKeys) {
+      const cached = await env.FANTASY_CACHE.get(key);
+      if (cached) {
+        const data = JSON.parse(cached);
+        console.log(`[${requestId}] ✅ Cache HIT: ${key} (${data.count} agents)`);
+
+        // Track cache hit
+        await incrementCacheMetric(env, 'agent_list_cache_hits');
+
+        const response: AgentListResponse = {
+          agents: data.agents,
+          count: data.count,
+          agentOwner: data.agentOwner,
+          agentID: data.agentID,
+          cached: true,
+          capturedAt: data.capturedAt,
+          offices: data.offices,
+          agentTypes: data.agentTypes,
+          requestId,
+        };
+
+        return new Response(JSON.stringify(response), {
+          headers: {
+            ...corsHeaders,
+            'X-Cache': 'HIT',
+            'X-Cache-Key': key,
+          },
+        });
+      }
+    }
+
+    console.log(`[${requestId}] ❌ Cache MISS: No data found for owner=${owner} agentID=${agentID}`);
+
+    // Track cache miss
+    await incrementCacheMetric(env, 'agent_list_cache_misses');
+
+    // Fallback to D1 if cache miss
+    if (env.RAW_FEED_DB) {
+      const query = owner
+        ? await env.RAW_FEED_DB.prepare(`
+            SELECT * FROM fantasy402_agents
+            WHERE agent_owner = ?
+            ORDER BY last_active DESC
+            LIMIT 100
+          `).bind(owner).all()
+        : agentID
+        ? await env.RAW_FEED_DB.prepare(`
+            SELECT * FROM fantasy402_agents
+            WHERE agent_id = ?
+            ORDER BY last_active DESC
+            LIMIT 100
+          `).bind(agentID).all()
+        : null;
+
+      if (query && query.results.length > 0) {
+        console.log(`[${requestId}] 📊 D1 fallback: ${query.results.length} agents`);
+
+        const response: AgentListResponse = {
+          agents: query.results,
+          count: query.results.length,
+          cached: false,
+          requestId,
+        };
+
+        return new Response(JSON.stringify(response), {
+          headers: {
+            ...corsHeaders,
+            'X-Cache': 'MISS',
+            'X-Data-Source': 'D1',
+          },
+        });
+      }
+    }
+
+    // No data found
+    return new Response(
+      JSON.stringify({
+        agents: [],
+        count: 0,
+        cached: false,
+        message: 'No agent data found. Please trigger a login flow to populate cache.',
+        requestId,
+      }),
+      {
+        status: 404,
+        headers: {
+          ...corsHeaders,
+          'X-Cache': 'MISS',
+        },
+      }
+    );
+
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Error fetching agent list:`, error);
+
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch agent list',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        requestId,
+      }),
+      {
+        status: 500,
+        headers: corsHeaders,
+      }
+    );
+  }
+}
+
+/**
+ * GET /api/f402/agents/:agentID
+ * Returns cached agent details by ID
+ */
+export async function getAgentDetail(
+  request: Request,
+  env: Env,
+  requestId: string,
+  agentID: string
+): Promise<Response> {
+  console.log(`[${requestId}] 👤 GET /api/f402/agents/${agentID}`);
+
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    if (!env.FANTASY_CACHE) {
+      throw new Error('FANTASY_CACHE not configured');
+    }
+
+    // Check indexed agent cache
+    const cacheKey = `fantasy402:agent:${agentID}`;
+    const cached = await env.FANTASY_CACHE.get(cacheKey);
+
+    if (cached) {
+      const agent = JSON.parse(cached);
+      console.log(`[${requestId}] ✅ Cache HIT: ${cacheKey}`);
+
+      // Track cache hit
+      await incrementCacheMetric(env, 'agent_detail_cache_hits');
+
+      const response: AgentDetailResponse = {
+        agent,
+        cached: true,
+        capturedAt: agent.capturedAt,
+        requestId,
+      };
+
+      return new Response(JSON.stringify(response), {
+        headers: {
+          ...corsHeaders,
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
+    console.log(`[${requestId}] ❌ Cache MISS: ${cacheKey}`);
+
+    // Track cache miss
+    await incrementCacheMetric(env, 'agent_detail_cache_misses');
+
+    // Fallback to D1
+    if (env.RAW_FEED_DB) {
+      const result = await env.RAW_FEED_DB.prepare(`
+        SELECT * FROM fantasy402_agents
+        WHERE agent_id = ?
+        LIMIT 1
+      `).bind(agentID).first();
+
+      if (result) {
+        console.log(`[${requestId}] 📊 D1 fallback: Found agent ${agentID}`);
+
+        const response: AgentDetailResponse = {
+          agent: result,
+          cached: false,
+          requestId,
+        };
+
+        return new Response(JSON.stringify(response), {
+          headers: {
+            ...corsHeaders,
+            'X-Cache': 'MISS',
+            'X-Data-Source': 'D1',
+          },
+        });
+      }
+    }
+
+    // Agent not found
+    return new Response(
+      JSON.stringify({
+        error: 'Agent not found',
+        message: `No agent found with ID: ${agentID}`,
+        requestId,
+      }),
+      {
+        status: 404,
+        headers: corsHeaders,
+      }
+    );
+
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Error fetching agent detail:`, error);
+
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch agent detail',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        requestId,
+      }),
+      {
+        status: 500,
+        headers: corsHeaders,
+      }
+    );
+  }
+}
+
+/**
+ * Increment cache metric counter
+ */
+async function incrementCacheMetric(env: Env, metricName: string): Promise<void> {
+  try {
+    if (!env.FANTASY_CACHE) return;
+
+    const key = `fantasy402:metrics:${metricName}`;
+    const current = await env.FANTASY_CACHE.get(key);
+    const count = current ? parseInt(current) : 0;
+
+    await env.FANTASY_CACHE.put(key, String(count + 1), {
+      expirationTtl: 86400 * 7, // 7 days
+    });
+  } catch (error) {
+    // Don't fail the request if metrics fail
+    console.warn('Failed to increment metric:', metricName, error);
+  }
+}
+
+/**
+ * GET /api/f402/agents/tree?owner=BILLY666
+ * Returns agent hierarchy as tree structure
+ */
+export async function getAgentTree(
+  request: Request,
+  env: Env,
+  requestId: string
+): Promise<Response> {
+  const url = new URL(request.url);
+  const owner = url.searchParams.get('owner');
+
+  console.log(`[${requestId}] 🌳 GET /api/f402/agents/tree?owner=${owner}`);
+
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    if (!env.FANTASY_CACHE) {
+      throw new Error('FANTASY_CACHE not configured');
+    }
+
+    // Try to get cached agent list
+    const cacheKey = owner ? `fantasy402:agents:by-owner:${owner}` : null;
+    const cached = cacheKey ? await env.FANTASY_CACHE.get(cacheKey) : null;
+
+    let agents: any[] = [];
+
+    if (cached) {
+      const data = JSON.parse(cached);
+      agents = data.agents || [];
+      console.log(`[${requestId}] ✅ Cache HIT: ${agents.length} agents`);
+    } else if (env.RAW_FEED_DB) {
+      // Fallback to D1
+      const query = await env.RAW_FEED_DB.prepare(`
+        SELECT * FROM fantasy402_agents
+        ${owner ? 'WHERE agent_owner = ?' : ''}
+        ORDER BY agent_owner, agent_id
+        LIMIT 500
+      `);
+
+      const result = owner ? await query.bind(owner).all() : await query.all();
+      agents = result.results as any[];
+      console.log(`[${requestId}] 📊 D1 fallback: ${agents.length} agents`);
+    }
+
+    if (agents.length === 0) {
+      return new Response(
+        JSON.stringify({
+          tree: null,
+          message: 'No agent data found',
+          requestId,
+        }),
+        {
+          status: 404,
+          headers: corsHeaders,
+        }
+      );
+    }
+
+    // Build hierarchical tree structure
+    const tree = buildAgentTree(agents, owner);
+
+    return new Response(
+      JSON.stringify({
+        tree,
+        totalAgents: agents.length,
+        rootOwner: owner,
+        requestId,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        headers: corsHeaders,
+      }
+    );
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Error building agent tree:`, error);
+
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to build agent tree',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        requestId,
+      }),
+      {
+        status: 500,
+        headers: corsHeaders,
+      }
+    );
+  }
+}
+
+/**
+ * Build hierarchical tree from flat agent list
+ */
+function buildAgentTree(agents: any[], rootOwner: string | null): any {
+  // Group agents by owner
+  const byOwner = new Map<string, any[]>();
+  const agentMap = new Map<string, any>();
+
+  for (const agent of agents) {
+    const id = agent.agentID || agent.agent_id;
+    const owner = agent.agentOwner || agent.agent_owner;
+
+    agentMap.set(id, {
+      id,
+      name: id,
+      owner,
+      type: agent.agentType || agent.agent_type,
+      office: agent.office,
+      totalRequests: agent.totalRequests || agent.total_requests || 0,
+      lastActive: agent.lastActive || agent.last_active,
+      children: [],
+    });
+
+    if (owner) {
+      if (!byOwner.has(owner)) {
+        byOwner.set(owner, []);
+      }
+      byOwner.get(owner)!.push(id);
+    }
+  }
+
+  // Build tree structure
+  const root = {
+    id: rootOwner || 'ROOT',
+    name: rootOwner || 'All Agents',
+    owner: null,
+    type: 'MASTER',
+    office: null,
+    totalRequests: 0,
+    children: [] as any[],
+  };
+
+  // Recursive function to build children
+  function buildChildren(parentId: string): any[] {
+    const childIds = byOwner.get(parentId) || [];
+    return childIds.map((childId) => {
+      const child = agentMap.get(childId);
+      if (!child) return null;
+
+      child.children = buildChildren(childId);
+      return child;
+    }).filter(Boolean);
+  }
+
+  // If we have a root owner, build from there
+  if (rootOwner) {
+    root.children = buildChildren(rootOwner);
+
+    // Add the root owner's direct children
+    const rootAgent = agentMap.get(rootOwner);
+    if (rootAgent) {
+      root.totalRequests = rootAgent.totalRequests;
+      root.type = rootAgent.type;
+      root.office = rootAgent.office;
+    }
+  } else {
+    // No root specified - find top-level agents (agents with no owner in the set)
+    const allIds = new Set(agentMap.keys());
+    const childIds = new Set<string>();
+    for (const children of byOwner.values()) {
+      children.forEach(id => childIds.add(id));
+    }
+
+    const topLevelIds = [...allIds].filter(id => !childIds.has(id));
+    root.children = topLevelIds.map(id => {
+      const agent = agentMap.get(id)!;
+      agent.children = buildChildren(id);
+      return agent;
+    });
+  }
+
+  return root;
+}
+
+/**
+ * GET /api/f402/cache/metrics
+ * Returns cache performance metrics
+ */
+export async function getCacheMetrics(
+  request: Request,
+  env: Env,
+  requestId: string
+): Promise<Response> {
+  console.log(`[${requestId}] 📊 GET /api/f402/cache/metrics`);
+
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    if (!env.FANTASY_CACHE) {
+      throw new Error('FANTASY_CACHE not configured');
+    }
+
+    // Fetch all cache metrics
+    const metricKeys = [
+      'agent_list_requests',
+      'agent_list_cache_writes',
+      'agent_list_cache_hits',
+      'agent_list_cache_misses',
+      'agent_list_d1_writes_skipped',
+      'agent_list_d1_writes_executed',
+      'agent_detail_cache_hits',
+      'agent_detail_cache_misses',
+    ];
+
+    const metricValues = await Promise.all(
+      metricKeys.map(async (key) => {
+        const value = await env.FANTASY_CACHE!.get(`fantasy402:metrics:${key}`);
+        return { key, value: value ? parseInt(value) : 0 };
+      })
+    );
+
+    const metrics: Record<string, number> = {};
+    metricValues.forEach(({ key, value }) => {
+      metrics[key] = value;
+    });
+
+    // Calculate derived metrics
+    const totalRequests = metrics.agent_list_requests || 0;
+    const totalHits = metrics.agent_list_cache_hits || 0;
+    const totalMisses = metrics.agent_list_cache_misses || 0;
+    const totalD1Skipped = metrics.agent_list_d1_writes_skipped || 0;
+    const totalD1Executed = metrics.agent_list_d1_writes_executed || 0;
+
+    const cacheHitRate = totalRequests > 0 ? (totalHits / totalRequests) * 100 : 0;
+    const d1WriteReduction = (totalD1Skipped + totalD1Executed) > 0
+      ? (totalD1Skipped / (totalD1Skipped + totalD1Executed)) * 100
+      : 0;
+
+    const response = {
+      raw: metrics,
+      summary: {
+        totalRequests,
+        cacheHits: totalHits,
+        cacheMisses: totalMisses,
+        cacheHitRate: parseFloat(cacheHitRate.toFixed(2)),
+        d1WritesSkipped: totalD1Skipped,
+        d1WritesExecuted: totalD1Executed,
+        d1WriteReduction: parseFloat(d1WriteReduction.toFixed(2)),
+      },
+      agentDetail: {
+        cacheHits: metrics.agent_detail_cache_hits || 0,
+        cacheMisses: metrics.agent_detail_cache_misses || 0,
+        hitRate:
+          (metrics.agent_detail_cache_hits || 0) +
+            (metrics.agent_detail_cache_misses || 0) >
+          0
+            ? parseFloat(
+                (
+                  ((metrics.agent_detail_cache_hits || 0) /
+                    ((metrics.agent_detail_cache_hits || 0) +
+                      (metrics.agent_detail_cache_misses || 0))) *
+                  100
+                ).toFixed(2)
+              )
+            : 0,
+      },
+      requestId,
+      timestamp: new Date().toISOString(),
+    };
+
+    return new Response(JSON.stringify(response), {
+      headers: corsHeaders,
+    });
+  } catch (error) {
+    console.error(`[${requestId}] ❌ Error fetching cache metrics:`, error);
+
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch cache metrics',
         message: error instanceof Error ? error.message : 'Unknown error',
         requestId,
       }),

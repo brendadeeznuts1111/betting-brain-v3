@@ -24,6 +24,13 @@ coverageExclude = [
   "docs/**"
 ]
 
+# Test exclusions (don't run archived tests)
+testExclude = [
+  "docs/**",
+  "**/archive/**",
+  "**/__archive__/**"
+]
+
 # Benchmark configuration
 bench = true
 benchWarmup = true

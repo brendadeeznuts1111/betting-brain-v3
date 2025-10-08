@@ -1,7 +1,9 @@
 ---
-alwaysApply: true
-description: Analytics testing patterns and best practices
 version: "1.1.0"
+alwaysApply: true
+description: "Analytics testing patterns and best practices"
+lastUpdated: "2025-10-08"
+dependencies: ["quality-standards", "testing-patterns"]
 ---
 
 # Analytics Testing Rules

@@ -6,6 +6,7 @@
   <title>🌲 Floor Control | Forest Grove Mission Control</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     :root {
       --bg: #0d1117;
@@ -141,6 +142,24 @@
 
     .mini-stat .val {
       font-weight: 600;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .label-row .label {
+      flex: 1;
+      font-size: 0.75rem;
+      margin: 0;
+    }
+
+    .label-row .val {
+      flex: 1;
+      font-weight: 600;
+      text-align: right;
     }
 
     pre {
@@ -354,6 +373,48 @@
         <span class="val" id="dns-latency">—</span>
       </div>
       <div id="dns-error" class="error" style="display:none;"></div>
+    </section>
+
+    <!-- ===== Cache Performance & Agent Tree ===== -->
+
+    <!-- Cache Performance -->
+    <section class="card">
+      <h2>⚡ Cache Performance</h2>
+      <div class="label">Cache Hit Rate</div>
+      <div id="cache-hit-rate" class="value">—</div>
+      <div class="label-row" style="margin-top: 0.5rem;">
+        <span class="label">Hits/Misses</span>
+        <span class="label">D1 Savings</span>
+      </div>
+      <div class="label-row">
+        <span class="val" id="cache-hits">—</span>
+        <span class="val" id="cache-d1-savings">—</span>
+      </div>
+      <div class="mini-stat" style="margin-top: 0.5rem;">
+        <span class="label">Total Requests</span>
+        <span class="val" id="cache-total-requests">—</span>
+      </div>
+      <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+        <button onclick="exportMetrics('json')" style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">📥 JSON</button>
+        <button onclick="exportMetrics('csv')" style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">📥 CSV</button>
+      </div>
+      <button onclick="warmCacheNow()" id="btn-warm-cache" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: var(--yellow); color: var(--bg); border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">🔥 Warm Cache</button>
+    </section>
+
+    <!-- Agent Tree -->
+    <section class="card" style="grid-column: span 2;">
+      <h2>🌳 Agent Hierarchy</h2>
+      <div class="label">Agent Tree Structure</div>
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <button onclick="toggleTreeView('ascii')" id="btn-ascii" style="flex: 1; padding: 0.5rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">ASCII</button>
+        <button onclick="toggleTreeView('d3')" id="btn-d3" style="flex: 1; padding: 0.5rem; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">Interactive</button>
+      </div>
+      <div id="agent-tree-ascii" style="overflow: auto; max-height: 400px; font-family: monospace; font-size: 0.85rem; line-height: 1.6; white-space: pre;"></div>
+      <div id="agent-tree-d3" style="overflow: auto; max-height: 400px; display: none;"></div>
+      <div class="mini-stat" style="margin-top: 0.5rem;">
+        <span class="label">Total Agents</span>
+        <span class="val" id="agent-tree-count">—</span>
+      </div>
     </section>
 
     <!-- ===== Fantasy402 Individual Operation Cards ===== -->
@@ -847,6 +908,293 @@
       hideError('dns');
     }
 
+    /* ========== CACHE PERFORMANCE & AGENT TREE ========== */
+
+    let currentTreeData = null;
+    let currentTreeView = 'ascii';
+
+    async function loadAgentTree() {
+      // Try to get owner from URL or default to BILLY666
+      const urlParams = new URLSearchParams(window.location.search);
+      const owner = urlParams.get('owner') || 'BILLY666';
+
+      const d = await getJSON(`/api/f402/agents/tree?owner=${owner}`, 'agent-tree');
+      if (!d || !d.tree) {
+        $('#agent-tree-ascii').textContent = 'No agent data available. Trigger login flow to populate cache.';
+        $('#agent-tree-count').textContent = '0';
+        return;
+      }
+
+      // Store for view switching
+      currentTreeData = d;
+
+      // Render ASCII tree
+      const lines = [];
+      function renderTree(node, prefix = '', isLast = true) {
+        const connector = isLast ? '└── ' : '├── ';
+        const indent = isLast ? '    ' : '│   ';
+
+        // Node line with metadata
+        const meta = node.type ? `[${node.type}]` : '';
+        const requests = node.totalRequests > 0 ? ` (${fmtNum(node.totalRequests)} req)` : '';
+        lines.push(`${prefix}${connector}${node.name} ${meta}${requests}`);
+
+        // Render children
+        if (node.children && node.children.length > 0) {
+          node.children.forEach((child, i) => {
+            const childIsLast = i === node.children.length - 1;
+            renderTree(child, prefix + indent, childIsLast);
+          });
+        }
+      }
+
+      renderTree(d.tree);
+      $('#agent-tree-ascii').textContent = lines.join('\n');
+      $('#agent-tree-count').textContent = fmtNum(d.totalAgents || 0);
+
+      // Render D3 tree if in D3 view
+      if (currentTreeView === 'd3') {
+        renderD3Tree(d.tree);
+      }
+
+      hideError('agent-tree');
+    }
+
+    function toggleTreeView(view) {
+      currentTreeView = view;
+
+      if (view === 'ascii') {
+        $('#agent-tree-ascii').style.display = 'block';
+        $('#agent-tree-d3').style.display = 'none';
+        $('#btn-ascii').style.background = 'var(--accent)';
+        $('#btn-ascii').style.color = 'white';
+        $('#btn-ascii').style.border = 'none';
+        $('#btn-d3').style.background = 'var(--card)';
+        $('#btn-d3').style.color = 'var(--text)';
+        $('#btn-d3').style.border = '1px solid var(--border)';
+      } else {
+        $('#agent-tree-ascii').style.display = 'none';
+        $('#agent-tree-d3').style.display = 'block';
+        $('#btn-d3').style.background = 'var(--accent)';
+        $('#btn-d3').style.color = 'white';
+        $('#btn-d3').style.border = 'none';
+        $('#btn-ascii').style.background = 'var(--card)';
+        $('#btn-ascii').style.color = 'var(--text)';
+        $('#btn-ascii').style.border = '1px solid var(--border)';
+
+        if (currentTreeData) {
+          renderD3Tree(currentTreeData.tree);
+        }
+      }
+    }
+
+    function renderD3Tree(root) {
+      const container = $('#agent-tree-d3');
+      container.innerHTML = '';
+
+      const width = container.clientWidth || 800;
+      const height = 400;
+
+      const svg = d3.select('#agent-tree-d3')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .style('background', 'var(--bg)');
+
+      const g = svg.append('g')
+        .attr('transform', 'translate(40, 20)');
+
+      // Create tree layout
+      const treeLayout = d3.tree().size([height - 40, width - 160]);
+
+      // Convert data to d3 hierarchy
+      const hierarchy = d3.hierarchy(root);
+      const treeData = treeLayout(hierarchy);
+
+      // Draw links
+      g.selectAll('.link')
+        .data(treeData.links())
+        .enter()
+        .append('path')
+        .attr('class', 'link')
+        .attr('d', d3.linkHorizontal()
+          .x(d => d.y)
+          .y(d => d.x))
+        .style('fill', 'none')
+        .style('stroke', '#30363d')
+        .style('stroke-width', 2);
+
+      // Draw nodes
+      const nodes = g.selectAll('.node')
+        .data(treeData.descendants())
+        .enter()
+        .append('g')
+        .attr('class', 'node')
+        .attr('transform', d => `translate(${d.y}, ${d.x})`)
+        .style('cursor', 'pointer')
+        .on('click', (event, d) => {
+          // Toggle children on click
+          if (d.children) {
+            d._children = d.children;
+            d.children = null;
+          } else {
+            d.children = d._children;
+            d._children = null;
+          }
+          renderD3Tree(root);
+        });
+
+      // Add circles
+      nodes.append('circle')
+        .attr('r', 6)
+        .style('fill', d => d.children || d._children ? '#238636' : '#58a6ff')
+        .style('stroke', '#c9d1d9')
+        .style('stroke-width', 2);
+
+      // Add labels
+      nodes.append('text')
+        .attr('dy', '0.31em')
+        .attr('x', d => d.children || d._children ? -10 : 10)
+        .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
+        .text(d => {
+          const name = d.data.name || d.data.id;
+          const type = d.data.type ? ` [${d.data.type}]` : '';
+          const req = d.data.totalRequests > 0 ? ` (${d.data.totalRequests})` : '';
+          return name + type + req;
+        })
+        .style('fill', '#c9d1d9')
+        .style('font-size', '12px')
+        .style('font-family', 'monospace');
+    }
+
+    /* ========== EXPORT FUNCTIONS ========== */
+
+    let cachedMetrics = null;
+
+    async function loadCacheMetrics() {
+      const d = await getJSON('/api/f402/cache/metrics', 'cache');
+      if (!d || !d.summary) return;
+
+      // Store for export
+      cachedMetrics = d;
+
+      const s = d.summary;
+
+      // Cache hit rate (with color indicator)
+      const hitRate = s.cacheHitRate || 0;
+      const hitRateColor = hitRate >= 80 ? '#238636' : hitRate >= 50 ? '#d29922' : '#f85149';
+      $('#cache-hit-rate').textContent = `${hitRate.toFixed(1)}%`;
+      $('#cache-hit-rate').style.color = hitRateColor;
+
+      // Hits/Misses
+      $('#cache-hits').textContent = `${fmtNum(s.cacheHits)}/${fmtNum(s.cacheMisses)}`;
+
+      // D1 write savings
+      const savings = s.d1WriteReduction || 0;
+      const savingsColor = savings >= 80 ? '#238636' : savings >= 50 ? '#d29922' : '#f85149';
+      $('#cache-d1-savings').textContent = `${savings.toFixed(1)}%`;
+      $('#cache-d1-savings').style.color = savingsColor;
+
+      // Total requests
+      $('#cache-total-requests').textContent = fmtNum(s.totalRequests);
+
+      hideError('cache');
+    }
+
+    function exportMetrics(format) {
+      if (!cachedMetrics) {
+        alert('No metrics data available. Please wait for data to load.');
+        return;
+      }
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+      if (format === 'json') {
+        const blob = new Blob([JSON.stringify(cachedMetrics, null, 2)], { type: 'application/json' });
+        downloadBlob(blob, `cache-metrics-${timestamp}.json`);
+      } else if (format === 'csv') {
+        const s = cachedMetrics.summary;
+        const rows = [
+          ['Metric', 'Value'],
+          ['Total Requests', s.totalRequests],
+          ['Cache Hits', s.cacheHits],
+          ['Cache Misses', s.cacheMisses],
+          ['Cache Hit Rate (%)', s.cacheHitRate],
+          ['D1 Writes Skipped', s.d1WritesSkipped],
+          ['D1 Writes Executed', s.d1WritesExecuted],
+          ['D1 Write Reduction (%)', s.d1WriteReduction],
+          ['Agent Detail Hits', cachedMetrics.agentDetail.cacheHits],
+          ['Agent Detail Misses', cachedMetrics.agentDetail.cacheMisses],
+          ['Agent Detail Hit Rate (%)', cachedMetrics.agentDetail.hitRate],
+        ];
+
+        const csv = rows.map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        downloadBlob(blob, `cache-metrics-${timestamp}.csv`);
+      }
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function warmCacheNow() {
+      const btn = $('#btn-warm-cache');
+      const originalText = btn.textContent;
+
+      try {
+        btn.disabled = true;
+        btn.textContent = '🔥 Warming...';
+        btn.style.opacity = '0.6';
+
+        const response = await fetch(`${overrideURL}/api/f402/cache/warm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        btn.textContent = `✅ Warmed ${data.warmed.agents} agents!`;
+        btn.style.background = 'var(--accent)';
+
+        console.log(`[Cache Warm] Success:`, data);
+
+        // Reload data after warming
+        setTimeout(() => {
+          tick();
+          btn.textContent = originalText;
+          btn.style.background = 'var(--yellow)';
+          btn.style.opacity = '1';
+          btn.disabled = false;
+        }, 2000);
+
+      } catch (error) {
+        console.error('[Cache Warm] Error:', error);
+        btn.textContent = '❌ Failed';
+        btn.style.background = 'var(--warn)';
+        btn.style.color = 'white';
+
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = 'var(--yellow)';
+          btn.style.color = 'var(--bg)';
+          btn.style.opacity = '1';
+          btn.disabled = false;
+        }, 2000);
+      }
+    }
+
     /* ========== FANTASY402 INDIVIDUAL OPERATION CARDS ========== */
 
     // Player Info Card
@@ -932,25 +1280,38 @@
 
     // Player Analysis Card
     async function loadPlayerAnalysis() {
-      const d = await getJSON('/api/fantasy402/player-analysis', 'analysis');
+      const d = await getJSON('/api/player-analysis', 'analysis');
       if (!d) return;
 
-      $('#analysis-period').textContent = d.period ? `${d.startDate} → ${d.endDate}` : '—';
-      $('#analysis-wagers').textContent = d.totalWagers || '0';
-      $('#analysis-winrate').textContent = d.winRate ? `${(d.winRate * 100).toFixed(1)}%` : '—';
-      $('#analysis-income').textContent = d.netIncome ? fmt(d.netIncome) : '—';
+      if (d.cached === false) {
+        showError('analysis', d.message || 'No data available');
+        $('#analysis-period').textContent = '—';
+        $('#analysis-wagers').textContent = '0';
+        $('#analysis-winrate').textContent = '—';
+        $('#analysis-income').textContent = '—';
+        return;
+      }
 
-      // Update chart with bet types breakdown
-      if (d.betTypesBreakdown && Object.keys(d.betTypesBreakdown).length > 0) {
-        const betTypes = Object.keys(d.betTypesBreakdown);
-        const risks = betTypes.map(type => d.betTypesBreakdown[type].totalRisk);
+      // Update summary stats
+      $('#analysis-period').textContent = d.period ? `${d.period.startDate} → ${d.period.endDate}` : '—';
+      $('#analysis-wagers').textContent = d.summary?.totalWagers || '0';
+      $('#analysis-winrate').textContent = d.summary?.avgWinRate ? `${(d.summary.avgWinRate * 100).toFixed(1)}%` : '—';
+      $('#analysis-income').textContent = d.summary?.totalNet ? fmt(d.summary.totalNet) : '—';
 
-        analysisChart.data.labels = betTypes;
+      // Update chart with top players by net income
+      if (d.players && d.players.length > 0) {
+        const topPlayers = d.players
+          .sort((a, b) => b.netIncome - a.netIncome)
+          .slice(0, 5);
+        const names = topPlayers.map(p => p.playerName || p.customerId);
+        const incomes = topPlayers.map(p => p.netIncome);
+
+        analysisChart.data.labels = names;
         analysisChart.data.datasets = [{
-          label: 'Risk by Bet Type',
-          data: risks,
-          backgroundColor: '#238636',
-          borderColor: '#2ea043',
+          label: 'Net Income',
+          data: incomes,
+          backgroundColor: incomes.map(i => i >= 0 ? '#238636' : '#da3633'),
+          borderColor: incomes.map(i => i >= 0 ? '#2ea043' : '#f85149'),
           borderWidth: 1
         }];
         analysisChart.update();
@@ -960,17 +1321,27 @@
 
     // Transaction History Card
     async function loadTransactionHistory() {
-      const d = await getJSON('/api/fantasy402/transaction-history', 'tx-history');
+      const d = await getJSON('/api/transaction-history', 'tx-history');
       if (!d) return;
 
-      $('#tx-history-count').textContent = d.count || '0';
-      $('#tx-history-deposits').textContent = d.summary ? fmt(d.summary.totalDeposits) : '—';
-      $('#tx-history-withdrawals').textContent = d.summary ? fmt(d.summary.totalWithdrawals) : '—';
-      $('#tx-history-adjustments').textContent = d.summary ? fmt(d.summary.totalAdjustments) : '—';
+      if (d.cached === false) {
+        showError('tx-history', d.message || 'No data available');
+        $('#tx-history-count').textContent = '0';
+        $('#tx-history-deposits').textContent = '—';
+        $('#tx-history-withdrawals').textContent = '—';
+        $('#tx-history-adjustments').textContent = '—';
+        $('#tx-history-recent').textContent = 'No history available';
+        return;
+      }
 
-      if (d.transactions && Array.isArray(d.transactions)) {
+      $('#tx-history-count').textContent = d.summary?.totalTransactions || '0';
+      $('#tx-history-deposits').textContent = d.summary?.totalDeposits ? fmt(d.summary.totalDeposits) : '—';
+      $('#tx-history-withdrawals').textContent = d.summary?.totalWithdrawals ? fmt(d.summary.totalWithdrawals) : '—';
+      $('#tx-history-adjustments').textContent = d.summary?.totalAdjustments ? fmt(d.summary.totalAdjustments) : '—';
+
+      if (d.transactions && Array.isArray(d.transactions) && d.transactions.length > 0) {
         $('#tx-history-recent').textContent = d.transactions.slice(0, 5)
-          .map(t => `${t.tranCode} ${t.tranType} ${fmt(t.amount)} - ${t.description}`)
+          .map(t => `${t.tranCode}/${t.tranType} ${fmt(t.amount)} - ${t.description || 'N/A'}`)
           .join('\n');
       } else {
         $('#tx-history-recent').textContent = 'No history available';
@@ -993,6 +1364,8 @@
         loadActivity(),
         loadFantasy402Data(),  // Single unified call instead of 4 separate calls
         loadDNS(),             // DNS health check
+        loadCacheMetrics(),    // Cache performance metrics
+        loadAgentTree(),       // Agent hierarchy tree
 
         // Fantasy402 Individual Operation Cards
         loadPlayerInfo(),

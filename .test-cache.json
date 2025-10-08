@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "entries": {
+    "quiet-testing-system": {
+      "testName": "quiet-testing-system",
+      "passed": false,
+      "timestamp": 1759933584810,
+      "fileHash": "",
+      "duration": 0,
+      "category": "unit"
+    },
+    "test-cache-system": {
+      "testName": "test-cache-system",
+      "passed": false,
+      "timestamp": 1759933584811,
+      "fileHash": "",
+      "duration": 0,
+      "category": "unit"
+    },
+    "test-organization": {
+      "testName": "test-organization",
+      "passed": false,
+      "timestamp": 1759933584811,
+      "fileHash": "",
+      "duration": 0,
+      "category": "unit"
+    }
+  },
+  "lastCleanup": 1759933581860
+}
