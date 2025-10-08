@@ -14,12 +14,7 @@ export async function getNewUsers(
 ): Promise<Response> {
   console.log(`[${requestId}] 👥 GET /api/new-users`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     // Check KV cache for latest new users info
@@ -86,7 +81,7 @@ export async function getNewUsers(
             timestamp: data.capturedAt,
             requestId,
           }), {
-            headers: corsHeaders,
+            headers: CORS_HEADERS,
           });
         }
       }
@@ -107,7 +102,7 @@ export async function getNewUsers(
       message: 'No new users data available. Visit fantasy402.com/manager.html to capture data.',
       requestId,
     }), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -121,7 +116,7 @@ export async function getNewUsers(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

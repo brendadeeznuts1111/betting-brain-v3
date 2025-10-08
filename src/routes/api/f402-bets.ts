@@ -37,12 +37,7 @@ export async function getLiveBets(
   const url = new URL(request.url);
   const expand = url.searchParams.get('expand') === 'true';
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     if (!env.ANALYTICS) {
@@ -130,7 +125,7 @@ export async function getLiveBets(
     });
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -144,7 +139,7 @@ export async function getLiveBets(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

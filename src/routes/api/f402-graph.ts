@@ -68,12 +68,7 @@ export async function getAgentGraph(
     const minOverlap = Math.max(0, Math.min(1, parseFloat(url.searchParams.get('minOverlap') || '0.1')));
     const ringFence = url.searchParams.get('ringFence') === 'true';
 
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json',
-    };
+    
 
     try {
         if (!env.ANALYTICS) {
@@ -112,7 +107,7 @@ export async function getAgentGraph(
         });
 
         return new Response(JSON.stringify(response), {
-            headers: corsHeaders,
+            headers: CORS_HEADERS,
         });
 
     } catch (error) {
@@ -126,7 +121,7 @@ export async function getAgentGraph(
             }),
             {
                 status: 500,
-                headers: corsHeaders,
+                headers: CORS_HEADERS,
             }
         );
     }

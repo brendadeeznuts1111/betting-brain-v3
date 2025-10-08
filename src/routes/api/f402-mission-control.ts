@@ -95,12 +95,7 @@ export async function getMissionControl(
   const url = new URL(request.url);
   const expand = url.searchParams.get('expand') === 'true';
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     // 1. Get latest BetTicker data from KV
@@ -213,7 +208,7 @@ export async function getMissionControl(
     });
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
   } catch (error) {
     console.error(`[${requestId}] ❌ Error fetching mission control:`, error);
@@ -226,7 +221,7 @@ export async function getMissionControl(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

@@ -35,12 +35,7 @@ export async function getActiveCustomers(
 
   console.log(`[${requestId}] 👥 GET /api/f402/customers/active?minutes=${minutes}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     if (!env.ANALYTICS) {
@@ -60,7 +55,7 @@ export async function getActiveCustomers(
     const response: ActiveCustomersResponse = { count };
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -74,7 +69,7 @@ export async function getActiveCustomers(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }
@@ -94,12 +89,7 @@ export async function getStakedTotal(
 
   console.log(`[${requestId}] 💵 GET /api/f402/customers/staked?period=${period}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     if (!env.ANALYTICS) {
@@ -127,7 +117,7 @@ export async function getStakedTotal(
     const response: StakedTotalResponse = { total };
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -141,7 +131,7 @@ export async function getStakedTotal(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

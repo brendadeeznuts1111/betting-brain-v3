@@ -14,12 +14,7 @@ export async function getActivity(
 ): Promise<Response> {
   console.log(`[${requestId}] 📡 GET /api/activity`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     const url = new URL(request.url);
@@ -97,7 +92,7 @@ export async function getActivity(
     console.log(`[${requestId}] ✅ Activity feed: ${response.count} events`);
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
   } catch (error) {
     console.error(`[${requestId}] ❌ Activity feed error:`, error);
@@ -110,7 +105,7 @@ export async function getActivity(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

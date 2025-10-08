@@ -16,12 +16,7 @@ export async function getLiveScores(
 ): Promise<Response> {
   console.log(`[${requestId}] 🏀 GET /api/live-scores`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     const url = new URL(request.url);
@@ -101,7 +96,7 @@ export async function getLiveScores(
               timestamp: cachedData.capturedAt,
               requestId,
             }), {
-              headers: corsHeaders,
+              headers: CORS_HEADERS,
             });
           }
         }
@@ -245,7 +240,7 @@ export async function getLiveScores(
           console.log(`[${requestId}] ✅ Live scores from Fantasy402: ${result.count} games`);
 
           return new Response(JSON.stringify(result), {
-            headers: corsHeaders,
+            headers: CORS_HEADERS,
           });
         }
 
@@ -307,7 +302,7 @@ export async function getLiveScores(
     };
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
   } catch (error) {
     console.error(`[${requestId}] ❌ Live scores error:`, error);
@@ -320,7 +315,7 @@ export async function getLiveScores(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

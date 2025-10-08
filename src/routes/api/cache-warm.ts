@@ -37,12 +37,7 @@ export async function warmCache(
 
   const startTime = Date.now();
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     if (!env.FANTASY_CACHE || !env.RAW_FEED_DB) {
@@ -183,7 +178,7 @@ export async function warmCache(
     console.log(`[${requestId}] 🔥 Cache warming complete: ${agentsWarmed} agents, ${agentListsWarmed} lists (${duration}ms)`);
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
   } catch (error) {
     console.error(`[${requestId}] ❌ Error warming cache:`, error);
@@ -196,7 +191,7 @@ export async function warmCache(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

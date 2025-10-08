@@ -14,12 +14,7 @@ export async function getPlayerAnalysis(
 ): Promise<Response> {
   console.log(`[${requestId}] 📊 GET /api/player-analysis`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     // Check KV cache for latest player analysis
@@ -68,7 +63,7 @@ export async function getPlayerAnalysis(
             timestamp: data.capturedAt,
             requestId,
           }), {
-            headers: corsHeaders,
+            headers: CORS_HEADERS,
           });
         }
       }
@@ -91,7 +86,7 @@ export async function getPlayerAnalysis(
       message: 'No player analysis data available. Visit fantasy402.com/manager.html to capture data.',
       requestId,
     }), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -105,7 +100,7 @@ export async function getPlayerAnalysis(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

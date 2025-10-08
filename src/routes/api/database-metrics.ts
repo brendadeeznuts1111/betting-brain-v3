@@ -14,12 +14,7 @@ export async function getDatabaseMetrics(
 ): Promise<Response> {
   console.log(`[${requestId}] 💾 GET /api/database/metrics`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     if (!env.ANALYTICS) {
@@ -28,7 +23,7 @@ export async function getDatabaseMetrics(
           error: 'Database not configured',
           requestId,
         }),
-        { status: 503, headers: corsHeaders }
+        { status: 503, headers: CORS_HEADERS }
       );
     }
 
@@ -64,7 +59,7 @@ export async function getDatabaseMetrics(
     console.log(`[${requestId}] ✅ Database metrics:`, response);
 
     return new Response(JSON.stringify(response), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
   } catch (error) {
     console.error(`[${requestId}] ❌ Database metrics error:`, error);
@@ -77,7 +72,7 @@ export async function getDatabaseMetrics(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

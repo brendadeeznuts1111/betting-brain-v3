@@ -25,12 +25,7 @@ export async function dnsHealth(req: Request, env: Env): Promise<Response> {
 
   console.log(`[${requestId}] 🔍 DNS health check for: ${host}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     const result = await resolveHost(host);
@@ -51,7 +46,7 @@ export async function dnsHealth(req: Request, env: Env): Promise<Response> {
         requestId,
       }),
       {
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   } catch (error) {
@@ -66,7 +61,7 @@ export async function dnsHealth(req: Request, env: Env): Promise<Response> {
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }
@@ -84,12 +79,7 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
   const url = new URL(req.url);
   const hostsParam = url.searchParams.get('hosts');
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   if (!hostsParam) {
     return new Response(
@@ -100,7 +90,7 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
       }),
       {
         status: 400,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }
@@ -115,7 +105,7 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
       }),
       {
         status: 400,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }
@@ -152,7 +142,7 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
       requestId,
     }),
     {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     }
   );
 }

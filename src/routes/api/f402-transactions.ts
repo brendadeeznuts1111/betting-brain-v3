@@ -34,12 +34,7 @@ export async function getLatestTransactions(
 
   console.log(`[${requestId}] 💸 GET /api/f402/transactions/latest?limit=${limit}`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     if (!env.ANALYTICS) {
@@ -81,7 +76,7 @@ export async function getLatestTransactions(
     console.log(`[${requestId}] 📊 Stats: ${betCount} bets, ${payoutCount} payouts, ${pendingCount} pending`);
 
     return new Response(JSON.stringify(transactions), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -95,7 +90,7 @@ export async function getLatestTransactions(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

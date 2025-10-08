@@ -14,12 +14,7 @@ export async function getTransactionHistory(
 ): Promise<Response> {
   console.log(`[${requestId}] 💳 GET /api/transaction-history`);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-  };
+  
 
   try {
     // Check KV cache for latest transaction history
@@ -102,7 +97,7 @@ export async function getTransactionHistory(
             timestamp: data.capturedAt,
             requestId,
           }), {
-            headers: corsHeaders,
+            headers: CORS_HEADERS,
           });
         }
       }
@@ -127,7 +122,7 @@ export async function getTransactionHistory(
       message: 'No transaction history available. Visit fantasy402.com/manager.html to capture data.',
       requestId,
     }), {
-      headers: corsHeaders,
+      headers: CORS_HEADERS,
     });
 
   } catch (error) {
@@ -141,7 +136,7 @@ export async function getTransactionHistory(
       }),
       {
         status: 500,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       }
     );
   }

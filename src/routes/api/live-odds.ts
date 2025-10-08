@@ -33,14 +33,10 @@ export async function handleLiveOdds(
   req: Request,
   env: SportsEnv
 ): Promise<Response> {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+  
 
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   const url = new URL(req.url);
@@ -62,7 +58,7 @@ export async function handleLiveOdds(
       }),
       {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );
   }
@@ -75,7 +71,7 @@ export async function handleLiveOdds(
       }),
       {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );
   }
@@ -92,7 +88,7 @@ export async function handleLiveOdds(
 
       return new Response(JSON.stringify(cachedData, null, 2), {
         headers: {
-          ...corsHeaders,
+          ...CORS_HEADERS,
           'Content-Type': 'application/json',
           'X-Cache': 'HIT',
           'Cache-Control': 'public, max-age=30',
@@ -117,7 +113,7 @@ export async function handleLiveOdds(
 
     return new Response(JSON.stringify(odds, null, 2), {
       headers: {
-        ...corsHeaders,
+        ...CORS_HEADERS,
         'Content-Type': 'application/json',
         'X-Cache': 'MISS',
         'Cache-Control': 'public, max-age=30',
@@ -132,7 +128,7 @@ export async function handleLiveOdds(
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );
   }

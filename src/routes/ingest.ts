@@ -39,15 +39,11 @@ export async function handleIngest(
   env: SportsEnv
 ): Promise<Response> {
   // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
+  
 
   // Handle OPTIONS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   const requestId = Date.now().toString(36);
@@ -75,7 +71,7 @@ export async function handleIngest(
         }),
         {
           status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -103,7 +99,7 @@ export async function handleIngest(
         }),
         {
           status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -121,7 +117,7 @@ export async function handleIngest(
         }),
         {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -188,7 +184,7 @@ export async function handleIngest(
 
     return new Response(JSON.stringify(response, null, 2), {
       status: written > 0 ? 200 : 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error(`[${requestId}] ❌ Ingest error:`, error);
@@ -199,7 +195,7 @@ export async function handleIngest(
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );
   }
