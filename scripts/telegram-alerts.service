@@ -1,0 +1,31 @@
+[Unit]
+Description=Telegram Alert System for Betting-Brain v3
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=nobody
+Group=nogroup
+
+# Path to the alert script
+ExecStart=/Users/nolarose/Documents/augment-projects/betting-brain-v3/scripts/telegram-alerts.sh
+
+# Environment
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=telegram-alerts
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/tmp
+
+[Install]
+WantedBy=multi-user.target
+

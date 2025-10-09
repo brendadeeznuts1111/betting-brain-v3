@@ -1,0 +1,15 @@
+[Unit]
+Description=Run Telegram Alert System every 2 minutes
+Requires=telegram-alerts.service
+
+[Timer]
+# Run every 2 minutes
+OnBootSec=1min
+OnUnitActiveSec=2min
+
+# Randomize start time by up to 30 seconds to avoid thundering herd
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target
+
