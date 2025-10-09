@@ -11,7 +11,7 @@ import { handleSteamWebhook } from './queues/steamWebhook';
 import { handleSharpCalculation } from './schedules/sharpCalc';
 import { handleExposureCalculation } from './schedules/exposureCalc';
 import { handleBetTickerInterception } from './interceptors/bet-ticker-sniffer';
-import { getAgentTree } from './routes/api/f402-agents';
+import { getAgentTree } from './routes/api/f402-agents/index';
 import { handleMCPRequest } from './mcp/server';
 import { handleAPIRoute } from './api/routes';
 import { handleWebSocketUpgrade } from './websocket/fantasy402-ws-handler';

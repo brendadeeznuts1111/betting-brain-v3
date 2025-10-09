@@ -14,7 +14,7 @@ import { getHoldPercentage } from '../tools/intelligence/getHoldPercentage';
 import { handleFantasy402Ingest, handleFantasy402IngestHead } from './fantasy402-ingest';
 import { getAgentPerformance, getSportPerformance, getPerformanceSummary } from './fantasy402-performance-api';
 import { getLiveBets } from '../routes/api/f402-bets';
-import { getAgentPerformance as getF402AgentPerformance, getAgentList, getAgentDetail, getAgentTree, getCacheMetrics } from '../routes/api/f402-agents';
+import { getAgentPerformance as getF402AgentPerformance, getAgentList, getAgentDetail, getAgentTree, getCacheMetrics } from '../routes/api/f402-agents/index';
 import { warmCache } from '../routes/api/cache-warm';
 import { getActiveCustomers, getStakedTotal } from '../routes/api/f402-customers';
 import { getLatestTransactions } from '../routes/api/f402-transactions';

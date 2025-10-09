@@ -16,13 +16,13 @@ import {
   parseAgentList,
   parseAccountInfo,
   parseAuthorizations,
-  parseAgentPerformance,
 } from './agent-parser';
 import {
   parsePlayerInfo,
   parsePlayerPerformance,
   parsePendingWagers,
   parsePlayerAnalysis,
+  parseAgentPerformance,
 } from './player-parser';
 
 /**
