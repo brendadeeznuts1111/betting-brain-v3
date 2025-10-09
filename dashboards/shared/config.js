@@ -9,7 +9,9 @@
  */
 
 // Worker API Configuration
-export const WORKER_URL = 'http://localhost:8787';
+export const WORKER_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:8787'
+  : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev'; // Default to prod if not localhost. This needs to be the primary prod URL.
 
 // API Endpoints
 export const API_ENDPOINTS = {
@@ -17,16 +19,18 @@ export const API_ENDPOINTS = {
   interceptorHistory: '/interceptor/history',
   interceptorResponse: '/interceptor/response',
   interceptorStats: '/interceptor/stats',
-  
+  analyticsLive: '/api/analytics/live',
+  floorStatus: '/floor/status',
+
   // Intelligence Tools
   exposure: '/tools/betting-exposure',
   clv: '/tools/clv',
   hold: '/tools/hold-percentage',
   sharp: '/tools/sharp-score',
-  
+
   // MCP Endpoint
   mcp: '/mcp',
-  
+
   // REST API (new)
   apiEvents: '/api/events',
   apiCustomers: '/api/customers',
@@ -36,15 +40,48 @@ export const API_ENDPOINTS = {
   apiAlerts: '/api/alerts',
   apiMetrics: '/api/metrics',
   apiLeaderboard: '/api/leaderboard',
-  apiTimeSeries: '/api/time-series'
+  apiTimeSeries: '/api/time-series',
+  apiLiveOdds: '/api/live-odds',
+  apiLiveScores: '/api/live-scores',
+  apiDatabaseMetrics: '/api/database-metrics',
+  apiInfrastructureStatus: '/api/infrastructure-status',
+  apiAnalyticsMetrics: '/api/analytics/metrics',
+  apiF402MissionControl: '/api/f402/mission-control',
+  apiHealthDns: '/api/health/dns',
+  apiF402PlayerInfo: '/api/fantasy402/player-info',
+  apiF402PlayerPerformance: '/api/fantasy402/player-performance',
+  apiF402TransactionList: '/api/fantasy402/transaction-list',
+  apiF402PendingWagers: '/api/fantasy402/pending-wagers',
+  apiPlayerAnalysis: '/api/player-analysis',
+  apiTransactionHistory: '/api/transaction-history',
+  interceptorHistory: '/interceptor/history',
+  interceptorResponse: '/interceptor/response',
+  apiF402AgentsTree: '/api/f402/agents/tree',
+  apiF402AgentsDetail: '/api/f402/agents/',
+  apiAnalyticsMicro: '/api/analytics/micro/',
 };
 
 // Refresh Intervals (milliseconds)
 export const REFRESH_INTERVALS = {
-  fast: 5000,       // 5 seconds
-  normal: 10000,    // 10 seconds
-  slow: 30000,      // 30 seconds
+  normal: 10000,
+  fast: 5000,
+  slow: 30000,
+  ANALYTICS_LIVE: 5000,
+  dashboard: 10000,
   manual: 0         // No auto-refresh
+  analyticsEnhanced: 30000, // New refresh interval for analytics-enhanced dashboard
+  agentPerformance: 60000, // New refresh interval for agent-performance dashboard
+  hierarchyEnhanced: 60000 // New refresh interval for hierarchy-enhanced dashboard
+};
+
+// Wager Type Labels
+export const WAGER_TYPES = {
+  'M': 'Moneyline',
+  'S': 'Spread',
+  'L': 'Total',
+  'P': 'Parlay',
+  'T': 'Teaser',
+  'C': 'Future'
 };
 
 // Chart Colors
@@ -63,8 +100,8 @@ export const CHART_COLORS = {
 
 // Status Types
 export const STATUS = {
-  ONLINE: '✅',
-  OFFLINE: '❌',
+  ONLINE: 'Online',
+  OFFLINE: 'Offline',
   WARNING: '⚠️',
   LOADING: '⏳',
   ERROR: '❌'
@@ -139,8 +176,12 @@ export const ERROR_MESSAGES = {
   notFound: 'Resource not found.',
   unauthorized: 'Unauthorized access.',
   timeout: 'Request timed out. Please try again.',
-  unknown: 'An unknown error occurred.'
+  unknown: 'An unknown error occurred.',
+  fetchError: 'Failed to fetch data. Check console for details.'
 };
+
+// Extension secret for production requests
+export const EXTENSION_SECRET = 'default-dev-secret-change-me';
 
 // Default Export (for ES6 imports)
 export default {
@@ -152,6 +193,7 @@ export default {
   DATA_LIMITS,
   FORMATTERS,
   DEFAULT_CHART_CONFIG,
-  ERROR_MESSAGES
+  ERROR_MESSAGES,
+  EXTENSION_SECRET
 };
 

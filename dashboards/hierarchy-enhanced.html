@@ -6,311 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agent Hierarchy Enhanced | Betting-Brain v3</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+  <link rel="stylesheet" href="shared/styles.css">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-  <style>
-    :root {
-      --primary: #9b4dca;
-      --risk-critical: #e41a1c;
-      --risk-high: #ff7f00;
-      --risk-medium: #ffed6f;
-      --risk-low: #4daf4a;
-      --bg-drawer: #ffffff;
-      --shadow: rgba(0, 0, 0, 0.2);
-    }
-
-    body {
-      padding: 1rem;
-      background: #f4f5f7;
-    }
-
-    .container {
-      max-width: 1400px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding: 1rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px var(--shadow);
-    }
-
-    header h4 {
-      margin: 0;
-    }
-
-    header small {
-      color: #606c76;
-    }
-
-    .nav-link {
-      color: var(--primary);
-      text-decoration: none;
-      font-size: 1.4rem;
-    }
-
-    .nav-link:hover {
-      text-decoration: underline;
-    }
-
-    .search-box {
-      width: 100%;
-      margin-bottom: 2rem;
-      padding: 1.2rem;
-      font-size: 1.6rem;
-      border-radius: 8px;
-      border: 2px solid #d1d1d1;
-      transition: border-color 0.3s;
-    }
-
-    .search-box:focus {
-      border-color: var(--primary);
-      outline: none;
-    }
-
-    .metrics-table {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px var(--shadow);
-      overflow: hidden;
-    }
-
-    .metrics-table th {
-      background: #f4f5f7;
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 1.2rem;
-      letter-spacing: 0.5px;
-      padding: 1.5rem 1rem;
-    }
-
-    .metrics-table th[data-sort] {
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .metrics-table th[data-sort]:hover {
-      background: #e1e4e8;
-    }
-
-    .metrics-table td {
-      padding: 1rem;
-      vertical-align: middle;
-    }
-
-    .parent-row {
-      background: #f9f9fb;
-    }
-
-    .parent-row:hover {
-      background: #f0f0f5 !important;
-    }
-
-    tr[data-level="0"] {
-      font-weight: 600;
-      background: #fafbfc;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 0.4rem 0.8rem;
-      border-radius: 4px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .risk-critical {
-      background: var(--risk-critical);
-    }
-
-    .risk-high {
-      background: var(--risk-high);
-    }
-
-    .risk-medium {
-      background: var(--risk-medium);
-      color: #333;
-    }
-
-    .risk-low {
-      background: var(--risk-low);
-    }
-
-    .steam-badge {
-      background: #0366d6;
-    }
-
-    .button-small {
-      padding: 0.5rem 1rem;
-      font-size: 1.2rem;
-      margin: 0;
-    }
-
-    /* Tree View Styles */
-    #tree-container {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px var(--shadow);
-      padding: 2rem;
-      margin-top: 2rem;
-    }
-
-    ul.tree {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    ul.tree li {
-      margin: 0.3rem 0;
-    }
-
-    ul.tree details {
-      margin-left: 1.5rem;
-    }
-
-    ul.tree summary {
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      transition: background 0.2s;
-    }
-
-    ul.tree summary:hover {
-      background: #f4f5f7;
-    }
-
-    ul.tree summary::marker {
-      color: var(--primary);
-    }
-
-    ul.tree .agent-name {
-      font-weight: 500;
-      min-width: 150px;
-    }
-
-    ul.tree .badge {
-      font-size: 1.1rem;
-      padding: 0.3rem 0.6rem;
-    }
-
-    ul.tree .time {
-      font-size: 1.1rem;
-      color: #606c76;
-      margin-left: auto;
-    }
-
-    /* Side Drawer */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      right: -450px;
-      width: 450px;
-      height: 100%;
-      background: var(--bg-drawer);
-      box-shadow: -4px 0 12px var(--shadow);
-      transition: right 0.3s ease-in-out;
-      z-index: 1000;
-      padding: 2rem;
-      overflow-y: auto;
-    }
-
-    .sidebar[open] {
-      right: 0;
-    }
-
-    .sidebar summary {
-      cursor: pointer;
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      list-style: none;
-    }
-
-    .sidebar summary::before {
-      content: "✕ ";
-      color: var(--risk-critical);
-    }
-
-    .sidebar pre {
-      background: #f6f8fa;
-      padding: 1rem;
-      border-radius: 4px;
-      font-size: 1.2rem;
-      overflow-x: auto;
-    }
-
-    .analytics-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin: 1.5rem 0;
-    }
-
-    .analytics-card {
-      background: #f6f8fa;
-      padding: 1rem;
-      border-radius: 4px;
-      border-left: 4px solid var(--primary);
-    }
-
-    .analytics-card h5 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.3rem;
-      color: #606c76;
-    }
-
-    .analytics-card .value {
-      font-size: 2rem;
-      font-weight: 600;
-    }
-
-    .hide {
-      display: none;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: #606c76;
-    }
-
-    .empty-state h5 {
-      margin-bottom: 1rem;
-    }
-
-    .kbd {
-      background: #f6f8fa;
-      border: 1px solid #d1d1d1;
-      border-radius: 3px;
-      padding: 0.2rem 0.5rem;
-      font-family: monospace;
-      font-size: 1.2rem;
-    }
-
-    .help-text {
-      font-size: 1.2rem;
-      color: #606c76;
-      margin-top: 1rem;
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 100%;
-        right: -100%;
-      }
-
-      .analytics-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  <script type="module" src="shared/utils.js"></script>
+  <script type="module" src="shared/charts.js"></script>
+  <script type="module" src="shared/config.js"></script>
 </head>
 
 <body>
@@ -394,18 +94,12 @@
 
   <script type="module">
     // Configuration
-    const WORKER_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:8787'
-      : 'https://betting-brain-v3.nola.workers.dev';
-
-    const API_ENDPOINTS = {
-      hierarchy: `${WORKER_URL}/api/f402/agents/tree`,
-      agentDetail: (id) => `${WORKER_URL}/api/f402/agents/${id}?expand=true`,
-      microAnalytics: (id) => `${WORKER_URL}/api/analytics/micro/${id}`
-    };
+    import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS, ERROR_MESSAGES, STATUS, FORMATTERS } from './shared/config.js';
+    import { debounce, fetchAPI, storage, updateElementText } from './shared/utils.js';
 
     // Set htmx URL dynamically
-    document.getElementById('live-data')?.setAttribute('hx-get', `${WORKER_URL}/api/f402/agents/tree?owner=BILLY666&depth=99`);
+    document.getElementById('live-data')?.setAttribute('hx-get', `${WORKER_URL}${API_ENDPOINTS.apiF402AgentsTree}?owner=BILLY666&depth=99`);
+    document.getElementById('live-data')?.setAttribute('hx-trigger', `load delay:0.5s, every ${REFRESH_INTERVALS.hierarchyEnhanced / 1000}s`);
 
     // State
     let rows = [];
@@ -438,9 +132,8 @@
     // Fetch hierarchy from worker
     async function loadHierarchy() {
       try {
-        const response = await fetch(API_ENDPOINTS.hierarchy);
-        if (!response.ok) throw new Error('Failed to fetch hierarchy');
-        const data = await response.json();
+        const data = await fetchAPI('apiF402AgentsTree');
+        if (!data) throw new Error(ERROR_MESSAGES.fetchError);
         console.log('✅ Loaded real agent data from backend', data);
 
         // Flatten tree structure into rows
@@ -530,7 +223,7 @@
             ${r.childCount > 0 ? `<strong>${r.childCount}</strong> / ${r.descendantCount}` : '—'}
           </td>
           <td style="font-size: 1.2rem; color: ${Date.now() - r.lastBet < 3600000 ? 'var(--risk-critical)' : '#606c76'};">
-            ${timeAgo(r.lastBet)}
+            ${FORMATTERS.relativeTime(r.lastBet)}
           </td>
           <td>
             <div style="display: flex; gap: 0.5rem; justify-content: flex-start;">
@@ -571,23 +264,19 @@
     }
 
     // Time ago helper
-    function timeAgo(timestamp) {
-      const seconds = Math.floor((Date.now() - timestamp) / 1000);
-      if (seconds < 60) return 'just now';
-      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-      return `${Math.floor(seconds / 86400)}d ago`;
-    }
+    // Replaced by FORMATTERS.relativeTime(timestamp)
 
     // Load agent details in drawer
     async function loadAgentDetails(agentId) {
-      sideContent.innerHTML = '<p>Loading analytics...</p>';
+      updateElementText('side-content', 'Loading analytics...');
       sideDrawer.open = true;
 
       try {
-        const response = await fetch(API_ENDPOINTS.agentDetail(agentId));
-        if (!response.ok) throw new Error('Failed to fetch details');
-        const data = await response.json();
+        const agentDetailData = await fetchAPI('apiF402AgentsDetail', { id: agentId, expand: true });
+        if (!agentDetailData) throw new Error(ERROR_MESSAGES.fetchError);
+        const microAnalyticsData = await fetchAPI('apiAnalyticsMicro', { id: agentId });
+        if (!microAnalyticsData) throw new Error(ERROR_MESSAGES.fetchError);
+        const data = { ...agentDetailData, microAnalytics: microAnalyticsData };
 
         sideContent.innerHTML = `
           <h3>${agentId}</h3>
@@ -648,7 +337,7 @@
           sharpness: Math.floor(Math.random() * 100),
           totalBets: Math.floor(Math.random() * 1000),
           totalStake: Math.floor(Math.random() * 100000),
-          note: 'Mock data - backend endpoint requires database setup'
+          note: ERROR_MESSAGES.serverError
         };
 
         sideContent.innerHTML = `
@@ -856,7 +545,7 @@
           <span class="badge ${riskClass(n.totalRisk)}" title="Total: ${n.totalRisk.toFixed(1)}">${n.totalRisk.toFixed(1)}</span>
           <span class="badge steam-badge" style="background: ${n.steam > 5 ? '#e41a1c' : n.steam > 2 ? '#ff7f00' : '#4daf4a'};">${n.steam.toFixed(1)}%</span>
           ${n.childCount > 0 ? `<span class="badge" style="background: #606c76; font-size: 1rem;">${n.childCount} / ${n.descendantCount}</span>` : ''}
-          <span class="time">${timeAgo(n.lastBet)}</span>
+          <span class="time">${FORMATTERS.relativeTime(n.lastBet)}</span>
         `;
 
         details.appendChild(summary);
@@ -908,15 +597,15 @@
         console.log(`✅ Loaded ${rows.length} agents`);
 
         // inside init() success branch
-        document.getElementById('status').textContent = 'Live';
-        document.getElementById('status').className = 'badge risk-low';
+        updateElementText('status', STATUS.ONLINE);
+        document.getElementById('status').className = 'badge risk-low'; // Keep for now, consider a utility if this pattern is repeated
       } catch (error) {
         console.error('Initialization error:', error);
         tableBody.innerHTML = `
           <tr>
             <td colspan="9" class="empty-state">
               <h5>⚠️ Failed to Load Data</h5>
-              <p>${error.message}</p>
+              <p>${ERROR_MESSAGES.serverError}</p>
             </td>
           </tr>`;
       }
@@ -935,7 +624,7 @@
             <td colspan="9" style="text-align: center; padding: 2rem;">
               <div style="color: #856404;">
                 <h5>🌳 Agent tree temporarily unavailable</h5>
-                <p style="margin: 1rem 0; opacity: 0.8;">The backend endpoint is not responding. This could be due to:</p>
+                <p style="margin: 1rem 0; opacity: 0.8;">${ERROR_MESSAGES.serverError} This could be due to:</p>
                 <ul style="text-align: left; max-width: 400px; margin: 0 auto 1rem;">
                   <li>Worker not running (start with <code>wrangler dev</code>)</li>
                   <li>Database not initialized (run migrations)</li>
@@ -959,6 +648,8 @@
       if (banner) {
         banner.classList.remove('hide');
       }
+      updateElementText('status', STATUS.ERROR);
+      document.getElementById('status').className = 'badge risk-critical';
     }
 
     /**

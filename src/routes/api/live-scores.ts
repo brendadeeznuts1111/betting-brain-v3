@@ -5,7 +5,7 @@
  */
 
 import { Env } from '../../types/api';
-import { CORS_HEADERS } from '../utils/request';
+import { CORS_HEADERS } from '../../utils/request';
 
 const FANTASY402_API = 'https://fantasy402.com/cloud/api/Report/getScoresLiveDynamic';
 

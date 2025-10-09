@@ -67,7 +67,7 @@ describe('BetTicker Sniffer Error Paths', () => {
     test('should handle origin timeout', async () => {
       global.fetch = vi.fn().mockImplementation(() =>
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Origin timeout after 30s')), 31000)
+          setTimeout(() => reject(new Error('Origin timeout after 3s')), 3000)
         )
       );
 
@@ -81,7 +81,7 @@ describe('BetTicker Sniffer Error Paths', () => {
       expect(response.status).toBe(502);
       const data = await response.json();
       expect(data.error).toContain('Worker interception failed');
-    });
+    }, 5000); // 5s timeout for this test
 
     test('should handle origin returning 4xx error', async () => {
       global.fetch = vi.fn().mockResolvedValue(

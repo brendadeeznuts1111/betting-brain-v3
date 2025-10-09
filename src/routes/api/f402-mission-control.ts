@@ -14,7 +14,7 @@
  */
 
 import { Env } from '../../types/api';
-import { CORS_HEADERS } from '../utils/request';
+import { CORS_HEADERS } from '../../utils/request';
 
 interface BetTickerWager {
   wagerId?: string;
