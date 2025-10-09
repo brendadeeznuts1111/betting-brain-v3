@@ -27,6 +27,9 @@ export async function getMCPTools(env: MCPEnv): Promise<MCPTool[]> {
     // Admin Tools (3)
     ...getAdminTools(),
 
+    // AI-Enhanced Tools (3)
+    ...getAITools(),
+
     // Management Tools (19)
     ...getManagementTools(),
   ];
@@ -438,6 +441,52 @@ function getAdminTools(): MCPTool[] {
  * Account management, reporting, configuration
  * Note: These are proxied to Fantasy402.com API
  */
+/**
+ * AI-Enhanced Tools
+ * AI-powered analysis using Kimi K2
+ */
+function getAITools(): MCPTool[] {
+  return [
+    {
+      name: 'aiSharpAnalysis',
+      description: 'AI-powered customer profiling and sharp detection using Kimi K2 - analyzes CLV, win rate, and betting patterns',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          customerId: { type: 'string', description: 'Customer ID to analyze' },
+          agentID: { type: 'string', description: 'Agent ID to scope to (optional)', default: 'DEMO' },
+        },
+        required: ['customerId'],
+      },
+    },
+    {
+      name: 'aiSteamDetection',
+      description: 'AI-powered line movement and steam move detection using Kimi K2 - identifies sharp money patterns',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          eventId: { type: 'string', description: 'Event ID to analyze' },
+          marketType: { type: 'string', enum: ['SPREAD', 'MONEYLINE', 'TOTAL', 'PROP'], default: 'SPREAD', description: 'Market type' },
+          agentID: { type: 'string', description: 'Agent ID to scope to (optional)', default: 'DEMO' },
+        },
+        required: ['eventId'],
+      },
+    },
+    {
+      name: 'aiRiskReport',
+      description: 'AI-powered risk assessment and hedge recommendations using Kimi K2 - generates actionable risk management strategies',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          eventId: { type: 'string', description: 'Event ID to analyze' },
+          agentID: { type: 'string', description: 'Agent ID to scope to (optional)', default: 'DEMO' },
+        },
+        required: ['eventId'],
+      },
+    },
+  ];
+}
+
 function getManagementTools(): MCPTool[] {
   return [
     {
