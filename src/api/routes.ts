@@ -195,6 +195,38 @@ export async function handleAPIRoute(
         const { getPlayerInfo } = await import('../routes/api/fantasy402-player-info');
         return await getPlayerInfo(request, env, requestId);
 
+      case '/recent-activity':
+        const { getRecentActivity } = await import('../routes/api/recent-activity');
+        return await getRecentActivity(request, env);
+
+      case '/live-bets':
+        const { getLiveBets } = await import('../routes/api/live-bets');
+        return await getLiveBets(request, env);
+
+      case '/agent-performance':
+        const { getAgentPerformance } = await import('../routes/api/agent-performance');
+        return await getAgentPerformance(request, env);
+
+      case '/customer-pulse':
+        const { getCustomerPulse } = await import('../routes/api/customer-pulse');
+        return await getCustomerPulse(request, env);
+
+      case '/transaction-ticker':
+        const { getTransactionTicker } = await import('../routes/api/transaction-ticker');
+        return await getTransactionTicker(request, env);
+
+      case '/dns-health':
+        const { getDnsHealth } = await import('../routes/api/dns-health');
+        return await getDnsHealth(request, env);
+
+      case '/agent-hierarchy-analytics':
+        const { getAgentHierarchyAnalytics } = await import('../routes/api/agent-hierarchy-analytics');
+        return await getAgentHierarchyAnalytics(request, env);
+
+      case '/player-info':
+        const { getPlayerInfo: getPlayerInfoDirect } = await import('../routes/api/player-info');
+        return await getPlayerInfoDirect(request, env);
+
       default:
         // Check if it's an agent detail request (/f402/agents/:agentID)
         const agentDetailMatch = path.match(/^\/f402\/agents\/([a-zA-Z0-9_-]+)$/);
