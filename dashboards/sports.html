@@ -53,7 +53,8 @@
     import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS, ERROR_MESSAGES, CHART_COLORS } from './shared/config.js';
     import { fetchWidgetData, updateElementText, formatLargeNumber, formatCurrency, showToast } from './shared/utils.js';
 
-    const ctx = document.getElementById('oddsChart');
+    const chartEl = $('oddsChart');
+    const ctx = chartEl ? chartEl.getContext('2d') : null;
     let chart;
 
     function initChart() {

@@ -107,8 +107,8 @@ export default {
     // Live odds API endpoint
     if (url.pathname === '/api/live-odds' && request.method === 'GET') {
       console.log(`[${requestId}] 🎲 Live odds API`);
-      const { handleLiveOdds } = await import('./routes/api/live-odds');
-      return handleLiveOdds(request, env as SportsEnv);
+      const { getLiveOdds } = await import('./routes/api/live-odds');
+      return getLiveOdds(request, env);
     }
 
     // Extension logs endpoint

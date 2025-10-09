@@ -158,27 +158,37 @@
     const FANTASY402_API = 'https://fantasy402.com/cloud/api/Manager/getListAgenstByAgent';
 
     function showStatus(message, type = 'info') {
-      const statusDiv = document.getElementById('status');
-      statusDiv.innerHTML = `<div class="sync-status ${type}">${message}</div>`;
+      const statusDiv = $('status');
+      if (statusDiv) statusDiv.innerHTML = `<div class="sync-status ${type}">${message}</div>`;
     }
 
     function showProgress(percent, text) {
-      const progressDiv = document.getElementById('progress');
-      const progressFill = document.getElementById('progressFill');
-      progressDiv.style.display = 'block';
-      progressFill.style.width = percent + '%';
-      progressFill.textContent = text || `${percent}%`;
+      const progressDiv = $('progress');
+      const progressFill = $('progressFill');
+      if (progressDiv) progressDiv.style.display = 'block';
+      if (progressFill) {
+        progressFill.style.width = percent + '%';
+        progressFill.textContent = text || `${percent}%`;
+      }
     }
 
     function hideProgress() {
-      document.getElementById('progress').style.display = 'none';
+      const progressDiv = $('progress');
+      if (progressDiv) progressDiv.style.display = 'none';
     }
 
     async function syncAgents() {
-      const workerUrl = document.getElementById('workerUrl').value;
-      let bearerToken = document.getElementById('bearerToken').value.trim();
-      const agentId = document.getElementById('agentId').value;
-      const syncBtn = document.getElementById('syncBtn');
+      const workerUrlEl = $('workerUrl');
+      const bearerTokenEl = $('bearerToken');
+      const agentIdEl = $('agentId');
+      const syncBtnEl = $('syncBtn');
+
+      if (!workerUrlEl || !bearerTokenEl || !agentIdEl || !syncBtnEl) return;
+
+      const workerUrl = workerUrlEl.value;
+      let bearerToken = bearerTokenEl.value.trim();
+      const agentId = agentIdEl.value;
+      const syncBtn = syncBtnEl;
 
       // Auto-extract token if wrapped in JSON
       if (bearerToken.startsWith('{') || bearerToken.startsWith('"')) {
@@ -307,14 +317,17 @@
 
         showStatus(`🎉 Sync complete! ${result.upserted} agents synced.`, 'success');
 
-        document.getElementById('results').innerHTML = `
-          <h3>Results</h3>
-          <pre class="sync-pre">${JSON.stringify(result, null, 2)}</pre>
-          <div class="sync-status success">
-            ✅ All agents synced successfully!<br>
-            Refresh the <a href="${workerUrl.replace('8787', '8080')}/hierarchy-enhanced.html" target="_blank">hierarchy dashboard</a> to see all agents.
-          </div>
-        `;
+        const resultsEl = $('results');
+        if (resultsEl) {
+          resultsEl.innerHTML = `
+            <h3>Results</h3>
+            <pre class="sync-pre">${JSON.stringify(result, null, 2)}</pre>
+            <div class="sync-status success">
+              ✅ All agents synced successfully!<br>
+              Refresh the <a href="${workerUrl.replace('8787', '8080')}/hierarchy-enhanced.html" target="_blank">hierarchy dashboard</a> to see all agents.
+            </div>
+          `;
+        }
 
       } catch (error) {
         hideProgress();
@@ -322,32 +335,35 @@
 
         showStatus(`❌ Sync failed: ${error.message}`, 'error');
 
-        if (isCORS) {
-          document.getElementById('results').innerHTML = `
-            <div class="sync-status warning">
-              <strong>⚠️ CORS Error - Use Alternate Method</strong><br><br>
-              The browser is blocking direct access to Fantasy402 API due to CORS policy.<br><br>
+        const resultsEl = $('results');
+        if (resultsEl) {
+          if (isCORS) {
+            resultsEl.innerHTML = `
+              <div class="sync-status warning">
+                <strong>⚠️ CORS Error - Use Alternate Method</strong><br><br>
+                The browser is blocking direct access to Fantasy402 API due to CORS policy.<br><br>
 
-              <strong>Solution: Use the Node.js sync script instead:</strong><br>
-              1. Open terminal<br>
-              2. Run: <code>FANTASY402_BEARER="${bearerToken}" bun scripts/sync-agent-tree.js</code><br>
-              3. Or set the token in the script and run: <code>bun scripts/sync-agent-tree.js</code><br><br>
+                <strong>Solution: Use the Node.js sync script instead:</strong><br>
+                1. Open terminal<br>
+                2. Run: <code>FANTASY402_BEARER="${bearerToken}" bun scripts/sync-agent-tree.js</code><br>
+                3. Or set the token in the script and run: <code>bun scripts/sync-agent-tree.js</code><br><br>
 
-              The script bypasses CORS and syncs all agents directly.
-            </div>
-          `;
-        } else {
-          document.getElementById('results').innerHTML = `
-            <div class="sync-status error">
-              <strong>Error Details:</strong><br>
-              ${error.message}<br><br>
-              <strong>Troubleshooting:</strong><br>
-              • Check that your bearer token is valid (not expired)<br>
-              • Verify the Worker URL is correct and accessible<br>
-              • Make sure the Worker is running (wrangler dev --local)<br>
-              • Check browser console for more details
-            </div>
-          `;
+                The script bypasses CORS and syncs all agents directly.
+              </div>
+            `;
+          } else {
+            resultsEl.innerHTML = `
+              <div class="sync-status error">
+                <strong>Error Details:</strong><br>
+                ${error.message}<br><br>
+                <strong>Troubleshooting:</strong><br>
+                • Check that your bearer token is valid (not expired)<br>
+                • Verify the Worker URL is correct and accessible<br>
+                • Make sure the Worker is running (wrangler dev --local)<br>
+                • Check browser console for more details
+              </div>
+            `;
+          }
         }
         console.error('Sync error:', error);
       } finally {
@@ -357,7 +373,8 @@
 
     // Auto-detect Worker URL if on localhost
     if (window.location.hostname === 'localhost') {
-      document.getElementById('workerUrl').value = 'http://localhost:8787';
+      const workerUrlEl = $('workerUrl');
+      if (workerUrlEl) workerUrlEl.value = 'http://localhost:8787';
     }
   </script>
 </body>

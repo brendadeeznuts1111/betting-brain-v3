@@ -163,6 +163,7 @@ export async function handleAPIRoute(
         return await getLiveScores(request, env, requestId);
 
       case '/database/metrics':
+      case '/database-metrics':
         const { getDatabaseMetrics } = await import('../routes/api/database-metrics');
         return await getDatabaseMetrics(request, env, requestId);
 

@@ -494,19 +494,34 @@
     </section>
   </main>
 
-  <script>
+  <script type="module">
     /* ========== CONFIG ========== */
     import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS, WIDGET_CONFIG, ERROR_MESSAGES, STATUS } from './shared/config.js';
     import { $, formatCurrency, formatLargeNumber, updateElementText, formatTimeAgo, fetchWidgetData } from './shared/utils.js';
     import { BaseWidget } from './shared/widgets.js';
     import * as config from './shared/config.js'; // Import all of config for widget instantiation
 
+    // Safe DOM helper with null guard
+    function safeSet(id, prop, value) {
+      const el = $(id);
+      if (!el) return;
+      if (prop === 'text') el.textContent = value;
+      else if (prop === 'html') el.innerHTML = value;
+      else el[prop] = value;
+    }
+
+    function safeGet(id, prop = 'value') {
+      const el = $(id);
+      return el ? el[prop] : null;
+    }
+
     // Still show config box for manual override
     let overrideURL = localStorage.getItem('worker_url') || WORKER_URL;
-    $('worker-url').value = overrideURL;
+    const urlInput = $('worker-url');
+    if (urlInput) urlInput.value = overrideURL;
 
     function saveConfig() {
-      overrideURL = $('worker-url').value;
+      overrideURL = safeGet('worker-url') || WORKER_URL;
       localStorage.setItem('worker_url', overrideURL);
       tick();
     }
@@ -540,32 +555,40 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('floor-status', this.config.STATUS.ERROR);
-          document.getElementById('floor-status').className = 'value status-red';
+          const statusEl = $('floor-status');
+          if (statusEl) statusEl.className = 'value status-red';
         } else if (this.data) {
           const d = this.data;
           this.utils.updateElementText('floor-status', d.status || 'unknown');
-          document.getElementById('floor-status').className = `value ${this.statusMap[d.status] || 'status-red'}`;
+          const statusEl = $('floor-status');
+          if (statusEl) statusEl.className = `value ${this.statusMap[d.status] || 'status-red'}`;
           this.utils.updateElementText('floor-version', d.version || '—');
           this.utils.updateElementText('floor-tests', d.tests ? `${d.tests.pass}/${d.tests.total}` : '—');
           this.utils.updateElementText('floor-coverage', d.coverage ? `${d.coverage.percentage}%` : '—');
 
           // Update header badge
           const badge = $('status-badge');
-          badge.className = 'badge';
-          if (d.status === 'red') badge.classList.add('badge-warn');
-          else if (d.status === 'yellow') badge.classList.add('badge-yellow');
+          if (badge) {
+            badge.className = 'badge';
+            if (d.status === 'red') badge.classList.add('badge-warn');
+            else if (d.status === 'yellow') badge.classList.add('badge-yellow');
+          }
 
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           // Initial state or no data
           this.utils.updateElementText('floor-status', '—');
-          document.getElementById('floor-status').className = 'value';
+          const statusEl = $('floor-status');
+          if (statusEl) statusEl.className = 'value';
           this.utils.updateElementText('floor-version', '—');
           this.utils.updateElementText('floor-tests', '—');
           this.utils.updateElementText('floor-coverage', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -597,9 +620,11 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('grove-status', this.config.STATUS.ERROR);
-          document.getElementById('grove-status').className = 'value status-red';
+          const statusEl = $('grove-status');
+          if (statusEl) statusEl.className = 'value status-red';
         } else if (this.data) {
           const d = this.data;
           // Assuming data structure from floor/status or health endpoint
@@ -609,21 +634,25 @@
             (d.status === 'yellow' || healthData.status === 'degraded') ? 'degraded' : 'down';
 
           this.utils.updateElementText('grove-status', statusText);
-          document.getElementById('grove-status').className = `value status-${(d.status === 'green' || healthData.status === 'healthy') ? 'green' : 'red'}`;
+          const statusEl = $('grove-status');
+          if (statusEl) statusEl.className = `value status-${(d.status === 'green' || healthData.status === 'healthy') ? 'green' : 'red'}`;
 
           if (healthData.worker) {
             this.utils.updateElementText('grove-worker', healthData.worker === 'up' ? '✅ UP' : '❌ DOWN');
             this.utils.updateElementText('grove-db', healthData.database === 'up' ? '✅ UP' : '❌ DOWN');
             this.utils.updateElementText('grove-queue', healthData.queue === 'up' ? '✅ UP' : '❌ DOWN');
           }
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('grove-status', '—');
-          document.getElementById('grove-status').className = 'value';
+          const statusEl = $('grove-status');
+          if (statusEl) statusEl.className = 'value';
           this.utils.updateElementText('grove-worker', '—');
           this.utils.updateElementText('grove-db', '—');
           this.utils.updateElementText('grove-queue', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -671,22 +700,28 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('mcp-count', this.config.STATUS.ERROR);
         } else if (this.data) {
           if (this.data.source === 'floorStatus') {
             this.utils.updateElementText('mcp-count', this.data.mcpTools);
             // Show known tools from rule documentation for now
-            document.getElementById('mcp-list').textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
+            const listEl = $('mcp-list');
+            if (listEl) listEl.textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
           } else if (this.data.source === 'mcpEndpoint') {
             this.utils.updateElementText('mcp-count', this.data.tools?.length ?? '—');
-            document.getElementById('mcp-list').textContent = this.data.tools?.map(t => t.name).join('\n') ?? '';
+            const listEl = $('mcp-list');
+            if (listEl) listEl.textContent = this.data.tools?.map(t => t.name).join('\n') ?? '';
           }
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('mcp-count', '—');
-          document.getElementById('mcp-list').textContent = '—';
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const listEl = $('mcp-list');
+          if (listEl) listEl.textContent = '—';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -696,7 +731,8 @@
         super(id, config, utils);
         this.charts = charts; // Pass charts object to widget
         this.chartInstance = null;
-        this.ctx = document.getElementById('odds-chart').getContext('2d');
+        const chartEl = $('odds-chart');
+        this.ctx = chartEl ? chartEl.getContext('2d') : null;
       }
 
       init() {
@@ -791,7 +827,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           // Clear chart data on error
           if (this.chartInstance) {
             this.chartInstance.data.labels = [];
@@ -815,7 +852,8 @@
             borderWidth: 1
           }];
           this.chartInstance.update();
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           // Initial state or no data
           if (this.chartInstance) {
@@ -823,7 +861,8 @@
             this.chartInstance.data.datasets = [];
             this.chartInstance.update();
           }
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -851,19 +890,24 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('scores-count', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
           this.utils.updateElementText('scores-count', d.games?.length ?? '0');
-          document.getElementById('scores-list').textContent = (d.games ?? []).slice(0, 5)
+          const listEl = $('scores-list');
+          if (listEl) listEl.textContent = (d.games ?? []).slice(0, 5)
             .map(g => `${g.awayTeam} @ ${g.homeTeam}\n  ${g.awayScore || 0} - ${g.homeScore || 0}`)
             .join('\n\n');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('scores-count', '—');
-          document.getElementById('scores-list').textContent = '—';
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const listEl = $('scores-list');
+          if (listEl) listEl.textContent = '—';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -935,7 +979,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('db-total', this.config.STATUS.ERROR);
         } else if (this.data && this.data.metrics) {
           const d = this.data.metrics;
@@ -945,7 +990,8 @@
           this.utils.updateElementText('db-exposure', this.utils.formatLargeNumber(d.exposureTracking || 0));
           this.utils.updateElementText('db-fantasy', this.utils.formatLargeNumber(d.fantasy402Raw || 0));
           this.utils.updateElementText('db-agents', this.utils.formatLargeNumber(d.agentPerformance || 0));
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('db-total', '—');
           this.utils.updateElementText('db-lines', '—');
@@ -953,7 +999,8 @@
           this.utils.updateElementText('db-exposure', '—');
           this.utils.updateElementText('db-fantasy', '—');
           this.utils.updateElementText('db-agents', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1021,28 +1068,34 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('infra-status', this.config.STATUS.ERROR);
-          document.getElementById('infra-status').className = 'value status-red';
+          const statusEl = $('infra-status');
+          if (statusEl) statusEl.className = 'value status-red';
         } else if (this.data) {
           const d = this.data;
           this.utils.updateElementText('infra-status', d.status);
-          document.getElementById('infra-status').className = `value status-${d.status === 'healthy' ? 'green' : 'red'}`;
+          const statusEl = $('infra-status');
+          if (statusEl) statusEl.className = `value status-${d.status === 'healthy' ? 'green' : 'red'}`;
 
           if (d.kvNamespaces) this.utils.updateElementText('infra-kv', d.kvNamespaces);
           if (d.queues) this.utils.updateElementText('infra-queues', d.queues);
           if (d.analyticsEngine) this.utils.updateElementText('infra-analytics', d.analyticsEngine);
           if (d.d1Databases) this.utils.updateElementText('infra-d1', d.d1Databases);
 
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('infra-status', '—');
-          document.getElementById('infra-status').className = 'value';
+          const statusEl = $('infra-status');
+          if (statusEl) statusEl.className = 'value';
           this.utils.updateElementText('infra-kv', '—');
           this.utils.updateElementText('infra-queues', '—');
           this.utils.updateElementText('infra-analytics', '—');
           this.utils.updateElementText('infra-d1', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1052,7 +1105,8 @@
         super(id, config, utils);
         this.charts = charts; // Pass charts object to widget
         this.chartInstance = null;
-        this.ctx = document.getElementById('perf-chart').getContext('2d');
+        const chartEl = $('perf-chart');
+        this.ctx = chartEl ? chartEl.getContext('2d') : null;
       }
 
       init() {
@@ -1151,7 +1205,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           // Clear chart data on error
           if (this.chartInstance) {
             this.chartInstance.data.labels = [];
@@ -1174,7 +1229,8 @@
             }];
             this.chartInstance.update();
           }
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           // Initial state or no data
           if (this.chartInstance) {
@@ -1182,7 +1238,8 @@
             this.chartInstance.data.datasets = [];
             this.chartInstance.update();
           }
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1210,7 +1267,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('activity-list', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
@@ -1259,11 +1317,14 @@
               '🤖 Floor health: 95%'
             );
           }
-          document.getElementById('activity-list').textContent = activities.join('\n');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const listEl = $('activity-list');
+          if (listEl) listEl.textContent = activities.join('\n');
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('activity-list', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1273,7 +1334,8 @@
         super(id, config, utils);
         this.charts = charts; // Pass charts object to widget
         this.chartInstance = null;
-        this.ctx = document.getElementById('bets-chart').getContext('2d');
+        const chartEl = $('bets-chart');
+        this.ctx = chartEl ? chartEl.getContext('2d') : null;
       }
 
       init() {
@@ -1315,7 +1377,8 @@
         this.error = null;
         try {
           // Check if any card should be expanded to pass expand=true param
-          const shouldExpand = document.getElementById('live-bets-expand').style.display === 'inline';
+          const expandEl = $('live-bets-expand');
+          const shouldExpand = expandEl ? expandEl.style.display === 'inline' : false;
           const expandParam = shouldExpand ? { expand: true } : {};
 
           const data = await this.utils.fetchWidgetData('liveBets', expandParam);
@@ -1332,7 +1395,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           // Clear chart data on error
           if (this.chartInstance) {
             this.chartInstance.data.labels = [];
@@ -1357,60 +1421,74 @@
 
           // Handle analytics expand functionality
           if (d.liveBets?.analytics) {
-            document.getElementById('live-bets-expand').style.display = 'inline';
-            document.getElementById('live-bets-analytics').style.display = 'block';
+            const expandEl = $('live-bets-expand');
+            const analyticsEl = $('live-bets-analytics');
+            if (expandEl) expandEl.style.display = 'inline';
+            if (analyticsEl) analyticsEl.style.display = 'block';
 
             // Steam Alerts
             const steamAlerts = d.liveBets.analytics.steamAlerts || [];
-            if (steamAlerts.length > 0) {
-              document.getElementById('steam-alerts').innerHTML = `
-                <div style="color: var(--warn); font-weight: 600;">🔥 Steam Alerts (${steamAlerts.length})</div>
-                ${steamAlerts.map(alert =>
-                `<div style="margin-left: 1rem; color: var(--text);">
-                    Game ${alert.gameId}: ${alert.oldLine} → ${alert.newLine} (${alert.seconds}s ago)
-                  </div>`
-              ).join('')}
-              `;
-            } else {
-              document.getElementById('steam-alerts').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No steam alerts</div>';
+            const steamAlertsEl = $('steam-alerts');
+            if (steamAlertsEl) {
+              if (steamAlerts.length > 0) {
+                steamAlertsEl.innerHTML = `
+                  <div style="color: var(--warn); font-weight: 600;">🔥 Steam Alerts (${steamAlerts.length})</div>
+                  ${steamAlerts.map(alert =>
+                  `<div style="margin-left: 1rem; color: var(--text);">
+                      Game ${alert.gameId}: ${alert.oldLine} → ${alert.newLine} (${alert.seconds}s ago)
+                    </div>`
+                ).join('')}
+                `;
+              } else {
+                steamAlertsEl.innerHTML = '<div style="color: var(--text); opacity: 0.7;">No steam alerts</div>';
+              }
             }
 
             // Risk by Agent
             const riskByAgent = d.liveBets.analytics.riskByAgent || {};
             const agentEntries = Object.entries(riskByAgent).sort(([, a], [, b]) => b - a); // Corrected sort
-            if (agentEntries.length > 0) {
-              document.getElementById('risk-by-agent').innerHTML = `
-                <div style="color: var(--accent); font-weight: 600;">💰 Top Risk by Agent</div>
-                ${agentEntries.slice(0, 3).map(([agent, risk]) =>
-                `<div style="margin-left: 1rem; color: var(--text);">
-                    Agent ${agent}: $${risk.toFixed(2)}
-                  </div>`
-              ).join('')}
-              `;
-            } else {
-              document.getElementById('risk-by-agent').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No risk by agent data</div>';
+            const riskByAgentEl = $('risk-by-agent');
+            if (riskByAgentEl) {
+              if (agentEntries.length > 0) {
+                riskByAgentEl.innerHTML = `
+                  <div style="color: var(--accent); font-weight: 600;">💰 Top Risk by Agent</div>
+                  ${agentEntries.slice(0, 3).map(([agent, risk]) =>
+                  `<div style="margin-left: 1rem; color: var(--text);">
+                      Agent ${agent}: $${risk.toFixed(2)}
+                    </div>`
+                ).join('')}
+                `;
+              } else {
+                riskByAgentEl.innerHTML = '<div style="color: var(--text); opacity: 0.7;">No risk by agent data</div>';
+              }
             }
 
             // Exposure by Side
             const exposureBySide = d.liveBets.analytics.exposureBySide || {};
             const gameEntries = Object.entries(exposureBySide);
-            if (gameEntries.length > 0) {
-              document.getElementById('exposure-by-side').innerHTML = `
-                <div style="color: var(--yellow); font-weight: 600;">⚖️ Exposure by Game</div>
-                ${gameEntries.slice(0, 3).map(([game, sides]) =>
-                `<div style="margin-left: 1rem; color: var(--text);">
-                    Game ${game}: Home $${sides.home.toFixed(2)} | Away $${sides.away.toFixed(2)}
-                  </div>`
-              ).join('')}
-              `;
-            } else {
-              document.getElementById('exposure-by-side').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No exposure data</div>';
+            const exposureBySideEl = $('exposure-by-side');
+            if (exposureBySideEl) {
+              if (gameEntries.length > 0) {
+                exposureBySideEl.innerHTML = `
+                  <div style="color: var(--yellow); font-weight: 600;">⚖️ Exposure by Game</div>
+                  ${gameEntries.slice(0, 3).map(([game, sides]) =>
+                  `<div style="margin-left: 1rem; color: var(--text);">
+                      Game ${game}: Home $${sides.home.toFixed(2)} | Away $${sides.away.toFixed(2)}
+                    </div>`
+                ).join('')}
+                `;
+              } else {
+                exposureBySideEl.innerHTML = '<div style="color: var(--text); opacity: 0.7;">No exposure data</div>';
+              }
             }
           } else {
-            document.getElementById('live-bets-expand').style.display = 'none';
-            document.getElementById('live-bets-analytics').style.display = 'none';
+            const expandEl = $('live-bets-expand');
+            const analyticsEl = $('live-bets-analytics');
+            if (expandEl) expandEl.style.display = 'none';
+            if (analyticsEl) analyticsEl.style.display = 'none';
           }
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('live-bets', '—');
           if (this.chartInstance) {
@@ -1418,9 +1496,12 @@
             this.chartInstance.data.datasets = [];
             this.chartInstance.update();
           }
-          document.getElementById('live-bets-expand').style.display = 'none';
-          document.getElementById('live-bets-analytics').style.display = 'none';
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const expandEl = $('live-bets-expand');
+          const analyticsEl = $('live-bets-analytics');
+          if (expandEl) expandEl.style.display = 'none';
+          if (analyticsEl) analyticsEl.style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1448,22 +1529,29 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errEl = $(`${this.id}-error`);
+          if (errEl) errEl.style.display = 'block';
           this.utils.updateElementText('agent-pnl', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
           const pnl = d.agents?.totalPnl ?? 0;
           this.utils.updateElementText('agent-pnl', this.utils.formatCurrency(pnl));
-          document.getElementById('agent-pnl').className = pnl >= 0 ? 'value status-green' : 'value status-red';
-          document.getElementById('agent-top').textContent = (d.agents?.top ?? [])
+          const pnlEl = $('agent-pnl');
+          if (pnlEl) pnlEl.className = pnl >= 0 ? 'value status-green' : 'value status-red';
+          const topEl = $('agent-top');
+          if (topEl) topEl.textContent = (d.agents?.top ?? [])
             .map(a => `${a.id}:  ${this.utils.formatCurrency(a.pnl)}`)
             .join('\n');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errEl = $(`${this.id}-error`);
+          if (errEl) errEl.style.display = 'none';
         } else {
           this.utils.updateElementText('agent-pnl', '—');
-          document.getElementById('agent-pnl').className = 'value';
-          document.getElementById('agent-top').textContent = '—';
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const pnlEl = $('agent-pnl');
+          if (pnlEl) pnlEl.className = 'value';
+          const topEl = $('agent-top');
+          if (topEl) topEl.textContent = '—';
+          const errEl = $(`${this.id}-error`);
+          if (errEl) errEl.style.display = 'none';
         }
       }
     }
@@ -1491,17 +1579,20 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('active-cust', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
           this.utils.updateElementText('active-cust', d.customers?.active ?? '0');
           this.utils.updateElementText('staked-today', this.utils.formatCurrency(d.customers?.staked ?? 0));
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('active-cust', '—');
           this.utils.updateElementText('staked-today', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1529,7 +1620,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errEl = $(`${this.id}-error`);
+          if (errEl) errEl.style.display = 'block';
           this.utils.updateElementText('tx-ticker', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
@@ -1537,11 +1629,14 @@
           const tickerText = transactions.slice(0, 10)
             .map(tx => `${tx.timestamp || 'Unknown'}: ${tx.type || 'Unknown'} - $${this.utils.formatCurrency(tx.amount || 0)}`)
             .join('\n');
-          document.getElementById('tx-ticker').textContent = tickerText || 'No recent transactions';
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const tickerEl = $('tx-ticker');
+          if (tickerEl) tickerEl.textContent = tickerText || 'No recent transactions';
+          const errEl = $(`${this.id}-error`);
+          if (errEl) errEl.style.display = 'none';
         } else {
           this.utils.updateElementText('tx-ticker', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errEl = $(`${this.id}-error`);
+          if (errEl) errEl.style.display = 'none';
         }
       }
     }
@@ -1569,17 +1664,20 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('dns-ip', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
           this.utils.updateElementText('dns-ip', d.ip || '—');
           this.utils.updateElementText('dns-latency', d.latency ? `${d.latency}ms` : '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('dns-ip', '—');
           this.utils.updateElementText('dns-latency', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1607,7 +1705,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('cache-hit-rate', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
@@ -1616,13 +1715,15 @@
           this.utils.updateElementText('cache-hits', d.hits ? `${d.hits}/${d.misses || 0}` : '—');
           this.utils.updateElementText('cache-d1-savings', d.d1Savings ? this.utils.formatLargeNumber(d.d1Savings) : '—');
           this.utils.updateElementText('cache-total-requests', d.totalRequests ? this.utils.formatLargeNumber(d.totalRequests) : '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('cache-hit-rate', '—');
           this.utils.updateElementText('cache-hits', '—');
           this.utils.updateElementText('cache-d1-savings', '—');
           this.utils.updateElementText('cache-total-requests', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1632,7 +1733,8 @@
         super(id, config, utils);
         this.charts = charts;
         this.chartInstance = null;
-        this.ctx = document.getElementById('level-chart')?.getContext('2d');
+        const chartEl = $('level-chart');
+        this.ctx = chartEl ? chartEl.getContext('2d') : null;
       }
 
       init() {
@@ -1679,7 +1781,8 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('hierarchy-total', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
@@ -1690,7 +1793,7 @@
 
           // Update top agents table
           if (d.topAgents && Array.isArray(d.topAgents)) {
-            const tbody = document.getElementById('top-agents-body');
+            const tbody = $('top-agents-body');
             if (tbody) {
               tbody.innerHTML = d.topAgents.slice(0, 5).map(agent => `
                 <tr>
@@ -1730,13 +1833,15 @@
             this.utils.updateElementText('agent-type-p', d.agentTypes.player || '—');
           }
 
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('hierarchy-total', '—');
           this.utils.updateElementText('hierarchy-active', '—');
           this.utils.updateElementText('hierarchy-risk', '—');
           this.utils.updateElementText('hierarchy-depth', '—');
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1764,21 +1869,30 @@
       render() {
         if (this.error) {
           this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
-          document.getElementById(`${this.id}-error`).style.display = 'block';
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'block';
           this.utils.updateElementText('player-info-count', this.config.STATUS.ERROR);
         } else if (this.data) {
           const d = this.data;
           this.utils.updateElementText('player-info-count', d.count || '0');
           this.utils.updateElementText('player-info-time', d.lastUpdated ? this.utils.formatTimeAgo(new Date(d.lastUpdated)) : '—');
           this.utils.updateElementText('player-info-status', d.status || '—');
-          document.getElementById('player-info-list').textContent = d.players ? d.players.slice(0, 5).map(p => `${p.id}: ${p.name || 'Unknown'}`).join('\n') : '—';
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const playerListEl = $('player-info-list');
+          if (playerListEl) {
+            playerListEl.textContent = d.players ? d.players.slice(0, 5).map(p => `${p.id}: ${p.name || 'Unknown'}`).join('\n') : '—';
+          }
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         } else {
           this.utils.updateElementText('player-info-count', '—');
           this.utils.updateElementText('player-info-time', '—');
           this.utils.updateElementText('player-info-status', '—');
-          document.getElementById('player-info-list').textContent = '—';
-          document.getElementById(`${this.id}-error`).style.display = 'none';
+          const playerListEl = $('player-info-list');
+          if (playerListEl) {
+            playerListEl.textContent = '—';
+          }
+          const errorEl = $(`${this.id}-error`);
+          if (errorEl) errorEl.style.display = 'none';
         }
       }
     }
@@ -1858,6 +1972,30 @@
     if (!localStorage.getItem('worker_url')) {
       alert('👋 Welcome to Floor Control!\n\nPlease configure your Worker URL in the top-right input box.');
     }
+
+    /* ========== GLOBAL FUNCTIONS ========== */
+    // Cache warming function for onclick
+    async function warmCacheNow() {
+      const btn = $('btn-warm-cache');
+      if (!btn) return console.warn('⚠️ btn-warm-cache missing from DOM');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Warming...';
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/cache-warm`, { method: 'POST' });
+        const msg = await res.json();
+        btn.textContent = '✅ Cache Warmed';
+        setTimeout(() => {
+          btn.textContent = '🔥 Warm Cache';
+          btn.disabled = false;
+        }, 2000);
+      } catch (e) {
+        btn.textContent = '❌ Failed';
+        console.error('Cache warm failed:', e);
+      }
+    }
+    window.warmCacheNow = warmCacheNow; // Make onclick happy
   </script>
 </body>
 

@@ -182,13 +182,17 @@
     };
 
     // Set SSE connection URLs dynamically
-    document.getElementById('hierarchy-tile')?.setAttribute('sse-connect', `${WORKER_URL}/api/f402/agents/stream`);
-    document.getElementById('health-tile')?.setAttribute('sse-connect', `${WORKER_URL}/api/health/stream`);
-    document.getElementById('bets-tile')?.setAttribute('sse-connect', `${WORKER_URL}/api/f402/bets/stream`);
+    const hierarchyTile = $('hierarchy-tile');
+    const healthTile = $('health-tile');
+    const betsTile = $('bets-tile');
+
+    if (hierarchyTile) hierarchyTile.setAttribute('sse-connect', `${WORKER_URL}/api/f402/agents/stream`);
+    if (healthTile) healthTile.setAttribute('sse-connect', `${WORKER_URL}/api/health/stream`);
+    if (betsTile) betsTile.setAttribute('sse-connect', `${WORKER_URL}/api/f402/bets/stream`);
 
     // Update status indicators
     function updateStatus(stream, connected) {
-      const indicator = document.getElementById(`status-${stream}`);
+      const indicator = $(`status-${stream}`);
       if (indicator) {
         indicator.classList.toggle('connected', connected);
       }
@@ -268,7 +272,9 @@
     async function updateStats() {
       try {
         const stats = await fetchAPI('/api/streams/stats');
-        document.getElementById('stats-display').innerHTML = `
+        const statsEl = $('stats-display');
+        if (statsEl) {
+          statsEl.innerHTML = `
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
             <div>
               <div style="font-size: 2rem; font-weight: 700;">${stats.total}</div>
@@ -284,6 +290,7 @@
           </div>
           <div class="sse-meta">Last updated: ${new Date().toLocaleTimeString()}</div>
         `;
+        }
       } catch (err) {
         console.error('[Stats] Failed to fetch:', err);
       }

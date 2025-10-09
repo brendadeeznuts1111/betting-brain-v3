@@ -14,4 +14,4 @@
  */
 
 // Re-export everything from the new modular structure
-export * from './f402-agents';
+export * from './f402-agents/index';
