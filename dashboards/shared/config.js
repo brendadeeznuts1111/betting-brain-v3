@@ -185,22 +185,7 @@ export const ERROR_MESSAGES = {
 // Extension secret for production requests
 export const EXTENSION_SECRET = 'default-dev-secret-change-me';
 
-// Default Export (for ES6 imports)
-export default {
-  WORKER_URL,
-  API_ENDPOINTS,
-  REFRESH_INTERVALS,
-  CHART_COLORS,
-  STATUS,
-  DATA_LIMITS,
-  FORMATTERS,
-  DEFAULT_CHART_CONFIG,
-  ERROR_MESSAGES,
-  EXTENSION_SECRET,
-  WIDGET_CONFIG
-};
-
-// Widget Configuration
+// Widget Configuration (must be defined before default export)
 export const WIDGET_CONFIG = {
   floorHealth: {
     api: API_ENDPOINTS.floorStatus,
@@ -318,3 +303,17 @@ export const WIDGET_CONFIG = {
   }
 };
 
+// Default Export (for ES6 imports)
+export default {
+  WORKER_URL,
+  API_ENDPOINTS,
+  REFRESH_INTERVALS,
+  CHART_COLORS,
+  STATUS,
+  DATA_LIMITS,
+  FORMATTERS,
+  DEFAULT_CHART_CONFIG,
+  ERROR_MESSAGES,
+  EXTENSION_SECRET,
+  WIDGET_CONFIG
+};

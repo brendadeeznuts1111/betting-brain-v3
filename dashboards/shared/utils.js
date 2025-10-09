@@ -11,6 +11,15 @@
 import { WORKER_URL, API_ENDPOINTS, WIDGET_CONFIG, ERROR_MESSAGES, STATUS } from './config.js';
 
 /**
+ * DOM Selector Helper
+ * @param {string} id - Element ID
+ * @returns {HTMLElement}
+ */
+export function $(id) {
+  return document.getElementById(id);
+}
+
+/**
  * Fetch wrapper with error handling and timeout
  * @param {string} url - API endpoint URL
  * @param {object} options - Fetch options
