@@ -19,6 +19,7 @@ import { handleIngest } from './routes/ingest';
 import { handleLiveAnalytics } from './api/analytics-live';
 import { handleLiveSports } from './api/sports-live';
 import { handleLiveSessions } from './api/session-live';
+import { handleAIChat } from './api/ai-chat';
 import { CORS_HEADERS } from './utils/request';
 
 // Import core handlers from modular files
@@ -276,6 +277,12 @@ export default {
     if (url.pathname === '/api/f402/agents/tree') {
       console.log(`[${requestId}] 🌲 Agent tree: ${url.searchParams.get('owner') || 'self'}`);
       return await getAgentTree(request, env, requestId);
+    }
+
+    // AI Chat endpoint
+    if (url.pathname === '/api/ai/chat' && request.method === 'POST') {
+      console.log(`[${requestId}] 🤖 AI Chat request`);
+      return handleAIChat(request, env);
     }
 
     // REST API routes (/api/*)

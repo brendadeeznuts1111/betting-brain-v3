@@ -1,5 +1,4 @@
 /**
- * MCP Tool Registry
  * Maps tool names to their handler functions
  */
 
@@ -24,14 +23,17 @@ import { getCustomerVolume } from './handlers/customerVolume';
 import { getTimeSeriesAnalytics } from './handlers/timeSeriesAnalytics';
 import { placeHedgeBet } from './handlers/placeHedgeBet';
 
+// Import AI-enhanced MCP tool handlers
+import { getAISharpAnalysis } from './handlers/aiSharpAnalysis';
+import { getAISteamDetection } from './handlers/aiSteamDetection';
+import { getAIRiskReport } from './handlers/aiRiskReport';
+
 /**
- * Tool Registry Map
  * Maps tool name → handler function
  */
 const toolRegistry = new Map<string, MCPToolHandler>();
 
 /**
- * Register Intelligence Tools
  */
 function registerIntelligenceTools() {
   // getBettingExposure
@@ -140,7 +142,6 @@ function registerIntelligenceTools() {
 }
 
 /**
- * Register Live Betting Tools
  */
 function registerLiveBettingTools() {
   // getSteamMoves - 3-sigma steam detection
@@ -154,7 +155,6 @@ function registerLiveBettingTools() {
 }
 
 /**
- * Register Analytics Tools
  */
 function registerAnalyticsTools() {
   // Enhanced intelligence tools with analytics
@@ -169,7 +169,6 @@ function registerAnalyticsTools() {
 }
 
 /**
- * Register Autonomous Trading Tools
  */
 function registerTradingTools() {
   // Place hedge bet (autonomous trading)
@@ -180,6 +179,20 @@ function registerTradingTools() {
 // See src/archive/README.md for migration guide
 
 /**
+ * Register AI-Enhanced Tools
+ */
+function registerAITools() {
+  // AI Sharp Analysis
+  toolRegistry.set('aiSharpAnalysis', getAISharpAnalysis);
+
+  // AI Steam Detection
+  toolRegistry.set('aiSteamDetection', getAISteamDetection);
+
+  // AI Risk Report
+  toolRegistry.set('aiRiskReport', getAIRiskReport);
+}
+
+/**
  * Initialize all tool registrations
  */
 function initializeRegistry() {
@@ -188,13 +201,13 @@ function initializeRegistry() {
     registerLiveBettingTools();
     registerAnalyticsTools();
     registerTradingTools();
+    registerAITools();
 
     console.log(`[MCP] Registered ${toolRegistry.size} tools`);
   }
 }
 
 /**
- * Call a tool by name
  * Main entry point for tool execution
  */
 export async function callTool(
@@ -233,7 +246,6 @@ export async function callTool(
 }
 
 /**
- * Helper: Create error result
  */
 function createErrorResult(error: unknown): MCPToolResult {
   const message = error instanceof Error ? error.message : String(error);
@@ -249,7 +261,6 @@ function createErrorResult(error: unknown): MCPToolResult {
 }
 
 /**
- * Helper: Create not implemented result
  */
 function createNotImplementedResult(toolName: string): MCPToolResult {
   return {
@@ -264,7 +275,6 @@ function createNotImplementedResult(toolName: string): MCPToolResult {
 }
 
 /**
- * Get list of all registered tool names
  */
 export function getRegisteredToolNames(): string[] {
   initializeRegistry();
@@ -272,7 +282,6 @@ export function getRegisteredToolNames(): string[] {
 }
 
 /**
- * Check if a tool is registered
  */
 export function isToolRegistered(toolName: string): boolean {
   initializeRegistry();
