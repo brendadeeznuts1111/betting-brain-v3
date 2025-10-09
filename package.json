@@ -125,7 +125,9 @@
   "author": "nolarose1968",
   "license": "MIT",
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^1.0.19",
     "@cloudflare/workers-types": "^4.20251008.0",
+    "ai": "^5.0.61",
     "async-mutex": "^0.5.0",
     "fuse.js": "^7.0.0",
     "glob": "^10.4.5",

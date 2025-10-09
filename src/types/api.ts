@@ -40,6 +40,7 @@ export interface Env {
   FANTASY402_JWT_TOKEN?: string; // MCP: Fantasy402.com JWT token
   FANTASY402_API_BASE?: string; // MCP: Fantasy402.com API base URL
   ENCRYPTION_KEY?: string; // MCP: Token encryption key
+  KIMI_API_KEY?: string; // AI: Kimi K2 API key for AI analysis
 }
 
 // Extended environment for BetTicker sniffer
