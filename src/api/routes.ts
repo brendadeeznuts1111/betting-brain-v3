@@ -187,6 +187,14 @@ export async function handleAPIRoute(
         const { getNewUsers } = await import('../routes/api/new-users');
         return await getNewUsers(request, env, requestId);
 
+      case '/infrastructure-status':
+        const { getInfrastructureStatus } = await import('../routes/api/infrastructure-status');
+        return await getInfrastructureStatus(request, env);
+
+      case '/fantasy402/player-info':
+        const { getPlayerInfo } = await import('../routes/api/fantasy402-player-info');
+        return await getPlayerInfo(request, env, requestId);
+
       default:
         // Check if it's an agent detail request (/f402/agents/:agentID)
         const agentDetailMatch = path.match(/^\/f402\/agents\/([a-zA-Z0-9_-]+)$/);
