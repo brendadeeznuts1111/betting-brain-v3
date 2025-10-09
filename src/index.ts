@@ -20,6 +20,8 @@ import { handleLiveAnalytics } from './api/analytics-live';
 import { handleLiveSports } from './api/sports-live';
 import { handleLiveSessions } from './api/session-live';
 import { handleAIChat } from './api/ai-chat';
+import { handleHealthCheck } from './api/ai-health';
+import { handleAIQuery } from './api/ai-query';
 import { CORS_HEADERS } from './utils/request';
 
 // Import core handlers from modular files
@@ -278,6 +280,18 @@ export default {
       console.log(`[${requestId}] 🌲 Agent tree: ${url.searchParams.get('owner') || 'self'}`);
       return await getAgentTree(request, env, requestId);
     }
+    // AI Health Check endpoint
+    if (url.pathname === '/api/ai/health' && request.method === 'GET') {
+      console.log(`[${requestId}] 🏥 AI Health Check`);
+      return handleHealthCheck(request, env);
+    }
+
+    // AI Natural Language Query endpoint
+    if (url.pathname === '/api/ai/query' && request.method === 'POST') {
+      console.log(`[${requestId}] 🔍 AI Query`);
+      return handleAIQuery(request, env);
+    }
+
 
     // AI Chat endpoint
     if (url.pathname === '/api/ai/chat' && request.method === 'POST') {
