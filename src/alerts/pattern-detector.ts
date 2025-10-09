@@ -85,7 +85,7 @@ export class PatternDetector {
                     severity: 'critical',
                     title: 'CRITICAL: Massive Bet Placed',
                     message: `Agent ${bet.AgentID} placed ${this.formatCurrency(amount)} bet on ${this.extractGame(bet.ShortDesc)}`,
-                    timestamp: new Date(bet.InsertDateTime).getTime(),
+                    timestamp: Date.parse(bet.InsertDateTime),
                     data: {
                         agentID: bet.AgentID,
                         customerID: bet.CustomerID,
@@ -102,7 +102,7 @@ export class PatternDetector {
                     severity: 'high',
                     title: 'High Value Bet Alert',
                     message: `Agent ${bet.AgentID} placed ${this.formatCurrency(amount)} bet on ${this.extractGame(bet.ShortDesc)}`,
-                    timestamp: new Date(bet.InsertDateTime).getTime(),
+                    timestamp: Date.parse(bet.InsertDateTime),
                     data: {
                         agentID: bet.AgentID,
                         customerID: bet.CustomerID,
@@ -141,7 +141,7 @@ export class PatternDetector {
             // Check for sudden betting activity
             const now = Date.now();
             const recentBets = bets.filter(bet =>
-                now - new Date(bet.InsertDateTime).getTime() < timeWindow
+                now - Date.parse(bet.InsertDateTime) < timeWindow
             );
 
             if (recentBets.length >= 3) {
@@ -150,12 +150,12 @@ export class PatternDetector {
 
                 if (avgBetSize > 5000) { // High average bet size
                     alerts.push({
-                        id: `steam-${game}-${now}`,
+                        id: `steam-${game}-${Date.now()}`,
                         type: 'steam',
                         severity: 'high',
                         title: 'Steam Move Detected',
                         message: `Heavy betting activity on ${game} - ${recentBets.length} bets in 5 minutes`,
-                        timestamp: now,
+                        timestamp: Date.now(),
                         data: {
                             sport: this.extractSport(bets[0].ShortDesc),
                             game,
@@ -232,7 +232,7 @@ export class PatternDetector {
                     severity: 'high',
                     title: 'Sharp Money Alert',
                     message: `Sharp agent ${bet.AgentID} placed ${this.formatCurrency(bet.AmountWagered)} bet on ${this.extractGame(bet.ShortDesc)}`,
-                    timestamp: new Date(bet.InsertDateTime).getTime(),
+                    timestamp: Date.parse(bet.InsertDateTime),
                     data: {
                         agentID: bet.AgentID,
                         customerID: bet.CustomerID,

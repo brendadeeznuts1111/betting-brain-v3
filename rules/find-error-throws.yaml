@@ -1,0 +1,6 @@
+id: find-error-throws
+message: Error throw found
+severity: info
+language: TypeScript
+rule:
+  pattern: throw Errors.$METHOD($$$)

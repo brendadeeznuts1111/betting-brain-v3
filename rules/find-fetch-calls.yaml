@@ -1,0 +1,8 @@
+id: find-fetch-calls
+message: Fetch call found
+severity: info
+language: TypeScript
+rule:
+  any:
+    - pattern: fetch($URL$$$)
+    - pattern: await fetch($URL$$$)

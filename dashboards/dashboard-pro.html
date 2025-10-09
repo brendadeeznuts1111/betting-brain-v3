@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧠 BetTicker Intelligence Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="shared/config.js"></script>
+    <script type="module" src="shared/utils.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -14,88 +17,92 @@
             --danger: #ef4444;
             --dark: #1e293b;
         }
-        
+
         body {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        
+
         .glass {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(148, 163, 184, 0.1);
         }
-        
+
         .card-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .card-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
-        
+
         .insight-card {
             animation: slideIn 0.5s ease-out;
         }
-        
+
         @keyframes slideIn {
             from {
                 opacity: 0;
                 transform: translateX(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
-        
+
         .pulse-green {
             animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-        
+
         @keyframes pulse-green {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 1;
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
             }
+
             50% {
                 opacity: 0.8;
                 box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
             }
         }
-        
+
         .scrollable {
             max-height: 400px;
             overflow-y: auto;
         }
-        
+
         .scrollable::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         .scrollable::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.1);
             border-radius: 4px;
         }
-        
+
         .scrollable::-webkit-scrollbar-thumb {
             background: rgba(148, 163, 184, 0.3);
             border-radius: 4px;
         }
-        
+
         .scrollable::-webkit-scrollbar-thumb:hover {
             background: rgba(148, 163, 184, 0.5);
         }
-        
+
         .search-box {
             transition: all 0.3s;
         }
-        
+
         .search-box:focus-within {
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
         }
-        
+
         .kbd {
             display: inline-block;
             padding: 2px 6px;
@@ -107,7 +114,7 @@
             border-radius: 4px;
             font-family: monospace;
         }
-        
+
         .risk-badge {
             display: inline-flex;
             align-items: center;
@@ -117,12 +124,28 @@
             font-size: 12px;
             font-weight: 600;
         }
-        
-        .risk-low { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .risk-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .risk-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .risk-critical { background: rgba(220, 38, 38, 0.3); color: #fca5a5; animation: pulse 1s infinite; }
-        
+
+        .risk-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .risk-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .risk-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .risk-critical {
+            background: rgba(220, 38, 38, 0.3);
+            color: #fca5a5;
+            animation: pulse 1s infinite;
+        }
+
         .insight-icon {
             width: 40px;
             height: 40px;
@@ -132,16 +155,21 @@
             border-radius: 12px;
             font-size: 20px;
         }
-        
+
         .modal-backdrop {
             animation: fadeIn 0.2s ease-out;
         }
-        
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
-        
+
         .notification {
             position: fixed;
             top: 20px;
@@ -149,35 +177,42 @@
             z-index: 9999;
             animation: slideInRight 0.3s ease-out;
         }
-        
+
         @keyframes slideInRight {
             from {
                 transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
             }
         }
-        
+
         .tab-active {
             background: rgba(99, 102, 241, 0.2);
             border-bottom: 2px solid #6366f1;
         }
-        
+
         .loading-skeleton {
             background: linear-gradient(90deg, rgba(148, 163, 184, 0.1) 25%, rgba(148, 163, 184, 0.2) 50%, rgba(148, 163, 184, 0.1) 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
         }
-        
+
         @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
     </style>
 </head>
+
 <body class="p-4 md:p-6">
     <div class="max-w-[1920px] mx-auto">
         <!-- Top Bar with Search and Actions -->
@@ -193,34 +228,31 @@
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-3">
                     <!-- Search Box -->
                     <div class="search-box glass rounded-lg px-4 py-2 flex items-center gap-2 w-64">
                         <span class="text-slate-400">🔍</span>
-                        <input 
-                            type="text" 
-                            id="globalSearch" 
-                            placeholder="Search customers, agents..." 
+                        <input type="text" id="globalSearch" placeholder="Search customers, agents..."
                             class="bg-transparent outline-none text-white text-sm w-full"
-                            onkeyup="handleSearch(event)"
-                        />
+                            onkeyup="handleSearch(event)" />
                         <span class="kbd">⌘K</span>
                     </div>
-                    
+
                     <!-- Quick Actions -->
-                    <button onclick="openAlertsConfig()" class="glass rounded-lg px-4 py-2 hover:bg-white/10 transition">
+                    <button onclick="openAlertsConfig()"
+                        class="glass rounded-lg px-4 py-2 hover:bg-white/10 transition">
                         🔔 <span id="alertBadge" class="hidden">0</span>
                     </button>
-                    
+
                     <button onclick="toggleTheme()" class="glass rounded-lg px-4 py-2 hover:bg-white/10 transition">
                         🌙
                     </button>
-                    
+
                     <button onclick="openSettings()" class="glass rounded-lg px-4 py-2 hover:bg-white/10 transition">
                         ⚙️
                     </button>
-                    
+
                     <div class="flex items-center gap-2 glass rounded-lg px-3 py-2">
                         <span class="pulse-green inline-block w-2 h-2 bg-green-400 rounded-full"></span>
                         <span class="text-sm font-medium">Live</span>
@@ -278,22 +310,34 @@
 
         <!-- Tabs -->
         <div class="glass rounded-xl p-1 mb-6 flex gap-1">
-            <button onclick="switchTab('overview')" class="tab-btn tab-active flex-1 py-3 rounded-lg text-white text-sm font-medium transition" data-tab="overview">
+            <button onclick="switchTab('overview')"
+                class="tab-btn tab-active flex-1 py-3 rounded-lg text-white text-sm font-medium transition"
+                data-tab="overview">
                 📊 Overview
             </button>
-            <button onclick="switchTab('customers')" class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white" data-tab="customers">
+            <button onclick="switchTab('customers')"
+                class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white"
+                data-tab="customers">
                 👥 Customers
             </button>
-            <button onclick="switchTab('agents')" class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white" data-tab="agents">
+            <button onclick="switchTab('agents')"
+                class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white"
+                data-tab="agents">
                 🏢 Agents
             </button>
-            <button onclick="switchTab('patterns')" class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white" data-tab="patterns">
+            <button onclick="switchTab('patterns')"
+                class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white"
+                data-tab="patterns">
                 🔍 Patterns
             </button>
-            <button onclick="switchTab('risk')" class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white" data-tab="risk">
+            <button onclick="switchTab('risk')"
+                class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white"
+                data-tab="risk">
                 ⚠️ Risk
             </button>
-            <button onclick="switchTab('live')" class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white" data-tab="live">
+            <button onclick="switchTab('live')"
+                class="tab-btn flex-1 py-3 rounded-lg text-slate-400 text-sm font-medium transition hover:text-white"
+                data-tab="live">
                 ⚡ Live Feed
             </button>
         </div>
@@ -302,7 +346,8 @@
         <div id="tabContent"></div>
 
         <!-- Floating Action Button -->
-        <button onclick="showQuickActions()" class="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-2xl flex items-center justify-center text-2xl transition z-50">
+        <button onclick="showQuickActions()"
+            class="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-2xl flex items-center justify-center text-2xl transition z-50">
             ⚡
         </button>
 
@@ -314,9 +359,11 @@
     </div>
 
     <script>
-        const WORKER_URL = 'http://localhost:8787';
-        const REFRESH_INTERVAL = 10000;
-        
+        import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS, CHART_COLORS, STATUS, DATA_LIMITS, WAGER_TYPES } from './shared/config.js';
+        import { formatCurrency, formatTimeAgo, updateElementText, $, formatLargeNumber, renderList } from './shared/utils.js';
+        import { initAgentPerformanceChart, updateAgentPerformanceChart, initBetDistributionChart, updateBetDistributionChart, initHeatmapChart, updateHeatmapChart } from './shared/charts.js';
+        const REFRESH_INTERVAL = REFRESH_INTERVALS.normal;
+
         let allWagers = [];
         let filteredWagers = [];
         let currentTab = 'overview';
@@ -355,14 +402,14 @@
                 // ⌘K or Ctrl+K for search
                 if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                     e.preventDefault();
-                    document.getElementById('globalSearch').focus();
+                    $('globalSearch').focus();
                 }
-                
+
                 // ESC to close modals
                 if (e.key === 'Escape') {
                     closeAllModals();
                 }
-                
+
                 // Number keys for tabs
                 if (e.key >= '1' && e.key <= '6') {
                     const tabs = ['overview', 'customers', 'agents', 'patterns', 'risk', 'live'];
@@ -380,18 +427,18 @@
         async function refreshData() {
             try {
                 showNotification('🔄 Refreshing data...', 'info', 1000);
-                
+
                 const response = await fetch(`${WORKER_URL}/interceptor/history?limit=50`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 const data = await response.json();
                 await parseAllWagers(data);
-                
+
                 generateInsights();
                 updateMetrics();
                 renderCurrentTab();
-                
-                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+                updateElementText('lastUpdate', new Date().toLocaleTimeString());
                 showNotification('✅ Data updated', 'success', 2000);
             } catch (error) {
                 console.error('Error:', error);
@@ -401,15 +448,15 @@
 
         async function parseAllWagers(responses) {
             allWagers = [];
-            
+
             for (const resp of responses) {
                 try {
                     const fullResp = await fetch(`${WORKER_URL}/interceptor/response?key=${resp.key}`);
                     if (!fullResp.ok) continue;
-                    
+
                     const fullData = await fullResp.json();
                     const bodyData = JSON.parse(fullData.body);
-                    
+
                     if (bodyData.LIST && Array.isArray(bodyData.LIST)) {
                         allWagers.push(...bodyData.LIST);
                     }
@@ -417,29 +464,29 @@
                     console.warn(`Error parsing ${resp.key}:`, error);
                 }
             }
-            
+
             filteredWagers = [...allWagers];
         }
 
         function generateInsights() {
             insights = [];
-            
+
             // AI-powered insights
-            const totalVolume = allWagers.reduce((sum, w) => sum + (parseFloat(w.AmountWagered) || 0), 0);
+            const totalVolume = allWagers.reduce((sum, w) => sum + (Number(w.AmountWagered) || 0), 0);
             const avgBet = totalVolume / allWagers.length;
-            
+
             // High roller detection
-            const highRollers = allWagers.filter(w => parseFloat(w.AmountWagered) > 50000);
+            const highRollers = allWagers.filter(w => Number(w.AmountWagered) > 50000);
             if (highRollers.length > 0) {
                 insights.push({
                     type: 'warning',
                     icon: '🐋',
                     title: `${highRollers.length} High Roller Alert${highRollers.length > 1 ? 's' : ''}`,
-                    description: `Detected ${highRollers.length} wager(s) exceeding $500. Total: ${formatCurrency(highRollers.reduce((s, w) => s + parseFloat(w.AmountWagered), 0))}`,
+                    description: `Detected ${highRollers.length} wager(s) exceeding $500. Total: ${formatCurrency(highRollers.reduce((s, w) => s + Number(w.AmountWagered), 0))}`,
                     action: () => switchTab('risk')
                 });
             }
-            
+
             // Velocity spike
             const now = Date.now();
             const recentWagers = allWagers.filter(w => new Date(w.InsertDateTime).getTime() > now - 60000);
@@ -452,7 +499,7 @@
                     action: () => switchTab('live')
                 });
             }
-            
+
             // Pattern detection
             const parleyCount = allWagers.filter(w => w.WagerType === 'P').length;
             if (parleyCount > allWagers.length * 0.3) {
@@ -464,12 +511,12 @@
                     action: () => switchTab('patterns')
                 });
             }
-            
+
             // Customer concentration
             const customerVolumes = {};
             allWagers.forEach(w => {
                 const cid = (w.CustomerID || '').toString().trim();
-                customerVolumes[cid] = (customerVolumes[cid] || 0) + (parseFloat(w.AmountWagered) || 0);
+                customerVolumes[cid] = (customerVolumes[cid] || 0) + (Number(w.AmountWagered) || 0);
             });
             const topCustomer = Object.entries(customerVolumes).sort((a, b) => b[1] - a[1])[0];
             if (topCustomer && topCustomer[1] > totalVolume * 0.2) {
@@ -481,71 +528,80 @@
                     action: () => switchTab('customers')
                 });
             }
-            
+
             renderInsights();
         }
 
-        function renderInsights() {
-            const container = document.getElementById('insightsContainer');
-            if (insights.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(insights.length, 4)} gap-4">
-                    ${insights.map(insight => `
-                        <div class="glass rounded-xl p-4 insight-card cursor-pointer hover:bg-white/5 transition" onclick="insight.action && insight.action()">
-                            <div class="flex items-start gap-3">
-                                <div class="insight-icon ${insight.type === 'warning' ? 'bg-yellow-500/20' : insight.type === 'error' ? 'bg-red-500/20' : insight.type === 'success' ? 'bg-green-500/20' : 'bg-blue-500/20'}">
-                                    ${insight.icon}
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-white font-semibold text-sm mb-1">${insight.title}</h3>
-                                    <p class="text-slate-400 text-xs">${insight.description}</p>
-                                </div>
-                            </div>
+        function insightRenderer(insight) {
+            return `
+                <div class="glass rounded-xl p-4 insight-card cursor-pointer hover:bg-white/5 transition" onclick="insight.action && insight.action()">
+                    <div class="flex items-start gap-3">
+                        <div class="insight-icon ${insight.type === 'warning' ? 'bg-yellow-500/20' : insight.type === 'error' ? 'bg-red-500/20' : insight.type === 'success' ? 'bg-green-500/20' : 'bg-blue-500/20'}">
+                            ${insight.icon}
                         </div>
-                    `).join('')}
+                        <div class="flex-1">
+                            <h3 class="text-white font-semibold text-sm mb-1">${insight.title}</h3>
+                            <p class="text-slate-400 text-xs">${insight.description}</p>
+                        </div>
+                    </div>
                 </div>
             `;
         }
 
+        function renderInsights() {
+            const containerId = 'insightsContainer';
+            if (insights.length === 0) {
+                $(containerId).innerHTML = '';
+                return;
+            }
+
+            const headerHtml = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(insights.length, 4)} gap-4">
+                    <!-- Insights will be rendered here -->
+                </div>
+            `;
+            $(containerId).innerHTML = headerHtml;
+
+            // Render insights into the newly created grid container
+            renderList(containerId, insights, insightRenderer, false);
+        }
+
         function updateMetrics() {
-            const totalVolume = allWagers.reduce((sum, w) => sum + (parseFloat(w.AmountWagered) || 0), 0);
+            const totalVolume = allWagers.reduce((sum, w) => sum + (Number(w.AmountWagered) || 0), 0);
             const avgBet = allWagers.length > 0 ? totalVolume / allWagers.length : 0;
-            
-            document.getElementById('totalWagers').textContent = allWagers.length.toLocaleString();
-            document.getElementById('totalWagered').textContent = formatCurrency(totalVolume);
-            document.getElementById('uniqueCustomers').textContent = new Set(allWagers.map(w => (w.CustomerID || '').toString().trim())).size;
-            document.getElementById('activeAgents').textContent = new Set(allWagers.map(w => (w.AgentID || '').toString().trim())).size;
-            document.getElementById('avgBetSize').textContent = formatCurrency(avgBet);
-            
+
+            updateElementText('totalWagers', allWagers.length.toLocaleString());
+            updateElementText('totalWagered', formatCurrency(totalVolume));
+            updateElementText('uniqueCustomers', new Set(allWagers.map(w => (w.CustomerID || '').toString().trim())).size);
+            updateElementText('activeAgents', new Set(allWagers.map(w => (w.AgentID || '').toString().trim())).size);
+            updateElementText('avgBetSize', formatCurrency(avgBet));
+
             // Calculate win rate (estimated from ToWin vs AmountWagered ratio)
             const avgWinRatio = allWagers.reduce((sum, w) => {
-                const risk = parseFloat(w.AmountWagered) || 1;
-                const toWin = parseFloat(w.ToWinAmount) || 0;
+                const risk = Number(w.AmountWagered) || 1;
+                const toWin = Number(w.ToWinAmount) || 0;
                 return sum + (toWin / risk);
             }, 0) / allWagers.length;
-            document.getElementById('winRate').textContent = Math.round(1 / (avgWinRatio + 1) * 100) + '%';
-            
+            updateElementText('winRate', Math.round(1 / (avgWinRatio + 1) * 100) + '%');
+
             // Risk score (0-100)
             const riskScore = Math.min(100, Math.round(
-                (allWagers.filter(w => parseFloat(w.AmountWagered) > 10000).length / allWagers.length * 100)
+                (allWagers.filter(w => Number(w.AmountWagered) > 10000).length / allWagers.length * 100)
             ));
-            document.getElementById('riskScore').textContent = riskScore;
-            document.getElementById('riskStatus').textContent = riskScore > 50 ? '⚠️ High' : riskScore > 25 ? '⚡ Medium' : '✅ Low';
-            document.getElementById('riskStatus').className = 'text-xs ' + (riskScore > 50 ? 'text-red-400' : riskScore > 25 ? 'text-yellow-400' : 'text-green-400');
-            
+            updateElementText('riskScore', riskScore);
+            const riskStatusElement = $('riskStatus');
+            riskStatusElement.textContent = riskScore > 50 ? '⚠️ High' : riskScore > 25 ? '⚡ Medium' : '✅ Low';
+            riskStatusElement.className = 'text-xs ' + (riskScore > 50 ? 'text-red-400' : riskScore > 25 ? 'text-yellow-400' : 'text-green-400');
+
             // Velocity
             const now = Date.now();
             const recentWagers = allWagers.filter(w => new Date(w.InsertDateTime).getTime() > now - 60000);
-            document.getElementById('velocity').textContent = recentWagers.length;
+            updateElementText('velocity', recentWagers.length);
         }
 
         function switchTab(tab) {
             currentTab = tab;
-            
+
             // Update tab buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 if (btn.dataset.tab === tab) {
@@ -556,13 +612,13 @@
                     btn.classList.add('text-slate-400');
                 }
             });
-            
+
             renderCurrentTab();
         }
 
         function renderCurrentTab() {
-            const container = document.getElementById('tabContent');
-            
+            const container = $('tabContent');
+
             switch (currentTab) {
                 case 'overview':
                     renderOverview(container);
@@ -613,7 +669,7 @@
                     </div>
                 </div>
             `;
-            
+
             // Initialize charts after DOM update
             setTimeout(() => {
                 initializeCharts();
@@ -629,19 +685,36 @@
                 if (!customerStats[cid]) {
                     customerStats[cid] = { login, volume: 0, count: 0, avgBet: 0, lastBet: null };
                 }
-                customerStats[cid].volume += parseFloat(w.AmountWagered) || 0;
+                customerStats[cid].volume += Number(w.AmountWagered) || 0;
                 customerStats[cid].count++;
                 customerStats[cid].lastBet = w.InsertDateTime;
             });
-            
+
             Object.keys(customerStats).forEach(cid => {
                 customerStats[cid].avgBet = customerStats[cid].volume / customerStats[cid].count;
             });
-            
+
             const sortedCustomers = Object.entries(customerStats)
                 .sort((a, b) => b[1].volume - a[1].volume)
                 .slice(0, 50);
-            
+
+            const customerRenderer = (customer, index) => {
+                const [cid, stats] = customer;
+                const riskLevel = stats.volume > DATA_LIMITS.highVolumeCustomer ? 'High' : stats.volume > DATA_LIMITS.mediumVolumeCustomer ? 'Medium' : 'Low';
+                const riskColor = riskLevel === 'High' ? 'text-red-500' : riskLevel === 'Medium' ? 'text-yellow-500' : 'text-green-500';
+                return `
+                    <tr class="hover:bg-slate-800 transition-colors duration-200">
+                        <td class="py-3 px-4">${index + 1}</td>
+                        <td class="py-3 px-4 font-semibold">${stats.login || cid}</td>
+                        <td class="py-3 px-4 text-right">${formatCurrency(stats.volume)}</td>
+                        <td class="py-3 px-4 text-right">${stats.count}</td>
+                        <td class="py-3 px-4 text-right">${formatCurrency(stats.avgBet)}</td>
+                        <td class="py-3 px-4 ${riskColor}">${riskLevel}</td>
+                        <td class="py-3 px-4 text-slate-500">${formatTimeAgo(new Date(stats.lastBet).getTime())}</td>
+                    </tr>
+                `;
+            };
+
             container.innerHTML = `
                 <div class="glass rounded-xl p-6">
                     <div class="flex items-center justify-between mb-6">
@@ -661,34 +734,18 @@
                                     <th class="py-3 px-4 text-right">Bets</th>
                                     <th class="py-3 px-4 text-right">Avg Bet</th>
                                     <th class="py-3 px-4">Risk Level</th>
-                                    <th class="py-3 px-4">Last Activity</th>
+                                    <th class="py-3 px-4">Last Bet</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${sortedCustomers.map(([cid, stats], idx) => {
-                                    const riskLevel = stats.volume > 100000 ? 'critical' : stats.volume > 50000 ? 'high' : stats.volume > 20000 ? 'medium' : 'low';
-                                    const timeSince = getTimeSince(stats.lastBet);
-                                    return `
-                                        <tr class="text-white hover:bg-white/5 transition border-b border-slate-800">
-                                            <td class="py-3 px-4 text-slate-400">${idx + 1}</td>
-                                            <td class="py-3 px-4 font-mono font-semibold">${stats.login}</td>
-                                            <td class="py-3 px-4 text-right font-bold">${formatCurrency(stats.volume)}</td>
-                                            <td class="py-3 px-4 text-right text-slate-400">${stats.count}</td>
-                                            <td class="py-3 px-4 text-right">${formatCurrency(stats.avgBet)}</td>
-                                            <td class="py-3 px-4">
-                                                <span class="risk-badge risk-${riskLevel}">
-                                                    ${riskLevel === 'critical' ? '🔥' : riskLevel === 'high' ? '⚠️' : riskLevel === 'medium' ? '⚡' : '✅'} ${riskLevel.toUpperCase()}
-                                                </span>
-                                            </td>
-                                            <td class="py-3 px-4 text-slate-400 text-xs">${timeSince}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
+                            <tbody id="customerTableBody">
+                                <!-- Customer rows will be rendered here -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             `;
+
+            renderList('customerTableBody', sortedCustomers, customerRenderer);
         }
 
         function renderAgents(container) {
@@ -698,19 +755,36 @@
                 if (!agentStats[aid]) {
                     agentStats[aid] = { volume: 0, count: 0, customers: new Set(), avgBet: 0 };
                 }
-                agentStats[aid].volume += parseFloat(w.AmountWagered) || 0;
+                agentStats[aid].volume += Number(w.AmountWagered) || 0;
                 agentStats[aid].count++;
                 agentStats[aid].customers.add((w.CustomerID || '').toString().trim());
             });
-            
+
             Object.keys(agentStats).forEach(aid => {
                 agentStats[aid].avgBet = agentStats[aid].volume / agentStats[aid].count;
                 agentStats[aid].customerCount = agentStats[aid].customers.size;
             });
-            
+
             const sortedAgents = Object.entries(agentStats)
                 .sort((a, b) => b[1].volume - a[1].volume);
-            
+
+            const agentRenderer = (agent, index) => {
+                const [aid, stats] = agent;
+                const avgPerCustomer = stats.volume / stats.customerCount;
+                const performance = index < 3 ? '🏆 Top' : index < 10 ? '⭐ Strong' : '✅ Good';
+                return `
+                    <tr class="hover:bg-slate-800 transition-colors duration-200">
+                        <td class="py-3 px-4">${index + 1}</td>
+                        <td class="py-3 px-4 font-mono font-semibold">${aid}</td>
+                        <td class="py-3 px-4 text-right font-bold">${formatCurrency(stats.volume)}</td>
+                        <td class="py-3 px-4 text-right text-slate-400">${stats.count}</td>
+                        <td class="py-3 px-4 text-right text-blue-400">${stats.customerCount}</td>
+                        <td class="py-3 px-4 text-right">${formatCurrency(avgPerCustomer)}</td>
+                        <td class="py-3 px-4 text-xs">${performance}</td>
+                    </tr>
+                `;
+            };
+
             container.innerHTML = `
                 <div class="glass rounded-xl p-6">
                     <div class="flex items-center justify-between mb-6">
@@ -730,27 +804,15 @@
                                     <th class="py-3 px-4">Performance</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${sortedAgents.map(([aid, stats], idx) => {
-                                    const avgPerCustomer = stats.volume / stats.customerCount;
-                                    const performance = idx < 3 ? '🏆 Top' : idx < 10 ? '⭐ Strong' : '✅ Good';
-                                    return `
-                                        <tr class="text-white hover:bg-white/5 transition border-b border-slate-800">
-                                            <td class="py-3 px-4 text-slate-400">${idx + 1}</td>
-                                            <td class="py-3 px-4 font-mono font-semibold">${aid}</td>
-                                            <td class="py-3 px-4 text-right font-bold">${formatCurrency(stats.volume)}</td>
-                                            <td class="py-3 px-4 text-right text-slate-400">${stats.count}</td>
-                                            <td class="py-3 px-4 text-right text-blue-400">${stats.customerCount}</td>
-                                            <td class="py-3 px-4 text-right">${formatCurrency(avgPerCustomer)}</td>
-                                            <td class="py-3 px-4 text-xs">${performance}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
+                            <tbody id="agentTableBody">
+                                <!-- Agent rows will be rendered here -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             `;
+
+            renderList('agentTableBody', sortedAgents, agentRenderer);
         }
 
         function renderPatterns(container) {
@@ -758,24 +820,24 @@
             const hourlyActivity = Array(24).fill(0);
             const dayActivity = {};
             const wagerTypesByHour = {};
-            
+
             allWagers.forEach(w => {
                 const date = new Date(w.InsertDateTime);
                 const hour = date.getHours();
                 const day = date.toLocaleDateString();
-                
+
                 hourlyActivity[hour]++;
                 dayActivity[day] = (dayActivity[day] || 0) + 1;
-                
+
                 if (!wagerTypesByHour[hour]) {
                     wagerTypesByHour[hour] = {};
                 }
                 wagerTypesByHour[hour][w.WagerType] = (wagerTypesByHour[hour][w.WagerType] || 0) + 1;
             });
-            
+
             const peakHour = hourlyActivity.indexOf(Math.max(...hourlyActivity));
             const avgHourlyActivity = hourlyActivity.reduce((a, b) => a + b, 0) / 24;
-            
+
             container.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="glass rounded-xl p-6">
@@ -809,8 +871,8 @@
                         <h3 class="text-white font-bold mb-4">📈 Betting Behavior</h3>
                         <div class="space-y-3">
                             ${Object.entries(getWagerTypeStats()).map(([type, count]) => {
-                                const pct = Math.round(count / allWagers.length * 100);
-                                return `
+                const pct = Math.round(count / allWagers.length * 100);
+                return `
                                     <div>
                                         <div class="flex items-center justify-between mb-1">
                                             <span class="text-slate-400 text-sm">${getWagerTypeName(type)}</span>
@@ -821,7 +883,7 @@
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+            }).join('')}
                         </div>
                     </div>
                 </div>
@@ -843,7 +905,7 @@
 
         function renderRisk(container) {
             const riskAnalysis = analyzeRisk();
-            
+
             container.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     <div class="glass rounded-xl p-6">
@@ -904,7 +966,7 @@
 
         function renderLiveFeed(container) {
             const recent = allWagers.slice(0, 100);
-            
+
             container.innerHTML = `
                 <div class="glass rounded-xl p-6">
                     <div class="flex items-center justify-between mb-6">
@@ -927,9 +989,9 @@
                     
                     <div class="space-y-2 scrollable" style="max-height: 600px;">
                         ${recent.map((w, idx) => {
-                            const amount = parseFloat(w.AmountWagered) || 0;
-                            const riskLevel = amount > 50000 ? 'critical' : amount > 20000 ? 'high' : amount > 5000 ? 'medium' : 'low';
-                            return `
+                const amount = Number(w.AmountWagered) || 0;
+                const riskLevel = amount > 50000 ? 'critical' : amount > 20000 ? 'high' : amount > 5000 ? 'medium' : 'low';
+                return `
                                 <div class="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition" style="animation-delay: ${idx * 50}ms;">
                                     <div class="flex items-center gap-3">
                                         <div class="text-2xl">${getWagerTypeIcon(w.WagerType)}</div>
@@ -953,51 +1015,18 @@
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+            }).join('')}
                     </div>
                 </div>
             `;
         }
 
         // Utility Functions
-        function formatCurrency(amount) {
-            return '$' + (amount / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
-
-        function getTimeSince(timestamp) {
-            const ms = Date.now() - new Date(timestamp).getTime();
-            const seconds = Math.floor(ms / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
-            
-            if (days > 0) return `${days}d ago`;
-            if (hours > 0) return `${hours}h ago`;
-            if (minutes > 0) return `${minutes}m ago`;
-            return `${seconds}s ago`;
-        }
-
-        function getWagerTypeName(type) {
-            const types = { 'M': 'Moneyline', 'S': 'Spread', 'L': 'Total', 'P': 'Parlay', 'T': 'Teaser', 'C': 'Future' };
-            return types[type] || type;
-        }
-
-        function getWagerTypeIcon(type) {
-            const icons = { 'M': '💰', 'S': '📊', 'L': '📈', 'P': '🎯', 'T': '🎲', 'C': '🔮' };
-            return icons[type] || '❓';
-        }
-
-        function getWagerTypeStats() {
-            const stats = {};
-            allWagers.forEach(w => {
-                stats[w.WagerType] = (stats[w.WagerType] || 0) + 1;
-            });
-            return Object.entries(stats).sort((a, b) => b[1] - a[1]).reduce((obj, [k, v]) => ({ ...obj, [k]: v }), {});
-        }
+        // No longer defined locally, imported from shared/utils.js
 
         function generatePatternInsights() {
             const insights = [];
-            
+
             // Parlay preference
             const parleyPct = (allWagers.filter(w => w.WagerType === 'P').length / allWagers.length * 100).toFixed(0);
             insights.push({
@@ -1005,7 +1034,7 @@
                 title: 'Parlay Preference',
                 description: `${parleyPct}% of all wagers are parlays`
             });
-            
+
             // Time concentration
             const hourCounts = Array(24).fill(0);
             allWagers.forEach(w => hourCounts[new Date(w.InsertDateTime).getHours()]++);
@@ -1015,19 +1044,19 @@
                 title: 'Peak Activity',
                 description: `Most active between ${peakHour}:00-${peakHour + 1}:00`
             });
-            
+
             // Average bet trending
             const firstHalfAvg = allWagers.slice(0, Math.floor(allWagers.length / 2))
-                .reduce((sum, w) => sum + (parseFloat(w.AmountWagered) || 0), 0) / Math.floor(allWagers.length / 2);
+                .reduce((sum, w) => sum + (Number(w.AmountWagered) || 0), 0) / Math.floor(allWagers.length / 2);
             const secondHalfAvg = allWagers.slice(Math.floor(allWagers.length / 2))
-                .reduce((sum, w) => sum + (parseFloat(w.AmountWagered) || 0), 0) / Math.ceil(allWagers.length / 2);
+                .reduce((sum, w) => sum + (Number(w.AmountWagered) || 0), 0) / Math.ceil(allWagers.length / 2);
             const trend = secondHalfAvg > firstHalfAvg ? 'increasing' : 'decreasing';
             insights.push({
                 icon: trend === 'increasing' ? '📈' : '📉',
                 title: 'Bet Size Trend',
                 description: `Average bet ${trend} over time`
             });
-            
+
             return insights;
         }
 
@@ -1035,10 +1064,10 @@
             const riskEvents = [];
             let highRiskVolume = 0;
             let highRiskCount = 0;
-            
+
             allWagers.forEach(w => {
-                const amount = parseFloat(w.AmountWagered) || 0;
-                
+                const amount = Number(w.AmountWagered) || 0;
+
                 if (amount > 100000) {
                     highRiskVolume += amount;
                     highRiskCount++;
@@ -1059,12 +1088,12 @@
                     });
                 }
             });
-            
+
             // Calculate overall risk score
-            const totalVolume = allWagers.reduce((sum, w) => sum + (parseFloat(w.AmountWagered) || 0), 0);
+            const totalVolume = allWagers.reduce((sum, w) => sum + (Number(w.AmountWagered) || 0), 0);
             const riskRatio = highRiskVolume / totalVolume;
             const overallScore = Math.min(100, Math.round(riskRatio * 100 + highRiskCount / allWagers.length * 50));
-            
+
             return {
                 overallScore,
                 highRiskVolume,
@@ -1080,17 +1109,16 @@
                 warning: 'bg-yellow-600',
                 error: 'bg-red-600'
             };
-            
+
             const notification = document.createElement('div');
-            notification.className = `notification ${colors[type]} text-white px-6 py-3 rounded-lg shadow-2xl`;
-            notification.textContent = message;
-            
-            document.getElementById('notificationContainer').appendChild(notification);
-            
+            notification.className = 'bg-blue-500 text-white px-4 py-2 rounded shadow-lg mb-2';
+            updateElementText(notification, message);
+
+            $('notificationContainer').appendChild(notification);
+
             setTimeout(() => {
-                notification.style.animation = 'slideInRight 0.3s ease-out reverse';
-                setTimeout(() => notification.remove(), 300);
-            }, duration);
+                notification.remove();
+            }, 3000);
         }
 
         function handleSearch(e) {
@@ -1100,14 +1128,14 @@
                 renderCurrentTab();
                 return;
             }
-            
-            filteredWagers = allWagers.filter(w => 
+
+            filteredWagers = allWagers.filter(w =>
                 (w.Login || '').toString().toLowerCase().includes(query) ||
                 (w.CustomerID || '').toString().toLowerCase().includes(query) ||
                 (w.AgentID || '').toString().toLowerCase().includes(query) ||
                 (w.WagerNumber || '').toString().includes(query)
             );
-            
+
             renderCurrentTab();
             showNotification(`Found ${filteredWagers.length} results`, 'info', 2000);
         }
@@ -1120,11 +1148,11 @@
                 (w.Login || '').toString().trim(),
                 (w.AgentID || '').toString().trim(),
                 getWagerTypeName(w.WagerType),
-                (parseFloat(w.AmountWagered) || 0) / 100,
-                (parseFloat(w.ToWinAmount) || 0) / 100,
+                (Number(w.AmountWagered) || 0) / 100,
+                (Number(w.ToWinAmount) || 0) / 100,
                 (w.ShortDesc || '').replace(/"/g, '""')
             ]);
-            
+
             const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -1133,17 +1161,16 @@
             a.download = `betting-data-${Date.now()}.csv`;
             a.click();
             URL.revokeObjectURL(url);
-            
+
             showNotification(`✅ Exported ${allWagers.length} wagers`, 'success');
         }
 
         function initializeCharts() {
-            // Implementation of chart initialization
-            // (Charts would be created here similar to previous implementation)
+            // Placeholder: Charts would be initialized here if this dashboard had any unique charts
         }
 
         function updateCharts() {
-            // Update chart data
+            // Placeholder: Chart data would be updated here
         }
 
         function showQuickActions() {
@@ -1167,5 +1194,5 @@
         }
     </script>
 </body>
-</html>
 
+</html>

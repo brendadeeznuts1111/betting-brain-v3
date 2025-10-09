@@ -4,7 +4,7 @@
  */
 
 import { Env } from '../types/api';
-import { CORS_HEADERS } from '../utils/request';
+import { CORS_HEADERS, createJSONResponse, createOPTIONSResponse, generateRequestId, normalizeD1Result, normalizeD1First } from '../utils/request';
 import { validateQueryParams, Validators, validationErrorResponse } from '../utils/validation';
 import { createErrorResponse, Errors, validateEnv } from '../utils/error-handler';
 import { getBettingExposure } from '../tools/intelligence/getBettingExposure';
@@ -29,23 +29,15 @@ export async function handleAPIRoute(
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
-  const requestId = Date.now().toString(36);
+  const requestId = generateRequestId();
   const url = new URL(request.url);
   const path = url.pathname.replace('/api', '');
 
   console.log(`[${requestId}] 📡 API Request: ${request.method} ${path}`);
 
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
-
   // Handle OPTIONS preflight
   if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createOPTIONSResponse();
   }
 
   try {
@@ -150,7 +142,7 @@ export async function handleAPIRoute(
       case '/streams/stats':
         const { getStreamStats } = await import('./sse-streams');
         return new Response(JSON.stringify(getStreamStats()), {
-          headers: corsHeaders,
+          headers: CORS_HEADERS,
         });
 
       case '/f402/customers/staked':
@@ -253,26 +245,22 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
   params.push(limit, offset);
 
   const result = await env.ANALYTICS.prepare(query).bind(...params).all();
-  const events = result.results as unknown as Array<{
+  interface EventRow {
     eventID: string;
     lastUpdate: string;
     marketCount: number;
-  }>;
+  }
+  const events = normalizeD1Result<EventRow>(result);
 
   console.log(`[${requestId}] ✅ Found ${events.length} events`);
 
-  return new Response(JSON.stringify({
+  return createJSONResponse({
     events,
     total: events.length,
     limit,
     offset,
     requestId,
     timestamp: new Date().toISOString()
-  }), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
   });
 }
 
@@ -373,24 +361,20 @@ async function getSteamMovesAPI(request: Request, env: Env, requestId: string): 
   params.push(limit);
 
   const result = await env.ANALYTICS.prepare(query).bind(...params).all();
-  const steamMoves = result.results as unknown as Array<{
+  interface SteamMoveRow {
     eventID: string;
     marketType: string;
     timestamp: string;
-  }>;
+  }
+  const steamMoves = normalizeD1Result<SteamMoveRow>(result);
 
   console.log(`[${requestId}] ✅ Found ${steamMoves.length} steam moves`);
 
-  return new Response(JSON.stringify({
+  return createJSONResponse({
     steamMoves,
     total: steamMoves.length,
     requestId,
     timestamp: new Date().toISOString()
-  }), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
   });
 }
 
@@ -490,24 +474,20 @@ async function getMarkets(request: Request, env: Env, requestId: string): Promis
   query += ` GROUP BY lm.mt ORDER BY updateCount DESC`;
 
   const result = await env.ANALYTICS.prepare(query).bind(...params).all();
-  const markets = result.results as unknown as Array<{
+  interface MarketRow {
     marketType: string;
     updateCount: number;
     lastUpdate: string;
-  }>;
+  }
+  const markets = normalizeD1Result<MarketRow>(result);
 
   console.log(`[${requestId}] ✅ Found ${markets.length} markets`);
 
-  return new Response(JSON.stringify({
+  return createJSONResponse({
     markets,
     total: markets.length,
     requestId,
     timestamp: new Date().toISOString()
-  }), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
   });
 }
 
@@ -542,35 +522,34 @@ async function getCustomers(request: Request, env: Env, requestId: string): Prom
     ORDER BY si.ao DESC
     LIMIT ?
   `).bind(limit).all();
-
-  const customers = result.results as unknown as Array<{
+  interface CustomerRow {
     customerID: string;
     CLV: number;
     winRate: number;
     actionCount: number;
     netBets: number;
     lastUpdate: string;
-  }>;
+  }
+  const customers = normalizeD1Result<CustomerRow>(result);
 
   console.log(`[${requestId}] ✅ Found ${customers.length} customers`);
 
-  return new Response(JSON.stringify({
+  return createJSONResponse({
     customers,
     total: customers.length,
     agentID,
     requestId,
     timestamp: new Date().toISOString()
-  }), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
   });
 }
 
 /**
  * GET /api/stats - System statistics
  */
+interface CountResult {
+  count: number;
+}
+
 async function getStats(request: Request, env: Env, requestId: string): Promise<Response> {
   validateEnv(env, ['ANALYTICS', 'BET_TICKER_RAW']);
 
@@ -598,13 +577,13 @@ async function getStats(request: Request, env: Env, requestId: string): Promise<
 
   const stats = {
     lineMovements: {
-      last24Hours: (lineMovements as any)?.count || 0
+      last24Hours: normalizeD1First<CountResult>(lineMovements)?.count || 0
     },
     steamMoves: {
-      lastHour: (steamMoves as any)?.count || 0
+      lastHour: normalizeD1First<CountResult>(steamMoves)?.count || 0
     },
     customers: {
-      activeLastWeek: (sharpCustomers as any)?.count || 0
+      activeLastWeek: normalizeD1First<CountResult>(sharpCustomers)?.count || 0
     },
     storage: {
       kvRecords: kvRecords.keys.length,
@@ -620,11 +599,6 @@ async function getStats(request: Request, env: Env, requestId: string): Promise<
 
   console.log(`[${requestId}] ✅ System stats retrieved`);
 
-  return new Response(JSON.stringify(stats), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
-  });
+  return createJSONResponse(stats);
 }
 

@@ -1,0 +1,7 @@
+id: type-assertion-any
+message: Do not use 'as any' type assertions. Use proper type guards or utility functions for type safety.
+severity: error
+language: TypeScript
+rule:
+  kind: as_expression
+  regex: as any

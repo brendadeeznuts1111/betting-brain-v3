@@ -70,11 +70,12 @@ tools/organize-files.sh
 # Problematic directories
 ~
 ~/
-lint-report.json
+dist/reports/lint-report.json
 
 # Search Index (auto-generated)
 .rgindex.json
 .rgmeta.json
+.rgkeywords
 
 # Auto-generated docs
 docs/api/AUTO_GENERATED_API.md

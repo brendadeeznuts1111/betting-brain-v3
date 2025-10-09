@@ -38,7 +38,7 @@ export async function handleDiagnostics(request: Request, env: Env, ctx: Executi
 
   try {
     const diagnostics = {
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       worker: {
         version: '3.0.0',
         environment: env.ANALYTICS ? 'production' : 'development',
@@ -56,7 +56,7 @@ export async function handleDiagnostics(request: Request, env: Env, ctx: Executi
         error: undefined as string | undefined
       },
       lastChecks: {
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
         health: '/health',
         interceptor: '/interceptor/history?limit=1'
       }
@@ -126,7 +126,7 @@ export async function handleLogs(request: Request, env: Env): Promise<Response> 
     // Add system logs
     const systemLogs = [
       {
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
         level: 'info',
         message: 'Worker logs endpoint accessed',
         metadata: {
@@ -165,7 +165,7 @@ export async function handleSystemStatus(request: Request, env: Env): Promise<Re
   try {
     const now = Date.now();
     const status: any = {
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       uptime: 'N/A', // Workers don't have traditional uptime
       memory: {
         used: 'N/A',

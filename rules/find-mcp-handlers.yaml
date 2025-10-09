@@ -1,0 +1,9 @@
+id: find-mcp-handlers
+message: MCP tool handler found
+severity: info
+language: TypeScript
+rule:
+  pattern: |
+    export async function $HANDLER(params: $PARAMS, env: Env): Promise<MCPToolResult> {
+      $$$
+    }

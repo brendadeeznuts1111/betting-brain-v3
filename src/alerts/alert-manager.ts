@@ -70,7 +70,7 @@ export class AlertManager {
       priority: this.mapSeverityToPriority(signal.severity),
       channels,
       payload: signal,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       delivered: { slack: false, telegram: false },
       attempts: 0,
     };
@@ -92,7 +92,7 @@ export class AlertManager {
       priority: 'critical',
       channels,
       payload: { reason, metrics },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       delivered: { slack: false, telegram: false },
       attempts: 0,
     };
@@ -115,7 +115,7 @@ export class AlertManager {
       priority: 'normal',
       channels,
       payload: { r_squared, std_error, samples },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       delivered: { slack: false, telegram: false },
       attempts: 0,
     };
@@ -140,7 +140,7 @@ export class AlertManager {
       priority: 'high',
       channels,
       payload: { bet_id, amount, odds, market, side },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       delivered: { slack: false, telegram: false },
       attempts: 0,
     };
@@ -165,7 +165,7 @@ export class AlertManager {
       priority,
       channels,
       payload: { title, message, severity },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       delivered: { slack: false, telegram: false },
       attempts: 0,
     };

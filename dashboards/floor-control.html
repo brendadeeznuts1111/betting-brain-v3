@@ -7,239 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    :root {
-      --bg: #0d1117;
-      --card: #161b22;
-      --accent: #238636;
-      --warn: #f85149;
-      --yellow: #d29922;
-      --text: #c9d1d9;
-      --border: #30363d;
-    }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.5rem;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    header h1 {
-      font-size: 1.5rem;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .config-box {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .config-box input {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      width: 300px;
-    }
-
-    .config-box button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.25rem 0.75rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .config-box a {
-      color: var(--accent);
-      text-decoration: none;
-      padding: 0.25rem 0.75rem;
-      border: 1px solid var(--accent);
-      border-radius: 4px;
-      font-weight: 500;
-    }
-
-    .config-box a:hover {
-      background: var(--accent);
-      color: white;
-      cursor: pointer;
-    }
-
-    .config-box button:hover {
-      opacity: 0.8;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1rem;
-      padding: 1rem;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem;
-      transition: border-color 0.2s;
-    }
-
-    .card:hover {
-      border-color: var(--accent);
-    }
-
-    .card h2 {
-      margin: 0 0 0.75rem;
-      font-size: 1rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .expand-icon {
-      color: var(--accent);
-      cursor: pointer;
-      font-size: 0.875rem;
-      margin-left: 0.5rem;
-      transition: transform 0.2s;
-    }
-
-    .expand-icon:hover {
-      transform: scale(1.1);
-    }
-
-    .expand-icon.expanded {
-      transform: rotate(90deg);
-    }
-
-    .label {
-      font-size: 0.75rem;
-      opacity: 0.7;
-      margin-bottom: 0.25rem;
-    }
-
-    .value {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .status-green {
-      color: var(--accent);
-    }
-
-    .status-yellow {
-      color: var(--yellow);
-    }
-
-    .status-red {
-      color: var(--warn);
-    }
-
-    .mini-stat {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem;
-      background: var(--bg);
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .mini-stat .label {
-      margin: 0;
-    }
-
-    .mini-stat .val {
-      font-weight: 600;
-    }
-
-    .label-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .label-row .label {
-      flex: 1;
-      font-size: 0.75rem;
-      margin: 0;
-    }
-
-    .label-row .val {
-      flex: 1;
-      font-weight: 600;
-      text-align: right;
-    }
-
-    pre {
-      font-size: 0.75rem;
-      overflow: auto;
-      max-height: 180px;
-      background: var(--bg);
-      padding: 0.5rem;
-      border-radius: 4px;
-      margin: 0.5rem 0 0;
-    }
-
-    canvas {
-      max-height: 200px;
-    }
-
-    .error {
-      color: var(--warn);
-      font-size: 0.875rem;
-      padding: 0.5rem;
-      background: rgba(248, 81, 73, 0.1);
-      border-radius: 4px;
-      margin-top: 0.5rem;
-    }
-
-    .loading {
-      opacity: 0.5;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 0.125rem 0.5rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: var(--accent);
-    }
-
-    .badge-warn {
-      background: var(--warn);
-    }
-
-    .badge-yellow {
-      background: var(--yellow);
-    }
-  </style>
+  <script type="module" src="shared/config.js"></script>
+  <script type="module" src="shared/utils.js"></script>
+  <script type="module" src="shared/charts.js"></script>
+  <script type="module" src="shared/widgets.js"></script>
 </head>
 
-<body>
+<body class="floor-control-dashboard">
   <header>
     <h1>
       <span>🌲</span>
@@ -256,7 +30,7 @@
 
   <main class="grid">
     <!-- Floor Health -->
-    <section class="card">
+    <section id="floor-health-widget" class="card">
       <h2>🤖 Floor Health</h2>
       <div class="label">Overall Status</div>
       <div id="floor-status" class="value">—</div>
@@ -276,7 +50,7 @@
     </section>
 
     <!-- Forest Grove -->
-    <section class="card">
+    <section id="forest-grove-widget" class="card">
       <h2>🌲 Forest Grove</h2>
       <div class="label">Health Status</div>
       <div id="grove-status" class="value">—</div>
@@ -296,7 +70,7 @@
     </section>
 
     <!-- MCP Tools -->
-    <section class="card">
+    <section id="mcp-tools-widget" class="card">
       <h2>🛠️ MCP Tools</h2>
       <div class="label">Available Tools</div>
       <div id="mcp-count" class="value">—</div>
@@ -305,14 +79,14 @@
     </section>
 
     <!-- Live Odds -->
-    <section class="card">
+    <section id="live-odds-widget" class="card">
       <h2>📊 Live Odds (NBA)</h2>
       <canvas id="odds-chart"></canvas>
       <div id="odds-error" class="error" style="display:none;"></div>
     </section>
 
     <!-- Live Scores -->
-    <section class="card">
+    <section id="live-scores-widget" class="card">
       <h2>🏀 Live Scores</h2>
       <div class="label">Active Games</div>
       <div id="scores-count" class="value">—</div>
@@ -321,7 +95,7 @@
     </section>
 
     <!-- Database Metrics -->
-    <section class="card">
+    <section id="database-metrics-widget" class="card">
       <h2>💾 Database Metrics</h2>
       <div class="label">Total Records</div>
       <div id="db-total" class="value">—</div>
@@ -349,7 +123,7 @@
     </section>
 
     <!-- Infrastructure Status -->
-    <section class="card">
+    <section id="infrastructure-status-widget" class="card">
       <h2>🏗️ Infrastructure Status</h2>
       <div class="label">Cloudflare Edge Services</div>
       <div id="infra-status" class="value">—</div>
@@ -373,14 +147,14 @@
     </section>
 
     <!-- System Performance -->
-    <section class="card">
+    <section id="system-performance-widget" class="card">
       <h2>⚡ System Performance</h2>
       <canvas id="perf-chart"></canvas>
       <div id="perf-error" class="error" style="display:none;"></div>
     </section>
 
     <!-- Recent Activity -->
-    <section class="card">
+    <section id="recent-activity-widget" class="card">
       <h2>📡 Recent Activity</h2>
       <div class="label">Last 10 Events</div>
       <pre id="activity-list"></pre>
@@ -390,7 +164,7 @@
     <!-- ===== Fantasy402 Integration ===== -->
 
     <!-- Live Bets -->
-    <section class="card">
+    <section id="live-bets-widget" class="card">
       <h2>🎲 Live Bets <span id="live-bets-expand" class="expand-icon" style="display:none;">▸</span></h2>
       <div class="label">In-flight / Last 5 min</div>
       <div id="live-bets" class="value">—</div>
@@ -410,7 +184,7 @@
     </section>
 
     <!-- Agent Performance -->
-    <section class="card">
+    <section id="agent-performance-widget" class="card">
       <h2>🤖 Agent Performance</h2>
       <div class="label">PNL Today</div>
       <div id="agent-pnl" class="value">—</div>
@@ -419,7 +193,7 @@
     </section>
 
     <!-- Customer Pulse -->
-    <section class="card">
+    <section id="customer-pulse-widget" class="card">
       <h2>👥 Customer Pulse</h2>
       <div class="label">Active (30 min)</div>
       <div id="active-cust" class="value">—</div>
@@ -431,7 +205,7 @@
     </section>
 
     <!-- Transaction Ticker -->
-    <section class="card">
+    <section id="transaction-ticker-widget" class="card">
       <h2>💸 Transaction Ticker</h2>
       <div class="label">Last 10 Transactions</div>
       <pre id="tx-ticker"></pre>
@@ -439,7 +213,7 @@
     </section>
 
     <!-- DNS Health -->
-    <section class="card">
+    <section id="dns-health-widget" class="card">
       <h2>🔍 DNS Resolve</h2>
       <div class="label">IP Address</div>
       <div id="dns-ip" class="value">—</div>
@@ -453,7 +227,7 @@
     <!-- ===== Cache Performance & Agent Tree ===== -->
 
     <!-- Cache Performance -->
-    <section class="card">
+    <section id="cache-performance-widget" class="card">
       <h2>⚡ Cache Performance</h2>
       <div class="label">Cache Hit Rate</div>
       <div id="cache-hit-rate" class="value">—</div>
@@ -483,8 +257,9 @@
     </section>
 
     <!-- Agent Hierarchy Analytics -->
-    <section class="card" style="grid-column: span 2;">
-      <h2>🌳 Agent Hierarchy Analytics <span id="agent-analytics-expand" class="expand-icon" onclick="toggleAgentAnalytics()">▸</span></h2>
+    <section id="agent-hierarchy-analytics-widget" class="card" style="grid-column: span 2;">
+      <h2>🌳 Agent Hierarchy Analytics <span id="agent-analytics-expand" class="expand-icon"
+          onclick="toggleAgentAnalytics()">▸</span></h2>
 
       <!-- Summary Stats Row -->
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
@@ -519,7 +294,9 @@
             </tr>
           </thead>
           <tbody id="top-agents-body">
-            <tr><td colspan="4" style="text-align: center; padding: 1rem; opacity: 0.7;">Loading...</td></tr>
+            <tr>
+              <td colspan="4" style="text-align: center; padding: 1rem; opacity: 0.7;">Loading...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -538,7 +315,8 @@
 
       <!-- Expanded Analytics (Hidden by default) -->
       <details id="agent-analytics-details" style="margin-top: 1rem;" closed>
-        <summary style="cursor: pointer; color: var(--accent); font-size: 0.875rem; font-weight: 600; padding: 0.5rem 0;">
+        <summary
+          style="cursor: pointer; color: var(--accent); font-size: 0.875rem; font-weight: 600; padding: 0.5rem 0;">
           📊 Detailed Metrics & Distribution
         </summary>
         <div style="margin-top: 1rem; font-size: 0.875rem;">
@@ -548,44 +326,45 @@
 
           <!-- Risk Heatmap -->
           <div class="label">Risk Distribution</div>
-          <div id="risk-distribution" style="background: var(--bg); padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem;">
+          <div id="risk-distribution"
+            style="background: var(--bg); padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem;">
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; font-size: 0.75rem;">
               <div>
-                <div style="color: #4daf4a;">🟢 Low (<1.0)</div>
-                <div id="risk-low" style="font-weight: 600; margin-top: 0.25rem;">—</div>
-              </div>
-              <div>
-                <div style="color: #ffed6f;">🟡 Medium (1-5)</div>
-                <div id="risk-medium" style="font-weight: 600; margin-top: 0.25rem;">—</div>
-              </div>
-              <div>
-                <div style="color: #ff7f00;">🟠 High (5-10)</div>
-                <div id="risk-high" style="font-weight: 600; margin-top: 0.25rem;">—</div>
-              </div>
-              <div>
-                <div style="color: #e41a1c;">🔴 Critical (>10)</div>
-                <div id="risk-critical" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+                <div style="color: #4daf4a;">🟢 Low (<1.0)< /div>
+                    <div id="risk-low" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+                </div>
+                <div>
+                  <div style="color: #ffed6f;">🟡 Medium (1-5)</div>
+                  <div id="risk-medium" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+                </div>
+                <div>
+                  <div style="color: #ff7f00;">🟠 High (5-10)</div>
+                  <div id="risk-high" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+                </div>
+                <div>
+                  <div style="color: #e41a1c;">🔴 Critical (>10)</div>
+                  <div id="risk-critical" style="font-weight: 600; margin-top: 0.25rem;">—</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Agent Type Breakdown -->
-          <div class="label">Agent Type Breakdown</div>
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-            <div class="mini-stat" style="flex: 1;">
-              <span class="label">Master (M)</span>
-              <span class="val" id="agent-type-m">—</span>
-            </div>
-            <div class="mini-stat" style="flex: 1;">
-              <span class="label">Agent (A)</span>
-              <span class="val" id="agent-type-a">—</span>
-            </div>
-            <div class="mini-stat" style="flex: 1;">
-              <span class="label">Player (P)</span>
-              <span class="val" id="agent-type-p">—</span>
+            <!-- Agent Type Breakdown -->
+            <div class="label">Agent Type Breakdown</div>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+              <div class="mini-stat" style="flex: 1;">
+                <span class="label">Master (M)</span>
+                <span class="val" id="agent-type-m">—</span>
+              </div>
+              <div class="mini-stat" style="flex: 1;">
+                <span class="label">Agent (A)</span>
+                <span class="val" id="agent-type-a">—</span>
+              </div>
+              <div class="mini-stat" style="flex: 1;">
+                <span class="label">Player (P)</span>
+                <span class="val" id="agent-type-p">—</span>
+              </div>
             </div>
           </div>
-        </div>
       </details>
 
       <div id="hierarchy-error" class="error" style="display:none;"></div>
@@ -594,7 +373,7 @@
     <!-- ===== Fantasy402 Individual Operation Cards ===== -->
 
     <!-- Player Info -->
-    <section class="card">
+    <section id="player-info-widget" class="card">
       <h2>👤 Player Info</h2>
       <div class="label">Active Players</div>
       <div id="player-info-count" class="value">—</div>
@@ -717,1090 +496,1331 @@
 
   <script>
     /* ========== CONFIG ========== */
-    const WORKER_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:8787'
-      : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
+    import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS, WIDGET_CONFIG, ERROR_MESSAGES, STATUS } from './shared/config.js';
+    import { $, formatCurrency, formatLargeNumber, updateElementText, formatTimeAgo, fetchWidgetData } from './shared/utils.js';
+    import { BaseWidget } from './shared/widgets.js';
+    import * as config from './shared/config.js'; // Import all of config for widget instantiation
 
     // Still show config box for manual override
     let overrideURL = localStorage.getItem('worker_url') || WORKER_URL;
-    document.getElementById('worker-url').value = overrideURL;
-
-    // Extension secret for production requests
-    const EXTENSION_SECRET = 'default-dev-secret-change-me';
+    $('worker-url').value = overrideURL;
 
     function saveConfig() {
-      overrideURL = document.getElementById('worker-url').value;
+      overrideURL = $('worker-url').value;
       localStorage.setItem('worker_url', overrideURL);
       tick();
     }
 
-    const REFRESH_MS = 30_000;
-    let tickCount = 0;
+    // Define Widgets
+    class FloorHealthWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+        this.statusMap = {
+          'green': 'status-green',
+          'yellow': 'status-yellow',
+          'red': 'status-red'
+        };
+      }
 
-    /* ====== ==== H ELPERS ========== */
-     c onst $ = (s) => document.querySelector(s);
-    const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
-    const fmtNum = (n) => new Intl.NumberFormat().format(n);
-    const updateTime = () => {
-      $('#last-update').textContent = new Date().toLocaleTimeString();
-    };
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('floorHealth');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
 
-    function showError(id, msg) {
-      const el = $(`#${id}-error`);
-      if (el) {
-        el.textContent = msg;
-        el.style.display = 'block';
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('floor-status', this.config.STATUS.ERROR);
+          document.getElementById('floor-status').className = 'value status-red';
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('floor-status', d.status || 'unknown');
+          document.getElementById('floor-status').className = `value ${this.statusMap[d.status] || 'status-red'}`;
+          this.utils.updateElementText('floor-version', d.version || '—');
+          this.utils.updateElementText('floor-tests', d.tests ? `${d.tests.pass}/${d.tests.total}` : '—');
+          this.utils.updateElementText('floor-coverage', d.coverage ? `${d.coverage.percentage}%` : '—');
+
+          // Update header badge
+          const badge = $('status-badge');
+          badge.className = 'badge';
+          if (d.status === 'red') badge.classList.add('badge-warn');
+          else if (d.status === 'yellow') badge.classList.add('badge-yellow');
+
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          // Initial state or no data
+          this.utils.updateElementText('floor-status', '—');
+          document.getElementById('floor-status').className = 'value';
+          this.utils.updateElementText('floor-version', '—');
+          this.utils.updateElementText('floor-tests', '—');
+          this.utils.updateElementText('floor-coverage', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
       }
     }
 
-    function hideError(id) {
-      const el = $(`#${id}-error`);
-      if (el) el.style.display = 'none';
-    }
+    class ForestGroveWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
 
-    /* ========== CHARTS ========== */
-    const oddsCtx = $('#odds-chart').getContext('2d');
-    const oddsChart = new Chart(oddsCtx, {
-      type: 'bar',
-      data: { labels: [], datasets: [] },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            min: -300,
-            max: 300,
-            ticks: { color: '#c9d1d9' }
-          },
-          x: {
-            ticks: { color: '#c9d1d9' }
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          let data = await this.utils.fetchWidgetData('forestGrove');
+          if (!data || !data.health) {
+            // Fallback to /health endpoint if floorStatus doesn't provide detailed health
+            data = await this.utils.fetchWidgetData('health'); // Using 'health' widget from config
           }
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
         }
       }
-    });
 
-    const perfCtx = $('#perf-chart').getContext('2d');
-    const perfChart = new Chart(perfCtx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Response Time (ms)',
-          data: [],
-          borderColor: '#238636',
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#c9d1d9' } } },
-        scales: {
-          y: { ticks: { color: '#c9d1d9' } },
-          x: { ticks: { color: '#c9d1d9' } }
-        }
-      }
-    });
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('grove-status', this.config.STATUS.ERROR);
+          document.getElementById('grove-status').className = 'value status-red';
+        } else if (this.data) {
+          const d = this.data;
+          // Assuming data structure from floor/status or health endpoint
+          const healthData = d.health || d; // Use d.health if from floor/status, else d directly for /health
 
-    // Fantasy402 Bets Chart
-    const betsCtx = $('#bets-chart').getContext('2d');
-    const betsChart = new Chart(betsCtx, {
-      type: 'bar',
-      data: { labels: [], datasets: [] },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { color: '#c9d1d9' }
-          },
-          x: {
-            ticks: { color: '#c9d1d9' }
+          const statusText = (d.status === 'green' || healthData.status === 'healthy') ? 'healthy' :
+            (d.status === 'yellow' || healthData.status === 'degraded') ? 'degraded' : 'down';
+
+          this.utils.updateElementText('grove-status', statusText);
+          document.getElementById('grove-status').className = `value status-${(d.status === 'green' || healthData.status === 'healthy') ? 'green' : 'red'}`;
+
+          if (healthData.worker) {
+            this.utils.updateElementText('grove-worker', healthData.worker === 'up' ? '✅ UP' : '❌ DOWN');
+            this.utils.updateElementText('grove-db', healthData.database === 'up' ? '✅ UP' : '❌ DOWN');
+            this.utils.updateElementText('grove-queue', healthData.queue === 'up' ? '✅ UP' : '❌ DOWN');
           }
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('grove-status', '—');
+          document.getElementById('grove-status').className = 'value';
+          this.utils.updateElementText('grove-worker', '—');
+          this.utils.updateElementText('grove-db', '—');
+          this.utils.updateElementText('grove-queue', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
         }
-      }
-    });
-
-    // Pending Wagers Chart
-    const pendingCtx = $('#pending-chart').getContext('2d');
-    const pendingChart = new Chart(pendingCtx, {
-      type: 'doughnut',
-      data: { labels: [], atasets: [] },
-      options: {
-        responsive: true,
-        maintainAspectRatio false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: '#c9d1d9' }
-          }
-        }
-      }
-    });
-
-    // Player Analysis Chart
-    const analysisCtx = $('#analysis-chart').getContext('2d');
-    const analysisChart = new Chart(analysisCtx, {
-      type: 'bar',
-      daa: { labels: [], datsets: [] },
-      options: {
-        responsive: true
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: { color: '#c9d1d9' }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { color: '#c9d1d9' }
-          },
-          x: {
-            ticks: { color: '#c9d1d9' }
-          }
-        }
-      }
-    });
-
-    /* ========== FETCHERS ========== */
-    async function getJSON(path, errorId, options = {}) {
-      try {
-        const start = Date.now();
-        const url = (overrideURL || WORKER_URL) + path;
-        const r = await fetch(url, {
-          method: options.method || 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Extension-Secret': EXTENSION_SECRET,
-            ...options.headers
-          },
-          body: options.body ? JSON.stringify(options.body) : undefined
-        });
-        const duration = Date.now() - start;
-
-        // Update perf chart with actual response time
-        perfChart.data.labels.push(new Date().toLocaleTimeString());
-        perfChart.data.datasets[0].data.push(duration);
-        if (perfChart.data.labels.length > 20) {
-          perfChart.data.labels.shift();
-          perfChart.data.datasets[0].data.shift();
-        }
-        perfChart.update();
-
-        if (!r.ok) {
-          const errorText = await r.text();
-          showError(errorId, `HTTP ${r.status}: ${r.statusText} - ${errorText}`);
-          return null;
-        }
-        hideError(errorId);
-        return await r.json();
-      } catch (err) {
-        showError(errorId, err.message);
-        return null;
       }
     }
 
-    async function loadFloor() {
-      const d = await getJSON('/floor/status', 'floor');
-      if (!d) return;
+    class McpToolsWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
 
-      const statusMap = {
-        'green': 'status-green',
-        'yellow': 'status-yellow',
-        'red': 'status-red'
-      };
-
-      $('#floor-status').textContent = d.status || 'unknown';
-      $('#floor-status').className = `value ${statusMap[d.status] || 'status-red'}`;
-      $('#floor-version').textContent = d.version || '—';
-      $('#floor-tests').textContent = d.tests ? `${d.tests.pass}/${d.tests.total}` : '—';
-      $('#floor-coverage').textContent = d.coverage ? `${d.coverage.percentage}%` : '—';
-
-      // Update header badge
-      const badge = $('#status-badge');
-      badge.className = 'badge';
-      if (d.status === 'red') badge.className += ' badge-warn';
-      else if (d.status === 'yellow') badge.className += ' badge-yellow';
-    }
-
-    async function loadGrove() {
-      // Use floor/status since it has detailed health info
-      const d = await getJSON('/floor/status', 'grove');
-      if (!d || !d.health) {
-        // Fallback to /health endpoint
-        const health = await getJSON('/health', 'grove');
-        if (health) {
-          $('#grove-status').textContent = health.status || 'unknown';
-          $('#grove-status').className = health.status === 'healthy' ? 'value status-green' : 'value status-red';
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          // Try MCP info from floor/status first
+          let data = await this.utils.fetchWidgetData('floorStatus'); // Use floorStatus to get mcpTools count
+          if (data && data.mcpTools) {
+            this.data = { mcpTools: data.mcpTools, source: 'floorStatus' };
+            this.clearError();
+            return;
+          }
+          // Fallback to direct MCP endpoint if floorStatus doesn't provide mcpTools or failed
+          data = await this.utils.fetchWidgetData('mcpTools', {}, {
+            method: 'POST',
+            body: {
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/list',
+              params: {}
+            }
+          });
+          if (data && data.tools) {
+            this.data = { tools: data.tools, source: 'mcpEndpoint' };
+            this.clearError();
+          } else if (!data && !this.error) { // If fetchWidgetData returns null and no error was set, set a generic error
+            this.displayError(this.config.ERROR_MESSAGES.fetchError);
+          }
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
         }
-        return;
       }
 
-      // Map status
-      const statusText = d.status === 'green' ? 'healthy' : d.status === 'yellow' ? 'degraded' : 'down';
-      $('#grove-status').textContent = statusText;
-      $('#grove-status').className = `value status-${d.status === 'green' ? 'green' : d.status === 'yellow' ? 'yellow' : 'red'}`;
-
-      // Update individual services
-      $('#grove-worker').textContent = d.health.worker === 'up' ? '✅ UP' : '❌ DOWN';
-      $('#grove-db').textContent = d.health.database === 'up' ? '✅ UP' : '❌ DOWN';
-      $('#grove-queue').textContent = d.health.queue === 'up' ? '✅ UP' : '❌ DOWN';
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('mcp-count', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          if (this.data.source === 'floorStatus') {
+            this.utils.updateElementText('mcp-count', this.data.mcpTools);
+            // Show known tools from rule documentation for now
+            document.getElementById('mcp-list').textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
+          } else if (this.data.source === 'mcpEndpoint') {
+            this.utils.updateElementText('mcp-count', this.data.tools?.length ?? '—');
+            document.getElementById('mcp-list').textContent = this.data.tools?.map(t => t.name).join('\n') ?? '';
+          }
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('mcp-count', '—');
+          document.getElementById('mcp-list').textContent = '—';
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
     }
 
-    async function loadMcp() {
-      // Get MCP info from floor/status
-      const floorData = await getJSON('/floor/status', 'mcp');
-      if (floorData && floorData.mcpTools) {
-        $('#mcp-count').textContent = floorData.mcpTools;
-        // Show known tools
-        $('#mcp-list').textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
-        hideError('mcp');
-        return;
+    class LiveOddsWidget extends BaseWidget {
+      constructor(id, config, utils, charts) {
+        super(id, config, utils);
+        this.charts = charts; // Pass charts object to widget
+        this.chartInstance = null;
+        this.ctx = document.getElementById('odds-chart').getContext('2d');
       }
 
-      // Try MCP endpoint as fallback
-      const d = await getJSON('/mcp', 'mcp');
-      if (!d) {
-        // Show default tools
-        $('#mcp-count').textContent = '6';
-        $('#mcp-list').textContent = 'forest-status\ndeploy-dashboards\nrelease\nlive-odds\nlive-scores\npush-sports-data';
-        return;
-      }
-
-      $('#mcp-count').textContent = d.tools?.length ?? '—';
-      $('#mcp-list').textContent = d.tools?.map(t => t.name).join('\n') ?? '';
-    }
-
-    async function loadOdds() {
-      // Try MCP live-odds tool first
-      const mcpResponse = await getJSON('/mcp', 'odds', {
-        method: 'POST',
-        body: {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'tools/call',
-          params: {
-            name: 'live-odds',
-            arguments: {
-              sport: 'nba',
-              market: 'moneyline'
+      init() {
+        this.chartInstance = new Chart(this.ctx, {
+          type: 'line',
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  color: '#ffffff',
+                  font: { size: 12 }
+                }
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: { color: '#ffffff' }
+              },
+              y: {
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: { color: '#ffffff' }
+              }
             }
           }
-        }
-      });
+        });
+        this.charts.odds = this.chartInstance; // Register chart instance with global charts object
+      }
 
-      if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
         try {
-          const oddsData = JSON.parse(mcpResponse.result.content[0].text);
-          if (oddsData && oddsData.odds && oddsData.odds.length > 0) {
-            const books = [...new Set(oddsData.odds.map(o => o.book))].slice(0, 5);
-            const homeOdds = books.map(book => {
-              const odd = oddsData.odds.find(o => o.book === book && o.side === 'home');
-              return odd ? odd.odds : 0;
-            });
+          // Try MCP live-odds tool first
+          const mcpResponse = await this.utils.fetchWidgetData('liveOdds', { sport: 'nba', market: 'moneyline' }, {
+            method: 'POST',
+            body: {
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/call',
+              params: {
+                name: 'live-odds',
+                arguments: {
+                  sport: 'nba',
+                  market: 'moneyline'
+                }
+              }
+            }
+          });
 
-            oddsChart.data.labels = books;
-            oddsChart.data.datasets = [{
-              label: 'Home Odds',
-              data: homeOdds,
-              backgroundColor: '#238636',
-              borderColor: '#2ea043',
-              borderWidth: 1
+          if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+            try {
+              const oddsData = JSON.parse(mcpResponse.result.content[0].text);
+              if (oddsData && oddsData.odds && oddsData.odds.length > 0) {
+                this.data = { odds: oddsData.odds, source: 'mcpTool' };
+                this.clearError();
+                return;
+              }
+            } catch (e) {
+              console.warn('[LiveOddsWidget] Failed to parse MCP odds response:', e);
+            }
+          }
+
+          // Fallback to direct API if MCP tool failed or returned no data
+          const directApiResponse = await this.utils.fetchWidgetData('apiLiveOdds', { sport: 'nba', market: 'moneyline' });
+          if (directApiResponse && directApiResponse.odds && directApiResponse.odds.length > 0) {
+            this.data = { odds: directApiResponse.odds, source: 'directAPI' };
+            this.clearError();
+          } else if (!this.error) {
+            this.displayError('No odds data available');
+          }
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          // Clear chart data on error
+          if (this.chartInstance) {
+            this.chartInstance.data.labels = [];
+            this.chartInstance.data.datasets = [];
+            this.chartInstance.update();
+          }
+        } else if (this.data && this.data.odds) {
+          const d = this.data;
+          const books = [...new Set(d.odds.map(o => o.book))].slice(0, 5);
+          const homeOdds = books.map(book => {
+            const odd = d.odds.find(o => o.book === book && o.side === 'home');
+            return odd ? odd.odds : 0;
+          });
+
+          this.chartInstance.data.labels = books;
+          this.chartInstance.data.datasets = [{
+            label: 'Home Odds',
+            data: homeOdds,
+            backgroundColor: '#238636',
+            borderColor: '#2ea043',
+            borderWidth: 1
+          }];
+          this.chartInstance.update();
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          // Initial state or no data
+          if (this.chartInstance) {
+            this.chartInstance.data.labels = [];
+            this.chartInstance.data.datasets = [];
+            this.chartInstance.update();
+          }
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class LiveScoresWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('liveScores');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('scores-count', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('scores-count', d.games?.length ?? '0');
+          document.getElementById('scores-list').textContent = (d.games ?? []).slice(0, 5)
+            .map(g => `${g.awayTeam} @ ${g.homeTeam}\n  ${g.awayScore || 0} - ${g.homeScore || 0}`)
+            .join('\n\n');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('scores-count', '—');
+          document.getElementById('scores-list').textContent = '—';
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class DatabaseMetricsWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          // Try to get database metrics from MCP tools
+          const mcpResponse = await this.utils.fetchWidgetData('databaseMetrics', {}, {
+            method: 'POST',
+            body: {
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/call',
+              params: {
+                name: 'forest-status',
+                arguments: {}
+              }
+            }
+          });
+
+          if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+            try {
+              const statusData = JSON.parse(mcpResponse.result.content[0].text);
+              if (statusData && statusData.database) {
+                this.data = { metrics: statusData.database, source: 'mcpTool' };
+                this.clearError();
+                return;
+              }
+            } catch (e) {
+              console.warn('[DatabaseMetricsWidget] Failed to parse MCP database response:', e);
+            }
+          }
+
+          // Fallback to direct API or mock data
+          const directApiResponse = await this.utils.fetchWidgetData('apiDatabaseMetrics');
+          if (directApiResponse && directApiResponse.metrics) {
+            this.data = { metrics: directApiResponse.metrics, source: 'directAPI' };
+            this.clearError();
+          } else if (!this.error) {
+            // Mock data fallback if API fails and no other error is set
+            this.data = {
+              metrics: {
+                totalRecords: 1247,
+                lineMovements: 856,
+                sharpIndicators: 234,
+                exposureTracking: 157,
+                fantasy402Raw: 89,
+                agentPerformance: 12
+              },
+              source: 'mockData'
+            };
+            this.clearError();
+          }
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('db-total', this.config.STATUS.ERROR);
+        } else if (this.data && this.data.metrics) {
+          const d = this.data.metrics;
+          this.utils.updateElementText('db-total', this.utils.formatLargeNumber(d.totalRecords || 0));
+          this.utils.updateElementText('db-lines', this.utils.formatLargeNumber(d.lineMovements || 0));
+          this.utils.updateElementText('db-sharp', this.utils.formatLargeNumber(d.sharpIndicators || 0));
+          this.utils.updateElementText('db-exposure', this.utils.formatLargeNumber(d.exposureTracking || 0));
+          this.utils.updateElementText('db-fantasy', this.utils.formatLargeNumber(d.fantasy402Raw || 0));
+          this.utils.updateElementText('db-agents', this.utils.formatLargeNumber(d.agentPerformance || 0));
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('db-total', '—');
+          this.utils.updateElementText('db-lines', '—');
+          this.utils.updateElementText('db-sharp', '—');
+          this.utils.updateElementText('db-exposure', '—');
+          this.utils.updateElementText('db-fantasy', '—');
+          this.utils.updateElementText('db-agents', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class InfrastructureStatusWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          // Try to get infrastructure status from MCP tools
+          const mcpResponse = await this.utils.fetchWidgetData('infrastructureStatus', {}, {
+            method: 'POST',
+            body: {
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/call',
+              params: {
+                name: 'forest-status',
+                arguments: {}
+              }
+            }
+          });
+
+          if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+            try {
+              const statusData = JSON.parse(mcpResponse.result.content[0].text);
+              if (statusData && statusData.infrastructure) {
+                this.data = { status: statusData.infrastructure, source: 'mcpTool' };
+                this.clearError();
+                return;
+              }
+            } catch (e) {
+              console.warn('[InfrastructureStatusWidget] Failed to parse MCP infrastructure response:', e);
+            }
+          }
+
+          // Fallback to direct API or mock data
+          const directApiResponse = await this.utils.fetchWidgetData('apiInfrastructureStatus');
+          if (directApiResponse && directApiResponse.status) {
+            this.data = { status: directApiResponse.status, source: 'directAPI' };
+            this.clearError();
+          } else if (!this.error) {
+            // Mock data fallback if API fails and no other error is set
+            this.data = {
+              status: 'healthy', // Mock healthy status
+              kvNamespaces: '10',
+              queues: '5',
+              analyticsEngine: 'up',
+              d1Databases: '2'
+            };
+            this.clearError();
+          }
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('infra-status', this.config.STATUS.ERROR);
+          document.getElementById('infra-status').className = 'value status-red';
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('infra-status', d.status);
+          document.getElementById('infra-status').className = `value status-${d.status === 'healthy' ? 'green' : 'red'}`;
+
+          if (d.kvNamespaces) this.utils.updateElementText('infra-kv', d.kvNamespaces);
+          if (d.queues) this.utils.updateElementText('infra-queues', d.queues);
+          if (d.analyticsEngine) this.utils.updateElementText('infra-analytics', d.analyticsEngine);
+          if (d.d1Databases) this.utils.updateElementText('infra-d1', d.d1Databases);
+
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('infra-status', '—');
+          document.getElementById('infra-status').className = 'value';
+          this.utils.updateElementText('infra-kv', '—');
+          this.utils.updateElementText('infra-queues', '—');
+          this.utils.updateElementText('infra-analytics', '—');
+          this.utils.updateElementText('infra-d1', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class SystemPerformanceWidget extends BaseWidget {
+      constructor(id, config, utils, charts) {
+        super(id, config, utils);
+        this.charts = charts; // Pass charts object to widget
+        this.chartInstance = null;
+        this.ctx = document.getElementById('perf-chart').getContext('2d');
+      }
+
+      init() {
+        this.chartInstance = new Chart(this.ctx, {
+          type: 'line',
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: { color: '#ffffff' }
+              },
+              y: {
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: { color: '#ffffff' }
+              }
+            }
+          }
+        });
+        this.charts.perf = this.chartInstance; // Register chart instance with global charts object
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          // Try to get system performance metrics from MCP tools
+          const mcpResponse = await this.utils.fetchWidgetData('systemPerformance', {}, {
+            method: 'POST',
+            body: {
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/call',
+              params: {
+                name: 'forest-status',
+                arguments: {}
+              }
+            }
+          });
+
+          if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+            try {
+              const perfData = JSON.parse(mcpResponse.result.content[0].text);
+              if (perfData && perfData.performance) {
+                this.data = { performance: perfData.performance, source: 'mcpTool' };
+                this.clearError();
+                return;
+              }
+            } catch (e) {
+              console.warn('[SystemPerformanceWidget] Failed to parse MCP performance response:', e);
+            }
+          }
+
+          // Fallback to direct API or mock data
+          const directApiResponse = await this.utils.fetchWidgetData('apiSystemPerformance');
+          if (directApiResponse && directApiResponse.performance) {
+            this.data = { performance: directApiResponse.performance, source: 'directAPI' };
+            this.clearError();
+          } else if (!this.error) {
+            // Mock data fallback if API fails and no other error is set
+            this.data = {
+              performance: {
+                cpuUsage: 0.5,
+                memoryUsage: 0.7,
+                requestsPerSecond: 150,
+                cacheHitRate: 0.98,
+                d1Savings: 123456789,
+                responseTimeHistory: Array(20).fill(0).map((_, i) => Math.round(Math.random() * 50 + 20))
+              },
+              source: 'mockData'
+            };
+            this.clearError();
+          }
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          // Clear chart data on error
+          if (this.chartInstance) {
+            this.chartInstance.data.labels = [];
+            this.chartInstance.data.datasets = [];
+            this.chartInstance.update();
+          }
+        } else if (this.data && this.data.performance) {
+          const d = this.data.performance;
+          // Update chart with response time history
+          if (this.chartInstance && d.responseTimeHistory) {
+            this.chartInstance.data.labels = Array(d.responseTimeHistory.length).fill(0).map((_, i) => `Tick ${i + 1}`); // Generic labels
+            this.chartInstance.data.datasets = [{
+              label: 'Response Time (ms)',
+              data: d.responseTimeHistory,
+              backgroundColor: '#2563eb',
+              borderColor: '#1d4ed8',
+              borderWidth: 1,
+              tension: 0.3,
+              pointRadius: 0
             }];
-            oddsChart.update();
-            hideError('odds');
-            return;
+            this.chartInstance.update();
           }
-        } catch (e) {
-          console.warn('Failed to parse MCP odds response:', e);
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          // Initial state or no data
+          if (this.chartInstance) {
+            this.chartInstance.data.labels = [];
+            this.chartInstance.data.datasets = [];
+            this.chartInstance.update();
+          }
+          document.getElementById(`${this.id}-error`).style.display = 'none';
         }
       }
-
-      // Fallback to direct API
-      const d = await getJSON('/api/live-odds?sport=nba&market=moneyline&limit=10', 'odds');
-      if (!d || !d.odds || d.odds.length === 0) {
-        showError('odds', 'No odds data available');
-        return;
-      }
-
-      const books = [...new Set(d.odds.map(o => o.book))].slice(0, 5);
-      const homeOdds = books.map(book => {
-        const odd = d.odds.find(o => o.book === book && o.side === 'home');
-        return odd ? odd.odds : 0;
-      });
-
-      oddsChart.data.labels = books;
-      oddsChart.data.datasets = [{
-        label: 'Home Odds',
-        data: homeOdds,
-        backgroundColor: '#238636',
-        borderColor: '#2ea043',
-        borderWidth: 1
-      }];
-      oddsChart.update();
     }
 
-    async function loadScores() {
-      const d = await getJSON('/api/live-scores?sport=nba', 'scores');
-      if (!d || !d.games) {
-        showError('scores', 'No live games');
-        return;
+    class RecentActivityWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
       }
 
-      $('#scores-count').textContent = d.games.length;
-      $('#scores-list').textContent = d.games.slice(0, 5)
-        .map(g => `${g.awayTeam} @ ${g.homeTeam}\n  ${g.awayScore || 0} - ${g.homeScore || 0}`)
-        .join('\n\n');
-    }
-
-    async function loadDb() {
-      // Try to get database metrics from MCP tools
-      const mcpResponse = await getJSON('/mcp', 'db', {
-        method: 'POST',
-        body: {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'tools/call',
-          params: {
-            name: 'forest-status',
-            arguments: {}
-          }
-        }
-      });
-
-      if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
         try {
-          const statusData = JSON.parse(mcpResponse.result.content[0].text);
-          if (statusData && statusData.database) {
-            $('#db-total').textContent = fmtNum(statusData.database.totalRecords || 0);
-            $('#db-lines').textContent = fmtNum(statusData.database.lineMovements || 0);
-            $('#db-sharp').textContent = fmtNum(statusData.database.sharpIndicators || 0);
-            $('#db-exposure').textContent = fmtNum(statusData.database.exposureTracking || 0);
-            $('#db-fantasy').textContent = fmtNum(statusData.database.fantasy402Raw || 0);
-            $('#db-agents').textContent = fmtNum(statusData.database.agentPerformance || 0);
-            hideError('db');
-            return;
-          }
-        } catch (e) {
-          console.warn('Failed to parse MCP database response:', e);
+          const data = await this.utils.fetchWidgetData('recentActivity');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
         }
       }
 
-      // Fallback to direct API or mock data
-      const d = await getJSON('/api/database-metrics', 'db');
-      if (d && d.metrics) {
-        $('#db-total').textContent = fmtNum(d.metrics.totalRecords || 0);
-        $('#db-lines').textContent = fmtNum(d.metrneMovements || 0);
-        $('#db-sharp').textContent = fmtNum(d.metrics.sharpIndicators || 0);
-        $('#db-exposure').textContent = fmtNum(d.metrics.exposureTracking || 0);
-        $('#db-fantasy').textContent = fmtNum(d.metrics.fantasy402Raw || 0);
-        $('#db-agents').textContent = fmtNum(d.metrics.agentPerformance || 0);
-      } else {
-        // Mock data fallback
-        $('#db-total').textContent = fmtNum(1247);
-        $('#db-lines').textContent = fmtNum(856);
-        $('#db-sharp').textContent = fmtNum(234);
-        $('#db-exposure').textContent = fmtNum(157);
-        $('#db-fantasy').textContent = fmtNum(89);
-        $('#db-agents').textContent = fmtNum(12);
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('activity-list', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          const activities = [];
+
+          if (d.metrics) {
+            // Steam move alerts
+            if (d.metrics.steamMoves?.alerts?.length > 0) {
+              d.metrics.steamMoves.alerts.forEach(alert => {
+                const timeAgo = Math.round((Date.now() - new Date(alert.timestamp).getTime()) / 60000);
+                activities.push(`⚡ Steam move: ${alert.gameId} (${alert.oldLine} → ${alert.newLine}) ${timeAgo}m ago`);
+              });
+            }
+
+            // Agent risk alerts
+            if (d.metrics.agentRisk?.topAgents?.length > 0) {
+              d.metrics.agentRisk.topAgents.slice(0, 2).forEach(agent => {
+                activities.push(`💰 High risk: ${agent.agentId} ($${this.utils.formatLargeNumber(Number(agent.risk))})`);
+              });
+            }
+
+            // Transaction analytics
+            activities.push(`💳 Transactions: ${this.utils.formatLargeNumber(d.metrics.transactionAnalytics?.totalTransactions || 0)} total`);
+            activities.push(`📊 Volume: ${this.utils.formatCurrency(d.metrics.transactionAnalytics?.totalVolume || 0)}`);
+
+            // Performance metrics
+            activities.push(`⚡ Avg response: ${d.metrics.performance?.avgResponseTime || 0}ms`);
+            activities.push(`📈 Total requests: ${this.utils.formatLargeNumber(d.metrics.performance?.totalRequests || 0)}`);
+            activities.push(`❌ Error rate: ${((d.metrics.performance?.errorRate || 0) * 100).toFixed(1)}%`);
+
+            // System status
+            activities.push('✅ Health check passed');
+            activities.push('🌲 Forest status: All services up');
+            activities.push('🤖 Floor health: 95%');
+          } else { // Fallback to mock data if no metrics or API call failed
+            activities.push(
+              '🔄 Line movement detected: NBA_123 (spread)',
+              '⚡ Steam move: NFL_456 (+3.5 → +5.0)',
+              '📊 Sharp indicator updated: CID_789',
+              '💰 High exposure alert: NBA_234',
+              '🎯 CLV threshold crossed: CID_345',
+              '📈 Hold % update: MLB_567',
+              '🔔 Queue processed: 15 messages',
+              '✅ Health check passed',
+              '🌲 Forest status: All services up',
+              '🤖 Floor health: 95%'
+            );
+          }
+          document.getElementById('activity-list').textContent = activities.join('\n');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('activity-list', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
       }
     }
 
-    async function loadInfrastructure() {
-      // Try to get infrastructure status from MCP tools
-      const mcpResponse = await getJSON('/mcp', 'infra', {
-        method: 'POST',
-        body: {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'tools/call',
-          params: {
-            name: 'forest-status',
-            arguments: {}
-          }
-        }
-      });
+    class LiveBetsWidget extends BaseWidget {
+      constructor(id, config, utils, charts) {
+        super(id, config, utils);
+        this.charts = charts; // Pass charts object to widget
+        this.chartInstance = null;
+        this.ctx = document.getElementById('bets-chart').getContext('2d');
+      }
 
-      if (mcpResponse && mcpResponse.result && mcpResponse.result.content) {
+      init() {
+        this.chartInstance = new Chart(this.ctx, {
+          type: 'line',
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: { color: '#ffffff' }
+              },
+              y: {
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: { color: '#ffffff' }
+              }
+            }
+          }
+        });
+        this.charts.bets = this.chartInstance; // Register chart instance with global charts object
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
         try {
-          const statusData = JSON.parse(mcpResponse.result.content[0].text);
-          if (statusData && statusData.infrastructure) {
-            const infra = statusData.infrastructure;
-            $('#infra-status').textContent = infra.overall || 'operational         $('#infra - kv').textContent = infra.kv ? '✅ Active' : '❌ Down';
-            $('#infra-queues').textContent = infra.queues ? '✅ Active' : '❌ Down';
-            $('#infra-analytics').textContent = infra.analytics ? '✅ Active' : '❌ Down';
-            $('#infra-d1').textContent = infra.d1 ? '✅ Active' : '❌ Down';
-            hideError('infra');
-            return;
+          // Check if any card should be expanded to pass expand=true param
+          const shouldExpand = document.getElementById('live-bets-expand').style.display === 'inline';
+          const expandParam = shouldExpand ? { expand: true } : {};
+
+          const data = await this.utils.fetchWidgetData('liveBets', expandParam);
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          // Clear chart data on error
+          if (this.chartInstance) {
+            this.chartInstance.data.labels = [];
+            this.chartInstance.data.datasets = [];
+            this.chartInstance.update();
           }
-        } catch (e) {
-          console.warn('Failed to parse MCP infrastructure response:', e);
-        }
-      }
+          this.utils.updateElementText('live-bets', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('live-bets', d.liveBets?.count ?? '0');
 
-      // Fallback to direct API or mock data
-      const d = await getJSON('/api/infrastructure-status', 'infra');
-      if (d && d.infrastructure) {
-        const infra = d.infrastructure;
-        $('#infra-status').textContent = infra.overall || 'operational';
-        $('#infra-kv').textContent = infra.kv ? '✅ Active' : '❌ Down';
-        $('#infra-queues').textContent = infra.queues ? '✅ Active' : '❌ Down';
-        $('#infra-analytics').textContent = infra.analytics ? '✅ Active' : '❌ Down';
-        $('#infra-d1').textContent = infra.d1 ? '✅ Active' : '❌ Down';
-      } else {
-        // Mocallback
-        $('#infra-status').textContent = 'operational';
-        $('#infra-kv').textContent = '✅ Active';
-        $('#infra-queues').textContent = '✅ Active';
-        $('#infra-analytics').textContent = '✅ Active';
-        $('#infra-d1').textContent = '✅ Active';
-      }
-    }
+          const vol = d.liveBets?.buckets?.map(b => b.volume) ?? [];
+          this.chartInstance.data.labels = d.liveBets?.buckets?.map(b => b.minute) ?? [];
+          this.chartInstance.data.datasets = [{
+            label: 'Volume ($)',
+            data: vol,
+            backgroundColor: '#238636',
+            borderColor: '#2ea043',
+            borderWidth: 1
+          }];
+          this.chartInstance.update();
 
-    async function loadActivity() {
-      // Get real analytics data
-      const analytics = await getJSON('/api/analytics/metrics', 'activity');
-      if (analytics && analytics.metrics) {
-        const activities = [];
+          // Handle analytics expand functionality
+          if (d.liveBets?.analytics) {
+            document.getElementById('live-bets-expand').style.display = 'inline';
+            document.getElementById('live-bets-analytics').style.display = 'block';
 
-        // Steam move alerts
-        if (analytics.metrics.steamMoves.alerts.length > 0) {
-          analytics.metrics.steamMoves.alerts.forEach(alert => {
-            const timeAgo = Math.round((Date.now() - new Date(alert.timestamp).getTime()) / 60000);
-            activities.push(`⚡ Steam move: ${alert.gameId} (${alert.oldLine} → ${alert.newLine}) ${timeAgo}m ago`);
-          });
-        }
+            // Steam Alerts
+            const steamAlerts = d.liveBets.analytics.steamAlerts || [];
+            if (steamAlerts.length > 0) {
+              document.getElementById('steam-alerts').innerHTML = `
+                <div style="color: var(--warn); font-weight: 600;">🔥 Steam Alerts (${steamAlerts.length})</div>
+                ${steamAlerts.map(alert =>
+                `<div style="margin-left: 1rem; color: var(--text);">
+                    Game ${alert.gameId}: ${alert.oldLine} → ${alert.newLine} (${alert.seconds}s ago)
+                  </div>`
+              ).join('')}
+              `;
+            } else {
+              document.getElementById('steam-alerts').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No steam alerts</div>';
+            }
 
-        // Agent risk alerts
-        if (analytics.metrics.agentRisk.topAgents.length > 0) {
-          analytics.metrics.agentRisk.topAgents.slice(0, 2).forEach(agent => {
-            activities.push(`💰 High risk: ${agent.agentId} ($${fmtNum(agent.risk)})`);
-          });
-        }
+            // Risk by Agent
+            const riskByAgent = d.liveBets.analytics.riskByAgent || {};
+            const agentEntries = Object.entries(riskByAgent).sort(([, a], [, b]) => b - a); // Corrected sort
+            if (agentEntries.length > 0) {
+              document.getElementById('risk-by-agent').innerHTML = `
+                <div style="color: var(--accent); font-weight: 600;">💰 Top Risk by Agent</div>
+                ${agentEntries.slice(0, 3).map(([agent, risk]) =>
+                `<div style="margin-left: 1rem; color: var(--text);">
+                    Agent ${agent}: $${risk.toFixed(2)}
+                  </div>`
+              ).join('')}
+              `;
+            } else {
+              document.getElementById('risk-by-agent').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No risk by agent data</div>';
+            }
 
-        // Transaction analytics
-        activities.push(`💳 Transactions: ${fmtNum(analytics.metrics.transactionAnalytics.totalTransactions)} total`);
-        activities.push(`📊 Volume: ${fmt(analytics.metrics.transactionAnalytics.totalVolume)}`);
-
-        // Performance metrics
-        activities.push(`⚡ Avg response: ${analytics.metrics.performance.avgResponseTime}ms`);
-        activities.push(`📈 Total requests: ${fmtNum(analytics.metrics.performance.totalRequests)}`);
-        activities.push(`❌ Error rate: ${(analytics.metrics.performance.errorRate * 100).toFixed(1)}%`);
-
-        // System status
-        activities.push('✅ Health check passed');
-        activities.push('🌲 Forest status: All services up');
-        activities.push('🤖 Floor health: 95%');
-
-        $('#activity-list').textContent = activities.join('\n');
-      } else {
-        // Fallback to mock data
-        const activities = [
-          '🔄 Line movement detected: NBA_123 (spread)',
-          '⚡ Steam move: NFL_456 (+3.5 → +5.0)',
-          '📊 Sharp indicator updated: CID_789',
-          '💰 High exposure alert: NBA_234',
-          '🎯 CLV threshold crossed: CID_345',
-          '📈 Hold % update: MLB_567',
-          '🔔 Queue processed: 15 messages',
-          '✅ Health check passed',
-          '🌲 Forest status: All services up',
-          '🤖 Floor health: 95%'
-        ];
-        $('#activity-list').textContent = activities.join('\n');
-      }
-    }
-
-    /* ========== FANTASY402 FETCHERS (UNIFIED) ========== */
-    async function loadFantasy402Data() {
-      // Check if any card should be expanded
-      const shouldExpand = document.querySelector('.expand-icon[style*="inline"null;
-      const expandParam = shouldExpand ? '?expand=true' : '';
-
-      const d = await getJSON(`/api/f402/mission-control${expandParam}`, 'bets');
-      if (!d) return;
-
-      // Live Bets
-      $('#live-bets').textContent = d.liveBets?.count ?? '0';
-      const vol = d.liveBets?.buckets?.map(b => b.volume) ?? [];
-      betsChart.data.labels = d.liveBets?.buckets?.map(b => b.minute) ?? [];
-      betsChart.data.datasets = [{
-        label: 'Volume ($)',
-        data: vol,
-        backgroundColor: '#238636',
-        borderColor: '#2ea043',
-        borderWidth: 1
-      }];
-      betsChart.update();
-
-      // Handle analytics expand functionality
-      if (d.liveBets?.analytics) {
-        $('#live-bets-expand').style.display = 'inline';
-        $('#live-bets-analytics').style.display = 'block';
-
-        // Steam Alerts
-        const steamAlerts = d.liveBets.analytics.steamAlerts || [];
-        if (steamAlerts.length > 0) {
-          $('#steam-alerts').innerHTML = `
-            <div style="color: var(--warn); font-weight: 600;">🔥 Steam Alerts (${steamAlerts.length})</div>
-            ${steamAlerts.map(alert =>
-            `<div style="margin-left: 1rem; color: var(--text);">
-                Game ${alert.gameId}: ${alert.oldLine} → ${alert.newLine} (${alert.seconds}s ago)
-              </div>`
-          ).join('')}
-          `;
+            // Exposure by Side
+            const exposureBySide = d.liveBets.analytics.exposureBySide || {};
+            const gameEntries = Object.entries(exposureBySide);
+            if (gameEntries.length > 0) {
+              document.getElementById('exposure-by-side').innerHTML = `
+                <div style="color: var(--yellow); font-weight: 600;">⚖️ Exposure by Game</div>
+                ${gameEntries.slice(0, 3).map(([game, sides]) =>
+                `<div style="margin-left: 1rem; color: var(--text);">
+                    Game ${game}: Home $${sides.home.toFixed(2)} | Away $${sides.away.toFixed(2)}
+                  </div>`
+              ).join('')}
+              `;
+            } else {
+              document.getElementById('exposure-by-side').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No exposure data</div>';
+            }
+          } else {
+            document.getElementById('live-bets-expand').style.display = 'none';
+            document.getElementById('live-bets-analytics').style.display = 'none';
+          }
+          document.getElementById(`${this.id}-error`).style.display = 'none';
         } else {
-          $('#steam-alerts').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No steam alerts</div>';
+          this.utils.updateElementText('live-bets', '—');
+          if (this.chartInstance) {
+            this.chartInstance.data.labels = [];
+            this.chartInstance.data.datasets = [];
+            this.chartInstance.update();
+          }
+          document.getElementById('live-bets-expand').style.display = 'none';
+          document.getElementById('live-bets-analytics').style.display = 'none';
+          document.getElementById(`${this.id}-error`).style.display = 'none';
         }
-
-        // Risk by Agent
-        const riskByAgent = d.liveBets.analytics.riskByAgent || {};
-        const agentEntries = Object.entries(riskByAgent).sort((a, [1] - a[1]);
-        if (agentEntries.length > 0) {
-          $('#risk-by-agent').innerHTML = `
-            <div style="color: var(--accent); font-weight: 600;">💰 Top Risk by Agent</div>
-            ${agentEntries.slice(0, 3).map(([agent, risk]) =>
-            `<div style="margin-left: 1rem; color: var(--text);">
-                Agent ${agent}: $${risk.toFixed(2)}
-              </div>`
-          ).join('')}
-          `;
-        } else {
-          $('#risk-by-agent').innerHTML = '<div style="color: var(--text); opacity: 0.7;">Nage data</div>';
-        }
-
-        // Exposure by Side
-        const exposureBySide = d.liveBets.analytics.exposureBySide || {};
-        const gameEntries = Object.entries(exposureBySide);
-        if (gameEntries.length > 0) {
-          $('#exposure-by-side').innerHTML = `
-            <div style="color: var(--yellow); font-weight: 600;">⚖️ Exposure by Game</div>
-            ${gameEntries.slice(0, 3).map(([game, sides]) =>
-            `<div style="margin-left: 1rem; color: var(--text);">
-                Game ${game}: Home $${sides.home.toFixed(2)} | Away $${sides.away.toFixed(2)}
-              </div>`
-          ).join('')}
-          `;
-        } else {
-          $('#exposure-by-side').innerHTML = '<div style="color: var(--text); opacity: 0.7;">No exposure data</div>';
-        }
-      } else {
-        $('#live-bets-expand').style.display = 'none';
-        $('#live-bets-analytics').style.display = 'none';
       }
-
-      // Agent Performance
-      const pnl = d.agents?.totalPnl ?? 0;
-      $('#agent-pnl').textContent = fmt(pnl);
-      $('#agent-pnl').className = pnl >= 0 ? 'value status-green' : 'value status-red';
-      $('#agent-top').textContent = (d.agents?.top ?? [])
-        .map(a => `${a.id}:  ${fmt(a.pnl)}`)
-        .join('\n');
-
-      // Customer Pulse
-      $('#active-cust').textContent = d.customers?.active ?? '0';
-      $('#staked-today').textContent = fmt(d.customers?.staked ?? 0);
-
-      // Transaction Ticker
-      if (d.transactions && Array.isArray(d.transactions)) {
-        $('#tx-ticker').textContent = d.transactions.map(t =>
-          `${t.type.padEnd(8)} ${t.customerId.padEnd(10)} ${fmt(t.amount).padEnd(10)} ${t.status}`
-        ).join('\n');
-      } else {
-        $('#tx-ticker').textContent = 'No transactions';
-      }
-
-      hideError('bets');
-      hideError('agent');
-      hideError('customer');
-      hideError('tx');
     }
 
-    /* ========== DNS HEALTH ========== */
-    async function loadDNS() {
-      const d = await getJSON('/api/health/dns?host=fantasy402.com', 'dns');
-      if (!d) return;
+    class AgentPerformanceWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
 
-      $('#dns-ip').textContent = d.ip || '—';
-      $('#dns-latency').textContent = d.latency ? `${d.latency} ms${d.cached ? ' (cached)' : ''}` : '—';
-      hideError('dns');
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('agentPerformance');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('agent-pnl', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          const pnl = d.agents?.totalPnl ?? 0;
+          this.utils.updateElementText('agent-pnl', this.utils.formatCurrency(pnl));
+          document.getElementById('agent-pnl').className = pnl >= 0 ? 'value status-green' : 'value status-red';
+          document.getElementById('agent-top').textContent = (d.agents?.top ?? [])
+            .map(a => `${a.id}:  ${this.utils.formatCurrency(a.pnl)}`)
+            .join('\n');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('agent-pnl', '—');
+          document.getElementById('agent-pnl').className = 'value';
+          document.getElementById('agent-top').textContent = '—';
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
     }
 
-    /* ========== CACHE PERFORMANCE & AGENT HIERARCHY ANALYTICS ========== */
+    class CustomerPulseWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
 
-    let hierarchyData = null;
-    let levelChart = null;
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('customerPulse');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
 
-    // Initialize level chart
-    function initLevelChart() {
-      if (!levelChart) {
-        const levelCtx = $('#level-chart');
-        if (levelCtx) {
-          levelChart = new Chart(levelCtx.getContext('2d'), {
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('active-cust', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('active-cust', d.customers?.active ?? '0');
+          this.utils.updateElementText('staked-today', this.utils.formatCurrency(d.customers?.staked ?? 0));
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('active-cust', '—');
+          this.utils.updateElementText('staked-today', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class TransactionTickerWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('transactionTicker');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('tx-ticker', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          const transactions = d.transactions || [];
+          const tickerText = transactions.slice(0, 10)
+            .map(tx => `${tx.timestamp || 'Unknown'}: ${tx.type || 'Unknown'} - $${this.utils.formatCurrency(tx.amount || 0)}`)
+            .join('\n');
+          document.getElementById('tx-ticker').textContent = tickerText || 'No recent transactions';
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('tx-ticker', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class DnsHealthWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('dnsHealth');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('dns-ip', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('dns-ip', d.ip || '—');
+          this.utils.updateElementText('dns-latency', d.latency ? `${d.latency}ms` : '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('dns-ip', '—');
+          this.utils.updateElementText('dns-latency', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class CachePerformanceWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('cachePerformance');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('cache-hit-rate', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          const hitRate = d.hitRate ? `${(d.hitRate * 100).toFixed(1)}%` : '—';
+          this.utils.updateElementText('cache-hit-rate', hitRate);
+          this.utils.updateElementText('cache-hits', d.hits ? `${d.hits}/${d.misses || 0}` : '—');
+          this.utils.updateElementText('cache-d1-savings', d.d1Savings ? this.utils.formatLargeNumber(d.d1Savings) : '—');
+          this.utils.updateElementText('cache-total-requests', d.totalRequests ? this.utils.formatLargeNumber(d.totalRequests) : '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('cache-hit-rate', '—');
+          this.utils.updateElementText('cache-hits', '—');
+          this.utils.updateElementText('cache-d1-savings', '—');
+          this.utils.updateElementText('cache-total-requests', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
+      }
+    }
+
+    class AgentHierarchyAnalyticsWidget extends BaseWidget {
+      constructor(id, config, utils, charts) {
+        super(id, config, utils);
+        this.charts = charts;
+        this.chartInstance = null;
+        this.ctx = document.getElementById('level-chart')?.getContext('2d');
+      }
+
+      init() {
+        if (this.ctx) {
+          this.chartInstance = new Chart(this.ctx, {
             type: 'bar',
             data: { labels: [], datasets: [] },
             options: {
               responsive: true,
               maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: { color: '#c9d1d9' }
-                },
-                x: {
-                  ticks: { color: '#c9d1d9' }
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  borderWidth: 1
                 }
+              },
+              scales: {
+                x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#ffffff' } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#ffffff' } }
               }
             }
           });
+          this.charts.hierarchy = this.chartInstance;
+        }
+      }
+
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('agentHierarchyAnalytics');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('hierarchy-total', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('hierarchy-total', d.totalAgents || '—');
+          this.utils.updateElementText('hierarchy-active', d.activeAgents || '—');
+          this.utils.updateElementText('hierarchy-risk', d.totalRisk ? this.utils.formatCurrency(d.totalRisk) : '—');
+          this.utils.updateElementText('hierarchy-depth', d.maxDepth || '—');
+
+          // Update top agents table
+          if (d.topAgents && Array.isArray(d.topAgents)) {
+            const tbody = document.getElementById('top-agents-body');
+            if (tbody) {
+              tbody.innerHTML = d.topAgents.slice(0, 5).map(agent => `
+                <tr>
+                  <td style="padding: 0.5rem;">${agent.id}</td>
+                  <td style="text-align: right; padding: 0.5rem;">${this.utils.formatCurrency(agent.ownRisk || 0)}</td>
+                  <td style="text-align: right; padding: 0.5rem;">${this.utils.formatCurrency(agent.totalRisk || 0)}</td>
+                  <td style="text-align: right; padding: 0.5rem;">${this.utils.formatCurrency(agent.networkRisk || 0)}</td>
+                </tr>
+              `).join('');
+            }
+          }
+
+          // Update level distribution chart
+          if (this.chartInstance && d.levelDistribution) {
+            this.chartInstance.data.labels = Object.keys(d.levelDistribution);
+            this.chartInstance.data.datasets = [{
+              data: Object.values(d.levelDistribution),
+              backgroundColor: '#2563eb',
+              borderColor: '#1d4ed8',
+              borderWidth: 1
+            }];
+            this.chartInstance.update();
+          }
+
+          // Update risk distribution
+          if (d.riskDistribution) {
+            this.utils.updateElementText('risk-low', d.riskDistribution.low || '—');
+            this.utils.updateElementText('risk-medium', d.riskDistribution.medium || '—');
+            this.utils.updateElementText('risk-high', d.riskDistribution.high || '—');
+            this.utils.updateElementText('risk-critical', d.riskDistribution.critical || '—');
+          }
+
+          // Update agent type breakdown
+          if (d.agentTypes) {
+            this.utils.updateElementText('agent-type-m', d.agentTypes.master || '—');
+            this.utils.updateElementText('agent-type-a', d.agentTypes.agent || '—');
+            this.utils.updateElementText('agent-type-p', d.agentTypes.player || '—');
+          }
+
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('hierarchy-total', '—');
+          this.utils.updateElementText('hierarchy-active', '—');
+          this.utils.updateElementText('hierarchy-risk', '—');
+          this.utils.updateElementText('hierarchy-depth', '—');
+          document.getElementById(`${this.id}-error`).style.display = 'none';
         }
       }
     }
 
-    async function loadAgentHierarchyAnalytics() {
-      // Fetch agent hierarchy data
-      const d = await getJSON('/api/f402/agents', 'hierarchy');
-      if (!d || !d.agents || d.agents.length === 0) {
-        $('#hierarchy-total').textContent = '0';
-        $('#hierarchy-active').textContent = '0';
-        $('#hierarchy-risk').textContent = '$0';
-        $('#hierarchy-depth').textContent = '0';
-        $('#top-agents-body').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 1rem; opacity: 0.7;">No agent data available</td></tr>';
-        return;
+    class PlayerInfoWidget extends BaseWidget {
+      constructor(id, config, utils) {
+        super(id, config, utils);
       }
 
-      // Store for reference
-      hierarchyData = d.agents;
-
-      // Calculate summary stats
-      const totalAgents = d.agents.length;
-      const activeAgents = d.agents.filter(a => a.risk > 0 || a.steam > 0 || a.velocity > 0).length;
-      const totalRisk = d.agents.reduce((sum, a) => sum + (a.totalRisk || 0), 0);
-      const maxDepth = Math.max(...d.agents.map(a => a.level || 0), 0) + 1;
-
-      // Update summary cards
-      $('#hierarchy-total').textContent = fmtNum(totalAgents);
-      $('#hierarchy-active').textContent = fmtNum(activeAgents);
-      $('#hierarchy-risk').textContent = fmt(totalRisk);
-      $('#hierarchy-depth').textContent = maxDepth;
-
-      // Top 5 agents by total risk
-      const topAgents = [...d.agents]
-        .sort((a, b) => (b.totalRisk || 0) - (a.totalRisk || 0))
-        .slice(0, 5);
-
-      const topAgentsHTML = topAgents.map(agent => {
-        const riskColor = (agent.totalRisk || 0) > 10 ? 'var(--warn)' :
-                         (agent.totalRisk || 0) > 5 ? 'var(--yellow)' : 'var(--text)';
-        return `
-          <tr style="border-bottom: 1px solid var(--border);">
-            <td style="padding: 0.5rem;">
-              ${agent.name || agent.agent}
-              <span style="font-size: 0.75rem; opacity: 0.7; margin-left: 0.5rem;">[${agent.type || '?'}]</span>
-            </td>
-            <td style="padding: 0.5rem; text-align: right;">${(agent.risk || 0).toFixed(2)}</td>
-            <td style="padding: 0.5rem; text-align: right; color: ${riskColor}; font-weight: 600;">
-              ${(agent.totalRisk || 0).toFixed(2)}
-            </td>
-            <td style="padding: 0.5rem; text-align: right; font-size: 0.75rem; opacity: 0.8;">
-              ${agent.childCount || 0} / ${agent.descendantCount || 0}
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      $('#top-agents-body').innerHTML = topAgentsHTML || '<tr><td colspan="4" style="text-align: center; padding: 1rem; opacity: 0.7;">No high-risk agents</td></tr>';
-
-      // Calculate detailed metrics for expanded view
-      calculateDetailedMetrics(d.agents);
-
-      hideError('hierarchy');
-    }
-
-    function calculateDetailedMetrics(agents) {
-      // Risk distribution
-      const riskLow = agents.filter(a => (a.totalRisk || 0) < 1).length;
-      const riskMedium = agents.filter(a => (a.totalRisk || 0) >= 1 && (a.totalRisk || 0) < 5).length;
-      const riskHigh = agents.filter(a => (a.totalRisk || 0) >= 5 && (a.totalRisk || 0) < 10).length;
-      const riskCritical = agents.filter(a => (a.totalRisk || 0) >= 10).length;
-
-      $('#risk-low').textContent = fmtNum(riskLow);
-      $('#risk-medium').textContent = fmtNum(riskMedium);
-      $('#risk-high').textContent = fmtNum(riskHigh);
-      $('#risk-critical').textContent = fmtNum(riskCritical);
-
-      // Agent type breakdown
-      const typeM = agents.filter(a => a.type === 'M').length;
-      const typeA = agents.filter(a => a.type === 'A').length;
-      const typeP = agents.filter(a => a.type === 'P').length;
-
-      $('#agent-type-m').textContent = fmtNum(typeM);
-      $('#agent-type-a').textContent = fmtNum(typeA);
-      $('#agent-type-p').textContent = fmtNum(typeP);
-
-      // Level distribution for chart
-      const levelCounts = {};
-      agents.forEach(a => {
-        const level = a.level || 0;
-        levelCounts[level] = (levelCounts[level] || 0) + 1;
-      });
-
-      const levels = Object.keys(levelCounts).sort((a, b) => a - b);
-      const counts = levels.map(l => levelCounts[l]);
-
-      // Update level chart
-      initLevelChart();
-      if (levelChart) {
-        levelChart.data.labels = levels.map(l => `Level ${l}`);
-        levelChart.data.datasets = [{
-          label: 'Agents',
-          data: counts,
-          backgroundColor: '#238636',
-          borderColor: '#2ea043',
-          borderWidth: 1
-        }];
-        levelChart.update();
-      }
-    }
-
-    function toggleAgentAnalytics() {
-      const details = $('#agent-analytics-details');
-      const icon = $('#agent-analytics-expand');
-
-      if (details.hasAttribute('open')) {
-        details.removeAttribute('open');
-        icon.textContent = '▸';
-        icon.classList.remove('expanded');
-      } else {
-        details.setAttribute('open', '');
-        icon.textContent = '▾';
-        icon.classList.add('expanded');
-      }
-    }
-
-    async function refreshAgentHierarchy() {
-      const btn = $('#btn-refresh-hierarchy');
-      const originalText = btn.textContent;
-
-      try {
-        btn.disabled = true;
-        btn.textContent = '🔄 Refreshing...';
-        btn.style.opacity = '0.6';
-
-        await loadAgentHierarchyAnalytics();
-
-        btn.textContent = '✅ Refreshed!';
-        btn.style.background = 'var(--accent)';
-        btn.style.color = 'white';
-
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.style.background = 'var(--card)';
-          btn.style.color = 'var(--text)';
-          btn.style.opacity = '1';
-          btn.disabled = false;
-        }, 2000);
-
-      } catch (error) {
-        console.error('[Hierarchy Refresh] Error:', error);
-        btn.textContent = '❌ Failed';
-        btn.style.background = 'var(--warn)';
-
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.style.background = 'var(--card)';
-          btn.style.opacity = '1';
-          btn.disabled = false;
-        }, 2000);
-      }
-    }
-
-    /* ========== EXPORT FUNCTIONS ========== */
-
-    let cachedMetrics = null;
-
-    async function loadCacheMetrics() {
-      const d = await getJSON('/api/f402/cache/metrics', 'cache');
-      if (!d || !d.summary) return;
-
-      // Store for export
-      cachedMetrics = d;
-
-      const s = d.summary;
-
-      // Cache hit rate (with color indicator)
-      const hitRate = s.cacheHitRate || 0;
-      const hitRateColor = hitRate >= 80 ? '#238636' : hitRate >= 50 ? '#d29922' : '#f85149';
-      $('#cache-hit-rate').textContent = `${hitRate.toFixed(1)}%`;
-      $('#cache-hit-rate').style.color = hitRateColor;
-
-      // Hits/Misses
-      $('#cache-hits').textContent = `${fmtNum(s.cacheHits)}/${fmtNum(s.cacheMisses)}`;
-
-      // D1 write savings
-      const savings = s.d1WriteReduction || 0;
-      const savingsColor = savings >= 80 ? '#238636' : savings >= 50 ? '#d29922' : '#f85149';
-      $('#cache-d1-savings').textContent = `${savings.toFixed(1)}%`;
-      $('#cache-d1-savings').style.color = savingsColor;
-
-      // Total requests
-      $('#cache-total-requests').textContent = fmtNum(s.totalRequests);
-
-      hideError('cache');
-    }
-
-    function exportMetrics(format) {
-      if (!cachedMetrics) {
-        alert('No metrics data available. Please wait for data to load.');
-        return;
-      }
-
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-
-      if (format === 'json') {
-        const blob = new Blob([JSON.stringify(cachedMetrics, null, 2)], { type: 'application/json' });
-        downloadBlob(blob, `cache-metrics-${timestamp}.json`);
-      } else if (format === 'csv') {
-        const s = cachedMetrics.summary;
-        const rows = [
-          ['Metric', 'Value'],
-          ['Total Requests', s.totalRequests],
-          ['Cache Hits', s.cacheHits],
-          ['Cache Misses', s.cacheMisses],
-          ['Cache Hit Rate (%)', s.cacheHitRate],
-          ['D1 Writes Skipped', s.d1WritesSkipped],
-          ['D1 Writes Executed', s.d1WritesExecuted],
-          ['D1 Write Reduction (%)', s.d1WriteReduction],
-          ['Agent Detail Hits', cachedMetrics.agentDetail.cacheHits],
-          ['Agent Detail Misses', cachedMetrics.agentDetail.cacheMisses],
-          ['Agent Detail Hit Rate (%)', cachedMetrics.agentDetail.hitRate],
-        ];
-
-        const csv = rows.map(row => row.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        downloadBlob(blob, `cache-metrics-${timestamp}.csv`);
-      }
-    }
-
-    function downloadBlob(blob, filename) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    async function warmCacheNow() {
-      const btn = $('#btn-warm-cache');
-      const originalText = btn.textContent;
-
-      try {
-        btn.disabled = true;
-        btn.textContent = '🔥 Warming...';
-        btn.style.opacity = '0.6';
-
-        const response = await fetch(`${overrideURL}/api/f402/cache/warm`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+      async loadData() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const data = await this.utils.fetchWidgetData('playerInfo');
+          this.data = data;
+          this.clearError();
+        } catch (error) {
+          this.displayError(error.message);
+          this.data = null;
+        } finally {
+          this.isLoading = false;
         }
+      }
 
-        const data = await response.json();
-
-        btn.textContent = `✅ Warmed ${data.warmed.agents} agents!`;
-        btn.style.background = 'var(--accent)';
-
-        console.log(`[Cache Warm] Success:`, data);
-
-        // Reload data after warming
-        setTimeout(() => {
-          tick();
-          btn.textContent = originalText;
-          btn.style.background = 'var(--yellow)';
-          btn.style.opacity = '1';
-          btn.disabled = false;
-        }, 2000);
-
-      } catch (error) {
-        console.error('[Cache Warm] Error:', error);
-        btn.textContent = '❌ Failed';
-        btn.style.background = 'var(--warn)';
-        btn.style.color = 'white';
-
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.style.background = 'var(--yellow)';
-          btn.style.color = 'var(--bg)';
-          btn.style.opacity = '1';
-          btn.disabled = false;
-        }, 2000);
+      render() {
+        if (this.error) {
+          this.utils.updateElementText(`${this.id}-error`, `❌ ${this.error}`);
+          document.getElementById(`${this.id}-error`).style.display = 'block';
+          this.utils.updateElementText('player-info-count', this.config.STATUS.ERROR);
+        } else if (this.data) {
+          const d = this.data;
+          this.utils.updateElementText('player-info-count', d.count || '0');
+          this.utils.updateElementText('player-info-time', d.lastUpdated ? this.utils.formatTimeAgo(new Date(d.lastUpdated)) : '—');
+          this.utils.updateElementText('player-info-status', d.status || '—');
+          document.getElementById('player-info-list').textContent = d.players ? d.players.slice(0, 5).map(p => `${p.id}: ${p.name || 'Unknown'}`).join('\n') : '—';
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        } else {
+          this.utils.updateElementText('player-info-count', '—');
+          this.utils.updateElementText('player-info-time', '—');
+          this.utils.updateElementText('player-info-status', '—');
+          document.getElementById('player-info-list').textContent = '—';
+          document.getElementById(`${this.id}-error`).style.display = 'none';
+        }
       }
     }
 
-    /* ========== FANTASY402 INDIVIDUAL OPERATION CARDS ========== */
+    const REFRESH_MS = REFRESH_INTERVALS.normal;
+    let tickCount = 0;
 
-    // Player Info Card
-    async function loadPlayerInfo() {
-      const d = await getJSON('/api/fantasy402/player-info', 'player-info');
-      if (!d) return;
+    /* ====== ==== H ELPERS ========== */
+    const fmt = formatCurrency;
+    const fmtNum = formatLargeNumber;
+    const updateTime = () => {
+      updateElementText('last-update', formatTimeAgo(Date.now()));
+    };
 
-      $('#player-info-count').textContent = d.count || '0';
-      $('#player-info-time').textContent = d.lastUpdated ? new Date(d.lastUpdated).toLocaleTimeString() : '—';
-      $('#player-info-status').textContent = d.status || '—';
+    /* ========== CHARTS ========== */
+    let charts = {};
 
-      if (d.players && Array.isArray(d.players)) {
-        $('#player-info-list').textContent = d.players.slice(0, 5)
-          .map(p => `${p.customerID} - ${p.playerName} (${p.status})`)
-          .join('\n');
-      } else {
-        $('#player-info-list').textContent = 'No player data available';
-      }
-      hideError('player-info');
-    }
+    // Instantiate Widgets
+    const floorHealthWidget = new FloorHealthWidget('floor-health-widget', { ...config, STATUS }, { fetchWidgetData, updateElementText });
+    const forestGroveWidget = new ForestGroveWidget('forest-grove-widget', { ...config, STATUS }, { fetchWidgetData, updateElementText });
+    const mcpToolsWidget = new McpToolsWidget('mcp-tools-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText });
+    const liveOddsWidget = new LiveOddsWidget('live-odds-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText }, charts);
+    const liveScoresWidget = new LiveScoresWidget('live-scores-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText });
+    const databaseMetricsWidget = new DatabaseMetricsWidget('database-metrics-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatLargeNumber });
+    const infrastructureStatusWidget = new InfrastructureStatusWidget('infrastructure-status-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText });
+    const systemPerformanceWidget = new SystemPerformanceWidget('system-performance-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText }, charts);
+    const recentActivityWidget = new RecentActivityWidget('recent-activity-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatLargeNumber, formatCurrency });
+    const liveBetsWidget = new LiveBetsWidget('live-bets-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatCurrency, formatLargeNumber }, charts);
+    const agentPerformanceWidget = new AgentPerformanceWidget('agent-performance-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatCurrency, formatLargeNumber });
+    const customerPulseWidget = new CustomerPulseWidget('customer-pulse-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatCurrency });
+    const transactionTickerWidget = new TransactionTickerWidget('transaction-ticker-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatCurrency });
+    const dnsHealthWidget = new DnsHealthWidget('dns-health-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText });
+    const cachePerformanceWidget = new CachePerformanceWidget('cache-performance-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatLargeNumber });
+    const agentHierarchyAnalyticsWidget = new AgentHierarchyAnalyticsWidget('agent-hierarchy-analytics-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatCurrency, formatLargeNumber }, charts);
+    const playerInfoWidget = new PlayerInfoWidget('player-info-widget', { ...config, STATUS, ERROR_MESSAGES }, { fetchWidgetData, updateElementText, formatTimeAgo });
 
-    // Player Performance Card
-    async function loadPlayerPerformance() {
-      const d = await getJSON('/api/fantasy402/player-performance', 'player-perf');
-      if (!d) return;
-
-      $('#player-perf-period').textContent = d.period ? `${d.period.start} → ${d.period.end}` : '—';
-      $('#player-perf-risk').textContent = d.totalRisk ? fmt(d.totalRisk) : '—';
-      $('#player-perf-income').textContent = d.netIncome ? fmt(d.netIncome) : '—';
-      $('#player-perf-winrate').textContent = d.winRate ? `${(d.winRate * 100).toFixed(1)}%` : '—';
-      hideError('player-perf');
-    }
-
-    // Transaction List Card
-    async function loadTransactionList() {
-      const d = await getJSON('/api/fantasy402/transaction-list', 'tx-list');
-      if (!d) return;
-
-      $('#tx-list-count').textContent = d.totalTransactions || '0';
-      $('#tx-list-loss').textContent = d.summary ? fmt(d.summary.totalWagerLoss) : '—';
-      $('#tx-list-win').textContent = d.summary ? fmt(d.summary.totalWagerWin) : '—';
-      $('#tx-list-balance').textContent = d.summary ? fmt(d.summary.netBalance) : '—';
-
-      if (d.transactions && Array.isArray(d.transactions)) {
-        $('#tx-list-recent').textContent = d.transactions.slice(0, 5)
-          .map(t => `${t.tranCode} ${t.tranType} ${fmt(t.amount)} - ${t.description}`)
-          .join('\n');
-      } else {
-        $('#tx-list-recent').textContent = 'No transactions available';
-      }
-      hideError('tx-list');
-    }
-
-    // Pending Wagers Card
-    async function loadPendingWagers() {
-      const d = await getJSON('/api/fantasy402/pending-wagers', 'pending');
-      if (!d) return;
-
-      $('#pending-count').textContent = d.totalWagers || '0';
-      $('#pending-risk').textContent = d.totalRisk ? fmt(d.totalRisk) : '—';
-      $('#pending-win').textContent = d.totalPotentialWin ? fmt(d.totalPotentialWin) : '—';
-      $('#pending-odds').textContent = d.averageOdds ? d.averageOdds.toFixed(2) : '—';
-
-      // Update chart with sport breakdown
-      if (d.sportBreakdown && Object.keys(d.sportBreakdown).length > 0) {
-        const sports = Object.keys(d.sportBreakdown);
-        const risks = sports.map(sport => d.sportBreakdown[sport]);
-
-        pendingChart.data.labels = sports;
-        pendingChart.data.datasets = [{
-          label: 'Risk by Sport',
-          data: risks,
-          backgroundColor: [
-            '#238636', '#2ea043', '#3fb950', '#56d364', '#7ee787'
-          ],
-          borderColor: '#161b22',
-          borderWidth: 1
-        }];
-        pendingChart.update();
-      }
-      hideError('pending');
-    }
-
-    // Player Analysis Card
-    async function loadPlayerAnalysis() {
-      const d = await getJSON('/api/player-analysis', 'analysis');
-      if (!d) return;
-
-      if (d.cached === false) {
-        showError('analysis', d.message || 'No data available');
-        $('#analysis-period').textContent = '—';
-        $('#analysis-wagers').textContent = '0';
-        $('#analysis-winrate').textContent = '—';
-        $('#analysis-income').textContent = '—';
-        return;
-      }
-
-      // Update summary stats
-      $('#analysis-period').textContent = d.period ? `${d.period.startDate} → ${d.period.endDate}` : '—';
-      $('#analysis-wagers').textContent = d.summary?.totalWagers || '0';
-      $('#analysis-winrate').textContent = d.summary?.avgWinRate ? `${(d.summary.avgWinRate * 100).toFixed(1)}%` : '—';
-      $('#analysis-income').textContent = d.summary?.totalNet ? fmt(d.summary.totalNet) : '—';
-
-      // Update chart with top players by net income
-      if (d.players && d.players.length > 0) {
-        const topPlayers = d.players
-          .sort((a, b) => b.netIncome - a.netIncome)
-          .slice(0, 5);
-        const names = topPlayers.map(p => p.playerName || p.customerId);
-        const incomes = topPlayers.map(p => p.netIncome);
-
-        analysisChart.data.labels = names;
-        analysisChart.data.datasets = [{
-          label: 'Net Income',
-          data: incomes,
-          backgroundColor: incomes.map(i => i >= 0 ? '#238636' : '#da3633'),
-          borderColor: incomes.map(i => i >= 0 ? '#2ea043' : '#f85149'),
-          borderWidth: 1
-        }];
-        analysisChart.update();
-      }
-      hideError('analysis');
-    }
-
-    // Transaction History Card
-    async function loadTransactionHistory() {
-      const d = await getJSON('/api/transaction-history', 'tx-history');
-      if (!d) return;
-
-      if (d.cached === false) {
-        showError('tx-history', d.message || 'No data available');
-        $('#tx-history-count').textContent = '0';
-        $('#tx-history-deposits').textContent = '—';
-        $('#tx-history-withdrawals').textContent = '—';
-        $('#tx-history-adjustments').textContent = '—';
-        $('#tx-history-recent').textContent = 'No history available';
-        return;
-      }
-
-      $('#tx-history-count').textContent = d.summary?.totalTransactions || '0';
-      $('#tx-history-deposits').textContent = d.summary?.totalDeposits ? fmt(d.summary.totalDeposits) : '—';
-      $('#tx-history-withdrawals').textContent = d.summary?.totalWithdrawals ? fmt(d.summary.totalWithdrawals) : '—';
-      $('#tx-history-adjustments').textContent = d.summary?.totalAdjustments ? fmt(d.summary.totalAdjustments) : '—';
-
-      if (d.transactions && Array.isArray(d.transactions) && d.transactions.length > 0) {
-        $('#tx-history-recent').textContent = d.transactions.slice(0, 5)
-          .map(t => `${t.tranCode}/${t.tranType} ${fmt(t.amount)} - ${t.description || 'N/A'}`)
-          .join('\n');
-      } else {
-        $('#tx-history-recent').textContent = 'No history available';
-      }
-      hideError('tx-history');
-    }
+    // Initialize Charts (once at startup)
+    liveOddsWidget.init();
+    systemPerformanceWidget.init();
+    liveBetsWidget.init();
+    agentPerformanceWidget.init();
+    agentHierarchyAnalyticsWidget.init();
 
     /* ========== MAIN LOOP ========== */
     async function tick() {
@@ -1808,26 +1828,23 @@
       tickCount++;
 
       await Promise.all([
-        loadFloor(),
-        loadGrove(),
-        loadMcp(),
-        loadOdds(),
-        loadScores(),
-        loadDb(),
-        loadInfrastructure(),  // Infrastructure status
-        loadActivity(),
-        loadFantasy402Data(),  // Single unified call instead of 4 separate calls
-        loadDNS(),             // DNS health check
-        loadCacheMetrics(),    // Cache performance metrics
-        loadAgentHierarchyAnalytics(),  // Agent hierarchy analytics
-
-        // Fantasy402 Individual Operation Cards
-        loadPlayerInfo(),
-        loadPlayerPerformance(),
-        loadTransactionList(),
-        loadPendingWagers(),
-        loadPlayerAnalysis(),
-        loadTransactionHistory()
+        floorHealthWidget.loadData().then(() => floorHealthWidget.render()),
+        forestGroveWidget.loadData().then(() => forestGroveWidget.render()),
+        mcpToolsWidget.loadData().then(() => mcpToolsWidget.render()),
+        liveOddsWidget.loadData().then(() => liveOddsWidget.render()),
+        liveScoresWidget.loadData().then(() => liveScoresWidget.render()),
+        databaseMetricsWidget.loadData().then(() => databaseMetricsWidget.render()),
+        infrastructureStatusWidget.loadData().then(() => infrastructureStatusWidget.render()),
+        systemPerformanceWidget.loadData().then(() => systemPerformanceWidget.render()),
+        recentActivityWidget.loadData().then(() => recentActivityWidget.render()),
+        liveBetsWidget.loadData().then(() => liveBetsWidget.render()),
+        agentPerformanceWidget.loadData().then(() => agentPerformanceWidget.render()),
+        customerPulseWidget.loadData().then(() => customerPulseWidget.render()),
+        transactionTickerWidget.loadData().then(() => transactionTickerWidget.render()),
+        dnsHealthWidget.loadData().then(() => dnsHealthWidget.render()),
+        cachePerformanceWidget.loadData().then(() => cachePerformanceWidget.render()),
+        agentHierarchyAnalyticsWidget.loadData().then(() => agentHierarchyAnalyticsWidget.render()),
+        playerInfoWidget.loadData().then(() => playerInfoWidget.render()),
       ]);
     }
 

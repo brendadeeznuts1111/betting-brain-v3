@@ -91,13 +91,23 @@ export class RiskLimitGuard {
     const today = new Date().toISOString().split('T')[0];
     const key = `daily_volume_${today}`;
     const value = await this.env.SESSION_STORE?.get(key);
-    return parseFloat(value || '0');
+    let parsedValue = Number(value || '0');
+    if (isNaN(parsedValue)) {
+      console.warn(`[RiskLimitGuard] Invalid daily volume for key: ${key}. Defaulting to 0.`);
+      parsedValue = 0;
+    }
+    return parsedValue;
   }
 
   private async getEventExposure(eventId: string): Promise<number> {
     const key = `event_exposure_${eventId}`;
     const value = await this.env.SESSION_STORE?.get(key);
-    return parseFloat(value || '0');
+    let parsedValue = Number(value || '0');
+    if (isNaN(parsedValue)) {
+      console.warn(`[RiskLimitGuard] Invalid event exposure for key: ${key}. Defaulting to 0.`);
+      parsedValue = 0;
+    }
+    return parsedValue;
   }
 
   async recordBet(amount: number, eventId: string): Promise<void> {

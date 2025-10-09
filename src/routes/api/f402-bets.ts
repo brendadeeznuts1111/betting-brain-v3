@@ -37,7 +37,7 @@ export async function getLiveBets(
   const url = new URL(request.url);
   const expand = url.searchParams.get('expand') === 'true';
 
-  
+
 
   try {
     if (!env.ANALYTICS) {
@@ -70,7 +70,7 @@ export async function getLiveBets(
     console.log(`[${requestId}] 📈 Volume buckets: ${volumeData.length}`);
 
     // 3. Fill in missing minutes (ensure we always have 5 buckets)
-    const now = new Date();
+    const now = new Date(Date.now());
     const buckets: LiveBetsResponse['buckets'] = [];
 
     for (let i = 4; i >= 0; i--) {

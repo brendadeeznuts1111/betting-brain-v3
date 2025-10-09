@@ -14,7 +14,7 @@ export async function getPlayerAnalysis(
 ): Promise<Response> {
   console.log(`[${requestId}] 📊 GET /api/player-analysis`);
 
-  
+
 
   try {
     // Check KV cache for latest player analysis
@@ -23,7 +23,7 @@ export async function getPlayerAnalysis(
 
       if (cached) {
         const data = JSON.parse(cached);
-        const cacheAge = Date.now() - new Date(data.capturedAt).getTime();
+        const cacheAge = Date.now() - Date.parse(data.capturedAt);
 
         // Use cache if less than 1 hour old
         if (cacheAge < 3600000) {

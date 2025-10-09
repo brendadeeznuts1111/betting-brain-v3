@@ -14,7 +14,7 @@ export async function getActivity(
 ): Promise<Response> {
   console.log(`[${requestId}] 📡 GET /api/activity`);
 
-  
+
 
   try {
     const url = new URL(request.url);
@@ -85,7 +85,7 @@ export async function getActivity(
     const response = {
       activities: activities.slice(0, limit),
       count: activities.length,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       requestId,
     };
 

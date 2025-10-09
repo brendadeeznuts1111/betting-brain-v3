@@ -23,7 +23,7 @@ export function safeParseFloat(value: string | number | undefined | null): numbe
     return isNaN(value) ? 0 : value;
   }
 
-  const parsed = parseFloat(value);
+  const parsed = Number(value);
   return isNaN(parsed) ? 0 : parsed;
 }
 

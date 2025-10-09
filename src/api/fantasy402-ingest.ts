@@ -388,7 +388,7 @@ export async function handleFantasy402Ingest(
                 raw: packet.response.body,
                 analytics,
                 timestamp: packet.timestamp,
-                capturedAt: new Date().toISOString()
+                capturedAt: new Date(Date.now()).toISOString()
             };
 
             await env.BET_TICKER_RAW.put(kvKey, JSON.stringify(enrichedData), {
@@ -414,7 +414,7 @@ export async function handleFantasy402Ingest(
                         raw: packet.response.body,
                         timestamp: packet.timestamp,
                         count: scores.length,
-                        capturedAt: new Date().toISOString(),
+                        capturedAt: new Date(Date.now()).toISOString(),
                     }),
                     { expirationTtl: 300 } // 5 minutes
                 );
@@ -434,7 +434,7 @@ export async function handleFantasy402Ingest(
                     JSON.stringify({
                         raw: packet.response.body,
                         timestamp: packet.timestamp,
-                        capturedAt: new Date().toISOString(),
+                        capturedAt: new Date(Date.now()).toISOString(),
                         metadata: {
                             reportType: packet.request?.body?.reportType,
                             startDate: packet.request?.body?.startDate,
@@ -468,7 +468,7 @@ export async function handleFantasy402Ingest(
                         raw: packet.response.body,
                         analytics,
                         timestamp: packet.timestamp,
-                        capturedAt: new Date().toISOString(),
+                        capturedAt: new Date(Date.now()).toISOString(),
                         count: transactions.length,
                         metadata: {
                             agentID: packet.request?.body?.agentID,
@@ -502,7 +502,7 @@ export async function handleFantasy402Ingest(
                     JSON.stringify({
                         raw: packet.response.body,
                         timestamp: packet.timestamp,
-                        capturedAt: new Date().toISOString(),
+                        capturedAt: new Date(Date.now()).toISOString(),
                         count: users.length,
                         metadata: {
                             agentID: packet.request?.body?.agentID,
@@ -534,7 +534,7 @@ export async function handleFantasy402Ingest(
                         raw: packet.response.body,
                         analytics,
                         timestamp: packet.timestamp,
-                        capturedAt: new Date().toISOString(),
+                        capturedAt: new Date(Date.now()).toISOString(),
                         count: pending.length,
                         metadata: {
                             agentID: packet.request?.body?.agentID,
@@ -563,7 +563,7 @@ export async function handleFantasy402Ingest(
                     JSON.stringify({
                         raw: packet.response.body,
                         timestamp: packet.timestamp,
-                        capturedAt: new Date().toISOString(),
+                        capturedAt: new Date(Date.now()).toISOString(),
                         metadata: {
                             agentID: packet.request?.body?.agentID,
                             operation: packet.operation,
@@ -588,7 +588,7 @@ export async function handleFantasy402Ingest(
                 success: true,
                 message: 'Data queued for processing',
                 requestId,
-                timestamp: new Date().toISOString()
+                timestamp: new Date(Date.now()).toISOString()
             }), {
                 status: 202, // Accepted
                 headers: {
@@ -827,7 +827,7 @@ export async function handleFantasy402Ingest(
             packetId,
             message: 'Data ingested successfully',
             requestId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date(Date.now()).toISOString()
         }), {
             headers: {
                 'Content-Type': 'application/json',

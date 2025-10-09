@@ -224,7 +224,7 @@ export class SportsDataProcessor {
         try {
             const sportsData = {
                 games,
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(Date.now()).toISOString(),
                 count: games.length
             };
 
@@ -264,9 +264,9 @@ export class SportsDataProcessor {
         const sportsData = await this.getLiveSportsData();
         if (!sportsData) return [];
 
-        const now = new Date();
+        const now = new Date(Date.now());
         return sportsData.games.filter((game: any) => {
-            const gameTime = new Date(game.gameTime);
+            const gameTime = new Date(Date.parse(game.gameTime));
             const timeDiff = now.getTime() - gameTime.getTime();
             return timeDiff >= 0 && timeDiff <= 4 * 60 * 60 * 1000; // Within 4 hours
         });
@@ -277,9 +277,9 @@ export class SportsDataProcessor {
         const sportsData = await this.getLiveSportsData();
         if (!sportsData) return [];
 
-        const now = new Date();
+        const now = new Date(Date.now());
         return sportsData.games.filter((game: any) => {
-            const gameTime = new Date(game.gameTime);
+            const gameTime = new Date(Date.parse(game.gameTime));
             return gameTime.getTime() > now.getTime();
         });
     }

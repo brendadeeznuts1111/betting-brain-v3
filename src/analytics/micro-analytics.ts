@@ -101,7 +101,11 @@ export async function computeAndStore(
   const customerStakes = new Map<string, number>();
   bets.forEach(bet => {
     const cid = bet.CustomerID;
-    const amount = parseFloat(bet.AmountWagered) || 0;
+    let amount = Number(bet.AmountWagered); // Use let because we might reassign
+    if (isNaN(amount)) {
+      console.warn(`[MicroAnalytics] Invalid AmountWagered for bet: ${bet.AmountWagered}. Defaulting to 0.`);
+      amount = 0; // Default to 0 for invalid numbers
+    }
     customerStakes.set(cid, (customerStakes.get(cid) || 0) + amount);
   });
   const concentration = giniCoefficient(customerStakes);

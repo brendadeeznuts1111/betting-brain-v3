@@ -265,7 +265,11 @@ async function checkRiskLimits(amount: number, env: MCPEnv): Promise<boolean> {
   // Check daily total from KV or D1
   const today = new Date().toISOString().split('T')[0];
   const dailyKey = `daily_hedge_total_${today}`;
-  const dailyTotal = parseFloat((await env.SESSION_STORE?.get(dailyKey)) || '0');
+  let dailyTotal = Number((await env.SESSION_STORE?.get(dailyKey)) || '0');
+  if (isNaN(dailyTotal)) {
+    console.warn(`[placeHedgeBet] Invalid dailyTotal for key: ${dailyKey}. Defaulting to 0.`);
+    dailyTotal = 0;
+  }
 
   const maxDaily = 10000; // $10k daily limit
   return dailyTotal + amount <= maxDaily;
@@ -318,7 +322,11 @@ async function placeBetViaAPI(
     // Update daily total
     const today = new Date().toISOString().split('T')[0];
     const dailyKey = `daily_hedge_total_${today}`;
-    const current = parseFloat((await env.SESSION_STORE?.get(dailyKey)) || '0');
+    let current = Number((await env.SESSION_STORE?.get(dailyKey)) || '0');
+    if (isNaN(current)) {
+      console.warn(`[placeHedgeBet] Invalid current daily total for key: ${dailyKey}. Defaulting to 0.`);
+      current = 0;
+    }
     await env.SESSION_STORE?.put(dailyKey, String(current + bet.amount), {
       expirationTtl: 86400, // 24 hours
     });

@@ -1,0 +1,10 @@
+id: find-console-logs
+message: Console log found
+severity: warning
+language: TypeScript
+rule:
+  any:
+    - pattern: console.log($$$)
+    - pattern: console.error($$$)
+    - pattern: console.warn($$$)
+    - pattern: console.debug($$$)

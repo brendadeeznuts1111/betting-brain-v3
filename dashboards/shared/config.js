@@ -59,6 +59,7 @@ export const API_ENDPOINTS = {
   apiF402AgentsTree: '/api/f402/agents/tree',
   apiF402AgentsDetail: '/api/f402/agents/',
   apiAnalyticsMicro: '/api/analytics/micro/',
+  apiLiveOdds: '/api/live-odds',
 };
 
 // Refresh Intervals (milliseconds)
@@ -68,10 +69,11 @@ export const REFRESH_INTERVALS = {
   slow: 30000,
   ANALYTICS_LIVE: 5000,
   dashboard: 10000,
-  manual: 0         // No auto-refresh
+  manual: 0,         // No auto-refresh
   analyticsEnhanced: 30000, // New refresh interval for analytics-enhanced dashboard
   agentPerformance: 60000, // New refresh interval for agent-performance dashboard
-  hierarchyEnhanced: 60000 // New refresh interval for hierarchy-enhanced dashboard
+  hierarchyEnhanced: 60000, // New refresh interval for hierarchy-enhanced dashboard
+  sports: 30000 // New refresh interval for sports dashboard
 };
 
 // Wager Type Labels
@@ -194,6 +196,125 @@ export default {
   FORMATTERS,
   DEFAULT_CHART_CONFIG,
   ERROR_MESSAGES,
-  EXTENSION_SECRET
+  EXTENSION_SECRET,
+  WIDGET_CONFIG
+};
+
+// Widget Configuration
+export const WIDGET_CONFIG = {
+  floorHealth: {
+    api: API_ENDPOINTS.floorStatus,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'floor-health-widget'
+  },
+  forestGrove: {
+    api: API_ENDPOINTS.floorStatus,
+    fallbackApi: API_ENDPOINTS.health,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'forest-grove-widget'
+  },
+  mcpTools: {
+    api: API_ENDPOINTS.mcp,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'mcp-tools-widget'
+  },
+  liveOdds: {
+    api: API_ENDPOINTS.mcp, // Primary via MCP tool
+    fallbackApi: API_ENDPOINTS.apiLiveOdds, // Fallback to direct API
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'live-odds-widget'
+  },
+  liveScores: {
+    api: API_ENDPOINTS.apiLiveScores,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'live-scores-widget'
+  },
+  databaseMetrics: {
+    api: API_ENDPOINTS.mcp, // Primary via MCP tool
+    fallbackApi: API_ENDPOINTS.apiDatabaseMetrics, // Fallback to direct API
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'database-metrics-widget'
+  },
+  infrastructureStatus: {
+    api: API_ENDPOINTS.mcp, // Primary via MCP tool
+    fallbackApi: API_ENDPOINTS.apiInfrastructureStatus, // Fallback to direct API
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'infrastructure-status-widget'
+  },
+  systemPerformance: {
+    api: API_ENDPOINTS.apiAnalyticsMetrics,
+    refresh: REFRESH_INTERVALS.fast,
+    container: 'system-performance-widget'
+  },
+  recentActivity: {
+    api: API_ENDPOINTS.apiAnalyticsMetrics,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'recent-activity-widget'
+  },
+  liveBets: {
+    api: API_ENDPOINTS.apiF402MissionControl,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'live-bets-widget'
+  },
+  agentPerformance: {
+    api: API_ENDPOINTS.apiF402MissionControl,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'agent-performance-widget'
+  },
+  customerPulse: {
+    api: API_ENDPOINTS.apiF402MissionControl,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'customer-pulse-widget'
+  },
+  transactionTicker: {
+    api: API_ENDPOINTS.apiF402MissionControl,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'transaction-ticker-widget'
+  },
+  dnsHealth: {
+    api: API_ENDPOINTS.apiHealthDns,
+    refresh: REFRESH_INTERVALS.slow,
+    container: 'dns-health-widget'
+  },
+  cachePerformance: {
+    api: API_ENDPOINTS.apiAnalyticsMetrics,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'cache-performance-widget'
+  },
+  agentHierarchyAnalytics: {
+    api: API_ENDPOINTS.apiF402MissionControl,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'agent-hierarchy-analytics-widget'
+  },
+  playerInfo: {
+    api: API_ENDPOINTS.apiF402PlayerInfo,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'player-info-widget'
+  },
+  playerPerformance: {
+    api: API_ENDPOINTS.apiF402PlayerPerformance,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'player-performance-widget'
+  },
+  transactionList: {
+    api: API_ENDPOINTS.apiF402TransactionList,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'transaction-list-widget'
+  },
+  pendingWagers: {
+    api: API_ENDPOINTS.apiF402PendingWagers,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'pending-wagers-widget'
+  },
+  playerAnalysis: {
+    api: API_ENDPOINTS.apiPlayerAnalysis,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'player-analysis-widget'
+  },
+  transactionHistory: {
+    api: API_ENDPOINTS.apiTransactionHistory,
+    refresh: REFRESH_INTERVALS.normal,
+    container: 'transaction-history-widget'
+  }
 };
 

@@ -14,7 +14,7 @@ export async function getDatabaseMetrics(
 ): Promise<Response> {
   console.log(`[${requestId}] 💾 GET /api/database/metrics`);
 
-  
+
 
   try {
     if (!env.ANALYTICS) {
@@ -52,7 +52,7 @@ export async function getDatabaseMetrics(
         betHistory: betHistory?.count || 0,
         holdTracking: holdTracking?.count || 0,
       },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       requestId,
     };
 

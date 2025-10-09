@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SSE Live Dashboard Demo</title>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
+  <script type="module" src="shared/config.js"></script>
+  <script type="module" src="shared/utils.js"></script>
+  <link rel="stylesheet" href="shared/styles.css">
   <style>
-    :root {
-      --bg: #0d1117;
-      --card: #161b22;
-      --accent: #238636;
-      --text: #c9d1d9;
-      --border: #30363d;
-    }
-
-    body {
+    /* SSE Demo specific styles */
+    .sse-container {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
@@ -23,31 +20,27 @@
       padding: 2rem;
     }
 
-    h1 {
-      margin-bottom: 2rem;
-    }
-
-    .grid {
+    .sse-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
 
-    .card {
+    .sse-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 1.5rem;
     }
 
-    .card h2 {
+    .sse-card h2 {
       margin: 0 0 1rem;
       font-size: 1.25rem;
       color: var(--accent);
     }
 
-    .status {
+    .sse-status {
       display: inline-block;
       width: 8px;
       height: 8px;
@@ -56,17 +49,24 @@
       margin-right: 0.5rem;
     }
 
-    .status.connected {
+    .sse-status.connected {
       background: var(--accent);
       animation: pulse 2s ease-in-out infinite;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
     }
 
-    pre {
+    .sse-pre {
       background: var(--bg);
       padding: 1rem;
       border-radius: 4px;
@@ -75,7 +75,7 @@
       font-size: 0.875rem;
     }
 
-    .badge {
+    .sse-badge {
       display: inline-block;
       padding: 0.25rem 0.5rem;
       background: var(--accent);
@@ -85,19 +85,19 @@
       margin-right: 0.5rem;
     }
 
-    .meta {
+    .sse-meta {
       font-size: 0.875rem;
       opacity: 0.7;
       margin-top: 0.5rem;
     }
 
-    .controls {
+    .sse-controls {
       margin-bottom: 2rem;
       display: flex;
       gap: 1rem;
     }
 
-    button {
+    .sse-button {
       padding: 0.5rem 1rem;
       background: var(--accent);
       color: white;
@@ -107,77 +107,72 @@
       font-weight: 600;
     }
 
-    button:hover {
+    .sse-button:hover {
       opacity: 0.8;
     }
 
-    button.danger {
+    .sse-button.danger {
       background: #da3633;
     }
   </style>
 </head>
-<body hx-ext="sse">
+
+<body hx-ext="sse" class="sse-container">
   <h1>🌊 Server-Sent Events (SSE) Live Dashboard</h1>
 
-  <div class="controls">
-    <button onclick="location.reload()">🔄 Reconnect All</button>
-    <button class="danger" onclick="closeAll()">⏸️ Disconnect All</button>
-    <a href="floor-control.html" style="color: var(--accent); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--accent); border-radius: 4px;">← Back to Mission Control</a>
+  <div class="sse-controls">
+    <button class="sse-button" onclick="location.reload()">🔄 Reconnect All</button>
+    <button class="sse-button danger" onclick="closeAll()">⏸️ Disconnect All</button>
+    <a href="floor-control.html"
+      style="color: var(--accent); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--accent); border-radius: 4px;">←
+      Back to Mission Control</a>
   </div>
 
-  <div class="grid">
+  <div class="sse-grid">
     <!-- Agent Hierarchy Stream -->
-    <div class="card">
+    <div class="sse-card">
       <h2>
-        <span class="status" id="status-hierarchy"></span>
+        <span class="sse-status" id="status-hierarchy"></span>
         🌳 Agent Hierarchy
       </h2>
-      <div id="hierarchy-tile"
-           hx-ext="sse"
-           sse-swap="message">
+      <div id="hierarchy-tile" hx-ext="sse" sse-swap="message">
         <p style="opacity: 0.7;">Connecting to stream...</p>
       </div>
     </div>
 
     <!-- Health Stream -->
-    <div class="card">
+    <div class="sse-card">
       <h2>
-        <span class="status" id="status-health"></span>
+        <span class="sse-status" id="status-health"></span>
         ❤️ System Health
       </h2>
-      <div id="health-tile"
-           hx-ext="sse"
-           sse-swap="message">
+      <div id="health-tile" hx-ext="sse" sse-swap="message">
         <p style="opacity: 0.7;">Connecting to stream...</p>
       </div>
     </div>
 
     <!-- Live Bets Stream -->
-    <div class="card">
+    <div class="sse-card">
       <h2>
-        <span class="status" id="status-bets"></span>
+        <span class="sse-status" id="status-bets"></span>
         🎲 Live Bets
       </h2>
-      <div id="bets-tile"
-           hx-ext="sse"
-           sse-swap="message">
+      <div id="bets-tile" hx-ext="sse" sse-swap="message">
         <p style="opacity: 0.7;">Connecting to stream...</p>
       </div>
     </div>
   </div>
 
-  <div class="card" style="max-width: 600px;">
+  <div class="sse-card" style="max-width: 600px;">
     <h2>📊 Stream Statistics</h2>
     <div id="stats-display">
       <p style="opacity: 0.7;">Loading...</p>
     </div>
   </div>
 
-  <script>
-    // Auto-detect worker URL (localhost vs production)
-    const WORKER_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:8787'
-      : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
+  <script type="module">
+    import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS } from './shared/config.js';
+    import { fetchAPI, updateElementText, formatTimeAgo } from './shared/utils.js';
 
     // Track connection status
     const connections = {
@@ -224,10 +219,10 @@
         try {
           const data = JSON.parse(e.detail.data);
           e.detail.elt.innerHTML = `
-            <div class="badge">${data.agents?.length || 0} agents</div>
-            <div class="badge">${data.source || 'unknown'}</div>
-            <div class="meta">Last update: ${new Date(data.timestamp).toLocaleTimeString()}</div>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
+            <div class="sse-badge">${data.agents?.length || 0} agents</div>
+            <div class="sse-badge">${data.source || 'unknown'}</div>
+            <div class="sse-meta">Last update: ${new Date(data.timestamp).toLocaleTimeString()}</div>
+            <pre class="sse-pre">${JSON.stringify(data, null, 2)}</pre>
           `;
         } catch (err) {
           console.error('[SSE] Failed to parse hierarchy data:', err);
@@ -241,10 +236,10 @@
         try {
           const data = JSON.parse(e.detail.data);
           e.detail.elt.innerHTML = `
-            <div class="badge">${data.status}</div>
-            <div class="badge">v${data.version}</div>
-            <div class="meta">Uptime: ${data.uptime}s</div>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
+            <div class="sse-badge">${data.status}</div>
+            <div class="sse-badge">v${data.version}</div>
+            <div class="sse-meta">Uptime: ${data.uptime}s</div>
+            <pre class="sse-pre">${JSON.stringify(data, null, 2)}</pre>
           `;
         } catch (err) {
           console.error('[SSE] Failed to parse health data:', err);
@@ -258,10 +253,10 @@
         try {
           const data = JSON.parse(e.detail.data);
           e.detail.elt.innerHTML = `
-            <div class="badge">${data.count || 0} bets</div>
-            <div class="badge">$${(data.volume || 0).toLocaleString()}</div>
-            <div class="meta">Source: ${data.source || 'unknown'}</div>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
+            <div class="sse-badge">${data.count || 0} bets</div>
+            <div class="sse-badge">$${(data.volume || 0).toLocaleString()}</div>
+            <div class="sse-meta">Source: ${data.source || 'unknown'}</div>
+            <pre class="sse-pre">${JSON.stringify(data, null, 2)}</pre>
           `;
         } catch (err) {
           console.error('[SSE] Failed to parse bets data:', err);
@@ -272,8 +267,7 @@
     // Fetch stream stats every 5 seconds
     async function updateStats() {
       try {
-        const res = await fetch(`${WORKER_URL}/api/streams/stats`);
-        const stats = await res.json();
+        const stats = await fetchAPI('/api/streams/stats');
         document.getElementById('stats-display').innerHTML = `
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
             <div>
@@ -288,7 +282,7 @@
               </div>
             </div>
           </div>
-          <div class="meta">Last updated: ${new Date().toLocaleTimeString()}</div>
+          <div class="sse-meta">Last updated: ${new Date().toLocaleTimeString()}</div>
         `;
       } catch (err) {
         console.error('[Stats] Failed to fetch:', err);
@@ -297,7 +291,7 @@
 
     // Update stats immediately and every 5 seconds
     updateStats();
-    setInterval(updateStats, 5000);
+    setInterval(updateStats, REFRESH_INTERVALS.fast);
 
     // Close all connections
     function closeAll() {
@@ -307,4 +301,5 @@
     }
   </script>
 </body>
+
 </html>

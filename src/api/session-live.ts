@@ -15,7 +15,7 @@ export async function handleLiveSessions(
 
         // Parse request body
         const body = await request.json();
-        
+
         if (!body.LIST || !Array.isArray(body.LIST)) {
             throw Errors.badRequest('Invalid session data format. Expected LIST array.');
         }
@@ -58,7 +58,7 @@ export async function handleLiveSessions(
                 sharedIPUsers: processedData.sharedIPUsers.size
             },
             requestId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date(Date.now()).toISOString()
         }), {
             headers: {
                 'Content-Type': 'application/json',

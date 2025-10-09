@@ -67,7 +67,7 @@ export default {
       return new Response(JSON.stringify({
         status: 'healthy',
         version: '3.0.0',
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
         requestId,
         duration: `${duration}ms`,
       }), {
@@ -127,7 +127,7 @@ export default {
         if (body.logs && body.logs.length > 0) {
           body.logs.forEach((log, index: number) => {
             const level = log.level?.toUpperCase() || 'LOG';
-            const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString();
+            const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'UTC' });
             const message = log.message || 'No message';
 
             // Color code by level
@@ -157,7 +157,7 @@ export default {
           status: 'received',
           sessionId,
           logCount: body.logs?.length || 0,
-          timestamp: new Date().toISOString()
+          timestamp: new Date(Date.now()).toISOString()
         }), {
           headers: {
             ...CORS_HEADERS,
@@ -228,7 +228,7 @@ export default {
             'getCustomerVolume',
             'getTimeSeriesAnalytics'
           ],
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(Date.now()).toISOString(),
           requestId
         }), {
           headers: {

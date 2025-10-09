@@ -91,7 +91,7 @@ export class SlackNotifier {
           elements: [
             {
               type: 'mrkdwn',
-              text: `Expected P&L: $${signal.expected_pnl.toFixed(2)} | Confidence Interval: [${signal.confidence_interval[0].toFixed(2)}%, ${signal.confidence_interval[1].toFixed(2)}%] | ${signal.timestamp}`,
+              text: `Expected P&L: $${signal.expected_pnl.toFixed(2)} | Confidence Interval: [${signal.confidence_interval[0].toFixed(2)}%, ${signal.confidence_interval[1].toFixed(2)}%] | ${new Date(Date.now()).toISOString()}`,
             },
           ],
         },

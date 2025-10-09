@@ -88,14 +88,18 @@ async function getTradingStatus(env: Env): Promise<any> {
 
   // Fetch daily totals
   const today = new Date().toISOString().split('T')[0];
-  const dailyVolume = await env.SESSION_STORE?.get(`daily_volume_${today}`) || '0';
+  let dailyVolume = Number((await env.SESSION_STORE?.get(`daily_volume_${today}`)) || '0');
+  if (isNaN(dailyVolume)) {
+    console.warn(`[TradingStream] Invalid daily volume for key: daily_volume_${today}. Defaulting to 0.`);
+    dailyVolume = 0;
+  }
 
   return {
     circuit_breaker: {
       state: cbState,
       details: cbDetails ? JSON.parse(cbDetails) : null,
     },
-    daily_volume: parseFloat(dailyVolume),
+    daily_volume: dailyVolume,
     timestamp: new Date().toISOString(),
   };
 }

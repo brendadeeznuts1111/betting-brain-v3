@@ -51,7 +51,7 @@ export async function handleLiveSports(
                 marketAnalysis: processedData.marketAnalysis
             },
             requestId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date(Date.now()).toISOString()
         }), {
             headers: {
                 'Content-Type': 'application/json',

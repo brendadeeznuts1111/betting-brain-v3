@@ -1,0 +1,16 @@
+id: find-missing-request-id
+message: Handler without requestId tracking
+severity: warning
+language: TypeScript
+rule:
+  all:
+    - pattern: |
+        async function $HANDLER(request: Request, env: Env$$$) {
+          $$$
+        }
+    - not:
+        pattern: |
+          async function $HANDLER(request: Request, env: Env$$$) {
+            const requestId = $$$
+            $$$
+          }

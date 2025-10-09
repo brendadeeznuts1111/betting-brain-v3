@@ -1,0 +1,9 @@
+id: find-api-endpoints
+message: API endpoint definition found
+severity: info
+language: TypeScript
+rule:
+  pattern: |
+    const $HANDLER = async (request: Request, env: Env$$$) => {
+      $$$
+    }

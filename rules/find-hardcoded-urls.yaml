@@ -1,0 +1,7 @@
+id: find-hardcoded-urls
+message: Hardcoded URL found (consider using config)
+severity: warning
+language: TypeScript
+rule:
+  pattern: |
+    const $VAR = 'https://$$$'

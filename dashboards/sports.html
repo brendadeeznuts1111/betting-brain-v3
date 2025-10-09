@@ -1,137 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Sports Odds - Betting Brain</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-      background: #f8f9fa;
-      color: #212529;
-    }
-    h1 {
-      color: #2563eb;
-      margin-bottom: 0.5rem;
-      font-size: 2rem;
-    }
-    .subtitle {
-      color: #64748b;
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
-    }
-    .controls {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      margin-bottom: 1.5rem;
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .control-group label {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #475569;
-    }
-    select, button {
-      padding: 0.75rem 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.9375rem;
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    select:hover, select:focus {
-      border-color: #2563eb;
-      outline: none;
-    }
-    button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      font-weight: 500;
-    }
-    button:hover {
-      background: #1e40af;
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .stat-card {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .stat-label {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-bottom: 0.5rem;
-    }
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #2563eb;
-    }
-    .chart-container {
-      position: relative;
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      height: 450px;
-    }
-    .error {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-    .loading {
-      text-align: center;
-      padding: 2rem;
-      color: #64748b;
-    }
-    .footer {
-      margin-top: 2rem;
-      text-align: center;
-      font-size: 0.875rem;
-      color: #94a3b8;
-    }
-  </style>
+  <link rel="stylesheet" href="./shared/styles.css">
 </head>
-<body>
-  <h1>🎲 Live Sports Odds</h1>
-  <p class="subtitle">Real-time odds aggregation from multiple bookmakers</p>
 
-  <div class="controls">
-    <div class="control-group">
+<body class="sports-container">
+  <h1 class="sports-title">🎲 Live Sports Odds</h1>
+  <p class="sports-subtitle">Real-time odds aggregation from multiple bookmakers</p>
+
+  <div class="sports-controls">
+    <div class="sports-control-group">
       <label for="sport">Sport</label>
       <select id="sport">
         <option value="nba">NBA</option>
@@ -141,7 +24,7 @@
       </select>
     </div>
 
-    <div class="control-group">
+    <div class="sports-control-group">
       <label for="market">Market</label>
       <select id="market">
         <option value="moneyline">Moneyline</option>
@@ -153,61 +36,68 @@
     <button onclick="refresh()" style="margin-top: auto;">🔄 Refresh Now</button>
   </div>
 
-  <div id="error" class="error" style="display: none;"></div>
-  <div id="loading" class="loading" style="display: none;">Loading odds data...</div>
+  <div id="error" class="sports-error" style="display: none;"></div>
+  <div id="loading" class="sports-loading" style="display: none;">Loading odds data...</div>
 
-  <div class="stats" id="stats"></div>
+  <div class="sports-stats" id="stats"></div>
 
-  <div class="chart-container">
+  <div class="sports-chart-container">
     <canvas id="oddsChart"></canvas>
   </div>
 
-  <div class="footer">
+  <div class="sports-footer">
     Auto-refreshes every 30 seconds • Data cached for 30s • Powered by Betting Brain v3
   </div>
 
-  <script>
+  <script type="module">
+    import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS, ERROR_MESSAGES, CHART_COLORS } from './shared/config.js';
+    import { fetchWidgetData, updateElementText, formatLargeNumber, formatCurrency, showToast } from './shared/utils.js';
+
     const ctx = document.getElementById('oddsChart');
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: { labels: [], datasets: [] },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Live Odds Comparison',
-            font: { size: 18, weight: 'bold' }
-          },
-          legend: {
-            position: 'top',
-            labels: { font: { size: 14 } }
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: false,
+    let chart;
+
+    function initChart() {
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
             title: {
               display: true,
-              text: 'Odds',
-              font: { size: 14, weight: 'bold' }
+              text: 'Live Odds Comparison',
+              font: { size: 18, weight: 'bold' }
+            },
+            legend: {
+              position: 'top',
+              labels: { font: { size: 14 } }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
             }
           },
-          x: {
-            title: {
-              display: true,
-              text: 'Bookmaker',
-              font: { size: 14, weight: 'bold' }
+          scales: {
+            y: {
+              beginAtZero: false,
+              title: {
+                display: true,
+                text: 'Odds',
+                font: { size: 14, weight: 'bold' }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Bookmaker',
+                font: { size: 14, weight: 'bold' }
+              }
             }
           }
         }
-      }
-    });
+      });
+    }
 
     async function refresh() {
       const sport = document.getElementById('sport').value;
@@ -221,38 +111,36 @@
       statsDiv.innerHTML = '';
 
       try {
-        const res = await fetch(`/api/live-odds?sport=${sport}&market=${market}`);
+        const data = await fetchWidgetData('liveOdds', { sport, market });
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+        if (!data || !data.sources) {
+          throw new Error(ERROR_MESSAGES.fetchError);
         }
-
-        const data = await res.json();
 
         // Update stats
         const successfulSources = data.sources.filter(s => s.data !== null).length;
         const failedSources = data.sources.filter(s => s.data === null).length;
 
         statsDiv.innerHTML = `
-          <div class="stat-card">
-            <div class="stat-label">📊 Total Sources</div>
-            <div class="stat-value">${data.sources.length}</div>
+          <div class="sports-stat-card">
+            <div class="sports-stat-label">📊 Total Sources</div>
+            <div class="sports-stat-value">${data.sources.length}</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">✅ Successful</div>
-            <div class="stat-value" style="color: #10b981;">${successfulSources}</div>
+          <div class="sports-stat-card">
+            <div class="sports-stat-label">✅ Successful</div>
+            <div class="sports-stat-value" style="color: ${CHART_COLORS.success};">${successfulSources}</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">❌ Failed</div>
-            <div class="stat-value" style="color: #ef4444;">${failedSources}</div>
+          <div class="sports-stat-card">
+            <div class="sports-stat-label">❌ Failed</div>
+            <div class="sports-stat-value" style="color: ${CHART_COLORS.danger};">${failedSources}</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">⏱️ Last Update</div>
-            <div class="stat-value" style="font-size: 1.25rem;">${new Date(data.aggregatedAt).toLocaleTimeString()}</div>
+          <div class="sports-stat-card">
+            <div class="sports-stat-label">⏱️ Last Update</div>
+            <div class="sports-stat-value" style="font-size: 1.25rem;">${new Date(data.aggregatedAt).toLocaleTimeString()}</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">💾 Cache Status</div>
-            <div class="stat-value" style="font-size: 1.5rem; color: ${data.cacheHit ? '#10b981' : '#f59e0b'};">
+          <div class="sports-stat-card">
+            <div class="sports-stat-label">💾 Cache Status</div>
+            <div class="sports-stat-value" style="font-size: 1.5rem; color: ${data.cacheHit ? CHART_COLORS.success : CHART_COLORS.warning};">
               ${data.cacheHit ? 'HIT' : 'MISS'}
             </div>
           </div>
@@ -266,8 +154,8 @@
           {
             label: 'Home Odds',
             data: successful.map(s => s.data.home),
-            borderColor: 'rgb(37, 99, 235)',
-            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            borderColor: CHART_COLORS.primary,
+            backgroundColor: `${CHART_COLORS.primary}1A`, // 1A for 10% opacity
             borderWidth: 3,
             pointRadius: 6,
             pointHoverRadius: 8,
@@ -276,8 +164,8 @@
           {
             label: 'Away Odds',
             data: successful.map(s => s.data.away),
-            borderColor: 'rgb(239, 68, 68)',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderColor: CHART_COLORS.danger,
+            backgroundColor: `${CHART_COLORS.danger}1A`, // 1A for 10% opacity
             borderWidth: 3,
             pointRadius: 6,
             pointHoverRadius: 8,
@@ -290,18 +178,23 @@
 
         loadingDiv.style.display = 'none';
       } catch (error) {
-        errorDiv.textContent = `❌ Error: ${error.message}`;
+        updateElementText('error', `❌ ${error.message}`);
         errorDiv.style.display = 'block';
         loadingDiv.style.display = 'none';
         console.error('Fetch error:', error);
+        showToast(ERROR_MESSAGES.serverError, 'error');
       }
     }
 
-    // Auto-refresh every 30s
-    setInterval(refresh, 30000);
+    // Initial chart setup
+    initChart();
+
+    // Auto-refresh
+    setInterval(refresh, REFRESH_INTERVALS.sports);
 
     // Initial load
     refresh();
   </script>
 </body>
+
 </html>

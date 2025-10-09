@@ -165,6 +165,9 @@ import { createMockEnvironment, expectToThrow } from '../utils/test-helpers';
 ### 1. Mock Setup Pattern
 
 ```typescript
+import { describe, beforeEach } from 'bun:test';
+import { createMockEnv, createMockExecutionContext } from '../mocks/env';
+
 describe('Component Tests', () => {
   let mockEnv: Env;
   let mockCtx: ExecutionContext;
@@ -179,6 +182,8 @@ describe('Component Tests', () => {
 ### 2. Error Testing Pattern
 
 ```typescript
+import { it, expect, vi } from 'bun:test';
+
 it('should handle errors gracefully', async () => {
   vi.mocked(mockEnv.ANALYTICS.prepare).mockRejectedValue(new Error('Database error'));
   
@@ -189,6 +194,8 @@ it('should handle errors gracefully', async () => {
 ### 3. Async Testing Pattern
 
 ```typescript
+import { it, expect } from 'bun:test';
+
 it('should process data asynchronously', async () => {
   const result = await componentFunction(mockEnv);
   
@@ -199,28 +206,19 @@ it('should process data asynchronously', async () => {
 
 ## Test Configuration
 
-### Vitest Configuration
+### Bun Test Configuration
 
-The main vitest configuration is in `vitest.config.ts`:
+The main Bun Test configuration is in `bunfig.toml`:
 
-```typescript
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'miniflare',
-    setupFiles: ['./tests/setup/test-setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html']
-    }
-  }
-});
+```toml
+[test]
+root = "."
+timeout = 10000 # 10 seconds default
 ```
 
 ### Environment-Specific Configurations
 
-- `config/vitest.staging.config.ts` - Staging environment tests
-- `config/vitest.production.config.ts` - Production environment tests
+For environment-specific configurations, override settings in `bunfig.toml` or use environment variables.
 
 ## Coverage Requirements
 
@@ -258,6 +256,10 @@ it('should work')
 ### 3. Arrange-Act-Assert Pattern
 
 ```typescript
+import { it, expect } from 'bun:test';
+import { mockLineMovement } from '../mocks/data';
+import { createMockEnv } from '../mocks/env';
+
 it('should process line movement', async () => {
   // Arrange
   const mockData = mockLineMovement;
@@ -275,6 +277,9 @@ it('should process line movement', async () => {
 ### 4. Mock Validation
 
 ```typescript
+import { it, expect } from 'bun:test';
+import { vi } from 'bun:test';
+
 it('should call correct methods', async () => {
   await componentFunction(mockEnv);
   
@@ -319,7 +324,7 @@ Tests run automatically on:
 Consider adding pre-commit hooks to run tests before commits:
 
 ```bash
-npm install --save-dev husky lint-staged
+bun install --save-dev husky lint-staged
 ```
 
 ## Troubleshooting
@@ -327,12 +332,12 @@ npm install --save-dev husky lint-staged
 ### Common Issues
 
 1. **Mock Not Working**: Ensure mocks are set up in `beforeEach`
-2. **Async Timeouts**: Increase timeout in test configuration
-3. **Environment Issues**: Check miniflare environment setup
+2. **Async Timeouts**: Increase timeout in test configuration (in `bunfig.toml`)
+3. **Environment Issues**: Check Bun test environment setup
 
 ### Debug Tips
 
-1. Use `console.log` in tests for debugging
+1. Use `console.log` in tests for debugging (but prefer structured logging in production code)
 2. Check mock call counts with `toHaveBeenCalledTimes`
 3. Verify mock implementations with `toHaveBeenCalledWith`
 

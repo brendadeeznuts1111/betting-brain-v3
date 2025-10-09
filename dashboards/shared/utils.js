@@ -8,7 +8,7 @@
  * @date 2025-10-07
  */
 
-import { WORKER_URL, API_ENDPOINTS, ERROR_MESSAGES, STATUS } from './config.js';
+import { WORKER_URL, API_ENDPOINTS, WIDGET_CONFIG, ERROR_MESSAGES, STATUS } from './config.js';
 
 /**
  * Fetch wrapper with error handling and timeout
@@ -20,7 +20,7 @@ import { WORKER_URL, API_ENDPOINTS, ERROR_MESSAGES, STATUS } from './config.js';
 export async function fetchWithTimeout(url, options = {}, timeout = 10000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(url, {
       ...options,
@@ -67,11 +67,11 @@ export async function fetchInterceptorHistory(limit = 100) {
     const response = await fetchWithTimeout(
       `${WORKER_URL}${API_ENDPOINTS.interceptorHistory}?limit=${limit}`
     );
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch interceptor history:', error);
@@ -88,11 +88,11 @@ export async function fetchInterceptorStats() {
     const response = await fetchWithTimeout(
       `${WORKER_URL}${API_ENDPOINTS.interceptorStats}`
     );
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch interceptor stats:', error);
@@ -116,16 +116,16 @@ export async function fetchIntelligenceTool(tool, params = {}) {
     if (!endpoint) {
       throw new Error(`Unknown tool: ${tool}`);
     }
-    
+
     const queryString = new URLSearchParams(params).toString();
     const url = `${WORKER_URL}${endpoint}${queryString ? '?' + queryString : ''}`;
-    
+
     const response = await fetchWithTimeout(url);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Failed to fetch ${tool} data:`, error);
@@ -145,22 +145,88 @@ export async function fetchAPI(endpoint, params = {}) {
     if (!url) {
       throw new Error(`Unknown endpoint: ${endpoint}`);
     }
-    
+
     const queryString = new URLSearchParams(params).toString();
     const fullUrl = `${WORKER_URL}${url}${queryString ? '?' + queryString : ''}`;
-    
+
     const response = await fetchWithTimeout(fullUrl);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
     console.error(`API request failed for ${endpoint}:`, error);
     return null;
   }
+}
+
+/**
+ * Generic utility to fetch data for a widget, using its configuration.
+ * Supports primary API and fallback API if configured.
+ * @param {string} widgetName - The name of the widget (key in WIDGET_CONFIG).
+ * @param {object} [params={}] - Optional parameters for the API call.
+ * @param {object} [fetchOptions={}] - Optional fetch options (e.g., method, headers, body).
+ * @returns {Promise<object|null>} The fetched data or null if an error occurred.
+ */
+export async function fetchWidgetData(widgetName, params = {}, fetchOptions = {}) {
+  const widgetConfig = WIDGET_CONFIG[widgetName];
+  if (!widgetConfig) {
+    console.error(`[fetchWidgetData] Unknown widget configuration: ${widgetName}`);
+    return null;
+  }
+
+  const resolveUrl = (apiPath, queryParams) => {
+    const queryString = new URLSearchParams(queryParams).toString();
+    return `${WORKER_URL}${apiPath}${queryString ? '?' + queryString : ''}`;
+  };
+
+  const performFetch = async (apiPath) => {
+    const fullUrl = resolveUrl(apiPath, params);
+    const response = await fetchWithTimeout(fullUrl, fetchOptions);
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorBody}`);
+    }
+    return response.json();
+  };
+
+  try {
+    // Try primary API
+    if (widgetConfig.api) {
+      const data = await performFetch(widgetConfig.api);
+      console.log(`[fetchWidgetData] Fetched data for ${widgetName} from primary API.`, data);
+      return data;
+    }
+  } catch (error) {
+    console.warn(`[fetchWidgetData] Primary API failed for ${widgetName}:`, error.message);
+    // Try fallback API if available
+    if (widgetConfig.fallbackApi) {
+      try {
+        const data = await performFetch(widgetConfig.fallbackApi);
+        console.log(`[fetchWidgetData] Fetched data for ${widgetName} from fallback API.`, data);
+        return data;
+      } catch (fallbackError) {
+        console.error(`[fetchWidgetData] Fallback API also failed for ${widgetName}:`, fallbackError.message);
+        // If both fail, and it's an MCP tool, try direct API endpoint if configured
+        if (widgetConfig.isMcpTool && API_ENDPOINTS[widgetName]) {
+          try {
+            const data = await fetchAPI(widgetName, params);
+            console.log(`[fetchWidgetData] Fetched data for ${widgetName} from direct API endpoint as MCP fallback.`, data);
+            return data;
+          } catch (directApiError) {
+            console.error(`[fetchWidgetData] Direct API fallback also failed for ${widgetName}:`, directApiError.message);
+          }
+        }
+      }
+    }
+    // Re-throw if no data could be fetched from any source
+    throw error; // Re-throw the original error to be caught by the widget's error handling
+  }
+  return null;
 }
 
 /**
@@ -171,10 +237,10 @@ export async function fetchAPI(endpoint, params = {}) {
 export function updateElementText(elementId, text) {
   const element = document.getElementById(elementId);
   if (!element) return;
-  
+
   element.style.transition = 'opacity 0.3s';
   element.style.opacity = '0';
-  
+
   setTimeout(() => {
     element.textContent = text;
     element.style.opacity = '1';
@@ -189,19 +255,18 @@ export function updateElementText(elementId, text) {
  */
 export function showToast(message, type = 'info', duration = 3000) {
   const toast = document.createElement('div');
-  toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white shadow-lg z-50 transition-all duration-300 ${
-    type === 'success' ? 'bg-green-600' :
+  toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white shadow-lg z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-600' :
     type === 'error' ? 'bg-red-600' :
-    type === 'warning' ? 'bg-yellow-600' :
-    'bg-blue-600'
-  }`;
+      type === 'warning' ? 'bg-yellow-600' :
+        'bg-blue-600'
+    }`;
   toast.textContent = message;
   toast.style.opacity = '0';
-  
+
   document.body.appendChild(toast);
-  
+
   setTimeout(() => { toast.style.opacity = '1'; }, 100);
-  
+
   setTimeout(() => {
     toast.style.opacity = '0';
     setTimeout(() => document.body.removeChild(toast), 300);
@@ -218,6 +283,68 @@ export function formatLargeNumber(num) {
   if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
   if (num >= 1e3) return `${(num / 1e3).toFixed(1)}K`;
   return num.toString();
+}
+
+/**
+ * Format currency amounts for display.
+ * @param {number} amount - The numeric amount to format.
+ * @returns {string} The formatted currency string.
+ */
+export function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+/**
+ * Formats a timestamp to a human-readable "time ago" string.
+ * @param {number} timestamp - The timestamp in milliseconds.
+ * @returns {string} The formatted time ago string (e.g., "5 minutes ago").
+ */
+export function formatTimeAgo(timestamp) {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 1) return 'just now';
+  if (minutes === 1) return '1 minute ago';
+  return `${minutes} minutes ago`;
+}
+
+/**
+ * Formats byte size to a human-readable string (e.g., "10.5 KB").
+ * @param {number} bytes - The number of bytes to format.
+ * @returns {string} The formatted size string.
+ */
+export function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+}
+
+/**
+ * Renders a list of items into a specified container.
+ * @param {string} containerId - The ID of the HTML element to render into.
+ * @param {Array<object>} items - An array of objects to be rendered.
+ * @param {function(object): string} itemRenderer - A callback function that takes an item object and returns its HTML string.
+ * @param {boolean} clearExisting - Whether to clear existing content in the container before rendering (default: true).
+ */
+export function renderList(containerId, items, itemRenderer, clearExisting = true) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (clearExisting) {
+    container.innerHTML = '';
+  }
+
+  items.forEach(item => {
+    container.insertAdjacentHTML('beforeend', itemRenderer(item));
+  });
 }
 
 /**
@@ -247,7 +374,7 @@ export function debounce(func, wait = 300) {
 export function setupAutoRefresh(callback, interval) {
   let intervalId = null;
   let isPaused = false;
-  
+
   const start = () => {
     if (intervalId) return;
     callback(); // Initial call
@@ -255,16 +382,16 @@ export function setupAutoRefresh(callback, interval) {
       if (!isPaused) callback();
     }, interval);
   };
-  
+
   const pause = () => { isPaused = true; };
   const resume = () => { isPaused = false; };
   const stop = () => {
     if (intervalId) clearInterval(intervalId);
     intervalId = null;
   };
-  
+
   start();
-  
+
   return { pause, resume, stop };
 }
 
@@ -281,7 +408,7 @@ export const storage = {
       return defaultValue;
     }
   },
-  
+
   set: (key, value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -291,7 +418,7 @@ export const storage = {
       return false;
     }
   },
-  
+
   remove: (key) => {
     try {
       localStorage.removeItem(key);
@@ -301,7 +428,7 @@ export const storage = {
       return false;
     }
   },
-  
+
   clear: () => {
     try {
       localStorage.clear();
@@ -321,11 +448,16 @@ export default {
   fetchInterceptorStats,
   fetchIntelligenceTool,
   fetchAPI,
+  fetchWidgetData,
   updateElementText,
   showToast,
   formatLargeNumber,
+  formatCurrency,
+  formatTimeAgo,
+  formatBytes,
   debounce,
   setupAutoRefresh,
-  storage
+  storage,
+  renderList
 };
 

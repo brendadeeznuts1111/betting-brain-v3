@@ -2,7 +2,7 @@
 // Query endpoints for agent performance data
 
 import { Errors, createErrorResponse } from '../utils/error-handler';
-import { CORS_HEADERS } from '../utils/request';
+import { CORS_HEADERS, createJSONResponse, createOPTIONSResponse, normalizeD1Result, normalizeD1First } from '../utils/request';
 import type { Env } from '../types/cloudflare';
 
 /**
@@ -14,13 +14,6 @@ export async function getAgentPerformance(
     env: Env,
     requestId: string
 ): Promise<Response> {
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
-    };
-
     try {
         const url = new URL(request.url);
         const agentID = url.searchParams.get('agentID') || 'BILLY666';
@@ -67,7 +60,7 @@ export async function getAgentPerformance(
         // Query performance data
         const result = await env.RAW_FEED_DB.prepare(query).bind(...bindParams).all();
 
-        const performance = result.results as unknown as Array<{
+        interface AgentPerformanceRow {
             agent_id: string;
             agent_owner: string;
             period_start: string;
@@ -83,11 +76,12 @@ export async function getAgentPerformance(
             free_play_used: number;
             free_play_win: number;
             captured_at: string;
-        }>;
+        }
+        const performance = normalizeD1Result<AgentPerformanceRow>(result);
 
         console.log(`[${requestId}] ✅ Found ${performance.length} performance reports`);
 
-        return new Response(JSON.stringify({
+        return createJSONResponse({
             success: true,
             agentID,
             period,
@@ -95,8 +89,6 @@ export async function getAgentPerformance(
             performance,
             requestId,
             timestamp: new Date().toISOString()
-        }), {
-            headers: corsHeaders
         });
 
     } catch (error) {
@@ -113,13 +105,6 @@ export async function getSportPerformance(
     env: Env,
     requestId: string
 ): Promise<Response> {
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
-    };
-
     try {
         const url = new URL(request.url);
         const agentID = url.searchParams.get('agentID') || 'BILLY666';
@@ -156,18 +141,19 @@ export async function getSportPerformance(
         // Query sport breakdown
         const result = await env.RAW_FEED_DB.prepare(query).bind(...bindParams).all();
 
-        const sports = result.results as unknown as Array<{
+        interface SportPerformanceRow {
             sport: string;
             total_risk: number;
             total_win: number;
             total_wagers: number;
             win_percentage: number;
             report_count: number;
-        }>;
+        }
+        const sports = normalizeD1Result<SportPerformanceRow>(result);
 
         console.log(`[${requestId}] ✅ Found ${sports.length} sports`);
 
-        return new Response(JSON.stringify({
+        return createJSONResponse({
             success: true,
             agentID,
             period,
@@ -175,8 +161,6 @@ export async function getSportPerformance(
             sports,
             requestId,
             timestamp: new Date().toISOString()
-        }), {
-            headers: corsHeaders
         });
 
     } catch (error) {
@@ -193,13 +177,6 @@ export async function getPerformanceSummary(
     env: Env,
     requestId: string
 ): Promise<Response> {
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
-    };
-
     try {
         const url = new URL(request.url);
         const agentID = url.searchParams.get('agentID') || 'BILLY666';
@@ -220,7 +197,7 @@ export async function getPerformanceSummary(
             throw Errors.notFound('Agent performance summary');
         }
 
-        const summary = result as unknown as {
+        interface PerformanceSummaryRow {
             agent_id: string;
             agent_owner: string;
             total_reports: number;
@@ -232,18 +209,17 @@ export async function getPerformanceSummary(
             first_period: string;
             last_period: string;
             last_captured: string;
-        };
+        }
+        const summary = normalizeD1First<PerformanceSummaryRow>(result);
 
         console.log(`[${requestId}] ✅ Found summary: ${summary.total_reports} reports`);
 
-        return new Response(JSON.stringify({
+        return createJSONResponse({
             success: true,
             agentID,
             summary,
             requestId,
             timestamp: new Date().toISOString()
-        }), {
-            headers: corsHeaders
         });
 
     } catch (error) {

@@ -25,7 +25,7 @@ export async function dnsHealth(req: Request, env: Env): Promise<Response> {
 
   console.log(`[${requestId}] 🔍 DNS health check for: ${host}`);
 
-  
+
 
   try {
     const result = await resolveHost(host);
@@ -42,7 +42,7 @@ export async function dnsHealth(req: Request, env: Env): Promise<Response> {
         ip: result.ip,
         latency: result.latency,
         cached: result.cached ?? false,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
         requestId,
       }),
       {
@@ -56,7 +56,7 @@ export async function dnsHealth(req: Request, env: Env): Promise<Response> {
       JSON.stringify({
         host,
         error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
         requestId,
       }),
       {
@@ -79,7 +79,7 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
   const url = new URL(req.url);
   const hostsParam = url.searchParams.get('hosts');
 
-  
+
 
   if (!hostsParam) {
     return new Response(
@@ -138,7 +138,7 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
       results: response,
       totalHosts: hosts.length,
       successCount: Object.values(response).filter((r: any) => r.success).length,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       requestId,
     }),
     {

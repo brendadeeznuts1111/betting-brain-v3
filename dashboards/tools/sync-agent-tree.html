@@ -1,80 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fantasy402 Agent Tree Sync</title>
+  <script type="module" src="shared/config.js"></script>
+  <script type="module" src="shared/utils.js"></script>
+  <link rel="stylesheet" href="shared/styles.css">
   <style>
-    body {
+    /* Sync Agent Tree specific styles */
+    .sync-container {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       max-width: 800px;
       margin: 50px auto;
       padding: 20px;
       background: #f5f5f5;
     }
-    .container {
+
+    .sync-card {
       background: white;
       padding: 30px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    h1 { color: #333; margin-top: 0; }
-    .status { padding: 15px; border-radius: 4px; margin: 15px 0; }
-    .status.info { background: #e3f2fd; color: #1976d2; }
-    .status.success { background: #e8f5e9; color: #388e3c; }
-    .status.error { background: #ffebee; color: #d32f2f; }
-    .status.warning { background: #fff3e0; color: #f57c00; }
-    input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
-    button { background: #1976d2; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 16px; }
-    button:hover { background: #1565c0; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
-    .progress { margin: 15px 0; }
-    .progress-bar { width: 100%; height: 30px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
-    .progress-fill { height: 100%; background: #1976d2; transition: width 0.3s; display: flex; align-items: center; padding-left: 10px; color: white; font-weight: bold; }
+
+    .sync-title {
+      color: #333;
+      margin-top: 0;
+    }
+
+    .sync-status {
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+    }
+
+    .sync-status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .sync-status.success {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    .sync-status.error {
+      background: #ffebee;
+      color: #d32f2f;
+    }
+
+    .sync-status.warning {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .sync-input {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .sync-button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .sync-button:hover {
+      background: #1565c0;
+    }
+
+    .sync-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .sync-pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .sync-progress {
+      margin: 15px 0;
+    }
+
+    .sync-progress-bar {
+      width: 100%;
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .sync-progress-fill {
+      height: 100%;
+      background: #1976d2;
+      transition: width 0.3s;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      color: white;
+      font-weight: bold;
+    }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1>🌳 Fantasy402 Agent Tree Sync</h1>
+
+<body class="sync-container">
+  <div class="sync-card">
+    <h1 class="sync-title">🌳 Fantasy402 Agent Tree Sync</h1>
     <p>Sync all agents from Fantasy402 to your Worker database for the enhanced hierarchy dashboard.</p>
 
     <div id="config">
       <label>
         <strong>Worker URL:</strong>
-        <input type="text" id="workerUrl" value="http://localhost:8787" placeholder="https://your-worker.workers.dev">
+        <input type="text" id="workerUrl" class="sync-input" value="http://localhost:8787"
+          placeholder="https://your-worker.workers.dev">
       </label>
 
       <label>
         <strong>Bearer Token:</strong>
-        <input type="text" id="bearerToken" placeholder="Paste your Fantasy402 bearer token">
+        <input type="text" id="bearerToken" class="sync-input" placeholder="Paste your Fantasy402 bearer token">
       </label>
 
       <label>
         <strong>Agent ID:</strong>
-        <input type="text" id="agentId" value="BILLY666" placeholder="BILLY666">
+        <input type="text" id="agentId" class="sync-input" value="BILLY666" placeholder="BILLY666">
       </label>
 
-      <button id="syncBtn" onclick="syncAgents()">🚀 Start Sync</button>
+      <button id="syncBtn" class="sync-button" onclick="syncAgents()">🚀 Start Sync</button>
     </div>
 
     <div id="status"></div>
 
-    <div id="progress" class="progress" style="display: none;">
-      <div class="progress-bar">
-        <div id="progressFill" class="progress-fill" style="width: 0%">0%</div>
+    <div id="progress" class="sync-progress" style="display: none;">
+      <div class="sync-progress-bar">
+        <div id="progressFill" class="sync-progress-fill" style="width: 0%">0%</div>
       </div>
     </div>
 
     <div id="results"></div>
   </div>
 
-  <script>
+  <script type="module">
+    import { WORKER_URL, API_ENDPOINTS, ERROR_MESSAGES } from './shared/config.js';
+    import { fetchAPI, updateElementText, showToast } from './shared/utils.js';
+
     const FANTASY402_API = 'https://fantasy402.com/cloud/api/Manager/getListAgenstByAgent';
 
     function showStatus(message, type = 'info') {
       const statusDiv = document.getElementById('status');
-      statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+      statusDiv.innerHTML = `<div class="sync-status ${type}">${message}</div>`;
     }
 
     function showProgress(percent, text) {
@@ -145,9 +230,9 @@
             agent_type: agent.agentType || 'A',
             agent_owner: agent.agentOwner || agentId,
             agent_name: agent.agentName || agent.agentID,
-            credit_limit: parseFloat(agent.creditLimit) || 0,
-            outstanding_balance: parseFloat(agent.outstandingBalance) || 0,
-            hold_percentage: parseFloat(agent.holdPercentage) || 0,
+            credit_limit: Number(agent.creditLimit) || 0,
+            outstanding_balance: Number(agent.outstandingBalance) || 0,
+            hold_percentage: Number(agent.holdPercentage) || 0,
             active: agent.active !== false ? 1 : 0,
             site_id: agent.siteID || 1,
             children: []
@@ -224,8 +309,8 @@
 
         document.getElementById('results').innerHTML = `
           <h3>Results</h3>
-          <pre>${JSON.stringify(result, null, 2)}</pre>
-          <div class="status success">
+          <pre class="sync-pre">${JSON.stringify(result, null, 2)}</pre>
+          <div class="sync-status success">
             ✅ All agents synced successfully!<br>
             Refresh the <a href="${workerUrl.replace('8787', '8080')}/hierarchy-enhanced.html" target="_blank">hierarchy dashboard</a> to see all agents.
           </div>
@@ -239,7 +324,7 @@
 
         if (isCORS) {
           document.getElementById('results').innerHTML = `
-            <div class="status warning">
+            <div class="sync-status warning">
               <strong>⚠️ CORS Error - Use Alternate Method</strong><br><br>
               The browser is blocking direct access to Fantasy402 API due to CORS policy.<br><br>
 
@@ -253,7 +338,7 @@
           `;
         } else {
           document.getElementById('results').innerHTML = `
-            <div class="status error">
+            <div class="sync-status error">
               <strong>Error Details:</strong><br>
               ${error.message}<br><br>
               <strong>Troubleshooting:</strong><br>
@@ -276,4 +361,5 @@
     }
   </script>
 </body>
+
 </html>

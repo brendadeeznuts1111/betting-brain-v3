@@ -65,10 +65,15 @@ export async function getAgentGraph(
     const url = new URL(request.url);
     const type = url.searchParams.get('type') || 'all';
     const depth = Math.min(parseInt(url.searchParams.get('depth') || '3'), 5);
-    const minOverlap = Math.max(0, Math.min(1, parseFloat(url.searchParams.get('minOverlap') || '0.1')));
+    let minOverlap = Number(url.searchParams.get('minOverlap') || '0.1');
+    if (isNaN(minOverlap)) {
+        console.warn(`[AgentGraph] Invalid minOverlap: ${url.searchParams.get('minOverlap')}. Defaulting to 0.1.`);
+        minOverlap = 0.1;
+    }
+    minOverlap = Math.max(0, Math.min(1, minOverlap));
     const ringFence = url.searchParams.get('ringFence') === 'true';
 
-    
+
 
     try {
         if (!env.ANALYTICS) {

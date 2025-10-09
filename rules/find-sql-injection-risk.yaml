@@ -1,0 +1,6 @@
+id: find-sql-injection-risk
+message: Potential SQL injection risk (use parameterized queries)
+severity: error
+language: TypeScript
+rule:
+  pattern: env.$DB.prepare(`$$$${$VAR}$$$`)

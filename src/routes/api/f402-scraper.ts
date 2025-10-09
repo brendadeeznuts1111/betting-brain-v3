@@ -124,7 +124,11 @@ function parseBetTickerHTML(html: string, requestId: string): ScrapedBetTickerDa
 
     if (timestampMatch && stakeMatch) {
       const timestamp = timestampMatch[1];
-      const stake = parseFloat(stakeMatch[1]);
+      let stake = Number(stakeMatch[1]);
+      if (isNaN(stake)) {
+        console.warn(`[${requestId}] Invalid stake amount: ${stakeMatch[1]}. Defaulting to 0.`);
+        stake = 0;
+      }
       const customerId = customerMatch ? customerMatch[1] : 'unknown';
       const status = statusMatch?.[1]?.toUpperCase() === 'PENDING' ? 'PENDING' : 'SETTLED';
 
@@ -204,7 +208,11 @@ export async function scrapeAgentPerformance(
     // Extract total PNL
     // Look for: <span id="totalPnl">1247.50</span>
     const pnlMatch = panelHTML.match(/<span[^>]*id=["']totalPnl["'][^>]*>([^<]+)<\/span>/i);
-    const totalPnl = pnlMatch ? parseFloat(pnlMatch[1].replace(/[^0-9.-]/g, '')) : 0;
+    let totalPnl = pnlMatch ? Number(pnlMatch[1].replace(/[^0-9.-]/g, '')) : 0;
+    if (isNaN(totalPnl)) {
+      console.warn(`[${requestId}] Invalid total PNL: ${pnlMatch?.[1]}. Defaulting to 0.`);
+      totalPnl = 0;
+    }
 
     // Extract top agents from table
     const agentRows = Array.from(panelHTML.matchAll(/<tr[^>]*class=["'][^"']*agent-row[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi));
@@ -216,7 +224,7 @@ export async function scrapeAgentPerformance(
 
       return {
         id: idMatch ? idMatch[1] : 'unknown',
-        pnl: pnlMatch ? parseFloat(pnlMatch[1]) : 0,
+        pnl: pnlMatch ? Number(pnlMatch[1]) : 0,
       };
     });
 
@@ -259,7 +267,11 @@ export async function scrapeCustomerStats(
 
     // <span id="totalStakedToday">12450.00</span>
     const stakedMatch = html.match(/<span[^>]*id=["']totalStakedToday["'][^>]*>([^<]+)<\/span>/i);
-    const totalStaked = stakedMatch ? parseFloat(stakedMatch[1].replace(/[^0-9.]/g, '')) : 0;
+    let totalStaked = stakedMatch ? Number(stakedMatch[1].replace(/[^0-9.]/g, '')) : 0;
+    if (isNaN(totalStaked)) {
+      console.warn(`[${requestId}] Invalid total staked: ${stakedMatch?.[1]}. Defaulting to 0.`);
+      totalStaked = 0;
+    }
 
     console.log(`[${requestId}] ✅ Active customers: ${activeCount}, Total staked: ${totalStaked}`);
 

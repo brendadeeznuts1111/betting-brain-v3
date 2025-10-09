@@ -5,7 +5,7 @@
  */
 
 import { MCPEnv } from '../types/api';
-import { CORS_HEADERS } from '../utils/request';
+import { CORS_HEADERS, createJSONResponse, createOPTIONSResponse } from '../utils/request';
 import {
   JSONRPCRequest,
   JSONRPCResponse,
@@ -24,18 +24,14 @@ export async function handleMCPRequest(
   request: Request,
   env: MCPEnv
 ): Promise<Response> {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+  // Remove manual corsHeaders object as CORS_HEADERS is imported and used by createJSONResponse/createOPTIONSResponse
 
   if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createOPTIONSResponse();
   }
 
   if (request.method !== 'POST') {
-    return createErrorResponse(null, MCPErrorCode.InvalidRequest, 'Method must be POST', corsHeaders);
+    return createErrorResponse(null, MCPErrorCode.InvalidRequest, 'Method must be POST', CORS_HEADERS);
   }
 
   try {
@@ -44,7 +40,7 @@ export async function handleMCPRequest(
 
     // Validate JSON-RPC 2.0 format
     if (jsonrpc !== '2.0') {
-      return createErrorResponse(id, MCPErrorCode.InvalidRequest, 'Invalid jsonrpc version', corsHeaders);
+      return createErrorResponse(id, MCPErrorCode.InvalidRequest, 'Invalid jsonrpc version', CORS_HEADERS);
     }
 
     console.log(`[MCP] ${method} call`, {
@@ -71,7 +67,7 @@ export async function handleMCPRequest(
             id,
             MCPErrorCode.InvalidParams,
             'Missing required parameter: name',
-            corsHeaders
+            CORS_HEADERS
           );
         }
         result = await handleToolCall(params.name, params.arguments || {}, env);
@@ -82,7 +78,7 @@ export async function handleMCPRequest(
           id,
           MCPErrorCode.MethodNotFound,
           `Method not found: ${method}`,
-          corsHeaders
+          CORS_HEADERS
         );
     }
 
@@ -93,12 +89,7 @@ export async function handleMCPRequest(
       result,
     };
 
-    return new Response(JSON.stringify(response), {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-      },
-    });
+    return createJSONResponse(response);
   } catch (error) {
     console.error('[MCP] Request error:', error);
 
@@ -106,7 +97,7 @@ export async function handleMCPRequest(
       null,
       MCPErrorCode.ParseError,
       error instanceof Error ? error.message : 'Parse error',
-      corsHeaders
+      CORS_HEADERS
     );
   }
 }
@@ -184,11 +175,5 @@ function createErrorResponse(
 
   const status = code === MCPErrorCode.ParseError ? 400 : 200;
 
-  return new Response(JSON.stringify(response), {
-    status,
-    headers: {
-      ...headers,
-      'Content-Type': 'application/json',
-    },
-  });
+  return createJSONResponse(response, status, headers);
 }

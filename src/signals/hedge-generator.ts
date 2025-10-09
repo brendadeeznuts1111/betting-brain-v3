@@ -96,7 +96,7 @@ export class HedgeSignalGenerator {
       hedge_side,
       expected_pnl,
       risk_level,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       reasoning,
     };
 

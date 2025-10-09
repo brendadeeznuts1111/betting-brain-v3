@@ -37,7 +37,7 @@ export async function warmCache(
 
   const startTime = Date.now();
 
-  
+
 
   try {
     if (!env.FANTASY_CACHE || !env.RAW_FEED_DB) {
@@ -81,10 +81,10 @@ export async function warmCache(
         agentOwner: owner,
         agentID: null,
         count: agentList.length,
-        capturedAt: new Date().toISOString(),
+        capturedAt: new Date(Date.now()).toISOString(),
         offices: [...new Set(agentList.map((a: any) => a.office).filter(Boolean))],
         agentTypes: [...new Set(agentList.map((a: any) => a.agent_type).filter(Boolean))],
-        warmedAt: new Date().toISOString(),
+        warmedAt: new Date(Date.now()).toISOString(),
       };
 
       // Store in all cache keys
@@ -111,8 +111,8 @@ export async function warmCache(
           JSON.stringify({
             ...agent,
             agentOwner: owner,
-            capturedAt: new Date().toISOString(),
-            warmedAt: new Date().toISOString(),
+            capturedAt: new Date(Date.now()).toISOString(),
+            warmedAt: new Date(Date.now()).toISOString(),
           }),
           { expirationTtl: 86400 }
         );
@@ -130,7 +130,7 @@ export async function warmCache(
           tree: agentList,
           owner,
           count: agentList.length,
-          warmedAt: new Date().toISOString()
+          warmedAt: new Date(Date.now()).toISOString()
         }),
         { expirationTtl: 3600 } // 1 hour TTL during iteration
       );
@@ -172,7 +172,7 @@ export async function warmCache(
       },
       duration,
       requestId,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
     };
 
     console.log(`[${requestId}] 🔥 Cache warming complete: ${agentsWarmed} agents, ${agentListsWarmed} lists (${duration}ms)`);

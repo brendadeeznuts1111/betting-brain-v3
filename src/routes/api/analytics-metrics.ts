@@ -93,7 +93,7 @@ export async function getAnalyticsMetrics(
         return createJSONResponse({
             metrics,
             requestId,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date(Date.now()).toISOString(),
             dataSource: 'analytics-engine'
         });
 

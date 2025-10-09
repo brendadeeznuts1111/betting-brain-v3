@@ -85,7 +85,7 @@ export async function getAgentTree(
         totalAgents: agents.length,
         rootOwner: owner,
         requestId,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
       }),
       {
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -129,7 +129,7 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
       type: agent.agentType || agent.agent_type,
       office: agent.office,
       totalRequests: agent.totalRequests || agent.total_requests || 0,
-      lastActive: agent.lastActive || agent.last_active,
+      lastActive: agent.lastActive || agent.last_active || new Date(Date.now()).toISOString(),
       // Real metrics from cached API data (own + children rollup)
       risk: agent.risk_score || 0,
       steam: agent.steam_percentage || 0,
@@ -295,7 +295,7 @@ export async function syncAgents(
         upserted: inserted,
         errors,
         requestId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date(Date.now()).toISOString()
       }),
       { headers: CORS_HEADERS }
     );

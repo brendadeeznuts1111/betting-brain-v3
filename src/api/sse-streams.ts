@@ -180,7 +180,7 @@ async function getHierarchySnapshot(env: Env) {
       return {
         agents: data.agents || [],
         count: data.count || 0,
-        timestamp: data.timestamp || new Date().toISOString(),
+        timestamp: data.timestamp || new Date(Date.now()).toISOString(),
         source: 'kv-cache',
       };
     }
@@ -191,7 +191,7 @@ async function getHierarchySnapshot(env: Env) {
   return {
     agents: [],
     count: 0,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date(Date.now()).toISOString(),
     source: 'empty',
     error: 'No cached data available',
   };
@@ -204,7 +204,7 @@ async function getHealthSnapshot(env: Env) {
   return {
     status: 'healthy',
     version: '3.3.0',
-    timestamp: new Date().toISOString(),
+    timestamp: new Date(Date.now()).toISOString(),
     uptime: Math.floor(performance.now() / 1000),
     services: {
       worker: 'up',
@@ -231,7 +231,7 @@ async function getBetsSnapshot(env: Env) {
   return {
     count: 0,
     volume: 0,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date(Date.now()).toISOString(),
     source: 'empty',
   };
 }

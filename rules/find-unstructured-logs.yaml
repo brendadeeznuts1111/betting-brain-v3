@@ -1,0 +1,9 @@
+id: find-unstructured-logs
+message: Unstructured log (missing requestId)
+severity: warning
+language: TypeScript
+rule:
+  all:
+    - pattern: console.log($MSG)
+    - not:
+        pattern: console.log(`[${requestId}]$$$`)

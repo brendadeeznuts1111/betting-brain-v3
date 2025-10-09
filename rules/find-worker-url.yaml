@@ -1,0 +1,6 @@
+id: find-worker-url
+message: WORKER_URL definition found (should use shared config)
+severity: warning
+language: JavaScript
+rule:
+  pattern: const WORKER_URL = $$$

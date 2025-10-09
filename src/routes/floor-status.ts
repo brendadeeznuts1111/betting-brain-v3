@@ -98,7 +98,7 @@ export async function handleFloorStatus(
         caching: '30s KV cache',
         rateLimiting: '100 req/min per IP',
       },
-      lastDeploy: new Date().toISOString(), // Would be from deployment metadata
+      lastDeploy: new Date(Date.now()).toISOString(), // Would be from deployment metadata
       uptime: 99.9, // Would be calculated from actual uptime
       endpoints: {
         health: '/health',

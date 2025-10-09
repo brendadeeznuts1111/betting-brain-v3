@@ -64,7 +64,11 @@ export class AgentTracker {
         // Process all bets
         bets.forEach(bet => {
             const agentID = bet.AgentID;
-            const amount = parseFloat(bet.AmountWagered) || 0;
+            let amount = Number(bet.AmountWagered);
+            if (isNaN(amount)) {
+                console.warn(`[${this.requestId}] Invalid AmountWagered for bet: ${bet.AmountWagered}. Defaulting to 0.`);
+                amount = 0;
+            }
             const customerID = bet.CustomerID;
             const sport = this.extractSport(bet.ShortDesc);
             const timestamp = new Date(bet.InsertDateTime);
@@ -185,7 +189,14 @@ export class AgentTracker {
     private calculateVolumeInPeriod(bets: any[], since: number): number {
         return bets
             .filter(bet => new Date(bet.InsertDateTime).getTime() >= since)
-            .reduce((sum, bet) => sum + (parseFloat(bet.AmountWagered) || 0), 0);
+            .reduce((sum, bet) => {
+                let amount = Number(bet.AmountWagered);
+                if (isNaN(amount)) {
+                    console.warn(`[${this.requestId}] Invalid AmountWagered for bet in period calculation: ${bet.AmountWagered}. Defaulting to 0.`);
+                    amount = 0;
+                }
+                return sum + amount;
+            }, 0);
     }
 
     // Get top sports for agent

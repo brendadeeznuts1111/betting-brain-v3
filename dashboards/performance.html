@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Performance & Risk Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="shared/config.js"></script>
+    <script type="module" src="shared/utils.js"></script>
+    <script type="module" src="shared/charts.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            color: rgb(148, 163, 184);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-button.active {
+            color: white;
+            border-bottom-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .scrollable {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .pulse-live {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+
+<body class="p-6">
+    <div class="max-w-[1920px] mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                        📊 Performance & Risk Tracker
+                        <span id="autoRefreshIndicator" class="text-sm font-normal text-slate-400 flex items-center gap-2">
+                            <span class="pulse-live inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                            Auto-refresh: ON
+                        </span>
+                    </h1>
+                    <p class="text-slate-400 mt-2">
+                        Real-time performance tracking • Last updated: <span id="lastUpdate" class="text-white font-semibold">Never</span>
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="toggleAutoRefresh()" id="refreshToggle" class="glass rounded-lg px-4 py-2 text-white hover:bg-white/10 transition">
+                        ⏸️ Pause
+                    </button>
+                    <button onclick="refreshData()" class="glass rounded-lg px-4 py-2 text-white hover:bg-white/10 transition">
+                        🔄 Refresh Now
+                    </button>
+                    <button onclick="exportData()" class="glass rounded-lg px-4 py-2 text-white hover:bg-white/10 transition">
+                        📊 Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Total Action</div>
+                <div class="text-2xl font-bold text-white" id="totalAction">$0</div>
+                <div class="text-xs text-slate-400 mt-1" id="totalWagers">0 wagers</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Net Exposure</div>
+                <div class="text-2xl font-bold" id="netExposure">$0</div>
+                <div class="text-xs text-slate-400 mt-1">Across all positions</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Worst Case Loss</div>
+                <div class="text-2xl font-bold text-red-400" id="worstCase">$0</div>
+                <div class="text-xs text-slate-400 mt-1">Max liability</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-slate-400 mb-1">Games Active</div>
+                <div class="text-2xl font-bold text-white" id="activeGames">0</div>
+                <div class="text-xs text-slate-400 mt-1" id="customerCount">0 customers</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="glass rounded-xl p-1 mb-6 flex gap-1">
+            <button class="tab-button active" onclick="switchTab('positions')" data-tab="positions">
+                🎯 Game Positions
+            </button>
+            <button class="tab-button" onclick="switchTab('customers')" data-tab="customers">
+                👤 Customer Positions
+            </button>
+            <button class="tab-button" onclick="switchTab('agents')" data-tab="agents">
+                🏢 Agent Performance
+            </button>
+            <button class="tab-button" onclick="switchTab('charts')" data-tab="charts">
+                📈 Analytics Charts
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent">
+            <!-- Game Positions Tab -->
+            <div class="tab-content active" id="positions-content">
+                <div class="glass rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white">🎯 Game Positions</h2>
+                        <div class="flex gap-2">
+                            <select id="sportFilter" onchange="applyFilters()" class="glass rounded-lg px-3 py-2 text-white text-sm">
+                                <option value="">All Sports</option>
+                                <option value="Baseball">⚾ Baseball</option>
+                                <option value="Football">🏈 Football</option>
+                                <option value="Basketball">🏀 Basketball</option>
+                                <option value="Hockey">🏒 Hockey</option>
+                                <option value="Soccer">⚽ Soccer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="scrollable">
+                        <table class="w-full text-sm text-white">
+                            <thead class="sticky top-0 glass">
+                                <tr class="text-slate-400 text-left border-b border-slate-700">
+                                    <th class="py-3 px-4">Game</th>
+                                    <th class="py-3 px-4 text-right">Total Action</th>
+                                    <th class="py-3 px-4 text-right">Home Side</th>
+                                    <th class="py-3 px-4 text-right">Away Side</th>
+                                    <th class="py-3 px-4 text-right">Net Exposure</th>
+                                    <th class="py-3 px-4 text-center">Risk Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gamePositionsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Positions Tab -->
+            <div class="tab-content" id="customers-content">
+                <div class="glass rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white">👤 Customer Positions</h2>
+                        <input type="text" id="customerSearch" placeholder="Search customer..." onkeyup="filterCustomers()" class="glass rounded-lg px-4 py-2 text-white text-sm w-64" />
+                    </div>
+                    <div class="scrollable">
+                        <table class="w-full text-sm text-white">
+                            <thead class="sticky top-0 glass">
+                                <tr class="text-slate-400 text-left border-b border-slate-700">
+                                    <th class="py-3 px-4">#</th>
+                                    <th class="py-3 px-4">Customer</th>
+                                    <th class="py-3 px-4">Agent</th>
+                                    <th class="py-3 px-4 text-right">Total Risk</th>
+                                    <th class="py-3 px-4 text-right">Potential Win</th>
+                                    <th class="py-3 px-4 text-center">Wagers</th>
+                                    <th class="py-3 px-4 text-center">Risk Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerPositionsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Performance Tab -->
+            <div class="tab-content" id="agents-content">
+                <div class="glass rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-white">🏢 Agent Performance</h2>
+                    </div>
+
+                    <!-- Agent Risk Cards -->
+                    <div id="agentRiskCards" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"></div>
+
+                    <!-- Agent Table -->
+                    <div class="scrollable">
+                        <table class="w-full text-sm text-white">
+                            <thead class="sticky top-0 glass">
+                                <tr class="text-slate-400 text-left border-b border-slate-700">
+                                    <th class="py-3 px-4">#</th>
+                                    <th class="py-3 px-4">Agent</th>
+                                    <th class="py-3 px-4 text-right">Total Action</th>
+                                    <th class="py-3 px-4 text-right">Net Exposure</th>
+                                    <th class="py-3 px-4 text-center">Risk Score</th>
+                                    <th class="py-3 px-4 text-center">Customers</th>
+                                    <th class="py-3 px-4 text-center">Wagers</th>
+                                    <th class="py-3 px-4 text-center">Avg/Customer</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agentSummaryTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Tab -->
+            <div class="tab-content" id="charts-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass rounded-xl p-6">
+                        <h2 class="text-white font-bold mb-4">💰 Financial Performance Over Time</h2>
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                    <div class="glass rounded-xl p-6">
+                        <h2 class="text-white font-bold mb-4">🏈 Performance by Sport</h2>
+                        <canvas id="sportChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { WORKER_URL } from './shared/config.js';
+        import { formatCurrency, $, updateElementText, renderList } from './shared/utils.js';
+        import { createLineChart, createBarChart } from './shared/charts.js';
+
+        const REFRESH_INTERVAL = 10000;
+        let allWagers = [];
+        let gamePositions = {};
+        let customerPositions = {};
+        let agentSummary = {};
+        let refreshTimer = null;
+        let autoRefresh = true;
+        let performanceChart = null;
+        let sportChart = null;
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === `${tabName}-content`);
+            });
+        }
+        window.switchTab = switchTab;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Performance Tracker initialized');
+            refreshData();
+            startAutoRefresh();
+        });
+
+        function startAutoRefresh() {
+            if (autoRefresh) {
+                refreshTimer = setInterval(refreshData, REFRESH_INTERVAL);
+            }
+        }
+
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const btn = $('refreshToggle');
+            const indicator = $('autoRefreshIndicator');
+
+            if (autoRefresh) {
+                btn.textContent = '⏸️ Pause';
+                indicator.innerHTML = '<span class="pulse-live inline-block w-2 h-2 bg-green-400 rounded-full"></span> Auto-refresh: ON';
+                startAutoRefresh();
+            } else {
+                btn.textContent = '▶️ Resume';
+                indicator.innerHTML = '<span class="inline-block w-2 h-2 bg-slate-400 rounded-full"></span> Auto-refresh: OFF';
+                clearInterval(refreshTimer);
+            }
+        }
+        window.toggleAutoRefresh = toggleAutoRefresh;
+
+        async function refreshData() {
+            try {
+                const response = await fetch(`${WORKER_URL}/interceptor/history?limit=50`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                await parseAllWagers(data);
+                calculatePositions();
+                updateUI();
+
+                updateElementText('lastUpdate', new Date().toLocaleTimeString());
+            } catch (error) {
+                console.error('❌ Refresh error:', error);
+                updateElementText('lastUpdate', 'Error - ' + error.message);
+            }
+        }
+        window.refreshData = refreshData;
+
+        async function parseAllWagers(responses) {
+            allWagers = [];
+            for (const resp of responses) {
+                try {
+                    const fullResp = await fetch(`${WORKER_URL}/interceptor/response?key=${resp.key}`);
+                    if (!fullResp.ok) continue;
+                    const fullData = await fullResp.json();
+                    if (!fullData.body || typeof fullData.body !== 'string') continue;
+                    const bodyTrimmed = fullData.body.trim();
+                    if (bodyTrimmed.startsWith('<')) continue;
+                    const bodyData = JSON.parse(fullData.body);
+                    if (bodyData.LIST && Array.isArray(bodyData.LIST)) {
+                        allWagers.push(...bodyData.LIST);
+                    }
+                } catch (error) {
+                    // Skip invalid responses
+                }
+            }
+        }
+
+        function calculatePositions() {
+            gamePositions = {};
+            customerPositions = {};
+            agentSummary = {};
+
+            allWagers.forEach(wager => {
+                const customer = (wager.Login || '').toString().trim() || 'Unknown';
+                const customerId = (wager.CustomerID || '').toString().trim();
+                const agent = (wager.AgentID || '').toString().trim();
+                const risk = Number(wager.AmountWagered) || 0;
+                const toWin = Number(wager.ToWinAmount) || 0;
+
+                // Customer positions
+                if (customerId) {
+                    if (!customerPositions[customerId]) {
+                        customerPositions[customerId] = {
+                            customer, customerId, agent,
+                            totalRisk: 0, potentialWin: 0, wagerCount: 0
+                        };
+                    }
+                    customerPositions[customerId].totalRisk += risk;
+                    customerPositions[customerId].potentialWin += toWin;
+                    customerPositions[customerId].wagerCount++;
+                }
+
+                // Agent summary
+                if (agent) {
+                    if (!agentSummary[agent]) {
+                        agentSummary[agent] = {
+                            agent, totalAction: 0,
+                            customers: new Set(), wagerCount: 0
+                        };
+                    }
+                    agentSummary[agent].totalAction += risk;
+                    agentSummary[agent].customers.add(customerId);
+                    agentSummary[agent].wagerCount++;
+                }
+            });
+        }
+
+        function updateUI() {
+            updateGlobalMetrics();
+            renderGamePositions();
+            renderCustomerPositions();
+            renderAgentSummary();
+        }
+
+        function updateGlobalMetrics() {
+            const totalAction = allWagers.reduce((sum, w) => sum + (Number(w.AmountWagered) || 0), 0);
+            const totalPayout = allWagers.reduce((sum, w) => sum + (Number(w.ToWinAmount) || 0), 0);
+            const netExposure = totalPayout - totalAction;
+
+            updateElementText('totalAction', formatCurrency(totalAction));
+            updateElementText('totalWagers', `${allWagers.length} wagers`);
+            updateElementText('netExposure', formatCurrency(Math.abs(netExposure)));
+            $('netExposure').className = 'text-2xl font-bold ' + (netExposure > 0 ? 'text-red-400' : 'text-green-400');
+            updateElementText('worstCase', formatCurrency(totalPayout * 0.1));
+            updateElementText('activeGames', Object.keys(gamePositions).length);
+            updateElementText('customerCount', `${Object.keys(customerPositions).length} customers`);
+        }
+
+        function renderGamePositions() {
+            $('gamePositionsTable').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400">No game data available</td></tr>';
+        }
+
+        function renderCustomerPositions() {
+            const customers = Object.values(customerPositions).sort((a, b) => b.totalRisk - a.totalRisk);
+
+            const customerRenderer = (cust, idx) => {
+                const riskLevel = cust.totalRisk > 5000000 ? '🔥 Critical' :
+                    cust.totalRisk > 1000000 ? '⚠️ High' :
+                    cust.totalRisk > 500000 ? '⚡ Medium' : '✅ Low';
+
+                return `
+                    <tr class="text-white hover:bg-white/5 transition border-b border-slate-800">
+                        <td class="py-3 px-4 text-slate-400">${idx + 1}</td>
+                        <td class="py-3 px-4 font-mono font-semibold">${cust.customer}</td>
+                        <td class="py-3 px-4 text-slate-400">${cust.agent}</td>
+                        <td class="py-3 px-4 text-right font-bold text-red-400">${formatCurrency(cust.totalRisk)}</td>
+                        <td class="py-3 px-4 text-right text-green-400">${formatCurrency(cust.potentialWin)}</td>
+                        <td class="py-3 px-4 text-center text-slate-400">${cust.wagerCount}</td>
+                        <td class="py-3 px-4 text-center text-xs">${riskLevel}</td>
+                    </tr>
+                `;
+            };
+            renderList('customerPositionsTable', customers, customerRenderer);
+        }
+
+        function renderAgentSummary() {
+            const agents = Object.values(agentSummary).map(a => ({
+                ...a,
+                customerCount: a.customers.size,
+                riskScore: Math.min(100, Math.round((a.totalAction / 1000000) * 40))
+            })).sort((a, b) => b.totalAction - a.totalAction);
+
+            renderAgentRiskCards(agents);
+
+            const agentRenderer = (agent, idx) => {
+                const riskBadge = agent.riskScore >= 80 ? '🔥 Critical' :
+                    agent.riskScore >= 60 ? '⚠️ High' :
+                    agent.riskScore >= 40 ? '⚡ Medium' : '✅ Low';
+
+                return `
+                    <tr class="text-white hover:bg-white/5 transition border-b border-slate-800">
+                        <td class="py-3 px-4 text-slate-400">${idx + 1}</td>
+                        <td class="py-3 px-4 font-mono font-semibold">${agent.agent}</td>
+                        <td class="py-3 px-4 text-right font-bold">${formatCurrency(agent.totalAction)}</td>
+                        <td class="py-3 px-4 text-right text-slate-400">${formatCurrency(agent.totalAction * 0.1)}</td>
+                        <td class="py-3 px-4 text-center text-xs">${riskBadge}</td>
+                        <td class="py-3 px-4 text-center text-blue-400">${agent.customerCount}</td>
+                        <td class="py-3 px-4 text-center text-slate-400">${agent.wagerCount}</td>
+                        <td class="py-3 px-4 text-center">${formatCurrency(agent.totalAction / agent.customerCount)}</td>
+                    </tr>
+                `;
+            };
+            renderList('agentSummaryTable', agents, agentRenderer);
+        }
+
+        function renderAgentRiskCards(agents) {
+            const totalAgents = agents.length;
+            const highRiskAgents = agents.filter(a => a.riskScore > 70).length;
+            const totalAgentAction = agents.reduce((sum, a) => sum + a.totalAction, 0);
+            const avgRiskScore = agents.reduce((sum, a) => sum + a.riskScore, 0) / totalAgents;
+
+            $('agentRiskCards').innerHTML = `
+                <div class="bg-gradient-to-r from-blue-900/30 to-blue-800/30 rounded-lg p-4 border border-blue-500/30">
+                    <div class="text-blue-400 text-sm font-semibold">Total Agents</div>
+                    <div class="text-2xl font-bold text-white">${totalAgents}</div>
+                </div>
+                <div class="bg-gradient-to-r from-red-900/30 to-red-800/30 rounded-lg p-4 border border-red-500/30">
+                    <div class="text-red-400 text-sm font-semibold">High Risk</div>
+                    <div class="text-2xl font-bold text-white">${highRiskAgents}</div>
+                </div>
+                <div class="bg-gradient-to-r from-green-900/30 to-green-800/30 rounded-lg p-4 border border-green-500/30">
+                    <div class="text-green-400 text-sm font-semibold">Total Action</div>
+                    <div class="text-2xl font-bold text-white">${formatCurrency(totalAgentAction)}</div>
+                </div>
+                <div class="bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 rounded-lg p-4 border border-yellow-500/30">
+                    <div class="text-yellow-400 text-sm font-semibold">Avg Risk</div>
+                    <div class="text-2xl font-bold text-white">${avgRiskScore.toFixed(0)}</div>
+                </div>
+            `;
+        }
+
+        function applyFilters() {
+            renderGamePositions();
+        }
+        window.applyFilters = applyFilters;
+
+        function filterCustomers() {
+            const query = $('customerSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#customerPositionsTable tr');
+            rows.forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+            });
+        }
+        window.filterCustomers = filterCustomers;
+
+        function exportData() {
+            const data = {
+                exportTime: new Date().toISOString(),
+                totalWagers: allWagers.length,
+                customers: Object.keys(customerPositions).length,
+                agents: Object.keys(agentSummary).length
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `performance-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        window.exportData = exportData;
+    </script>
+</body>
+
+</html>

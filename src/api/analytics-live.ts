@@ -197,7 +197,12 @@ function calculateMetrics(bets: any[], hours: number) {
 
     // Calculate total volume
     const totalVolume = bets.reduce((sum, bet) => {
-        return sum + (parseFloat(bet.AmountWagered) || 0);
+        let amount = Number(bet.AmountWagered);
+        if (isNaN(amount)) {
+            console.warn(`[LiveAnalytics] Invalid AmountWagered in calculateMetrics: ${bet.AmountWagered}. Defaulting to 0.`);
+            amount = 0;
+        }
+        return sum + amount;
     }, 0);
 
     // Count unique agents
@@ -253,7 +258,12 @@ function generateVolumeHistory(bets: any[], dataPoints: number) {
 
         // Calculate volume for this window
         const volume = betsInWindow.reduce((sum, bet) => {
-            return sum + (parseFloat(bet.AmountWagered) || 0);
+            let amount = Number(bet.AmountWagered);
+            if (isNaN(amount)) {
+                console.warn(`[LiveAnalytics] Invalid AmountWagered in generateVolumeHistory: ${bet.AmountWagered}. Defaulting to 0.`);
+                amount = 0;
+            }
+            return sum + amount;
         }, 0);
 
         history.push({
@@ -307,7 +317,11 @@ function generateAlerts(bets: any[], requestId: string) {
 
     // High value bet alerts
     const highValueBets = bets.filter(bet => {
-        const amount = parseFloat(bet.AmountWagered) || 0;
+        let amount = Number(bet.AmountWagered);
+        if (isNaN(amount)) {
+            console.warn(`[LiveAnalytics] Invalid AmountWagered in generateAlerts: ${bet.AmountWagered}. Defaulting to 0.`);
+            amount = 0;
+        }
         return amount > 10000; // $100+ bets
     });
 
@@ -316,7 +330,7 @@ function generateAlerts(bets: any[], requestId: string) {
             id: `high-${bet.WagerNumber}`,
             type: 'high-value' as const,
             title: 'High Value Alert',
-            message: `Agent ${bet.AgentID} placed ${formatCurrency(parseFloat(bet.AmountWagered))} bet on ${bet.ShortDesc?.substring(0, 50)}...`,
+            message: `Agent ${bet.AgentID} placed ${formatCurrency(Number(bet.AmountWagered))} bet on ${bet.ShortDesc?.substring(0, 50)}...`,
             timestamp: new Date(bet.timestamp || bet.InsertDateTime).getTime()
         });
     });
@@ -353,7 +367,11 @@ function getTopAgents(bets: any[], limit: number) {
 
     bets.forEach(bet => {
         const agent = bet.AgentID;
-        const amount = parseFloat(bet.AmountWagered) || 0;
+        let amount = Number(bet.AmountWagered);
+        if (isNaN(amount)) {
+            console.warn(`[LiveAnalytics] Invalid AmountWagered in getTopAgents: ${bet.AmountWagered}. Defaulting to 0.`);
+            amount = 0;
+        }
 
         if (!agentVolumes[agent]) {
             agentVolumes[agent] = 0;

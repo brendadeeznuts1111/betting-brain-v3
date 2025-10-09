@@ -55,16 +55,28 @@ export async function getCacheMetrics(
       ? (totalD1Skipped / (totalD1Skipped + totalD1Executed)) * PERCENTAGE_MULTIPLIER
       : 0;
 
+    let cacheHitRateFixed = Number(cacheHitRate.toFixed(PERCENTAGE_PRECISION));
+    if (isNaN(cacheHitRateFixed)) {
+      console.warn(`[CacheMetrics] Invalid cacheHitRateFixed. Defaulting to 0.`);
+      cacheHitRateFixed = 0;
+    }
+
+    let d1WriteReductionFixed = Number(d1WriteReduction.toFixed(PERCENTAGE_PRECISION));
+    if (isNaN(d1WriteReductionFixed)) {
+      console.warn(`[CacheMetrics] Invalid d1WriteReductionFixed. Defaulting to 0.`);
+      d1WriteReductionFixed = 0;
+    }
+
     const response = {
       raw: metrics,
       summary: {
         totalRequests,
         cacheHits: totalHits,
         cacheMisses: totalMisses,
-        cacheHitRate: parseFloat(cacheHitRate.toFixed(PERCENTAGE_PRECISION)),
+        cacheHitRate: cacheHitRateFixed,
         d1WritesSkipped: totalD1Skipped,
         d1WritesExecuted: totalD1Executed,
-        d1WriteReduction: parseFloat(d1WriteReduction.toFixed(PERCENTAGE_PRECISION)),
+        d1WriteReduction: d1WriteReductionFixed,
       },
       agentDetail: {
         cacheHits: metrics.agent_detail_cache_hits || 0,
@@ -73,14 +85,20 @@ export async function getCacheMetrics(
           (metrics.agent_detail_cache_hits || 0) +
             (metrics.agent_detail_cache_misses || 0) >
             0
-            ? parseFloat(
-              (
+            ? (() => {
+              let hitRateVal = Number(
                 ((metrics.agent_detail_cache_hits || 0) /
                   ((metrics.agent_detail_cache_hits || 0) +
                     (metrics.agent_detail_cache_misses || 0))) *
                 PERCENTAGE_MULTIPLIER
-              ).toFixed(PERCENTAGE_PRECISION)
-            )
+              ).toFixed(PERCENTAGE_PRECISION);
+              let parsedHitRate = Number(hitRateVal);
+              if (isNaN(parsedHitRate)) {
+                console.warn(`[CacheMetrics] Invalid agentDetail hitRate. Defaulting to 0.`);
+                parsedHitRate = 0;
+              }
+              return parsedHitRate;
+            })()
             : 0,
       },
       requestId,

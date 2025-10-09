@@ -95,7 +95,7 @@ export async function getMissionControl(
   const url = new URL(request.url);
   const expand = url.searchParams.get('expand') === 'true';
 
-  
+
 
   try {
     // 1. Get latest BetTicker data from KV
@@ -193,7 +193,7 @@ export async function getMissionControl(
       agents,
       customers,
       transactions,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       requestId,
       dataSource: wagers.length > 0 ? 'kv' : 'mock',
     };

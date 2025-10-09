@@ -1,0 +1,17 @@
+id: find-missing-cors
+message: Response without CORS headers
+severity: warning
+language: TypeScript
+rule:
+  all:
+    - pattern: |
+        return new Response($$$)
+    - not:
+        pattern: |
+          return new Response($$$, {
+            headers: {
+              $$$
+              'Access-Control-Allow-Origin': $$$
+              $$$
+            }
+          })

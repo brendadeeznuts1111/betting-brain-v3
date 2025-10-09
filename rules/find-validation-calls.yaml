@@ -1,0 +1,8 @@
+id: find-validation-calls
+message: Validation call found
+severity: info
+language: TypeScript
+rule:
+  any:
+    - pattern: validateQueryParams($URL, $VALIDATORS)
+    - pattern: validateInput($DATA, $VALIDATORS)

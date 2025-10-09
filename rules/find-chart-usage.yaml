@@ -1,0 +1,6 @@
+id: find-chart-usage
+message: Chart.js usage found
+severity: info
+language: JavaScript
+rule:
+  pattern: new Chart($CTX, $$$)

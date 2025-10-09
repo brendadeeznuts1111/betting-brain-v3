@@ -70,7 +70,7 @@ export class SessionProcessor {
         return sessionData.map(session => {
             const loginID = session.LoginID?.trim() || '';
             const ipAddress = session.IPAddress || '';
-            const timestamp = new Date().toISOString();
+            const timestamp = new Date(Date.now()).toISOString();
 
             return {
                 loginID,
@@ -168,7 +168,7 @@ export class SessionProcessor {
             '100.36.', '100.37.', '100.38.', '100.39.', '100.40.', '100.41.',
             '100.42.', '100.43.'
         ];
-        
+
         return vpnRanges.some(range => ipAddress.startsWith(range));
     }
 
@@ -180,7 +180,7 @@ export class SessionProcessor {
             '102.129.', '102.130.', '102.131.', '102.132.',
             '103.110.', '103.111.', '103.112.', '103.113.'
         ];
-        
+
         return proxyRanges.some(range => ipAddress.startsWith(range));
     }
 
@@ -191,7 +191,7 @@ export class SessionProcessor {
             'WRC64818', 'SHARPCHED', 'COOPER012', 'OAKGAT100',
             'SHRPCOOPHR', 'NIPS112', 'BP1069', 'CM310'
         ];
-        
+
         return suspiciousPatterns.includes(loginID);
     }
 
@@ -226,7 +226,7 @@ export class SessionProcessor {
         });
 
         // Find risk users
-        const riskUsers = sessions.filter(session => 
+        const riskUsers = sessions.filter(session =>
             session.riskLevel === 'high' || session.riskLevel === 'medium'
         );
 
@@ -279,7 +279,7 @@ export class SessionProcessor {
             const sessionData = {
                 sessions,
                 analysis,
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(Date.now()).toISOString(),
                 requestId: this.requestId
             };
 
@@ -326,7 +326,7 @@ export class SessionProcessor {
         const data = await this.getProcessedSessions();
         if (!data) return [];
 
-        return data.sessions.filter((session: UserSession) => 
+        return data.sessions.filter((session: UserSession) =>
             session.riskLevel === 'high' || session.riskLevel === 'medium'
         );
     }
@@ -336,7 +336,7 @@ export class SessionProcessor {
         const data = await this.getProcessedSessions();
         if (!data) return [];
 
-        return data.sessions.filter((session: UserSession) => 
+        return data.sessions.filter((session: UserSession) =>
             session.loginID === loginID
         );
     }

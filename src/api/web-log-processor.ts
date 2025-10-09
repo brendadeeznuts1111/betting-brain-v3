@@ -76,11 +76,32 @@ export class WebLogProcessor {
             customerID: entry.CustomerID || '',
             login: entry.Login || '',
             wagerType: entry.WagerType || '',
-            amountWagered: parseFloat(entry.AmountWagered) || 0,
+            amountWagered: (() => {
+                let amount = Number(entry.AmountWagered);
+                if (isNaN(amount)) {
+                    console.warn(`[${this.requestId}] Invalid AmountWagered for entry: ${entry.AmountWagered}. Defaulting to 0.`);
+                    amount = 0;
+                }
+                return amount;
+            })(),
             insertDateTime: entry.InsertDateTime || '',
-            toWinAmount: parseFloat(entry.ToWinAmount) || 0,
+            toWinAmount: (() => {
+                let amount = Number(entry.ToWinAmount);
+                if (isNaN(amount)) {
+                    console.warn(`[${this.requestId}] Invalid ToWinAmount for entry: ${entry.ToWinAmount}. Defaulting to 0.`);
+                    amount = 0;
+                }
+                return amount;
+            })(),
             ticketWriter: entry.TicketWriter || '',
-            volumeAmount: parseFloat(entry.VolumeAmount) || 0,
+            volumeAmount: (() => {
+                let amount = Number(entry.VolumeAmount);
+                if (isNaN(amount)) {
+                    console.warn(`[${this.requestId}] Invalid VolumeAmount for entry: ${entry.VolumeAmount}. Defaulting to 0.`);
+                    amount = 0;
+                }
+                return amount;
+            })(),
             shortDesc: entry.ShortDesc || '',
             vip: entry.VIP || '',
             agentLogin: entry.AgentLogin || ''
@@ -263,7 +284,7 @@ export class WebLogProcessor {
         const data = await this.getProcessedWebLog();
         if (!data) return [];
 
-        return data.entries.filter((entry: WebLogEntry) => 
+        return data.entries.filter((entry: WebLogEntry) =>
             entry.amountWagered >= threshold
         );
     }
@@ -273,7 +294,7 @@ export class WebLogProcessor {
         const data = await this.getProcessedWebLog();
         if (!data) return null;
 
-        const agentEntries = data.entries.filter((entry: WebLogEntry) => 
+        const agentEntries = data.entries.filter((entry: WebLogEntry) =>
             entry.agentID === agentID
         );
 

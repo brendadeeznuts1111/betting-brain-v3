@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏈 Betting Brain - Live Analytics</title>
+    <script type="module" src="shared/config.js"></script>
+    <script type="module" src="shared/utils.js"></script>
+    <script type="module" src="shared/charts.js"></script>
+    <link rel="stylesheet" href="shared/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🧠 Betting Brain Analytics</h1>
+            <div class="status live" id="status">🟢 LIVE</div>
+            <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+        </div>
+
+        <!-- Live Metrics -->
+        <div class="section">
+            <h2>📊 Live Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Live Bet Volume</h3>
+                    <div class="metric-value" id="liveVolume">$0</div>
+                    <div class="metric-change" id="volumeChange">+0%</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Active Agents</h3>
+                    <div class="metric-value" id="activeAgents">0</div>
+                    <div class="metric-change" id="agentsChange">+0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Bets/Min</h3>
+                    <div class="metric-value" id="betsPerMinute">0</div>
+                    <div class="metric-change" id="betsChange">+0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Avg Bet Size</h3>
+                    <div class="metric-value" id="avgBetSize">$0</div>
+                    <div class="metric-change" id="sizeChange">+0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sports Intelligence -->
+        <div class="section">
+            <h2>🏈 Sports Intelligence</h2>
+            <div class="sports-grid">
+                <div class="sports-card">
+                    <h3>Active Games</h3>
+                    <div class="sports-value" id="activeGames">0</div>
+                    <div class="sports-subtitle">Currently Playing</div>
+                </div>
+                <div class="sports-card">
+                    <h3>Upcoming Games</h3>
+                    <div class="sports-value" id="upcomingGames">0</div>
+                    <div class="sports-subtitle">Scheduled</div>
+                </div>
+                <div class="sports-card sharp">
+                    <h3>Sharp Games</h3>
+                    <div class="sports-value" id="sharpGames">0</div>
+                    <div class="sports-subtitle">Professional Money</div>
+                </div>
+                <div class="sports-card steam">
+                    <h3>Steam Games</h3>
+                    <div class="sports-value" id="steamGames">0</div>
+                    <div class="sports-subtitle">Line Movement</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="section">
+            <h2>📈 Analytics Charts</h2>
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3>Volume History</h3>
+                    <canvas id="volumeChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Sports Breakdown</h3>
+                    <canvas id="sportsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Alerts -->
+        <div class="section">
+            <h2>🚨 Live Alerts</h2>
+            <div class="alerts-container" id="alertsContainer">
+                <div class="loading">Loading alerts...</div>
+            </div>
+        </div>
+
+        <!-- Top Agents -->
+        <div class="section">
+            <h2>👥 Top Agents</h2>
+            <div class="agent-list" id="topAgents">
+                <div class="loading">Loading agents...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { WORKER_URL, API_ENDPOINTS, REFRESH_INTERVALS } from './shared/config.js';
+        import { formatCurrency, $, updateElementText, renderList } from './shared/utils.js';
+        import { createLineChart, createDoughnutChart, updateChartData } from './shared/charts.js';
+
+        let volumeChart, sportsChart;
+        let lastUpdateTime = null;
+        const AUTO_REFRESH_INTERVAL = REFRESH_INTERVALS.analyticsEnhanced || 30000;
+
+        // Initialize charts
+        function initCharts() {
+            // Volume History Chart
+            volumeChart = createLineChart('volumeChart', {
+                labels: [],
+                datasets: [{
+                    label: 'Bet Volume ($)',
+                    data: [],
+                    borderColor: '#4ecdc4',
+                    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            }, {
+                scales: {
+                    x: { ticks: { color: 'white' } },
+                    y: { ticks: { color: 'white' } }
+                }
+            });
+
+            // Sports Breakdown Chart
+            sportsChart = createDoughnutChart('sportsChart', {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#ff6b6b',
+                        '#4ecdc4',
+                        '#45b7d1',
+                        '#96ceb4',
+                        '#feca57',
+                        '#ff9ff3'
+                    ]
+                }]
+            }, {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: 'white' }
+                    }
+                }
+            });
+        }
+
+        // Fetch analytics data
+        async function fetchAnalytics() {
+            try {
+                const response = await fetch(`${WORKER_URL}${API_ENDPOINTS.apiAnalyticsLive}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    updateDashboard(result.data);
+                } else {
+                    throw new Error(result.error || 'Failed to fetch analytics');
+                }
+            } catch (error) {
+                console.error('Error fetching analytics:', error);
+                showError('Failed to load analytics data: ' + error.message);
+            }
+        }
+
+        // Update dashboard with new data
+        function updateDashboard(data) {
+            // Update metrics
+            updateElementText('liveVolume', formatCurrency(data.metrics.liveVolume));
+            updateElementText('activeAgents', data.metrics.activeAgents);
+            updateElementText('betsPerMinute', data.metrics.betsPerMinute.toFixed(1));
+            updateElementText('avgBetSize', formatCurrency(data.metrics.avgBetSize));
+
+            // Update sports intelligence
+            if (data.sportsIntelligence) {
+                updateElementText('activeGames', data.sportsIntelligence.activeGames);
+                updateElementText('upcomingGames', data.sportsIntelligence.upcomingGames);
+                updateElementText('sharpGames', data.sportsIntelligence.sharpGames);
+                updateElementText('steamGames', data.sportsIntelligence.steamGames);
+            }
+
+            // Update volume chart
+            if (data.volumeHistory && data.volumeHistory.length > 0) {
+                const labels = data.volumeHistory.map(point => {
+                    const date = new Date(point.timestamp);
+                    return date.toLocaleTimeString();
+                });
+                const volumes = data.volumeHistory.map(point => point.volume);
+
+                updateChartData(volumeChart, { labels: labels, datasets: [{ data: volumes }] });
+            }
+
+            // Update sports chart
+            if (data.sportsBreakdown && data.sportsBreakdown.length > 0) {
+                const labels = data.sportsBreakdown.map(sport => sport.sport);
+                const volumes = data.sportsBreakdown.map(sport => sport.volume);
+
+                updateChartData(sportsChart, { labels: labels, datasets: [{ data: volumes }] });
+            }
+
+            // Update alerts
+            updateAlerts(data.alerts || []);
+
+            // Update top agents
+            updateTopAgents(data.topAgents || []);
+
+            // Update status
+            updateElementText('status', '🟢 LIVE');
+            lastUpdateTime = new Date(Date.now());
+        }
+
+        // Update alerts display
+        function updateAlerts(alerts) {
+            const alertRenderer = (alert) => `
+                <div class="alert ${alert.severity}">
+                    <strong>${alert.type}</strong>: ${alert.message}
+                    <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
+                </div>
+            `;
+            renderList('alertsContainer', alerts, alertRenderer, true, '<div class="loading">No alerts at this time</div>');
+        }
+
+        // Update top agents display
+        function updateTopAgents(agents) {
+            const agentRenderer = (agent) => `
+                <div class="agent-card">
+                    <div class="agent-name">${agent.name}</div>
+                    <div class="agent-volume">${formatCurrency(agent.volume)}</div>
+                </div>
+            `;
+            renderList('topAgents', agents, agentRenderer, true, '<div class="loading">No agent data available</div>');
+        }
+
+        // Show error message
+        function showError(message) {
+            const container = $('.container');
+            if (!container) return;
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            container.insertBefore(errorDiv, container.firstChild);
+
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // Refresh data manually
+        function refreshData() {
+            updateElementText('status', '🔄 Loading...');
+            fetchAnalytics();
+        }
+
+        // Auto-refresh
+        function startAutoRefresh() {
+            setInterval(() => {
+                fetchAnalytics();
+            }, AUTO_REFRESH_INTERVAL);
+        }
+
+        // Initialize dashboard
+        function init() {
+            initCharts();
+            fetchAnalytics();
+            startAutoRefresh();
+        }
+
+        // Start when page loads
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Make refreshData global for button onclick
+        window.refreshData = refreshData;
+    </script>
+</body>
+
+</html>

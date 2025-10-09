@@ -16,7 +16,7 @@ export async function getLiveScores(
 ): Promise<Response> {
   console.log(`[${requestId}] 🏀 GET /api/live-scores`);
 
-  
+
 
   try {
     const url = new URL(request.url);
@@ -28,7 +28,7 @@ export async function getLiveScores(
         const cached = await env.SPORTS_CACHE.get('scores:latest');
         if (cached) {
           const cachedData = JSON.parse(cached);
-          const cacheAge = Date.now() - new Date(cachedData.capturedAt).getTime();
+          const cacheAge = Date.now() - Date.parse(cachedData.capturedAt);
 
           // Use cache if less than 5 minutes old
           if (cacheAge < 300000) {
@@ -84,7 +84,7 @@ export async function getLiveScores(
               defaultMainLine: score.DefaultMainLine,
             }));
 
-            console.log(`[${requestId}] ✅ Returning ${games.length} scores from cache (${Math.round(cacheAge/1000)}s old)`);
+            console.log(`[${requestId}] ✅ Returning ${games.length} scores from cache (${Math.round(cacheAge / 1000)}s old)`);
 
             return new Response(JSON.stringify({
               sport,
@@ -156,7 +156,7 @@ export async function getLiveScores(
                 'scores:latest',
                 JSON.stringify({
                   raw: data,
-                  timestamp: new Date().toISOString(),
+                  timestamp: new Date(Date.now()).toISOString(),
                   count: scores.length,
                 }),
                 { expirationTtl: 300 } // 5 minutes
@@ -233,7 +233,7 @@ export async function getLiveScores(
             raw: data, // Include raw response for debugging
             isLive: true,
             cached: false,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date(Date.now()).toISOString(),
             requestId,
           };
 
@@ -297,7 +297,7 @@ export async function getLiveScores(
       count: games.length,
       games,
       isMock: true,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(Date.now()).toISOString(),
       requestId,
     };
 

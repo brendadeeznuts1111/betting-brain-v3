@@ -14,7 +14,7 @@ export async function getTransactionHistory(
 ): Promise<Response> {
   console.log(`[${requestId}] 💳 GET /api/transaction-history`);
 
-  
+
 
   try {
     // Check KV cache for latest transaction history
@@ -23,7 +23,7 @@ export async function getTransactionHistory(
 
       if (cached) {
         const data = JSON.parse(cached);
-        const cacheAge = Date.now() - new Date(data.capturedAt).getTime();
+        const cacheAge = Date.now() - Date.parse(data.capturedAt);
 
         // Use cache if less than 30 minutes old
         if (cacheAge < 1800000) {

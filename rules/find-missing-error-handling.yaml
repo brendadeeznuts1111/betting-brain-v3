@@ -1,0 +1,21 @@
+id: find-missing-error-handling
+message: Async function without try-catch
+severity: warning
+language: TypeScript
+rule:
+  all:
+    - pattern: |
+        async function $NAME($$$) {
+          $$$
+          await $CALL
+          $$$
+        }
+    - not:
+        pattern: |
+          async function $NAME($$$) {
+            try {
+              $$$
+            } catch ($ERR) {
+              $$$
+            }
+          }

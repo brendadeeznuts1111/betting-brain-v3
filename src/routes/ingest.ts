@@ -31,7 +31,7 @@ import type {
   IngestDataPoint,
   IngestResponse,
 } from '../types/api';
-import { CORS_HEADERS } from '../utils/request';
+import { CORS_HEADERS, createJSONResponse, createOPTIONSResponse, generateRequestId } from '../utils/request';
 import { validateJWT } from '../utils/jwt';
 
 export async function handleIngest(
@@ -39,14 +39,14 @@ export async function handleIngest(
   env: SportsEnv
 ): Promise<Response> {
   // CORS headers
-  
+
 
   // Handle OPTIONS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return createOPTIONSResponse();
   }
 
-  const requestId = Date.now().toString(36);
+  const requestId = generateRequestId();
   console.log(`[${requestId}] 📊 Ingest request received`);
 
   try {
@@ -62,18 +62,12 @@ export async function handleIngest(
 
     if (currentCount >= 100) {
       console.log(`[${requestId}] ⚠️ Rate limit exceeded for ${ip}`);
-      return new Response(
-        JSON.stringify({
-          error: 'Too Many Requests',
-          message: 'Rate limit: 100 requests per minute',
-          remaining: 0,
-          reset: 60,
-        }),
-        {
-          status: 429,
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-        }
-      );
+      return createJSONResponse({
+        error: 'Too Many Requests',
+        message: 'Rate limit: 100 requests per minute',
+        remaining: 0,
+        reset: 60,
+      }, 429);
     }
 
     await env.RATE_LIMITER.put(rateLimitKey, String(currentCount + 1), {
@@ -92,16 +86,10 @@ export async function handleIngest(
 
     if (!isValidToken) {
       console.log(`[${requestId}] 🔒 Invalid JWT token`);
-      return new Response(
-        JSON.stringify({
-          error: 'Unauthorized',
-          message: 'Invalid or expired JWT token',
-        }),
-        {
-          status: 401,
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-        }
-      );
+      return createJSONResponse({
+        error: 'Unauthorized',
+        message: 'Invalid or expired JWT token',
+      }, 401);
     }
 
     // ========================================================================
@@ -110,16 +98,10 @@ export async function handleIngest(
     const body = await req.json();
 
     if (!Array.isArray(body)) {
-      return new Response(
-        JSON.stringify({
-          error: 'Bad request',
-          message: 'Body must be an array of data points',
-        }),
-        {
-          status: 400,
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-        }
-      );
+      return createJSONResponse({
+        error: 'Bad request',
+        message: 'Body must be an array of data points',
+      }, 400);
     }
 
     // ========================================================================
@@ -182,21 +164,12 @@ export async function handleIngest(
       `[${requestId}] ✅ Ingested ${written}/${body.length} records`
     );
 
-    return new Response(JSON.stringify(response, null, 2), {
-      status: written > 0 ? 200 : 400,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-    });
+    return createJSONResponse(response, written > 0 ? 200 : 400);
   } catch (error) {
     console.error(`[${requestId}] ❌ Ingest error:`, error);
-    return new Response(
-      JSON.stringify({
-        error: 'Internal error',
-        message: error instanceof Error ? error.message : String(error),
-      }),
-      {
-        status: 500,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-      }
-    );
+    return createJSONResponse({
+      error: 'Internal error',
+      message: error instanceof Error ? error.message : String(error),
+    }, 500);
   }
 }

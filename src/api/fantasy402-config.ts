@@ -142,7 +142,7 @@ async function fetchConfigFromOrigin(env: Env, requestId: string): Promise<Fanta
         teaserTypes,
         bettingRules: rules,
         version: '1.0.0',
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date(Date.now()).toISOString()
     };
 
     console.log(`[${requestId}] ✅ Config fetched:`, {

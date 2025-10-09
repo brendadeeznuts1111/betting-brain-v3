@@ -1,0 +1,8 @@
+id: find-database-queries
+message: Database query found
+severity: info
+language: TypeScript
+rule:
+  any:
+    - pattern: env.ANALYTICS.prepare($QUERY)
+    - pattern: env.$DB.prepare($QUERY)
