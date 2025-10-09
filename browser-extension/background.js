@@ -30,9 +30,10 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.alarms.create(ALARM_HEALTH, { delayInMinutes: 0.5, periodInMinutes: 0.5 });
     console.log('✅ Health monitoring alarm created');
 
-    // Initialize auth keep-alive alarm (every 5 minutes)
-    chrome.alarms.create(ALARM_AUTH_KEEPALIVE, { delayInMinutes: 5, periodInMinutes: 5 });
-    console.log('✅ Auth keep-alive alarm created (5 min interval)');
+    // Initialize auth keep-alive alarm (every 5 minutes) - DISABLED until first auth
+    // Uncomment after first successful login:
+    // chrome.alarms.create(ALARM_AUTH_KEEPALIVE, { delayInMinutes: 5, periodInMinutes: 5 });
+    console.log('⏸️  Auth keep-alive alarm disabled (will enable after first login)');
   } else {
     console.warn('⚠️ chrome.alarms API not available');
   }
@@ -125,6 +126,13 @@ async function handleAuthKeepAlive() {
       // Update last refresh time
       fantasy402_auth.lastRefresh = Date.now();
       await chrome.storage.local.set({ fantasy402_auth });
+
+      // Enable keep-alive alarm if not already enabled
+      const alarms = await chrome.alarms.getAll();
+      if (!alarms.some(a => a.name === ALARM_AUTH_KEEPALIVE)) {
+        chrome.alarms.create(ALARM_AUTH_KEEPALIVE, { delayInMinutes: 5, periodInMinutes: 5 });
+        console.log('[Auth Keep-Alive] ✅ Enabled keep-alive alarm (first successful ping)');
+      }
     } else if (response.status === 401 || response.status === 403) {
       console.error('[Auth Keep-Alive] ❌ Auth failed (401/403) - session invalidated');
 
