@@ -6,9 +6,11 @@ const EXTENSION_SECRET = 'default-dev-secret-change-me'; // ⚠️ PRODUCTION: R
 
 /* ======  Enterprise Circuit Breaker & Health Monitoring  ====== */
 const ALARM_HEALTH = 'health-ping';
+const ALARM_AUTH_KEEPALIVE = 'auth-keepalive';  // Keep Fantasy402 session alive
 const STORAGE_KEY = 'cb-state';        // chrome.storage.session
 const FAILURE_LIMIT = 5;               // open breaker after 5 fails
 const RESET_AFTER_MS = 60_000;         // auto-try again after 1 min
+const FANTASY402_URL = 'https://fantasy402.com';
 
 // Initialize extension (combined listener)
 chrome.runtime.onInstalled.addListener(() => {
@@ -27,6 +29,10 @@ chrome.runtime.onInstalled.addListener(() => {
   if (chrome.alarms) {
     chrome.alarms.create(ALARM_HEALTH, { delayInMinutes: 0.5, periodInMinutes: 0.5 });
     console.log('✅ Health monitoring alarm created');
+
+    // Initialize auth keep-alive alarm (every 5 minutes)
+    chrome.alarms.create(ALARM_AUTH_KEEPALIVE, { delayInMinutes: 5, periodInMinutes: 5 });
+    console.log('✅ Auth keep-alive alarm created (5 min interval)');
   } else {
     console.warn('⚠️ chrome.alarms API not available');
   }
@@ -58,10 +64,100 @@ chrome.storage.local.get(['enabled'], (result) => {
   updateIcon(enabled);
 });
 
-/* Alarm handler: every 30s send health ping + try half-open */
+/**
+ * Keep Fantasy402 session alive by pinging with stored cookies
+ * Runs every 5 minutes to prevent session expiry
+ */
+async function handleAuthKeepAlive() {
+  console.log('[Auth Keep-Alive] 🔄 Refreshing session...');
+
+  try {
+    // Load stored auth data
+    const { fantasy402_auth } = await chrome.storage.local.get('fantasy402_auth');
+
+    if (!fantasy402_auth || !fantasy402_auth.cookies) {
+      console.warn('[Auth Keep-Alive] ⚠️ No stored auth found');
+      return;
+    }
+
+    // Check if auth is expired
+    if (fantasy402_auth.expiresAt && fantasy402_auth.expiresAt < Date.now()) {
+      console.warn('[Auth Keep-Alive] ⚠️ Auth expired, need re-login');
+
+      // Notify user
+      chrome.notifications.create('auth-expired', {
+        type: 'basic',
+        iconUrl: 'icon.svg',
+        title: 'Fantasy402 - Auth Expired',
+        message: 'Please visit fantasy402.com and log in again',
+        priority: 2,
+        requireInteraction: true
+      });
+
+      return;
+    }
+
+    // Build cookie header from stored cookies
+    const cookieHeader = fantasy402_auth.cookies
+      .filter(c => !c.expires || c.expires > Date.now())
+      .map(c => `${c.name}=${c.value}`)
+      .join('; ');
+
+    if (!cookieHeader) {
+      console.warn('[Auth Keep-Alive] ⚠️ No valid cookies to send');
+      return;
+    }
+
+    // Ping Fantasy402 to refresh session
+    const response = await fetch(`${FANTASY402_URL}/cloud/api/Manager/getUser`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cookie': cookieHeader
+      },
+      credentials: 'include',
+      body: 'operation=getUser'
+    });
+
+    if (response.ok) {
+      console.log('[Auth Keep-Alive] ✅ Session refreshed successfully');
+
+      // Update last refresh time
+      fantasy402_auth.lastRefresh = Date.now();
+      await chrome.storage.local.set({ fantasy402_auth });
+    } else if (response.status === 401 || response.status === 403) {
+      console.error('[Auth Keep-Alive] ❌ Auth failed (401/403) - session invalidated');
+
+      // Notify user
+      chrome.notifications.create('auth-invalid', {
+        type: 'basic',
+        iconUrl: 'icon.svg',
+        title: 'Fantasy402 - Auth Failed',
+        message: 'Session expired. Please log in again at fantasy402.com',
+        priority: 2,
+        requireInteraction: true
+      });
+
+      // Clear stored auth
+      await chrome.storage.local.remove('fantasy402_auth');
+    } else {
+      console.warn('[Auth Keep-Alive] ⚠️ Unexpected response:', response.status);
+    }
+  } catch (error) {
+    console.error('[Auth Keep-Alive] ❌ Error:', error.message);
+  }
+}
+
+/* Alarm handler: every 30s send health ping + try half-open + auth keep-alive */
 // Guard against missing alarms API
 if (chrome.alarms && chrome.alarms.onAlarm) {
   chrome.alarms.onAlarm.addListener(async (alarm) => {
+    // Handle auth keep-alive alarm
+    if (alarm.name === ALARM_AUTH_KEEPALIVE) {
+      await handleAuthKeepAlive();
+      return;
+    }
+
     if (alarm.name !== ALARM_HEALTH) return;
 
     try {

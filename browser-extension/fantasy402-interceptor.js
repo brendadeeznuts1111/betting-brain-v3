@@ -8,6 +8,9 @@ const EXTENSION_SECRET = 'default-dev-secret-change-me'; // ⚠️ PRODUCTION: R
 // Store original fetch
 const originalFetch = window.fetch;
 
+// Load auth persistence module (injected via manifest)
+// Assumes auth-persistence.js is loaded first
+
 // API endpoints we want to intercept
 // Monitoring ALL /cloud/api/ calls for comprehensive capture
 const INTERCEPT_PATTERNS = [
@@ -115,11 +118,45 @@ window.fetch = async function (...args) {
   const body = init?.body || null;
   const bodyParsed = body ? parseFormBody(body) : null;
 
+  // === INJECT STORED COOKIES BEFORE REQUEST ===
+  if (window.AuthPersistence) {
+    try {
+      const authData = await window.AuthPersistence.loadAuthData();
+      if (authData) {
+        const cookieHeader = window.AuthPersistence.buildCookieHeader(authData);
+        if (cookieHeader) {
+          // Add Cookie header (browser will merge with existing cookies)
+          headers.set('Cookie', cookieHeader);
+          if (DEBUG) {
+            console.log('[Fantasy402] 🍪 Injected stored cookies:', cookieHeader.substring(0, 100) + '...');
+          }
+        }
+
+        // Add Authorization header if we have a token
+        if (authData.token && !headers.has('Authorization')) {
+          headers.set('Authorization', `Bearer ${authData.token}`);
+          if (DEBUG) {
+            console.log('[Fantasy402] 🔑 Injected auth token');
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('[Fantasy402] ⚠️ Failed to inject stored auth:', error);
+    }
+  }
+
+  // Update init with modified headers
+  const modifiedInit = {
+    ...init,
+    headers,
+    credentials: 'include' // Ensure browser cookies are also sent
+  };
+
   // Capture start time
   const startTime = Date.now();
 
-  // Make the actual request
-  const response = await originalFetch.apply(this, args);
+  // Make the actual request with injected auth
+  const response = await originalFetch.call(this, resource, modifiedInit);
 
   // Calculate duration
   const duration = Date.now() - startTime;
@@ -136,6 +173,26 @@ window.fetch = async function (...args) {
       responseJson = JSON.parse(responseText);
     } catch (e) {
       // Not JSON, that's okay
+    }
+
+    // === CAPTURE AUTH FROM RESPONSE ===
+    if (window.AuthPersistence && response.ok) {
+      // Check if this is a login/auth response
+      const isAuthResponse = url.includes('login') ||
+                            url.includes('auth') ||
+                            url.includes('getAuthentication') ||
+                            bodyParsed?.operation?.toLowerCase().includes('auth');
+
+      if (isAuthResponse || response.headers.has('set-cookie')) {
+        try {
+          await window.AuthPersistence.captureAndPersistAuth(response.clone(), responseJson, url);
+          if (DEBUG) {
+            console.log('[Fantasy402] ✅ Captured and persisted auth from response');
+          }
+        } catch (error) {
+          console.error('[Fantasy402] ❌ Failed to persist auth:', error);
+        }
+      }
     }
 
     // Extract JWT token if present

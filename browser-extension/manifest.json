@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "alarms",
-    "notifications"
+    "notifications",
+    "cookies"
   ],
   "host_permissions": [
     "https://fantasy402.com/*",
@@ -24,6 +25,7 @@
         "https://fantasy402.com/*"
       ],
       "js": [
+        "auth-persistence.js",
         "fantasy402-interceptor.js"
       ],
       "run_at": "document_start",
