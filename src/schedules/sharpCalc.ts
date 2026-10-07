@@ -70,7 +70,7 @@ export async function handleSharpCalculation(env: Env, ctx: ExecutionContext): P
 }
 
 async function getActiveCustomers(env: Env): Promise<string[]> {
-  // Customers with settled-or-pending bets in the last 24 hours.
+  // Customers with bets in the last 24 hours.
   // (Previously read DISTINCT cid FROM sharp_indicators — circular: the table
   // this job writes was also its input roster, so new customers never got
   // scored until something else inserted them first.)
@@ -99,16 +99,18 @@ async function calculateSharpScore(customerId: string, env: Env): Promise<SharpS
   // Get customer's real betting history from bet_history
   const bettingHistory = await getCustomerBettingHistory(customerId, env);
 
+  const empty: SharpScoreMetrics = {
+    customerId,
+    sharpScore: 0,
+    clv: 0,
+    winRate: 0,
+    actionCount: 0,
+    netBet: 0,
+    lastUpdated: new Date().toISOString(),
+    alertThreshold: 60
+  };
   if (bettingHistory.length === 0) {
-    return {
-      customerId,
-      sharpScore: 0,
-      clv: 0,
-      winRate: 0,
-      actionCount: 0,
-      lastUpdated: new Date().toISOString(),
-      alertThreshold: 60
-    };
+    return empty;
   }
 
   // Net P&L in dollars (customer lifetime value)
@@ -117,20 +119,20 @@ async function calculateSharpScore(customerId: string, env: Env): Promise<SharpS
   // Win rate over settled bets only
   const winRate = calculateWinRate(bettingHistory);
 
-  // Action count
+  // Action count + net bet volume
   const actionCount = bettingHistory.length;
+  const netBet = calculateNetBet(bettingHistory);
 
   // Calculate sharp score
   const sharpScore = calculateSharpScoreAlgorithm(clv, winRate, actionCount);
 
   return {
-    customerId,
+    ...empty,
     sharpScore,
     clv,
     winRate,
     actionCount,
-    lastUpdated: new Date().toISOString(),
-    alertThreshold: 60
+    netBet
   };
 }
 
@@ -160,6 +162,13 @@ function calculateCLV(bettingHistory: BetHistoryRow[]): number {
   return bettingHistory
     .filter(bet => bet.result && bet.result !== 'PENDING')
     .reduce((total, bet) => total + (bet.payout - bet.stake), 0);
+}
+
+/** Total stake in dollars over the window (goes to sharp_indicators.nb). */
+function calculateNetBet(bettingHistory: BetHistoryRow[]): number {
+  return bettingHistory
+    .filter(bet => bet.result && bet.result !== 'PENDING')
+    .reduce((total, bet) => total + bet.stake, 0);
 }
 
 function calculateWinRate(bettingHistory: BetHistoryRow[]): number {
@@ -194,7 +203,7 @@ async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Pr
       score.clv,
       score.winRate,
       score.actionCount,
-      score.netBet ?? score.actionCount,
+      score.netBet,
       now
     ).run();
 
