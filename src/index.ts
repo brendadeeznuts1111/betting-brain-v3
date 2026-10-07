@@ -10,6 +10,7 @@ import { handleLineIngress } from './queues/lineIngress';
 import { handleSteamWebhook } from './queues/steamWebhook';
 import { handleSharpCalculation } from './schedules/sharpCalc';
 import { handleExposureCalculation } from './schedules/exposureCalc';
+import { handleBetHistoryIngest } from './schedules/betHistoryIngest';
 import { handleBetTickerInterception } from './interceptors/bet-ticker-sniffer';
 import { getAgentTree } from './routes/api/f402-agents/index';
 import { handleMCPRequest } from './mcp/server';
@@ -128,7 +129,7 @@ export default {
 
         // Process and display logs
         if (body.logs && body.logs.length > 0) {
-          body.logs.forEach((log, index: number) => {
+          body.logs.forEach((log, index) => {
             const level = log.level?.toUpperCase() || 'LOG';
             const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'UTC' });
             const message = log.message || 'No message';
@@ -378,6 +379,11 @@ export default {
       // Hourly config cache warmer
       const { warmConfigCache } = await import('./api/fantasy402-config');
       await warmConfigCache(env);
+    } else if (cron === '*/5 * * * *') {
+      // Every 5 minutes - bet history ingest poller
+      // Pulls /cloud/api/Reports/getCustomerPerformance per customer,
+      // idempotent upserts keyed on (cid, wager_number)
+      await handleBetHistoryIngest(env, ctx);
     } else if (cron === '*/30 * * * * *') {
       // 30-second exposure calculation
       await handleExposureCalculation(env, ctx);
