@@ -43,6 +43,8 @@ export interface SharpScoreMetrics {
   clv: number;
   winRate: number;
   actionCount: number;
+  /** Net bet volume (Σ stake, dollars) over the scored window. */
+  netBet: number;
   lastUpdated: string;
   alertThreshold: number; // 60
 }
