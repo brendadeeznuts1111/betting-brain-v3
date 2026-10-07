@@ -1,12 +1,30 @@
 /**
  * Hourly Sharp Calculation Schedule
  * Calculates sharp scores for all customers based on CLV and performance metrics
+ *
+ * DATA SOURCE: bet_history table (migration 0003), populated from the
+ * fantasy402 Customer Performance feed (/cloud/api/Reports/getCustomerPerformance)
+ * and graded-wager ingest. The previous revision scored every customer from
+ * three hardcoded fake bets — see issue #4.
+ *
+ * UNIT CONTRACT: bet_history.stake / payout are DOLLARS (fantasy402 upstream
+ * unit). CLV here is "customer lifetime value" (net P&L in dollars) — NOT
+ * closing-line value. The closing-line-value metric lives in the feed repo's
+ * sharp-detector. Do not conflate the two; sharp_indicators.clv stores the
+ * P&L figure and sharp_indicators.nb stores net bet volume.
  */
 
 import { SharpIndicator, SharpIndicatorInsert } from '../types/database';
 import { SharpScoreMetrics } from '../types/metrics';
 import { Env } from '../types/api';
 import { runSafe, chunk, isCostCapReached } from '../lib/scheduleUtils';
+
+interface BetHistoryRow {
+  stake: number;
+  payout: number;
+  result: string | null;
+  ts: string;
+}
 
 export async function handleSharpCalculation(env: Env, ctx: ExecutionContext): Promise<void> {
   return runSafe('sharp_calc', env, ctx, async () => {
@@ -52,12 +70,15 @@ export async function handleSharpCalculation(env: Env, ctx: ExecutionContext): P
 }
 
 async function getActiveCustomers(env: Env): Promise<string[]> {
-  // Get customers with activity in the last 24 hours
+  // Customers with bets in the last 24 hours.
+  // (Previously read DISTINCT cid FROM sharp_indicators — circular: the table
+  // this job writes was also its input roster, so new customers never got
+  // scored until something else inserted them first.)
   const result = await env.ANALYTICS.prepare(`
     SELECT DISTINCT cid
-    FROM sharp_indicators
-    WHERE upd > datetime('now', '-24 hours')
-    ORDER BY upd DESC
+    FROM bet_history
+    WHERE ts > datetime('now', '-24 hours')
+    ORDER BY ts DESC
     LIMIT 1000
   `).all();
 
@@ -75,64 +96,86 @@ async function processBatchSharpCalculation(customerIds: string[], env: Env): Pr
 }
 
 async function calculateSharpScore(customerId: string, env: Env): Promise<SharpScoreMetrics> {
-  // Get customer's betting history
+  // Get customer's real betting history from bet_history
   const bettingHistory = await getCustomerBettingHistory(customerId, env);
 
+  const empty: SharpScoreMetrics = {
+    customerId,
+    sharpScore: 0,
+    clv: 0,
+    winRate: 0,
+    actionCount: 0,
+    netBet: 0,
+    lastUpdated: new Date().toISOString(),
+    alertThreshold: 60
+  };
   if (bettingHistory.length === 0) {
-    return {
-      customerId,
-      sharpScore: 0,
-      clv: 0,
-      winRate: 0,
-      actionCount: 0,
-      lastUpdated: new Date().toISOString(),
-      alertThreshold: 60
-    };
+    return empty;
   }
 
-  // Calculate CLV (Customer Lifetime Value)
+  // Net P&L in dollars (customer lifetime value)
   const clv = calculateCLV(bettingHistory);
 
-  // Calculate win rate
+  // Win rate over settled bets only
   const winRate = calculateWinRate(bettingHistory);
 
-  // Calculate action count
+  // Action count + net bet volume
   const actionCount = bettingHistory.length;
+  const netBet = calculateNetBet(bettingHistory);
 
-  // Calculate sharp score (simplified algorithm)
+  // Calculate sharp score
   const sharpScore = calculateSharpScoreAlgorithm(clv, winRate, actionCount);
 
   return {
-    customerId,
+    ...empty,
     sharpScore,
     clv,
     winRate,
     actionCount,
-    lastUpdated: new Date().toISOString(),
-    alertThreshold: 60
+    netBet
   };
 }
 
-async function getCustomerBettingHistory(customerId: string, env: Env): Promise<any[]> {
-  // This would query actual betting history from your betting system
-  // For now, return mock data
-  return [
-    { amount: 100, outcome: 'win', timestamp: new Date().toISOString() },
-    { amount: 50, outcome: 'loss', timestamp: new Date().toISOString() },
-    { amount: 200, outcome: 'win', timestamp: new Date().toISOString() }
-  ];
+/**
+ * Real betting history from the bet_history table (migration 0003).
+ * Last 200 bets, newest first — enough for a stable score without a
+ * full-table scan per customer.
+ */
+async function getCustomerBettingHistory(customerId: string, env: Env): Promise<BetHistoryRow[]> {
+  const result = await env.ANALYTICS.prepare(`
+    SELECT stake, payout, result, ts
+    FROM bet_history
+    WHERE cid = ?
+    ORDER BY ts DESC
+    LIMIT 200
+  `).bind(customerId).all();
+
+  return (result.results ?? []) as unknown as BetHistoryRow[];
 }
 
-function calculateCLV(bettingHistory: any[]): number {
-  return bettingHistory.reduce((total, bet) => {
-    const value = bet.outcome === 'win' ? bet.amount * 0.9 : -bet.amount; // 10% house edge
-    return total + value;
-  }, 0);
+/**
+ * Customer lifetime value: net P&L in dollars.
+ * payout is 0 on losses and includes returned stake on wins, so
+ * net = Σ(payout − stake) over settled bets. PENDING rows are excluded.
+ */
+function calculateCLV(bettingHistory: BetHistoryRow[]): number {
+  return bettingHistory
+    .filter(bet => bet.result && bet.result !== 'PENDING')
+    .reduce((total, bet) => total + (bet.payout - bet.stake), 0);
 }
 
-function calculateWinRate(bettingHistory: any[]): number {
-  const wins = bettingHistory.filter(bet => bet.outcome === 'win').length;
-  return bettingHistory.length > 0 ? (wins / bettingHistory.length) * 100 : 0;
+/** Total stake in dollars over the window (goes to sharp_indicators.nb). */
+function calculateNetBet(bettingHistory: BetHistoryRow[]): number {
+  return bettingHistory
+    .filter(bet => bet.result && bet.result !== 'PENDING')
+    .reduce((total, bet) => total + bet.stake, 0);
+}
+
+function calculateWinRate(bettingHistory: BetHistoryRow[]): number {
+  const settled = bettingHistory.filter(bet => bet.result === 'WIN' || bet.result === 'LOSS');
+  if (settled.length === 0) return 0;
+  const wins = settled.filter(bet => bet.result === 'WIN').length;
+  return (wins / settled.length) * 100;
 }
 
 function calculateSharpScoreAlgorithm(clv: number, winRate: number, actionCount: number): number {
@@ -150,6 +193,8 @@ async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Pr
   const now = new Date().toISOString();
 
   for (const score of sharpScores) {
+    // nb = net bet volume (Σ stake over settled window); previously this
+    // column received a second copy of clv, making it meaningless.
     await env.ANALYTICS.prepare(`
       INSERT OR REPLACE INTO sharp_indicators (cid, clv, wr, ao, nb, upd)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -158,7 +203,7 @@ async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Pr
       score.clv,
       score.winRate,
       score.actionCount,
-      score.clv, // Using CLV as net bet for simplicity
+      score.netBet,
       now
     ).run();
 
