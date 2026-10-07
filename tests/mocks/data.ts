@@ -73,6 +73,7 @@ export const mockSharpScoreMetrics: SharpScoreMetrics = {
   clv: 1500,
   winRate: 55,
   actionCount: 100,
+  netBet: 10000,
   lastUpdated: new Date().toISOString(),
   alertThreshold: 60
 };
