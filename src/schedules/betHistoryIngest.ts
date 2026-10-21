@@ -8,7 +8,9 @@
  * - Per-customer cursors in bet_history_cursors (migration 0009), never a
  *   global "last poll" — one customer's failure can't silently skip a window.
  * - Idempotent upserts keyed on (cid, wager_number). Two bets CAN share a
- *   timestamp; the wager number is the only safe dedupe key.
+ *   timestamp; the wager number is the only safe dedupe key. PENDING rows
+ *   are updated when they settle; terminal rows are never regressed
+ *   (statechart: docs/bet-lifecycle.md).
  * - Backfill ≠ poll: customers with no cursor get a bounded full-history
  *   pull (BACKFILL_PER_RUN per run) instead of the incremental window, so a
  *   first deploy doesn't hammer the endpoint with thousands of full pulls
@@ -227,18 +229,35 @@ export function parseF402Timestamp(raw: string): string {
   return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
-/** INSERT OR IGNORE on the (cid, wager_number) partial unique index. */
+/**
+ * Upsert on the (cid, wager_number) partial unique index, enforcing the
+ * statechart in docs/bet-lifecycle.md:
+ * - new wager: insert in whatever state it arrives;
+ * - stored PENDING: overwrite with the delivery (PENDING refresh or settlement);
+ * - stored terminal (WIN/LOSS/PUSH): absorbing — duplicates, stale PENDING
+ *   snapshots and re-grades leave the row untouched (re-grade is not a
+ *   defined transition).
+ * Returns the number of rows inserted or changed.
+ */
 export async function upsertBetHistory(env: Env, cid: string, rows: PerformanceWagerRow[]): Promise<number> {
-  let inserted = 0;
+  let written = 0;
   for (const r of rows) {
     const res = await env.ANALYTICS.prepare(`
-      INSERT OR IGNORE INTO bet_history
+      INSERT INTO bet_history
         (cid, stake, payout, result, ts, market_type, event_id, wager_number)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT (cid, wager_number) WHERE wager_number IS NOT NULL DO UPDATE SET
+        stake = excluded.stake,
+        payout = excluded.payout,
+        result = excluded.result,
+        ts = excluded.ts,
+        market_type = COALESCE(excluded.market_type, bet_history.market_type),
+        event_id = COALESCE(excluded.event_id, bet_history.event_id)
+      WHERE bet_history.result IS NULL OR bet_history.result = 'PENDING'
     `).bind(cid, r.stake, r.payout, r.result, r.ts, r.marketType, r.eventId, r.wagerNumber).run();
-    if ((res.meta?.changes ?? 0) > 0) inserted++;
+    if ((res.meta?.changes ?? 0) > 0) written++;
   }
-  return inserted;
+  return written;
 }
 
 async function advanceCursor(env: Env, cid: string, rows: PerformanceWagerRow[]): Promise<void> {

@@ -34,7 +34,7 @@ stateDiagram-v2
     [*] --> PENDING : first poll sees open wager
     [*] --> WIN     : first poll sees graded wager (W*)
     [*] --> LOSS    : first poll sees graded wager (L*)
-    [*] --> PUSH    : first poll sees C / R (cancelled, refunded, void)
+    [*] --> PUSH    : first poll sees C / R (cancelled, refunded)
 
     PENDING --> PENDING : re-poll, still open (stake/ts/market refreshed)
     PENDING --> WIN     : settles W*
@@ -86,10 +86,10 @@ row, and terminal deliveries always overwrite a `PENDING` row.
 
 ## Known gaps at PR #7 head (`f941a66`), before the fixes on this branch
 
-- `INSERT OR IGNORE` makes the first delivery permanent, so
-  `PENDING -> WIN/LOSS/PUSH` is **dropped** (invariant 2 fails); rows stay
-  `PENDING` with `payout = 0` forever and inflate the in-flight counts in
-  `f402-bets.ts` / `populateGraph.ts`.
+- **Fixed on this branch** (guarded `ON CONFLICT DO UPDATE`): `INSERT OR IGNORE`
+  made the first delivery permanent, so `PENDING -> WIN/LOSS/PUSH` is
+  **dropped** (invariant 2 fails); rows stay `PENDING` with `payout = 0` forever
+  and inflate the in-flight counts in `f402-bets.ts` / `populateGraph.ts`.
 - The incremental window starts 24 h before the customer's newest stored wager.
   If the report's date range filters on placement date (`InsertDateTime`, the
   only date the normalizer reads), a wager that stays open longer than that
