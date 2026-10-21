@@ -1,5 +1,12 @@
 // Pattern Detection and Alert System
 // Detects high-value bets, steam moves, and unusual patterns
+//
+// UNIT CONTRACT: fantasy402 upstream amounts (AmountWagered, ToWinAmount,
+// VolumeAmount) are DOLLARS, not cents. All thresholds in this file are
+// dollars. A previous revision used cent-scaled thresholds (10_000 for
+// "$100+") against dollar-scaled inputs, so high-value alerts only fired
+// at $10k+ and critical at $50k+ — a silent 100x miss. If a cents-denominated
+// feed is ever wired in, convert at the boundary, never here.
 
 import type { Env } from '../types/cloudflare';
 
@@ -26,13 +33,22 @@ export interface BetData {
     WagerNumber: number;
     AgentID: string;
     CustomerID: string;
+    /** Dollars (fantasy402 upstream unit). */
     AmountWagered: number;
+    /** Dollars (potential payout). */
     ToWinAmount: number;
     InsertDateTime: string;
     ShortDesc: string;
     WagerType: string;
     AgentLogin: string;
 }
+
+/** Alert thresholds in dollars. */
+const HIGH_VALUE_USD = 1_000;
+const CRITICAL_VALUE_USD = 5_000;
+const STEAM_AVG_BET_USD = 500;
+const SHARP_BET_USD = 2_500;
+const LINE_MOVE_VOLUME_USD = 100_000;
 
 export class PatternDetector {
     private env: Env;
@@ -72,13 +88,11 @@ export class PatternDetector {
     // Detect high-value bets
     private detectHighValueBets(): BettingAlert[] {
         const alerts: BettingAlert[] = [];
-        const highValueThreshold = 10000; // $100+
-        const criticalThreshold = 50000; // $500+
 
         this.recentBets.forEach(bet => {
             const amount = bet.AmountWagered;
 
-            if (amount >= criticalThreshold) {
+            if (amount >= CRITICAL_VALUE_USD) {
                 alerts.push({
                     id: `high-value-${bet.WagerNumber}`,
                     type: 'high-value',
@@ -95,7 +109,7 @@ export class PatternDetector {
                         confidence: 1.0
                     }
                 });
-            } else if (amount >= highValueThreshold) {
+            } else if (amount >= HIGH_VALUE_USD) {
                 alerts.push({
                     id: `high-value-${bet.WagerNumber}`,
                     type: 'high-value',
@@ -121,7 +135,6 @@ export class PatternDetector {
     // Detect steam moves (sudden line movements)
     private detectSteamMoves(): BettingAlert[] {
         const alerts: BettingAlert[] = [];
-        const steamThreshold = 0.5; // 0.5 point movement
         const timeWindow = 5 * 60 * 1000; // 5 minutes
 
         // Group bets by game
@@ -148,7 +161,7 @@ export class PatternDetector {
                 const totalVolume = recentBets.reduce((sum, bet) => sum + bet.AmountWagered, 0);
                 const avgBetSize = totalVolume / recentBets.length;
 
-                if (avgBetSize > 5000) { // High average bet size
+                if (avgBetSize > STEAM_AVG_BET_USD) {
                     alerts.push({
                         id: `steam-${game}-${Date.now()}`,
                         type: 'steam',
@@ -173,7 +186,6 @@ export class PatternDetector {
     // Detect unusual betting patterns
     private detectUnusualPatterns(): BettingAlert[] {
         const alerts: BettingAlert[] = [];
-        const timeWindow = 10 * 60 * 1000; // 10 minutes
 
         // Check for multiple agents betting same side
         const gameBets = new Map<string, BetData[]>();
@@ -222,10 +234,9 @@ export class PatternDetector {
     private detectSharpMoney(): BettingAlert[] {
         const alerts: BettingAlert[] = [];
         const sharpAgents = ['ADAM', 'CSUTT', 'JACRAI50']; // Known sharp agents
-        const sharpThreshold = 25000; // $250+ bets
 
         this.recentBets.forEach(bet => {
-            if (sharpAgents.includes(bet.AgentID) && bet.AmountWagered >= sharpThreshold) {
+            if (sharpAgents.includes(bet.AgentID) && bet.AmountWagered >= SHARP_BET_USD) {
                 alerts.push({
                     id: `sharp-${bet.WagerNumber}`,
                     type: 'sharp-money',
@@ -262,7 +273,7 @@ export class PatternDetector {
         });
 
         highVolumeGames.forEach((volume, game) => {
-            if (volume > 100000) { // $100k+ in volume
+            if (volume > LINE_MOVE_VOLUME_USD) {
                 alerts.push({
                     id: `line-move-${game}-${Date.now()}`,
                     type: 'line-movement',
