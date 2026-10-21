@@ -231,8 +231,7 @@ describe('bet lifecycle model (poll window via ingestCustomer)', () => {
     return { client: client as any, calls };
   }
 
-  // KNOWN-FAILING at PR #7 head; flipped to test() by the fix that resolves it.
-  test.failing('I2: a wager open longer than the overlap window still settles', async () => {
+  test('I2: a wager open longer than the overlap window still settles', async () => {
     const { db, env } = freshEnv();
     const book = new Map([
       ['FUT1', { status: 'P', insert: '2026-10-01 12:00:00.000' }], // long-dated future

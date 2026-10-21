@@ -90,8 +90,9 @@ row, and terminal deliveries always overwrite a `PENDING` row.
   made the first delivery permanent, so `PENDING -> WIN/LOSS/PUSH` is
   **dropped** (invariant 2 fails); rows stay `PENDING` with `payout = 0` forever
   and inflate the in-flight counts in `f402-bets.ts` / `populateGraph.ts`.
-- The incremental window starts 24 h before the customer's newest stored wager.
-  If the report's date range filters on placement date (`InsertDateTime`, the
-  only date the normalizer reads), a wager that stays open longer than that
-  (futures, long-dated props) is never re-fetched and cannot settle even with a
-  correct upsert.
+- **Fixed on this branch** (window reaches back to the oldest stored `PENDING`
+  wager): the incremental window started 24 h before the customer's newest
+  stored wager. If the report's date range filters on placement date
+  (`InsertDateTime`, the only date the normalizer reads), a wager that stays
+  open longer than that (futures, long-dated props) is never re-fetched and
+  cannot settle even with a correct upsert.

@@ -116,10 +116,24 @@ export async function ingestCustomer(
   cursor: CursorRow | null,
   isBackfill: boolean,
 ): Promise<number> {
-  const rows = await fetchCustomerPerformance(client, cid, cursor, isBackfill);
+  const oldestPending = isBackfill ? null : await getOldestPendingTs(env, cid);
+  const rows = await fetchCustomerPerformance(client, cid, cursor, isBackfill, oldestPending);
   const n = await upsertBetHistory(env, cid, rows);
   await advanceCursor(env, cid, rows);
   return n;
+}
+
+/**
+ * Placement ts of the customer's oldest still-PENDING ingested wager. The
+ * incremental window must reach back to it, or a wager open longer than the
+ * overlap (futures, long-dated props) is never re-fetched and never settles.
+ */
+async function getOldestPendingTs(env: Env, cid: string): Promise<string | null> {
+  const row = await env.ANALYTICS.prepare(`
+    SELECT MIN(ts) AS oldest FROM bet_history
+    WHERE cid = ? AND result = 'PENDING' AND wager_number IS NOT NULL
+  `).bind(cid).first() as { oldest?: string | null } | null;
+  return row?.oldest ?? null;
 }
 
 async function getRoster(env: Env): Promise<string[]> {
@@ -159,11 +173,16 @@ async function fetchCustomerPerformance(
   cid: string,
   cursor: CursorRow | null,
   isBackfill: boolean,
+  oldestPendingTs: string | null = null,
 ): Promise<PerformanceWagerRow[]> {
   const end = new Date();
-  const start = isBackfill || !cursor?.last_poll_ts
+  let start = isBackfill || !cursor?.last_poll_ts
     ? new Date(0) // full history
     : new Date(new Date(cursor.last_poll_ts).getTime() - OVERLAP_MINUTES * 60_000);
+  if (oldestPendingTs) {
+    const pending = new Date(oldestPendingTs);
+    if (!Number.isNaN(pending.getTime()) && pending < start) start = pending;
+  }
 
   const fmt = (d: Date) =>
     `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}/${d.getUTCFullYear()}`;
