@@ -63,7 +63,7 @@ type Fantasy402Client = ReturnType<typeof createFantasy402Client>;
 export async function handleBetHistoryIngest(
   env: Env,
   ctx: ExecutionContext,
-  clientOverride?: Fantasy402Client, // test seam
+  clientOverride?: Fantasy402Client // test seam
 ): Promise<void> {
   return runSafe('bet_history_ingest', env, ctx, async () => {
     const client = clientOverride ?? createFantasy402Client(env as never);
@@ -76,8 +76,8 @@ export async function handleBetHistoryIngest(
       // is populated yet, so nothing can ever be polled. Say so loudly.
       log.error(
         'bet-history ingest: empty roster — no bet_history_cursors, no recent bet_history, ' +
-        'no active fantasy402_players in RAW_FEED_DB, and BET_HISTORY_SEED_CIDS unset. ' +
-        'Capture player info (getInfoPlayer) or set BET_HISTORY_SEED_CIDS to seed the poller.'
+          'no active fantasy402_players in RAW_FEED_DB, and BET_HISTORY_SEED_CIDS unset. ' +
+          'Capture player info (getInfoPlayer) or set BET_HISTORY_SEED_CIDS to seed the poller.'
       );
       try {
         env.ANALYTICS_ENGINE?.writeDataPoint({
@@ -85,7 +85,9 @@ export async function handleBetHistoryIngest(
           doubles: [0],
           indexes: ['ingest_health'],
         });
-      } catch { /* analytics is best-effort */ }
+      } catch {
+        /* analytics is best-effort */
+      }
       await reportHealth(env);
       return;
     }
@@ -105,21 +107,24 @@ export async function handleBetHistoryIngest(
 
     for (let i = 0; i < work.length; i += BATCH_CONCURRENCY) {
       const batch = work.slice(i, i + BATCH_CONCURRENCY);
-      await Promise.all(batch.map(async ({ cid, cursor }) => {
-        const isBackfill = !cursor || !cursor.backfilled;
-        if (isBackfill && backfills >= BACKFILL_PER_RUN) return; // defer to next run
-        if (isBackfill) backfills++;
+      await Promise.all(
+        batch.map(async ({ cid, cursor }) => {
+          const isBackfill = !cursor || !cursor.backfilled;
+          if (isBackfill && backfills >= BACKFILL_PER_RUN) return; // defer to next run
+          if (isBackfill) backfills++;
 
-        try {
-          inserted += await ingestCustomer(env, client, cid, cursor, isBackfill);
-        } catch (e) {
-          failed++;
-          await markCursorFailure(env, cid);
-          log.error('bet-history ingest failed for customer', {
-            cid, reason: e instanceof Error ? e.message : String(e),
-          });
-        }
-      }));
+          try {
+            inserted += await ingestCustomer(env, client, cid, cursor, isBackfill);
+          } catch (e) {
+            failed++;
+            await markCursorFailure(env, cid);
+            log.error('bet-history ingest failed for customer', {
+              cid,
+              reason: e instanceof Error ? e.message : String(e),
+            });
+          }
+        })
+      );
       // Gentle pacing between batches — protects the endpoint's rate limit
       if (i + BATCH_CONCURRENCY < work.length) await wait(250);
     }
@@ -135,7 +140,7 @@ export async function ingestCustomer(
   client: Fantasy402Client,
   cid: string,
   cursor: CursorRow | null,
-  isBackfill: boolean,
+  isBackfill: boolean
 ): Promise<number> {
   const oldestPending = isBackfill ? null : await getOldestPendingTs(env, cid);
   const rows = await fetchCustomerPerformance(client, cid, cursor, isBackfill, oldestPending);
@@ -150,10 +155,14 @@ export async function ingestCustomer(
  * overlap (futures, long-dated props) is never re-fetched and never settles.
  */
 async function getOldestPendingTs(env: Env, cid: string): Promise<string | null> {
-  const row = await env.ANALYTICS.prepare(`
+  const row = (await env.ANALYTICS.prepare(
+    `
     SELECT MIN(ts) AS oldest FROM bet_history
     WHERE cid = ? AND result = 'PENDING' AND wager_number IS NOT NULL
-  `).bind(cid).first() as { oldest?: string | null } | null;
+  `
+  )
+    .bind(cid)
+    .first()) as { oldest?: string | null } | null;
   return row?.oldest ?? null;
 }
 
@@ -171,21 +180,25 @@ async function getOldestPendingTs(env: Env, cid: string): Promise<string | null>
  * player feed has not been captured yet.
  */
 export async function getRoster(env: Env): Promise<string[]> {
-  const result = await env.ANALYTICS.prepare(`
+  const result = await env.ANALYTICS.prepare(
+    `
     SELECT cid FROM bet_history_cursors
     UNION
     SELECT DISTINCT cid FROM bet_history WHERE ts > datetime('now', '-7 days')
     LIMIT 1000
-  `).all();
+  `
+  ).all();
   const cids = new Set(((result.results ?? []) as unknown as Array<{ cid: string }>).map(r => r.cid));
 
   if (env.RAW_FEED_DB && cids.size < 1000) {
     try {
-      const players = await env.RAW_FEED_DB.prepare(`
+      const players = await env.RAW_FEED_DB.prepare(
+        `
         SELECT DISTINCT customer_id AS cid FROM fantasy402_players
         WHERE customer_id IS NOT NULL AND customer_id != '' AND COALESCE(active, 1) = 1
         LIMIT 1000
-      `).all();
+      `
+      ).all();
       for (const r of (players.results ?? []) as unknown as Array<{ cid: string }>) {
         if (cids.size >= 1000) break;
         cids.add(String(r.cid));
@@ -199,7 +212,10 @@ export async function getRoster(env: Env): Promise<string[]> {
     }
   }
   const seed = (env as unknown as { BET_HISTORY_SEED_CIDS?: string }).BET_HISTORY_SEED_CIDS;
-  for (const cid of (seed ?? '').split(',').map(c => c.trim()).filter(Boolean)) {
+  for (const cid of (seed ?? '')
+    .split(',')
+    .map(c => c.trim())
+    .filter(Boolean)) {
     if (cids.size >= 1000) break;
     cids.add(cid);
   }
@@ -215,7 +231,9 @@ async function getCursors(env: Env, cids: string[]): Promise<Map<string, CursorR
     // One JSON-array bind instead of an interpolated "?, ?, ..." list.
     const result = await env.ANALYTICS.prepare(
       'SELECT * FROM bet_history_cursors WHERE cid IN (SELECT value FROM json_each(?))'
-    ).bind(JSON.stringify(slice)).all();
+    )
+      .bind(JSON.stringify(slice))
+      .all();
     for (const row of (result.results ?? []) as unknown as CursorRow[]) {
       map.set(row.cid, row);
     }
@@ -233,12 +251,13 @@ async function fetchCustomerPerformance(
   cid: string,
   cursor: CursorRow | null,
   isBackfill: boolean,
-  oldestPendingTs: string | null = null,
+  oldestPendingTs: string | null = null
 ): Promise<PerformanceWagerRow[]> {
   const end = new Date();
-  let start = isBackfill || !cursor?.last_poll_ts
-    ? new Date(0) // full history
-    : new Date(new Date(cursor.last_poll_ts).getTime() - OVERLAP_MINUTES * 60_000);
+  let start =
+    isBackfill || !cursor?.last_poll_ts
+      ? new Date(0) // full history
+      : new Date(new Date(cursor.last_poll_ts).getTime() - OVERLAP_MINUTES * 60_000);
   if (oldestPendingTs) {
     const pending = new Date(oldestPendingTs);
     if (!Number.isNaN(pending.getTime()) && pending < start) start = pending;
@@ -253,15 +272,19 @@ async function fetchCustomerPerformance(
     getCustomerPerformance?: (p: Record<string, string>) => Promise<unknown>;
     makeRequest?: (endpoint: string, p: Record<string, string>) => Promise<unknown>;
   };
-  const data = await c.getCustomerPerformance?.({
-    customerID: cid,
-    start: fmt(start),
-    end: fmt(end),
-    type: 'CP',
-  }) ?? await c.makeRequest?.('/cloud/api/Reports/getCustomerPerformance', {
-    customerID: cid, start: fmt(start), end: fmt(end),
-    operation: 'getCustomerPerformance',
-  });
+  const data =
+    (await c.getCustomerPerformance?.({
+      customerID: cid,
+      start: fmt(start),
+      end: fmt(end),
+      type: 'CP',
+    })) ??
+    (await c.makeRequest?.('/cloud/api/Reports/getCustomerPerformance', {
+      customerID: cid,
+      start: fmt(start),
+      end: fmt(end),
+      operation: 'getCustomerPerformance',
+    }));
 
   return normalizePerformanceRows(data);
 }
@@ -269,10 +292,13 @@ async function fetchCustomerPerformance(
 /** Normalize a Customer Performance response into bet rows. Exported for tests. */
 export function normalizePerformanceRows(data: unknown): PerformanceWagerRow[] {
   const wrapped = (data ?? {}) as { LIST?: unknown; data?: unknown };
-  const list: unknown[] = Array.isArray(data) ? data
-    : Array.isArray(wrapped.LIST) ? wrapped.LIST
-    : Array.isArray(wrapped.data) ? wrapped.data
-    : [];
+  const list: unknown[] = Array.isArray(data)
+    ? data
+    : Array.isArray(wrapped.LIST)
+      ? wrapped.LIST
+      : Array.isArray(wrapped.data)
+        ? wrapped.data
+        : [];
 
   const rows: PerformanceWagerRow[] = [];
   for (const raw of list) {
@@ -282,14 +308,15 @@ export function normalizePerformanceRows(data: unknown): PerformanceWagerRow[] {
     const stake = Number(r.AmountWagered ?? r.stake ?? 0);
     if (!Number.isFinite(stake) || stake <= 0) continue;
     const status = String(r.WagerStatus ?? r.result ?? 'P').toUpperCase();
-    const result = status.startsWith('W') ? 'WIN'
-      : status.startsWith('L') ? 'LOSS'
-      : status === 'C' || status === 'R' ? 'PUSH'
-      : 'PENDING';
+    const result = status.startsWith('W')
+      ? 'WIN'
+      : status.startsWith('L')
+        ? 'LOSS'
+        : status === 'C' || status === 'R'
+          ? 'PUSH'
+          : 'PENDING';
     const toWin = Number(r.ToWinAmount ?? 0);
-    const payout = result === 'WIN' ? stake + toWin
-      : result === 'PUSH' ? stake
-      : 0;
+    const payout = result === 'WIN' ? stake + toWin : result === 'PUSH' ? stake : 0;
     rows.push({
       wagerNumber,
       stake,
@@ -308,8 +335,12 @@ const F402_TIME_ZONE = 'America/New_York';
 const easternParts = new Intl.DateTimeFormat('en-US', {
   timeZone: F402_TIME_ZONE,
   hourCycle: 'h23',
-  year: 'numeric', month: '2-digit', day: '2-digit',
-  hour: '2-digit', minute: '2-digit', second: '2-digit',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
 });
 
 function easternWallClock(utcMs: number): Record<string, number> {
@@ -386,7 +417,8 @@ export function parseF402Timestamp(raw: string): string {
 export async function upsertBetHistory(env: Env, cid: string, rows: PerformanceWagerRow[]): Promise<number> {
   let written = 0;
   for (const r of rows) {
-    const res = await env.ANALYTICS.prepare(`
+    const res = await env.ANALYTICS.prepare(
+      `
       INSERT INTO bet_history
         (cid, stake, payout, result, ts, market_type, event_id, wager_number)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -398,7 +430,10 @@ export async function upsertBetHistory(env: Env, cid: string, rows: PerformanceW
         market_type = COALESCE(excluded.market_type, bet_history.market_type),
         event_id = COALESCE(excluded.event_id, bet_history.event_id)
       WHERE bet_history.result IS NULL OR bet_history.result = 'PENDING'
-    `).bind(cid, r.stake, r.payout, r.result, r.ts, r.marketType, r.eventId, r.wagerNumber).run();
+    `
+    )
+      .bind(cid, r.stake, r.payout, r.result, r.ts, r.marketType, r.eventId, r.wagerNumber)
+      .run();
     if ((res.meta?.changes ?? 0) > 0) written++;
   }
   return written;
@@ -406,7 +441,8 @@ export async function upsertBetHistory(env: Env, cid: string, rows: PerformanceW
 
 async function advanceCursor(env: Env, cid: string, rows: PerformanceWagerRow[]): Promise<void> {
   const maxTs = rows.reduce((m, r) => (r.ts > m ? r.ts : m), '');
-  await env.ANALYTICS.prepare(`
+  await env.ANALYTICS.prepare(
+    `
     INSERT INTO bet_history_cursors (cid, last_poll_ts, backfilled, consecutive_failures, updated_at)
     VALUES (?, ?, 1, 0, datetime('now'))
     ON CONFLICT(cid) DO UPDATE SET
@@ -414,17 +450,24 @@ async function advanceCursor(env: Env, cid: string, rows: PerformanceWagerRow[])
       backfilled = 1,
       consecutive_failures = 0,
       updated_at = datetime('now')
-  `).bind(cid, maxTs || new Date().toISOString()).run();
+  `
+  )
+    .bind(cid, maxTs || new Date().toISOString())
+    .run();
 }
 
 async function markCursorFailure(env: Env, cid: string): Promise<void> {
-  await env.ANALYTICS.prepare(`
+  await env.ANALYTICS.prepare(
+    `
     INSERT INTO bet_history_cursors (cid, consecutive_failures, updated_at)
     VALUES (?, 1, datetime('now'))
     ON CONFLICT(cid) DO UPDATE SET
       consecutive_failures = consecutive_failures + 1,
       updated_at = datetime('now')
-  `).bind(cid).run();
+  `
+  )
+    .bind(cid)
+    .run();
 }
 
 /**
@@ -434,13 +477,11 @@ async function markCursorFailure(env: Env, cid: string): Promise<void> {
  * ALERT_WEBHOOK_URL when unhealthy.
  */
 async function reportHealth(env: Env): Promise<void> {
-  const row = await env.ANALYTICS.prepare(
-    `SELECT MAX(ts) AS latest FROM bet_history`
-  ).first() as { latest?: string } | null;
+  const row = (await env.ANALYTICS.prepare(`SELECT MAX(ts) AS latest FROM bet_history`).first()) as {
+    latest?: string;
+  } | null;
 
-  const lagMinutes = row?.latest
-    ? (Date.now() - new Date(row.latest).getTime()) / 60_000
-    : Infinity;
+  const lagMinutes = row?.latest ? (Date.now() - new Date(row.latest).getTime()) / 60_000 : Infinity;
   const healthy = lagMinutes < HEALTH_LAG_MINUTES;
 
   // writeDataPoint is synchronous and returns void — chaining .catch() on it
@@ -451,7 +492,9 @@ async function reportHealth(env: Env): Promise<void> {
       doubles: [Number.isFinite(lagMinutes) ? lagMinutes : -1, healthy ? 1 : 0],
       indexes: ['ingest_health'],
     });
-  } catch { /* analytics is best-effort */ }
+  } catch {
+    /* analytics is best-effort */
+  }
 
   if (!healthy) {
     const webhook = (env as unknown as { ALERT_WEBHOOK_URL?: string }).ALERT_WEBHOOK_URL;
