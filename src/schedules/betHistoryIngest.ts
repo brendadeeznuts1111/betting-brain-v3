@@ -42,6 +42,7 @@ export interface CursorRow {
   last_wager_number: string | null;
   backfilled: number;
   consecutive_failures: number;
+  updated_at?: string | null;
 }
 
 export interface PerformanceWagerRow {
@@ -87,9 +88,13 @@ export async function handleBetHistoryIngest(
     }
 
     const cursors = await getCursors(env, roster);
+    // Least-recently-polled first (never-polled before all), so when the
+    // roster exceeds MAX_CUSTOMERS_PER_RUN the cap rotates through everyone
+    // instead of re-polling the same prefix every run.
     const work = roster
-      .slice(0, MAX_CUSTOMERS_PER_RUN)
-      .map(cid => ({ cid, cursor: cursors.get(cid) ?? null }));
+      .map(cid => ({ cid, cursor: cursors.get(cid) ?? null }))
+      .sort((a, b) => (a.cursor?.updated_at ?? '').localeCompare(b.cursor?.updated_at ?? ''))
+      .slice(0, MAX_CUSTOMERS_PER_RUN);
 
     let backfills = 0;
     let inserted = 0;

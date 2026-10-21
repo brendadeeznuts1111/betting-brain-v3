@@ -115,3 +115,29 @@ describe('bet-history ingest health check', () => {
     expect(posted).toEqual(['https://alerts.invalid/hook']);
   });
 });
+
+describe('bet-history ingest work rotation', () => {
+  test('roster larger than the per-run cap: never-polled customers go first', async () => {
+    const { analytics, env } = freshDeploy();
+    const all = Array.from({ length: 250 }, (_, i) => `C${String(i).padStart(3, '0')}`);
+    // First 200 already polled (cursor exists, backfilled); last 50 never polled.
+    for (const cid of all.slice(0, 200)) {
+      analytics
+        .query(`INSERT INTO bet_history_cursors (cid, last_poll_ts, backfilled, updated_at) VALUES (?, ?, 1, ?)`)
+        .run(cid, '2026-10-20T00:00:00.000Z', '2026-10-20 00:00:00');
+    }
+    env.BET_HISTORY_SEED_CIDS = all.slice(200).join(',');
+    const polled: string[] = [];
+    const client: any = {
+      makeRequest: async (_e: string, p: Record<string, string>) => (polled.push(p.customerID), []),
+    };
+    const quiet = [spyOn(console, 'log'), spyOn(console, 'error')].map(s => s.mockImplementation(() => {}));
+    // Skip the 250ms inter-batch pacing (40 batches) so the test stays fast.
+    const timers = spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void) => (fn(), 0)) as any);
+    await handleBetHistoryIngest(env, ctx, client);
+    timers.mockRestore();
+    quiet.forEach(s => s.mockRestore());
+    // BACKFILL_PER_RUN (10) of the never-polled customers get their first pull.
+    expect(polled.filter(c => all.slice(200).includes(c)).length).toBe(10);
+  });
+});
