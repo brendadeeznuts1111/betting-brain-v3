@@ -184,8 +184,8 @@ async function fetchCustomerPerformance(
     if (!Number.isNaN(pending.getTime()) && pending < start) start = pending;
   }
 
-  const fmt = (d: Date) =>
-    `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}/${d.getUTCFullYear()}`;
+  // Report date params are fantasy402-local (US Eastern) calendar dates.
+  const fmt = formatEasternDate;
 
   const data = await (client as any).getCustomerPerformance?.({
     customerID: cid,
@@ -236,16 +236,74 @@ export function normalizePerformanceRows(data: any): PerformanceWagerRow[] {
   return rows;
 }
 
-/** fantasy402 returns "YYYY-MM-DD HH:mm:ss.SSS" (US Eastern, no TZ). */
+const F402_TIME_ZONE = 'America/New_York';
+
+const easternParts = new Intl.DateTimeFormat('en-US', {
+  timeZone: F402_TIME_ZONE,
+  hourCycle: 'h23',
+  year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit', second: '2-digit',
+});
+
+function easternWallClock(utcMs: number): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const p of easternParts.formatToParts(new Date(utcMs))) {
+    if (p.type !== 'literal') out[p.type] = Number(p.value);
+  }
+  return out;
+}
+
+/** Eastern UTC offset (minutes, e.g. -300 EST / -240 EDT) at a UTC instant. */
+function easternOffsetMinutes(utcMs: number): number {
+  const p = easternWallClock(utcMs);
+  const wallAsUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+  return Math.round((wallAsUtc - Math.floor(utcMs / 1000) * 1000) / 60_000);
+}
+
+/**
+ * Convert a US-Eastern wall-clock time (given as its fields read as if UTC)
+ * to the real UTC instant, honouring DST. Fall-back ambiguity (01:00–02:00
+ * twice) resolves to the first, EDT, occurrence; a spring-forward gap time
+ * (02:00–03:00, never shown on a clock) resolves forward, like Temporal's
+ * 'compatible' disambiguation.
+ */
+export function easternWallToUtcMs(wallAsUtcMs: number): number {
+  const o1 = easternOffsetMinutes(wallAsUtcMs);
+  const t1 = wallAsUtcMs - o1 * 60_000;
+  const o2 = easternOffsetMinutes(t1);
+  if (o2 === o1) return t1;
+  const t2 = wallAsUtcMs - o2 * 60_000;
+  return easternOffsetMinutes(t2) === o2 ? t2 : t1;
+}
+
+/** MM/DD/YYYY of an instant's US-Eastern calendar date (report date params). */
+export function formatEasternDate(d: Date): string {
+  const p = easternWallClock(d.getTime());
+  return `${String(p.month).padStart(2, '0')}/${String(p.day).padStart(2, '0')}/${p.year}`;
+}
+
+const HAS_ZONE = /(?:Z|[+-]\d{2}:?\d{2})$/i;
+const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3})\d*)?)?$/;
+
+/**
+ * fantasy402 returns "YYYY-MM-DD HH:mm:ss.SSS" in US Eastern with no zone.
+ * Values carrying an explicit Z / ±hh:mm offset are trusted as-is; zoneless
+ * values (space- or T-separated) are converted from Eastern to UTC.
+ * Unparseable input falls back to "now" (previous behaviour).
+ */
 export function parseF402Timestamp(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) return new Date().toISOString();
-  if (trimmed.includes('T')) {
+  if (HAS_ZONE.test(trimmed)) {
     const d = new Date(trimmed);
     return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
   }
-  const d = new Date(trimmed.replace(' ', 'T') + 'Z');
-  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+  const m = WALL_CLOCK.exec(trimmed);
+  if (!m) return new Date().toISOString();
+  const [, y, mo, d, h, mi, sec = '0', ms = '0'] = m;
+  const wall = Date.UTC(+y, +mo - 1, +d, +h, +mi, +sec, +ms.padEnd(3, '0'));
+  if (Number.isNaN(wall)) return new Date().toISOString();
+  return new Date(easternWallToUtcMs(wall)).toISOString();
 }
 
 /**
