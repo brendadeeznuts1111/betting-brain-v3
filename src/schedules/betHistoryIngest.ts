@@ -34,7 +34,7 @@ const BACKFILL_PER_RUN = 10;
 const BATCH_CONCURRENCY = 5;
 const HEALTH_LAG_MINUTES = 15;
 
-interface CursorRow {
+export interface CursorRow {
   cid: string;
   last_poll_ts: string | null;
   last_wager_number: string | null;
@@ -42,7 +42,7 @@ interface CursorRow {
   consecutive_failures: number;
 }
 
-interface PerformanceWagerRow {
+export interface PerformanceWagerRow {
   wagerNumber: string;
   stake: number;
   payout: number;
@@ -52,9 +52,15 @@ interface PerformanceWagerRow {
   eventId: string | null;
 }
 
-export async function handleBetHistoryIngest(env: Env, ctx: ExecutionContext): Promise<void> {
+type Fantasy402Client = ReturnType<typeof createFantasy402Client>;
+
+export async function handleBetHistoryIngest(
+  env: Env,
+  ctx: ExecutionContext,
+  clientOverride?: Fantasy402Client, // test seam
+): Promise<void> {
   return runSafe('bet_history_ingest', env, ctx, async () => {
-    const client = createFantasy402Client(env as never);
+    const client = clientOverride ?? createFantasy402Client(env as never);
 
     // Roster: customers seen in recent bet_history OR already tracked.
     // (Distinct customer set known to us; fantasy402 does not offer a global
@@ -83,10 +89,7 @@ export async function handleBetHistoryIngest(env: Env, ctx: ExecutionContext): P
         if (isBackfill) backfills++;
 
         try {
-          const rows = await fetchCustomerPerformance(client, cid, cursor, isBackfill);
-          const n = await upsertBetHistory(env, cid, rows);
-          inserted += n;
-          await advanceCursor(env, cid, rows);
+          inserted += await ingestCustomer(env, client, cid, cursor, isBackfill);
         } catch (e) {
           failed++;
           await markCursorFailure(env, cid);
@@ -101,6 +104,20 @@ export async function handleBetHistoryIngest(env: Env, ctx: ExecutionContext): P
     console.log(`bet-history ingest: +${inserted} rows, ${backfills} backfills, ${failed} failures, roster ${roster.length}`);
     await reportHealth(env);
   });
+}
+
+/** One customer's poll: fetch → upsert → advance cursor. Exported for tests. */
+export async function ingestCustomer(
+  env: Env,
+  client: Fantasy402Client,
+  cid: string,
+  cursor: CursorRow | null,
+  isBackfill: boolean,
+): Promise<number> {
+  const rows = await fetchCustomerPerformance(client, cid, cursor, isBackfill);
+  const n = await upsertBetHistory(env, cid, rows);
+  await advanceCursor(env, cid, rows);
+  return n;
 }
 
 async function getRoster(env: Env): Promise<string[]> {
@@ -136,7 +153,7 @@ async function getCursors(env: Env, cids: string[]): Promise<Map<string, CursorR
  * and skips rows without a wager number (they can't be deduped safely).
  */
 async function fetchCustomerPerformance(
-  client: ReturnType<typeof createFantasy402Client>,
+  client: Fantasy402Client,
   cid: string,
   cursor: CursorRow | null,
   isBackfill: boolean,
@@ -159,6 +176,11 @@ async function fetchCustomerPerformance(
     operation: 'getCustomerPerformance',
   });
 
+  return normalizePerformanceRows(data);
+}
+
+/** Normalize a Customer Performance response into bet rows. Exported for tests. */
+export function normalizePerformanceRows(data: any): PerformanceWagerRow[] {
   const list: unknown[] = Array.isArray(data) ? data
     : Array.isArray(data?.LIST) ? data.LIST
     : Array.isArray(data?.data) ? data.data
@@ -194,7 +216,7 @@ async function fetchCustomerPerformance(
 }
 
 /** fantasy402 returns "YYYY-MM-DD HH:mm:ss.SSS" (US Eastern, no TZ). */
-function parseF402Timestamp(raw: string): string {
+export function parseF402Timestamp(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) return new Date().toISOString();
   if (trimmed.includes('T')) {
@@ -206,7 +228,7 @@ function parseF402Timestamp(raw: string): string {
 }
 
 /** INSERT OR IGNORE on the (cid, wager_number) partial unique index. */
-async function upsertBetHistory(env: Env, cid: string, rows: PerformanceWagerRow[]): Promise<number> {
+export async function upsertBetHistory(env: Env, cid: string, rows: PerformanceWagerRow[]): Promise<number> {
   let inserted = 0;
   for (const r of rows) {
     const res = await env.ANALYTICS.prepare(`
