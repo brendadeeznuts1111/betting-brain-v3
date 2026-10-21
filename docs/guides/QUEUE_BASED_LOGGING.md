@@ -8,7 +8,9 @@
 
 ## 🎯 Overview
 
-This document describes the **queue-based asynchronous logging architecture** for the Fantasy402 data ingestion system. This architecture replaces direct database writes with a queuing pattern that provides:
+This document describes the **queue-based asynchronous logging architecture**
+for the Fantasy402 data ingestion system. This architecture replaces direct
+database writes with a queuing pattern that provides:
 
 - ⚡ **Fast Response Times** (< 50ms)
 - 🛡️ **Guaranteed Delivery** (automatic retries)
@@ -21,6 +23,7 @@ This document describes the **queue-based asynchronous logging architecture** fo
 ## 🏗️ Architecture
 
 ### Before: Synchronous Direct Writes ❌
+
 ```
 Browser Extension
        │
@@ -37,12 +40,14 @@ Browser Extension
 ```
 
 **Problems:**
+
 - 🐌 Slow responses (wait for DB writes)
 - ❌ Lost data if DB is down
 - 📉 Poor scalability (DB becomes bottleneck)
 - 💰 Higher costs (longer request times)
 
 ### After: Asynchronous Queue-Based ✅
+
 ```
 Browser Extension
        │
@@ -53,10 +58,10 @@ Browser Extension
        │ Push to Queue (instant!)
        ▼
   Response (< 50ms) ✅
-       
-       
+
+
   Meanwhile, in the background:
-  
+
   Cloudflare Queue
        │
        │ Batch (up to 100 messages)
@@ -72,6 +77,7 @@ Browser Extension
 ```
 
 **Benefits:**
+
 - ⚡ **Fast** (< 50ms responses)
 - 🛡️ **Reliable** (automatic retries)
 - 📦 **Efficient** (batch processing)
@@ -87,19 +93,23 @@ Browser Extension
 **Role:** Accept data and push to queue
 
 **Code:**
+
 ```typescript
 // Fast path: Just push to queue
 if (env.FANTASY402_QUEUE) {
   await env.FANTASY402_QUEUE.send(packet);
-  
-  return new Response(JSON.stringify({
-    success: true,
-    message: 'Data queued for processing',
-    requestId
-  }), {
-    status: 202, // HTTP 202 Accepted
-    headers: { 'Content-Type': 'application/json' }
-  });
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: 'Data queued for processing',
+      requestId,
+    }),
+    {
+      status: 202, // HTTP 202 Accepted
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
 }
 ```
 
@@ -110,6 +120,7 @@ if (env.FANTASY402_QUEUE) {
 ### 2. Cloudflare Queue (`fantasy402-logs`)
 
 **Configuration:**
+
 ```toml
 [[queues.producers]]
 binding = "FANTASY402_QUEUE"
@@ -123,6 +134,7 @@ max_retries = 5           # Retry up to 5 times
 ```
 
 **Behavior:**
+
 - Collects messages up to 100 or 5 seconds
 - Delivers batches to consumer worker
 - Automatically retries on failure
@@ -135,6 +147,7 @@ max_retries = 5           # Retry up to 5 times
 **Role:** Process batches and write to database
 
 **Features:**
+
 - ✅ Processes up to 100 messages per batch
 - ✅ Writes to D1 in single transaction
 - ✅ Writes to KV for fast access
@@ -142,24 +155,25 @@ max_retries = 5           # Retry up to 5 times
 - ✅ Automatic retry on failure
 
 **Code Pattern:**
+
 ```typescript
 export async function processFantasy402Logs(
   batch: MessageBatch,
   env: Env
 ): Promise<void> {
   const statements: D1PreparedStatement[] = [];
-  
+
   // Prepare all inserts
   for (const message of batch.messages) {
     const packet = message.body;
-    
+
     statements.push(
       env.RAW_FEED_DB.prepare(`INSERT INTO...`).bind(...)
     );
-    
+
     message.ack(); // Mark as processed
   }
-  
+
   // Execute all in single transaction
   await env.RAW_FEED_DB.batch(statements);
 }
@@ -170,6 +184,7 @@ export async function processFantasy402Logs(
 ## 📊 Performance Metrics
 
 ### Response Time Improvement
+
 ```
 Before (Direct DB Write):
   - Request → DB Write → Response
@@ -185,6 +200,7 @@ After (Queue Push):
 ```
 
 ### Throughput Improvement
+
 ```
 Before:
   - Limited by DB write speed
@@ -196,6 +212,7 @@ After:
 ```
 
 ### Reliability Improvement
+
 ```
 Before:
   - DB down = data lost
@@ -215,48 +232,57 @@ After:
 ### Step-by-Step
 
 1. **Browser Extension** intercepts Fantasy402 API call
+
    ```javascript
    // In fantasy402-interceptor.js
    await fetch(`${WORKER_URL}/api/fantasy402/ingest`, {
      method: 'POST',
-     body: JSON.stringify(data)
+     body: JSON.stringify(data),
    });
    ```
 
 2. **Ingest Worker** receives and validates
+
    ```typescript
    // In src/api/fantasy402-ingest.ts
    const packet = await request.json();
-   
+
    if (!packet.timestamp || !packet.endpoint) {
      throw Errors.validationError([...]);
    }
    ```
 
 3. **Push to Queue** (fast!)
+
    ```typescript
    await env.FANTASY402_QUEUE.send(packet);
-   
-   return new Response(JSON.stringify({
-     success: true,
-     message: 'Data queued'
-   }), { status: 202 });
+
+   return new Response(
+     JSON.stringify({
+       success: true,
+       message: 'Data queued',
+     }),
+     { status: 202 }
+   );
    ```
 
 4. **Queue Collects** messages (up to 100 or 5 seconds)
 
 5. **Consumer Worker** processes batch
+
    ```typescript
    // In src/queues/fantasy402-logger.ts
    await processFantasy402Logs(batch, env);
    ```
 
 6. **Write to D1** in single transaction
+
    ```typescript
    await env.RAW_FEED_DB.batch(statements);
    ```
 
 7. **Write to KV** for fast access
+
    ```typescript
    await env.FANTASY_CACHE.put(key, value, { expirationTtl: 3600 });
    ```
@@ -271,6 +297,7 @@ After:
 ## 🛡️ Reliability Features
 
 ### 1. Automatic Retries
+
 ```
 Attempt 1: Failed (DB busy) → Retry
 Attempt 2: Failed (network) → Retry
@@ -280,17 +307,22 @@ Attempt 5: Success! ✅
 ```
 
 **Configuration:**
+
 ```toml
 max_retries = 5
 ```
 
 ### 2. Dead Letter Queue
+
 After 5 failed retries, messages go to dead letter queue for manual inspection.
 
 ### 3. At-Least-Once Delivery
-Cloudflare Queues guarantee each message is delivered at least once. Consumer must be idempotent.
+
+Cloudflare Queues guarantee each message is delivered at least once. Consumer
+must be idempotent.
 
 ### 4. Graceful Degradation
+
 ```typescript
 // If queue unavailable, fall back to direct writes
 if (!env.FANTASY402_QUEUE) {
@@ -306,6 +338,7 @@ if (!env.FANTASY402_QUEUE) {
 ### Why Batching?
 
 **Individual Writes:**
+
 ```
 Write 1: 50ms
 Write 2: 50ms
@@ -316,6 +349,7 @@ Total: 5,000ms (5 seconds!)
 ```
 
 **Batch Write:**
+
 ```
 Prepare 100 statements: 5ms
 Execute batch: 200ms
@@ -323,12 +357,14 @@ Total: 205ms (24x faster!)
 ```
 
 ### Configuration
+
 ```toml
 max_batch_size = 100      # Up to 100 messages
 max_batch_timeout = 5     # Or 5 seconds, whichever first
 ```
 
 **Behavior:**
+
 - Queue collects messages
 - When 100 messages OR 5 seconds elapsed:
   - Delivers batch to consumer
@@ -340,21 +376,25 @@ max_batch_timeout = 5     # Or 5 seconds, whichever first
 ## 🚀 Deployment
 
 ### 1. Deploy Worker
+
 ```bash
 bun run deploy
 ```
 
 This deploys:
+
 - Main worker (with ingest endpoint)
 - Queue consumer (automatically)
 - Queue bindings
 
 ### 2. Create Queue
+
 ```bash
 wrangler queues create fantasy402-logs
 ```
 
 ### 3. Verify
+
 ```bash
 # Check queue exists
 wrangler queues list
@@ -371,6 +411,7 @@ wrangler tail --env=""
 ## 🧪 Testing
 
 ### 1. Local Testing
+
 ```bash
 # Start worker
 bun run dev
@@ -391,6 +432,7 @@ curl -X POST http://localhost:8787/api/fantasy402/ingest \
 ```
 
 ### 2. Monitor Processing
+
 ```bash
 # Watch consumer logs
 wrangler tail --env=""
@@ -401,6 +443,7 @@ wrangler tail --env=""
 ```
 
 ### 3. Verify Database
+
 ```bash
 wrangler d1 execute fantasy42-raw-feed --remote \
   --command="SELECT COUNT(*) FROM fantasy402_raw_feed"
@@ -413,18 +456,17 @@ wrangler d1 execute fantasy42-raw-feed --remote \
 ### Key Metrics
 
 1. **Queue Depth**
+
    ```bash
    wrangler queues list
    ```
+
    Should be near 0 (processing keeping up)
 
-2. **Consumer Lag**
-   Monitor time between message sent and processed
-   Should be < 10 seconds
+2. **Consumer Lag** Monitor time between message sent and processed Should be <
+   10 seconds
 
-3. **Retry Rate**
-   Check logs for retry messages
-   Should be < 1%
+3. **Retry Rate** Check logs for retry messages Should be < 1%
 
 4. **Success Rate**
    ```bash
@@ -435,6 +477,7 @@ wrangler d1 execute fantasy42-raw-feed --remote \
 ### Alerts
 
 Set up alerts for:
+
 - ⚠️ Queue depth > 1000 messages
 - ⚠️ Consumer lag > 30 seconds
 - ⚠️ Retry rate > 5%
@@ -447,6 +490,7 @@ Set up alerts for:
 ### Issue: Messages Not Processing
 
 **Check:**
+
 ```bash
 # Is consumer running?
 wrangler tail --env=""
@@ -461,6 +505,7 @@ wrangler queues consumer fantasy402-logs
 ### Issue: Slow Processing
 
 **Check:**
+
 ```bash
 # Look for slow batch writes
 grep "Batch inserted" logs
@@ -474,6 +519,7 @@ grep "Batch inserted" logs
 ### Issue: Data Loss
 
 **Check:**
+
 ```bash
 # Dead letter queue
 wrangler queues dead-letter fantasy402-logs
@@ -509,4 +555,3 @@ After implementing queue-based logging:
 **Performance:** 80% faster responses  
 **Reliability:** 100x more reliable  
 **Scalability:** 100x better throughput
-

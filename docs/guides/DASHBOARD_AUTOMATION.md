@@ -1,9 +1,10 @@
 # 📊 Dashboard Automation
 
-**Betting-Brain v3.2.0**
-**Last Updated:** 2025-10-08
+**Betting-Brain v3.2.0** **Last Updated:** 2025-10-08
 
-This document describes the **zero-touch dashboard automation** layer that deploys HTML dashboards, imports Grafana dashboards, and updates documentation on every release.
+This document describes the **zero-touch dashboard automation** layer that
+deploys HTML dashboards, imports Grafana dashboards, and updates documentation
+on every release.
 
 ---
 
@@ -11,12 +12,16 @@ This document describes the **zero-touch dashboard automation** layer that deplo
 
 The dashboard automation layer consists of **3 focused scripts**:
 
-1. **`scripts/deploy-dashboards.ts`** - Deploy HTML dashboards to Cloudflare Pages
+1. **`scripts/deploy-dashboards.ts`** - Deploy HTML dashboards to Cloudflare
+   Pages
 2. **`scripts/push-grafana.ts`** - Auto-import Grafana dashboard via API
-3. **`scripts/update-readme.ts`** - Update README.md and dashboards/README.md with version and links
+3. **`scripts/update-readme.ts`** - Update README.md and dashboards/README.md
+   with version and links
 
 **Workflow:**
-- **Automatic**: Runs on every release tag push (`.github/workflows/release.yml`)
+
+- **Automatic**: Runs on every release tag push
+  (`.github/workflows/release.yml`)
 - **Manual**: Run locally via `bun run dashboard:all`
 
 ---
@@ -26,6 +31,7 @@ The dashboard automation layer consists of **3 focused scripts**:
 ### Automatic (via GitHub Release)
 
 1. **Create annotated tag:**
+
    ```bash
    git tag -a v3.2.1 -m "Release v3.2.1"
    git push origin v3.2.1
@@ -58,15 +64,18 @@ Add these secrets in **GitHub Settings → Secrets and variables → Actions**:
 ### Required for Cloudflare Pages Deployment
 
 Already configured (from existing Cloudflare Workers deployment):
+
 - `CLOUDFLARE_API_TOKEN` - Cloudflare API token with Pages write permissions
 - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
 
 ### Optional for Grafana Import
 
-- `GRAFANA_URL` - Your Grafana instance URL (e.g., `https://grafana.example.com`)
+- `GRAFANA_URL` - Your Grafana instance URL (e.g.,
+  `https://grafana.example.com`)
 - `GRAFANA_KEY` - Grafana API key with Editor role (Dashboard write permissions)
 
-**Note:** Grafana push step has `continue-on-error: true`, so missing secrets won't fail the release.
+**Note:** Grafana push step has `continue-on-error: true`, so missing secrets
+won't fail the release.
 
 ---
 
@@ -88,6 +97,7 @@ wrangler pages project create betting-brain-dashboards
 ```
 
 **Project Configuration:**
+
 - **Project Name:** `betting-brain-dashboards`
 - **Build Directory:** `dist/dashboards` (auto-deployed)
 - **Framework Preset:** None (static HTML)
@@ -121,10 +131,11 @@ GRAFANA_KEY=your-grafana-api-key
 
 ### HTML Dashboards (Cloudflare Pages)
 
-**Source:** `dashboards/*.html`
-**Destination:** `https://betting-brain-dashboards.pages.dev`
+**Source:** `dashboards/*.html` **Destination:**
+`https://betting-brain-dashboards.pages.dev`
 
 **Build Process:**
+
 1. Read version from `package.json`
 2. Replace `{{VERSION}}` placeholders with actual version
 3. Minify HTML (strip comments, collapse whitespace)
@@ -132,6 +143,7 @@ GRAFANA_KEY=your-grafana-api-key
 5. Deploy via `wrangler pages deploy`
 
 **Example Output:**
+
 ```
 📦 Building dashboards (v3.2.0)...
    Found 3 dashboard files
@@ -147,16 +159,18 @@ GRAFANA_KEY=your-grafana-api-key
 
 ### Grafana Dashboard (Grafana Instance)
 
-**Source:** `monitoring/grafana/dashboard.json`
-**Destination:** Your Grafana instance (via HTTP API)
+**Source:** `monitoring/grafana/dashboard.json` **Destination:** Your Grafana
+instance (via HTTP API)
 
 **Import Process:**
+
 1. Read `monitoring/grafana/dashboard.json`
 2. POST to `${GRAFANA_URL}/api/dashboards/db`
 3. Overwrite existing dashboard if present
 4. Return dashboard URL and metadata
 
 **Example Output:**
+
 ```
 📊 Dashboard ID: 42
 🔗 Dashboard Slug: betting-brain-intelligence
@@ -167,12 +181,15 @@ GRAFANA_KEY=your-grafana-api-key
 ### README Updates
 
 **Files Updated:**
+
 1. `README.md` - Version, dashboard links, auto-deployment notice
 2. `dashboards/README.md` - Version and last updated date
 
 **Changes:**
+
 - Version in header: `# 🧠 Betting-Brain v3.2.0`
-- Dashboard link: `[📊 Dashboard](monitoring/grafana/dashboard.json)` → `[📊 Dashboards](dashboards/index.html) | [⚙️ Grafana Setup](monitoring/grafana/README.md)`
+- Dashboard link: `[📊 Dashboard](monitoring/grafana/dashboard.json)` →
+  `[📊 Dashboards](dashboards/index.html) | [⚙️ Grafana Setup](monitoring/grafana/README.md)`
 - Auto-deployment notice added (if not present)
 - Dashboard README version updated
 
@@ -238,6 +255,7 @@ echo "3. Check dashboards/README.md for updated version"
 **Error:** `wrangler: command not found`
 
 **Solution:** Install Wrangler globally:
+
 ```bash
 bun install -g wrangler
 ```
@@ -245,6 +263,7 @@ bun install -g wrangler
 **Error:** `Cloudflare Pages project not found`
 
 **Solution:** Create the project first:
+
 ```bash
 wrangler pages project create betting-brain-dashboards
 ```
@@ -252,6 +271,7 @@ wrangler pages project create betting-brain-dashboards
 **Error:** `Invalid Cloudflare API token`
 
 **Solution:** Verify token has Pages write permissions:
+
 1. Go to Cloudflare → My Profile → API Tokens
 2. Edit token → Add `Cloudflare Pages:Edit` permission
 
@@ -262,6 +282,7 @@ wrangler pages project create betting-brain-dashboards
 **Error:** `GRAFANA_URL environment variable is required`
 
 **Solution:** Set the environment variable:
+
 ```bash
 export GRAFANA_URL=https://your-grafana.com
 # Or add to .env.local
@@ -270,12 +291,14 @@ export GRAFANA_URL=https://your-grafana.com
 **Error:** `HTTP 401: Unauthorized`
 
 **Solution:** Check API key permissions:
+
 1. Grafana → Configuration → API Keys
 2. Key must have `Editor` role (not Viewer)
 
 **Error:** `HTTP 422: Validation Failed`
 
 **Solution:** Dashboard JSON is invalid. Validate manually:
+
 ```bash
 cat monitoring/grafana/dashboard.json | jq empty
 ```
@@ -287,12 +310,14 @@ cat monitoring/grafana/dashboard.json | jq empty
 **Error:** `README.md already up to date`
 
 **Solution:** This is normal if the version hasn't changed. Force update by:
+
 1. Bumping version in `package.json`
 2. Running `bun run dashboard:bump` again
 
 **Error:** `Auto-deployment notice not added`
 
 **Solution:** Ensure the header navigation line exists in README.md:
+
 ```markdown
 [📚 Documentation Index](docs/INDEX.md)
 ```
@@ -390,15 +415,16 @@ betting-brain-v3/
 ## 📚 Related Documentation
 
 - **[README.md](../README.md)** - Main project documentation
-- **[monitoring/grafana/README.md](../monitoring/grafana/README.md)** - Grafana setup guide
+- **[monitoring/grafana/README.md](../monitoring/grafana/README.md)** - Grafana
+  setup guide
 - **[dashboards/README.md](../dashboards/README.md)** - Dashboard organization
-- **[docs/GITHUB_REPOSITORY_METADATA.md](GITHUB_REPOSITORY_METADATA.md)** - GitHub topics, badges
+- **[docs/GITHUB_REPOSITORY_METADATA.md](GITHUB_REPOSITORY_METADATA.md)** -
+  GitHub topics, badges
 
 ---
 
-**Status:** ✅ Production Ready
-**Automation:** Zero-Touch
-**Maintenance:** Minimal (one-time setup only)
+**Status:** ✅ Production Ready **Automation:** Zero-Touch **Maintenance:**
+Minimal (one-time setup only)
 
-*Last Updated: 2025-10-08*
-*Betting-Brain v3.2.0 - Automated Dashboard Deployment*
+_Last Updated: 2025-10-08_ _Betting-Brain v3.2.0 - Automated Dashboard
+Deployment_

@@ -34,7 +34,7 @@ async function parseBindings(): Promise<Binding[]> {
         bindings.push({
           name: match[1],
           type: 'd1',
-          location: `wrangler.toml:${i + 1}`
+          location: `wrangler.toml:${i + 1}`,
         });
       }
     }
@@ -46,7 +46,7 @@ async function parseBindings(): Promise<Binding[]> {
         bindings.push({
           name: match[1],
           type: 'kv',
-          location: `wrangler.toml:${i + 1}`
+          location: `wrangler.toml:${i + 1}`,
         });
       }
     }
@@ -58,7 +58,7 @@ async function parseBindings(): Promise<Binding[]> {
         bindings.push({
           name: match[1],
           type: 'queue_producer',
-          location: `wrangler.toml:${i + 1}`
+          location: `wrangler.toml:${i + 1}`,
         });
       }
     }
@@ -70,7 +70,7 @@ async function parseBindings(): Promise<Binding[]> {
         bindings.push({
           name: match[1],
           type: 'analytics',
-          location: `wrangler.toml:${i + 1}`
+          location: `wrangler.toml:${i + 1}`,
         });
       }
     }
@@ -82,16 +82,14 @@ async function parseBindings(): Promise<Binding[]> {
         bindings.push({
           name: match[1],
           type: 'var',
-          location: `wrangler.toml:${i + 1}`
+          location: `wrangler.toml:${i + 1}`,
         });
       }
     }
   }
 
   // Remove duplicates (prod env duplicates dev env)
-  const uniqueBindings = Array.from(
-    new Map(bindings.map(b => [b.name, b])).values()
-  );
+  const uniqueBindings = Array.from(new Map(bindings.map(b => [b.name, b])).values());
 
   return uniqueBindings;
 }
@@ -105,9 +103,7 @@ async function searchBinding(bindingName: string): Promise<{ count: number; file
     // Count occurrences
     const countResult = await $`rg -c "env\\.${bindingName}\\b" src/`.quiet();
     const counts = countResult.stdout.toString().trim().split('\n');
-    const totalCount = counts
-      .map(line => parseInt(line.split(':')[1] || '0'))
-      .reduce((sum, count) => sum + count, 0);
+    const totalCount = counts.map(line => parseInt(line.split(':')[1] || '0')).reduce((sum, count) => sum + count, 0);
 
     return { count: totalCount, files };
   } catch (error) {
@@ -129,7 +125,7 @@ async function verifyBindings(): Promise<VerificationResult[]> {
       binding,
       used: count > 0,
       occurrences: count,
-      files
+      files,
     });
   }
 
@@ -157,9 +153,7 @@ function generateReport(results: VerificationResult[], strict: boolean): void {
   }
 
   // Show most used bindings
-  const topUsed = used
-    .sort((a, b) => b.occurrences - a.occurrences)
-    .slice(0, 10);
+  const topUsed = used.sort((a, b) => b.occurrences - a.occurrences).slice(0, 10);
 
   if (topUsed.length > 0) {
     console.log('🔥 Top 10 Used Bindings:\n');

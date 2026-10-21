@@ -34,18 +34,14 @@ export interface BucketedPoint {
  * Key format: `ts:hot:{metric}:{agentId}:{minuteBucket}`
  * TTL: 48 hours
  */
-export async function writeHot(
-  env: Env,
-  ctx: ExecutionContext,
-  point: TimeSeriesPoint
-): Promise<void> {
+export async function writeHot(env: Env, ctx: ExecutionContext, point: TimeSeriesPoint): Promise<void> {
   if (!env.FANTASY_CACHE) return;
 
   const minuteBucket = Math.floor(point.timestamp / 60000) * 60000;
   const key = `ts:hot:${point.metric}:${point.agentId}:${minuteBucket}`;
 
   // Read existing bucket (if any)
-  const existing = await env.FANTASY_CACHE.get(key, 'json') as BucketedPoint | null;
+  const existing = (await env.FANTASY_CACHE.get(key, 'json')) as BucketedPoint | null;
 
   const bucketData: BucketedPoint = existing || {
     bucketStart: minuteBucket,
@@ -57,8 +53,8 @@ export async function writeHot(
       max: point.value,
       avg: point.value,
       sum: point.value,
-      count: 1
-    }
+      count: 1,
+    },
   };
 
   // Update aggregates
@@ -73,7 +69,7 @@ export async function writeHot(
   // Write back with 48h TTL
   ctx.waitUntil(
     env.FANTASY_CACHE.put(key, JSON.stringify(bucketData), {
-      expirationTtl: 48 * 3600
+      expirationTtl: 48 * 3600,
     })
   );
 }
@@ -97,7 +93,7 @@ export async function queryHot(
   // Scan all minute buckets in range (max 2880 buckets for 48h)
   for (let bucket = startBucket; bucket <= endBucket; bucket += 60000) {
     const key = `ts:hot:${metric}:${agentId}:${bucket}`;
-    const data = await env.FANTASY_CACHE.get(key, 'json') as BucketedPoint | null;
+    const data = (await env.FANTASY_CACHE.get(key, 'json')) as BucketedPoint | null;
     if (data) results.push(data);
   }
 
@@ -112,27 +108,16 @@ export async function queryHot(
  * Write to warm tier (1-hour aggregates in Analytics Engine)
  * Called by down-sample cron job
  */
-export async function writeWarm(
-  env: Env,
-  ctx: ExecutionContext,
-  hourlyData: BucketedPoint[]
-): Promise<void> {
+export async function writeWarm(env: Env, ctx: ExecutionContext, hourlyData: BucketedPoint[]): Promise<void> {
   if (!env.ANALYTICS_ENGINE) return;
 
   const writes = hourlyData.map(point => ({
     blobs: [point.agentId, point.metric],
-    doubles: [
-      point.values.min,
-      point.values.max,
-      point.values.avg,
-      point.values.sum
-    ],
-    indexes: [point.bucketStart.toString()]
+    doubles: [point.values.min, point.values.max, point.values.avg, point.values.sum],
+    indexes: [point.bucketStart.toString()],
   }));
 
-  ctx.waitUntil(
-    env.ANALYTICS_ENGINE.writeDataPoint(...writes)
-  );
+  ctx.waitUntil(env.ANALYTICS_ENGINE.writeDataPoint(...writes));
 }
 
 /**
@@ -209,7 +194,7 @@ export async function queryTimeSeries(
     '30d': 30 * 24 * 60 * 60 * 1000,
     '90d': 90 * 24 * 60 * 60 * 1000,
     '1y': 365 * 24 * 60 * 60 * 1000,
-    '2y': 730 * 24 * 60 * 60 * 1000
+    '2y': 730 * 24 * 60 * 60 * 1000,
   };
 
   const startMs = now - rangeMap[range];
@@ -247,6 +232,6 @@ export function getTierStats(): TierStats {
   return {
     hot: { retention: '48h', granularity: '1 min', cost: 'KV (free)' },
     warm: { retention: '90 day', granularity: '1 h', cost: 'AE (~$0.02/100k pts)' },
-    cold: { retention: '2 year', granularity: '1 day', cost: 'R2 Parquet (~$0.004/GB)' }
+    cold: { retention: '2 year', granularity: '1 day', cost: 'R2 Parquet (~$0.004/GB)' },
   };
 }

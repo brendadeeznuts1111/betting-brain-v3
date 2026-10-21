@@ -1,29 +1,30 @@
 # Dashboard Consolidation & Bun-Native Fixes - Complete ✅
 
-**Date:** 2025-10-08
-**Status:** Merged & Production-Ready
+**Date:** 2025-10-08 **Status:** Merged & Production-Ready
 
 ## Overview
 
-Successfully consolidated 15 dashboard files → 7 clean dashboards (53% reduction) and implemented Bun-native best practices with zero console errors.
+Successfully consolidated 15 dashboard files → 7 clean dashboards (53%
+reduction) and implemented Bun-native best practices with zero console errors.
 
 ---
 
 ## Bun-only dashboard – last mile fixes (merged)
 
-| Item | Status | Notes |
-|---|---|---|
-| `warmCacheNow` in `floor-control.html` | ✅ | Full async wrapper with loading states, global `window.warmCacheNow`, null-guarded button |
-| `/api/live-odds` | ✅ | Returns fake spreads / totals / moneylines; registered in `routes.ts` |
-| `/api/database-metrics` | ✅ | Queries **D1** (`line_movements`, `sharp_indicators`, `exposure_tracking`); column names aligned to schema (`ts`, `upd`) |
-| DOM null guards | ✅ | `safeSet` / `safeGet` helpers; every `document.getElementById` call protected |
-| Console noise | ✅ | Zero `Cannot read properties of null` or `404` on the three new routes |
+| Item                                   | Status | Notes                                                                                                                    |
+| -------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `warmCacheNow` in `floor-control.html` | ✅     | Full async wrapper with loading states, global `window.warmCacheNow`, null-guarded button                                |
+| `/api/live-odds`                       | ✅     | Returns fake spreads / totals / moneylines; registered in `routes.ts`                                                    |
+| `/api/database-metrics`                | ✅     | Queries **D1** (`line_movements`, `sharp_indicators`, `exposure_tracking`); column names aligned to schema (`ts`, `upd`) |
+| DOM null guards                        | ✅     | `safeSet` / `safeGet` helpers; every `document.getElementById` call protected                                            |
+| Console noise                          | ✅     | Zero `Cannot read properties of null` or `404` on the three new routes                                                   |
 
 ---
 
 ## Dashboard Structure (Final)
 
 ### Core Dashboards (7 total)
+
 1. **floor-control.html** - Mission Control (13 live widgets)
 2. **analytics.html** - Consolidated analytics (merged 2 files)
 3. **performance.html** - Agent & position analytics (merged 2 files)
@@ -33,13 +34,16 @@ Successfully consolidated 15 dashboard files → 7 clean dashboards (53% reducti
 7. **index.html** - Dashboard directory
 
 ### Shared Utilities (5 files)
-- **config.js** - Centralized configuration (API endpoints, refresh intervals, widget config)
+
+- **config.js** - Centralized configuration (API endpoints, refresh intervals,
+  widget config)
 - **utils.js** - Common utilities (fetch, formatting, storage helpers)
 - **charts.js** - Chart.js wrappers
 - **widgets.js** - Widget base classes
 - **styles.css** - Shared styles
 
 ### Tools Directory
+
 - **tools/sse-demo.html** - Server-Sent Events demo
 - **tools/sync-agent-tree.html** - Agent sync utility
 
@@ -48,6 +52,7 @@ Successfully consolidated 15 dashboard files → 7 clean dashboards (53% reducti
 ## Technical Implementation
 
 ### 1. warmCacheNow Function
+
 ```javascript
 async function warmCacheNow() {
   const btn = $('btn-warm-cache');
@@ -75,38 +80,82 @@ window.warmCacheNow = warmCacheNow;
 ### 2. API Endpoints Created
 
 **`src/routes/api/live-odds.ts`**
+
 ```typescript
-export async function getLiveOdds(request: Request, env: Env): Promise<Response> {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
-  if (request.method !== 'GET') return new Response('Method Not Allowed', { status: 405 });
+export async function getLiveOdds(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method === 'OPTIONS')
+    return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== 'GET')
+    return new Response('Method Not Allowed', { status: 405 });
 
   const fakeOdds = [
-    { gameId: 1, sport: 'NBA', homeTeam: 'Lakers', awayTeam: 'Celtics',
-      homeLine: -110, awayLine: -110, homeSpread: -5.5, awaySpread: 5.5,
-      overUnder: 215.5, timestamp: Date.now() },
-    { gameId: 2, sport: 'NFL', homeTeam: 'Chiefs', awayTeam: 'Bills',
-      homeLine: -120, awayLine: 100, homeSpread: -3, awaySpread: 3,
-      overUnder: 48.5, timestamp: Date.now() }
+    {
+      gameId: 1,
+      sport: 'NBA',
+      homeTeam: 'Lakers',
+      awayTeam: 'Celtics',
+      homeLine: -110,
+      awayLine: -110,
+      homeSpread: -5.5,
+      awaySpread: 5.5,
+      overUnder: 215.5,
+      timestamp: Date.now(),
+    },
+    {
+      gameId: 2,
+      sport: 'NFL',
+      homeTeam: 'Chiefs',
+      awayTeam: 'Bills',
+      homeLine: -120,
+      awayLine: 100,
+      homeSpread: -3,
+      awaySpread: 3,
+      overUnder: 48.5,
+      timestamp: Date.now(),
+    },
   ];
 
-  return createJSONResponse({ success: true, data: fakeOdds, count: fakeOdds.length, timestamp: new Date().toISOString() });
+  return createJSONResponse({
+    success: true,
+    data: fakeOdds,
+    count: fakeOdds.length,
+    timestamp: new Date().toISOString(),
+  });
 }
 ```
 
 **`src/routes/api/database-metrics.ts`**
+
 ```typescript
-export async function getDatabaseMetrics(request: Request, env: Env): Promise<Response> {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
-  if (request.method !== 'GET') return new Response('Method Not Allowed', { status: 405 });
+export async function getDatabaseMetrics(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method === 'OPTIONS')
+    return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== 'GET')
+    return new Response('Method Not Allowed', { status: 405 });
 
   try {
-    const [lineMovements, sharpIndicators, exposureTracking] = await Promise.all([
-      env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM line_movements WHERE ts > ?')
-        .bind(new Date(Date.now() - 86400000).toISOString()).first(),
-      env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM sharp_indicators').first(),
-      env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM exposure_tracking WHERE upd > ?')
-        .bind(new Date(Date.now() - 3600000).toISOString()).first()
-    ]);
+    const [lineMovements, sharpIndicators, exposureTracking] =
+      await Promise.all([
+        env.ANALYTICS.prepare(
+          'SELECT COUNT(*) as count FROM line_movements WHERE ts > ?'
+        )
+          .bind(new Date(Date.now() - 86400000).toISOString())
+          .first(),
+        env.ANALYTICS.prepare(
+          'SELECT COUNT(*) as count FROM sharp_indicators'
+        ).first(),
+        env.ANALYTICS.prepare(
+          'SELECT COUNT(*) as count FROM exposure_tracking WHERE upd > ?'
+        )
+          .bind(new Date(Date.now() - 3600000).toISOString())
+          .first(),
+      ]);
 
     return createJSONResponse({
       success: true,
@@ -119,14 +168,20 @@ export async function getDatabaseMetrics(request: Request, env: Env): Promise<Re
         cacheHitRate: 0.98,
         avgQueryTime: 12,
         connections: 1,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
   } catch (error) {
-    return createJSONResponse({
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch database metrics'
-    }, 500);
+    return createJSONResponse(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch database metrics',
+      },
+      500
+    );
   }
 }
 ```
@@ -134,6 +189,7 @@ export async function getDatabaseMetrics(request: Request, env: Env): Promise<Re
 ### 3. DOM Null Guards
 
 **Safe DOM Helpers:**
+
 ```javascript
 // Safe DOM helper with null guard
 function safeSet(id, prop, value) {
@@ -151,6 +207,7 @@ function safeGet(id, prop = 'value') {
 ```
 
 **Pattern Applied:**
+
 ```javascript
 // Before (unsafe):
 document.getElementById('some-id').style.display = 'none';
@@ -165,6 +222,7 @@ if (textEl) textEl.textContent = 'value';
 ```
 
 **Coverage:**
+
 - ✅ All `style.display` assignments
 - ✅ All `textContent` assignments
 - ✅ All `className` assignments
@@ -176,11 +234,13 @@ if (textEl) textEl.textContent = 'value';
 ## Run Locally
 
 **Cloudflare Workers flavour:**
+
 ```bash
 wrangler dev --local
 ```
 
 **Pure Bun flavour:**
+
 ```bash
 bun run --hot src/index.ts
 ```
@@ -210,6 +270,7 @@ cd dashboards && python3 -m http.server 8080
 ## Test Results
 
 ### API Endpoints ✅
+
 ```bash
 $ curl -s http://localhost:8787/api/live-odds | jq '.success'
 true
@@ -222,10 +283,12 @@ $ curl -s http://localhost:8787/api/database-metrics | jq '.data.sharpIndicators
 ```
 
 ### Console Errors ✅
+
 - Before: ~15 `Cannot read properties of null` errors
 - After: **0 errors**
 
 ### Performance ✅
+
 - Dashboard load time: <500ms
 - Widget refresh: 5s interval
 - API response time: <50ms average
@@ -235,6 +298,7 @@ $ curl -s http://localhost:8787/api/database-metrics | jq '.data.sharpIndicators
 ## Files Changed
 
 ### Created
+
 - `src/routes/api/live-odds.ts` (18 lines)
 - `src/routes/api/database-metrics.ts` (36 lines)
 - `dashboards/analytics.html` (consolidated 2 files)
@@ -242,6 +306,7 @@ $ curl -s http://localhost:8787/api/database-metrics | jq '.data.sharpIndicators
 - `dashboards/shared/widgets.js` (new widget system)
 
 ### Modified
+
 - `dashboards/floor-control.html` (added warmCacheNow, DOM guards)
 - `dashboards/shared/config.js` (fixed WIDGET_CONFIG hoisting)
 - `dashboards/shared/utils.js` (added $ export)
@@ -249,6 +314,7 @@ $ curl -s http://localhost:8787/api/database-metrics | jq '.data.sharpIndicators
 - `src/index.ts` (fixed live-odds import)
 
 ### Deleted
+
 - `dashboards/analytics-enhanced.html` (merged into analytics.html)
 - `dashboards/analytics-live.html` (merged into analytics.html)
 - `dashboards/dashboard-positions.html` (merged into performance.html)
@@ -261,9 +327,11 @@ $ curl -s http://localhost:8787/api/database-metrics | jq '.data.sharpIndicators
 ## Migration Notes
 
 ### Breaking Changes
+
 None - all existing URLs still work.
 
 ### Widget Configuration Pattern
+
 Dashboards now use centralized `WIDGET_CONFIG` from `shared/config.js`:
 
 ```javascript
@@ -275,6 +343,7 @@ const data = await fetchWidgetData('floorHealth');
 ```
 
 ### Future Improvements
+
 - [ ] Add SSE support to more widgets
 - [ ] Implement WebSocket fallback for real-time data
 - [ ] Add chart export functionality
@@ -285,15 +354,16 @@ const data = await fetchWidgetData('floorHealth');
 ## Console is now **edge-ready** and throws no client-side errors ✅
 
 **Tested on:**
+
 - Chrome 131
 - Firefox 132
 - Safari 18
 
 **Edge Runtime:**
+
 - Cloudflare Workers (wrangler dev --local)
 - Bun 1.2.23
 
 ---
 
-*Last Updated: 2025-10-08*
-*Betting-Brain v3 - Dashboard Consolidation Complete*
+_Last Updated: 2025-10-08_ _Betting-Brain v3 - Dashboard Consolidation Complete_

@@ -8,9 +8,11 @@
 
 ## 📊 Executive Summary
 
-**Current State:** Production-ready with MCP integration complete, but requires cleanup of obsolete files and git organization.
+**Current State:** Production-ready with MCP integration complete, but requires
+cleanup of obsolete files and git organization.
 
 **Key Metrics:**
+
 - ✅ 13/15 MCP tools working (87% complete)
 - ✅ 249/249 tests passing
 - ⚠️ 89 TypeScript errors (non-blocking)
@@ -24,20 +26,26 @@
 ## 🎯 Active Integrations (7 Major Systems)
 
 ### 1. 🧠 **MCP Server Integration** ✅
+
 **Status:** OPERATIONAL (13/15 tools)  
 **Location:** `src/mcp/`  
 **Endpoint:** `/mcp` (JSON-RPC 2.0)
 
 **Working Tools:**
-- **Intelligence (4/4):** getBettingExposure, getCLV, getHoldPercentage, getSharpScore
+
+- **Intelligence (4/4):** getBettingExposure, getCLV, getHoldPercentage,
+  getSharpScore
 - **Live Betting (3/5):** getSteamMoves, getRiskConcentration, getSharpActivity
-- **Analytics (6/6):** getTimeSeriesCLV, getEnhancedSharpScore, getHoldForecast, getHandleAndHold, getCustomerVolume, getTimeSeriesAnalytics
+- **Analytics (6/6):** getTimeSeriesCLV, getEnhancedSharpScore, getHoldForecast,
+  getHandleAndHold, getCustomerVolume, getTimeSeriesAnalytics
 
 **Pending Tools:**
+
 - getLiveBettingTicker (placeholder)
 - getClosingLineValue (placeholder)
 
 **Files:**
+
 ```
 src/mcp/
 ├── server.ts            # JSON-RPC router
@@ -57,6 +65,7 @@ src/mcp/
 ```
 
 **Documentation:**
+
 - ✅ docs/MCP_INTEGRATION_STATUS.md
 - ✅ docs/TESTING_STATUS.md
 - ✅ docs/MCP_TESTING_GUIDE.md
@@ -65,11 +74,13 @@ src/mcp/
 ---
 
 ### 2. 🗄️ **Cloudflare D1 Database** ✅
+
 **Status:** OPERATIONAL  
 **Database:** `betting-analytics`  
 **Binding:** `ANALYTICS`
 
 **Tables (7):**
+
 ```sql
 line_movements        # Line changes (7-day TTL)
 sharp_indicators      # Customer profiling (hourly refresh)
@@ -80,18 +91,21 @@ hold_tracking        # Hold % history (NEW - MCP)
 ```
 
 **Migrations (4):**
+
 - ✅ 0001_initial_schema.sql
 - ✅ 0002_add_ttl.sql
 - ✅ 0003_mcp_tables.sql (MCP integration)
 - ✅ 0004_test_data.sql (14 customers, 28 bets, 11 line movements)
 
 **Test Data Loaded:**
+
 - 14 sharp indicators (various profiles)
 - 28 bet history records
 - 12 exposure tracking records
 - 28 hold tracking records
 
 **Commands:**
+
 ```bash
 # Local
 wrangler d1 migrations apply betting-analytics --local
@@ -104,53 +118,60 @@ wrangler d1 migrations apply betting-analytics --remote
 ---
 
 ### 3. ⚡ **Cloudflare Queues** ✅
+
 **Status:** OPERATIONAL  
 **Count:** 4 queues
 
-| Queue | Batch Size | Timeout | Purpose |
-|-------|-----------|---------|---------|
-| `line-ingress` | 10 | 5s | Line movement ingestion |
-| `steam-webhook` | 5 | 10s | Steam move notifications |
-| `steam-processor` | 10 | 2s | MCP steam processing |
-| `exposure-calculator` | 50 | 10s | MCP exposure calc |
+| Queue                 | Batch Size | Timeout | Purpose                  |
+| --------------------- | ---------- | ------- | ------------------------ |
+| `line-ingress`        | 10         | 5s      | Line movement ingestion  |
+| `steam-webhook`       | 5          | 10s     | Steam move notifications |
+| `steam-processor`     | 10         | 2s      | MCP steam processing     |
+| `exposure-calculator` | 50         | 10s     | MCP exposure calc        |
 
 **Consumers:**
+
 - `src/queues/lineIngress.ts`
 - `src/queues/steamWebhook.ts`
 
 ---
 
 ### 4. 💾 **KV Storage** ✅
+
 **Status:** OPERATIONAL  
 **Namespaces:** 6
 
-| Namespace | Purpose | Retention |
-|-----------|---------|-----------|
-| `BET_TICKER_RAW` | Intercepted API responses | 7 days |
-| `TOKEN_STORE` | MCP auth tokens | Persistent |
-| `USER_STORE` | User data | Persistent |
-| `SESSION_STORE` | Active sessions | TTL-based |
-| `REFRESH_STORE` | Refresh tokens | TTL-based |
-| `LIVEBETS_STORE` | Live betting data | Short TTL |
+| Namespace        | Purpose                   | Retention  |
+| ---------------- | ------------------------- | ---------- |
+| `BET_TICKER_RAW` | Intercepted API responses | 7 days     |
+| `TOKEN_STORE`    | MCP auth tokens           | Persistent |
+| `USER_STORE`     | User data                 | Persistent |
+| `SESSION_STORE`  | Active sessions           | TTL-based  |
+| `REFRESH_STORE`  | Refresh tokens            | TTL-based  |
+| `LIVEBETS_STORE` | Live betting data         | Short TTL  |
 
 ---
 
 ### 5. 📈 **Analytics Engine** ✅
+
 **Status:** OPERATIONAL  
 **Dataset:** `betting-metrics`  
 **Binding:** `ANALYTICS_ENGINE`
 
 **Monitoring:**
+
 - Grafana dashboard: `monitoring/grafana/dashboard.json`
 - Metrics collection for performance tracking
 
 ---
 
 ### 6. 🔌 **Browser Extension** ✅
+
 **Status:** FUNCTIONAL  
 **Location:** `browser-extension/`
 
 **Components:**
+
 - `manifest.json` - Chrome extension manifest
 - `background.js` - Service worker
 - `content.js` - Page injection
@@ -158,6 +179,7 @@ wrangler d1 migrations apply betting-analytics --remote
 - `log-forwarder.js` - Log forwarding to worker
 
 **Features:**
+
 - ✅ Auto-capture betting data
 - ✅ Log forwarding to `/logs` endpoint
 - ✅ Real-time monitoring
@@ -166,10 +188,12 @@ wrangler d1 migrations apply betting-analytics --remote
 ---
 
 ### 7. 🕵️ **BetTicker Sniffer** ✅
+
 **Status:** OPERATIONAL  
 **File:** `src/interceptors/bet-ticker-sniffer.ts`
 
 **Functionality:**
+
 - Intercepts `POST /cloud/api/Manager/getBetTicker`
 - Stores raw responses in KV (7-day retention)
 - Zero client impact (transparent proxy)
@@ -182,10 +206,12 @@ wrangler d1 migrations apply betting-analytics --remote
 ## 🚨 Cleanup Required
 
 ### Priority 1: Remove Backup Files (17 files)
+
 **Location:** `tests/unit/` and `tests/integration/`  
 **Action:** DELETE (duplicates)
 
 **Files to Remove:**
+
 ```
 tests/unit/bet-ticker-sniffer.test.ts.backup
 tests/unit/clv.test.ts.backup
@@ -206,14 +232,17 @@ tests/integration/triggers-implementation.test.ts.backup
 tests/integration/triggers.test.ts.backup
 ```
 
-**Reason:** These are backup copies from test migration. Original files are working.
+**Reason:** These are backup copies from test migration. Original files are
+working.
 
 ---
 
 ### Priority 2: Commit Deleted Docs (Git Cleanup)
+
 **Action:** Commit deletions that moved files to archive
 
 **Files Deleted (Already Moved to Archive):**
+
 ```
 docs/BUILD_REPORT.md → docs/archive/BUILD_REPORT.md
 docs/DASHBOARD_COMPARISON.md → docs/archive/DASHBOARD_COMPARISON.md
@@ -232,9 +261,11 @@ URGENT_TEST_FIXES.md → docs/URGENT_TEST_FIXES.md
 ---
 
 ### Priority 3: Organize Untracked Status Files
+
 **Action:** DECIDE - Add to git or .gitignore
 
 **Untracked Files:**
+
 ```
 ✅ KEEP & COMMIT:
 - docs/AUTOMATION_GUIDE.md (testing workflows)
@@ -267,10 +298,12 @@ URGENT_TEST_FIXES.md → docs/URGENT_TEST_FIXES.md
 ---
 
 ### Priority 4: Archive Cleanup (Optional)
+
 **Location:** `docs/archive/` (248KB)  
 **Action:** REVIEW - Potentially remove very old documentation
 
 **Current Archive:**
+
 ```
 docs/archive/
 ├── BUILD_REPORT.md
@@ -294,17 +327,22 @@ docs/archive/
 ```
 
 **Recommendations:**
+
 - ✅ KEEP: phase-reports/ (historical record)
 - ✅ KEEP: bun-upgrade/ (version migration record)
-- ✅ MOVE: mcp-integration/MCP_INTEGRATION_SUMMARY.md → root (merge with MCP_INTEGRATION_STATUS.md)
-- ❓ CONSIDER REMOVING: Quick fix docs (QUICK_FIX.md, QUICK_ACCESS.md, PROBLEM_IDENTIFIED.md) - obsolete?
-- ❓ CONSIDER REMOVING: One-time review docs (SANITY_CHECK.md, VERIFICATION_RESULTS.md, LINK_VERIFICATION.md)
+- ✅ MOVE: mcp-integration/MCP_INTEGRATION_SUMMARY.md → root (merge with
+  MCP_INTEGRATION_STATUS.md)
+- ❓ CONSIDER REMOVING: Quick fix docs (QUICK_FIX.md, QUICK_ACCESS.md,
+  PROBLEM_IDENTIFIED.md) - obsolete?
+- ❓ CONSIDER REMOVING: One-time review docs (SANITY_CHECK.md,
+  VERIFICATION_RESULTS.md, LINK_VERIFICATION.md)
 
 ---
 
 ## ✅ What's Working Well
 
 ### Code Quality
+
 - ✅ TypeScript with Cloudflare Workers types
 - ✅ Zod validation for all inputs
 - ✅ Consistent error handling
@@ -313,6 +351,7 @@ docs/archive/
 - ✅ Cost cap guards
 
 ### Testing
+
 - ✅ 249/249 tests passing
 - ✅ Bun test runner
 - ✅ Unit tests for core metrics
@@ -321,6 +360,7 @@ docs/archive/
 - ⚠️ 89 TypeScript errors (non-critical, mostly test files)
 
 ### Documentation
+
 - ✅ Comprehensive README.md
 - ✅ MCP integration docs
 - ✅ Testing guides
@@ -329,6 +369,7 @@ docs/archive/
 - ✅ Well-organized docs/ directory
 
 ### Deployment
+
 - ✅ Wrangler configuration
 - ✅ Database migrations
 - ✅ Queue bindings
@@ -339,25 +380,28 @@ docs/archive/
 
 ## 🔧 Technical Debt
 
-| Issue | Severity | Effort | Priority |
-|-------|----------|--------|----------|
-| **89 TypeScript errors** | Medium | High | P1 |
-| **Slow integration tests (99s)** | Low | Medium | P2 |
-| **In-memory rate limiting** | Low | Medium | P3 |
-| **2 placeholder MCP tools** | Low | Low | P3 |
-| **Wrangler dev server issue** | Medium | Low | P2 |
+| Issue                            | Severity | Effort | Priority |
+| -------------------------------- | -------- | ------ | -------- |
+| **89 TypeScript errors**         | Medium   | High   | P1       |
+| **Slow integration tests (99s)** | Low      | Medium | P2       |
+| **In-memory rate limiting**      | Low      | Medium | P3       |
+| **2 placeholder MCP tools**      | Low      | Low    | P3       |
+| **Wrangler dev server issue**    | Medium   | Low    | P2       |
 
 ### TypeScript Errors (89)
+
 **Status:** Non-blocking (tests pass)  
 **Location:** Various test files  
 **Plan:** See `docs/TESTING_STATUS.md` for detailed breakdown
 
 ### Slow Integration Tests
+
 **Current:** 99 seconds  
 **Target:** < 20 seconds  
 **Cause:** Heavy database operations, unoptimized mocks
 
 ### Rate Limiting
+
 **Current:** In-memory per worker instance  
 **Limitation:** Not shared across instances  
 **Solution:** Cloudflare Durable Objects (future enhancement)
@@ -367,6 +411,7 @@ docs/archive/
 ## 📈 Recommendations
 
 ### Immediate Actions (This Session)
+
 1. ✅ **Remove 17 .backup test files** (5 min)
 2. ✅ **Commit deleted docs** (2 min)
 3. ✅ **Add untracked status files to git** (3 min)
@@ -375,12 +420,14 @@ docs/archive/
 **Total Cleanup Time:** ~15 minutes
 
 ### Short-term (Next Session)
+
 1. 🔲 **Fix 89 TypeScript errors** (2-4 hours)
 2. 🔲 **Optimize integration tests** (1-2 hours)
 3. 🔲 **Test MCP tools with production deployment** (1 hour)
 4. 🔲 **Update archive documentation** (30 min)
 
 ### Long-term (Future)
+
 1. 🔲 **Implement 2 placeholder MCP tools** (4-6 hours)
 2. 🔲 **Add Durable Objects for rate limiting** (2-3 hours)
 3. 🔲 **Enhance monitoring/alerting** (3-4 hours)
@@ -391,6 +438,7 @@ docs/archive/
 ## 📊 Codebase Statistics
 
 ### File Counts
+
 ```
 Source Files:
   src/                  39 files
@@ -427,6 +475,7 @@ Tools & Dashboards:
 ```
 
 ### Lines of Code (Estimated)
+
 ```
 MCP Integration:     ~1,777 lines (new)
 Core Worker:         ~593 lines
@@ -438,15 +487,15 @@ Total TypeScript:    ~6,000+ lines
 
 ## 🎯 Health Scorecard
 
-| Category | Score | Status |
-|----------|-------|--------|
-| **Functionality** | 95/100 | 🟢 Excellent |
-| **Code Quality** | 85/100 | 🟡 Good |
-| **Documentation** | 90/100 | 🟢 Excellent |
-| **Test Coverage** | 80/100 | 🟡 Good |
-| **Organization** | 70/100 | 🟡 Needs Cleanup |
-| **Performance** | 85/100 | 🟡 Good |
-| **Security** | 85/100 | 🟡 Good |
+| Category          | Score  | Status           |
+| ----------------- | ------ | ---------------- |
+| **Functionality** | 95/100 | 🟢 Excellent     |
+| **Code Quality**  | 85/100 | 🟡 Good          |
+| **Documentation** | 90/100 | 🟢 Excellent     |
+| **Test Coverage** | 80/100 | 🟡 Good          |
+| **Organization**  | 70/100 | 🟡 Needs Cleanup |
+| **Performance**   | 85/100 | 🟡 Good          |
+| **Security**      | 85/100 | 🟡 Good          |
 
 **Overall:** 85/100 🟡 **Good - Cleanup Recommended**
 
@@ -455,6 +504,7 @@ Total TypeScript:    ~6,000+ lines
 ## 🚀 Next Steps
 
 ### Cleanup Script
+
 ```bash
 #!/bin/bash
 # Clean up backup files and organize git
@@ -479,6 +529,7 @@ git commit -m "chore: cleanup backup files and organize documentation
 ```
 
 ### Testing Verification
+
 ```bash
 # Verify tests still pass after cleanup
 bun test
@@ -499,6 +550,7 @@ bun scripts/test-handlers-direct.ts
 **Branch:** feature/mcp-integration
 
 **Key Documentation:**
+
 - [README.md](../README.md) - Main documentation
 - [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) - MCP status
 - [TESTING_STATUS.md](TESTING_STATUS.md) - Testing status
@@ -512,5 +564,5 @@ bun scripts/test-handlers-direct.ts
 
 ---
 
-*🧠 Betting-Brain v3 - Production-Ready Edge-Native Betting Intelligence with MCP Integration*
-
+_🧠 Betting-Brain v3 - Production-Ready Edge-Native Betting Intelligence with
+MCP Integration_

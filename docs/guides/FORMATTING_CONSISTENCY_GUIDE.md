@@ -2,13 +2,15 @@
 
 <div align="center">
 
-**Standardized formatting** • **Consistent structure** • **AI-friendly patterns** • **Professional presentation**
+**Standardized formatting** • **Consistent structure** • **AI-friendly
+patterns** • **Professional presentation**
 
 </div>
 
 ## 🎯 **Formatting Philosophy**
 
 This guide ensures all documentation follows consistent formatting patterns for:
+
 - **Visual consistency** - Uniform appearance across all documents
 - **AI-friendly structure** - Clear patterns for AI assistants
 - **Developer efficiency** - Easy scanning and navigation
@@ -17,6 +19,7 @@ This guide ensures all documentation follows consistent formatting patterns for:
 ## 📋 **Document Structure Standards**
 
 ### **Header Format**
+
 ```markdown
 # 🎯 Document Title
 
@@ -28,6 +31,7 @@ This guide ensures all documentation follows consistent formatting patterns for:
 ```
 
 ### **Section Headers**
+
 ```markdown
 ## 🎯 **Section Title**
 
@@ -39,6 +43,7 @@ This guide ensures all documentation follows consistent formatting patterns for:
 ```
 
 ### **Subsection Headers**
+
 ```markdown
 ### 📊 **Subsection Title**
 
@@ -52,33 +57,37 @@ This guide ensures all documentation follows consistent formatting patterns for:
 ## 📊 **Table Formatting Standards**
 
 ### **Standard Table**
+
 ```markdown
-| Column 1 | Column 2 | Column 3 |
-|----------|----------|----------|
-| **Bold Header** | Description | Status |
-| **Another Header** | Description | Status |
+| Column 1           | Column 2    | Column 3 |
+| ------------------ | ----------- | -------- |
+| **Bold Header**    | Description | Status   |
+| **Another Header** | Description | Status   |
 ```
 
 ### **Table with Documentation Links**
+
 ```markdown
-| Component | Description | Documentation |
-|-----------|-------------|---------------|
+| Component   | Description | Documentation          |
+| ----------- | ----------- | ---------------------- |
 | **Feature** | Description | [Link](path/to/doc.md) |
 | **Another** | Description | [Link](path/to/doc.md) |
 ```
 
 ### **Table with Status Indicators**
+
 ```markdown
-| Feature | Status | Details |
-|---------|--------|---------|
-| **Feature 1** | ✅ Complete | Description |
-| **Feature 2** | ⚠️ Partial | Description |
+| Feature       | Status        | Details     |
+| ------------- | ------------- | ----------- |
+| **Feature 1** | ✅ Complete   | Description |
+| **Feature 2** | ⚠️ Partial    | Description |
 | **Feature 3** | ❌ Incomplete | Description |
 ```
 
 ## 🎨 **Visual Elements**
 
 ### **Status Indicators**
+
 - ✅ **Complete** - Fully implemented and tested
 - ⚠️ **Partial** - Partially implemented or needs work
 - ❌ **Incomplete** - Not implemented or broken
@@ -86,6 +95,7 @@ This guide ensures all documentation follows consistent formatting patterns for:
 - 🔧 **In Progress** - Currently being worked on
 
 ### **Emoji Usage**
+
 - 🎯 **Goals/Objectives** - Main objectives and targets
 - 📊 **Data/Metrics** - Tables, charts, and data
 - 🚀 **Actions/Commands** - Commands and actions
@@ -96,22 +106,28 @@ This guide ensures all documentation follows consistent formatting patterns for:
 - 🤖 **AI/Automation** - AI and automation features
 
 ### **Code Blocks**
-```markdown
+
+````markdown
 # Inline code
+
 `command` or `variable`
 
 # Code blocks with language
+
 ```bash
 # Command example
 bun run test
 ```
+````
 
 # Code blocks with description
+
 ```bash
 # Deploy to production (follows [Deployment Patterns](.cursor/rules/cloudflare-workers.mdc))
 bun run deploy:prod
 ```
-```
+
+````
 
 ## 🔗 **Cross-Reference Standards**
 
@@ -124,25 +140,30 @@ bun run deploy:prod
 [Quality Standards](.cursor/rules/quality-standards.mdc)
 [API Patterns](.cursor/rules/api-patterns.mdc)
 [Security Patterns](.cursor/rules/security-patterns.mdc)
-```
+````
 
 ### **Documentation References**
+
 ```markdown
 # Correct format
+
 [Document Name](docs/DOCUMENT_NAME.md)
 
 # Examples
-[README.md](../README.md)
-[Quality Standards](docs/QUALITY_STANDARDS.md)
+
+[README.md](../README.md) [Quality Standards](docs/QUALITY_STANDARDS.md)
 [Testing Guide](docs/testing/INTEGRATED_TESTING_SYSTEM.md)
 ```
 
 ### **External References**
+
 ```markdown
 # Correct format
+
 [External Name](https://external-url.com)
 
 # Examples
+
 [Install Bun](https://bun.sh/docs/installation)
 [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 ```
@@ -150,40 +171,51 @@ bun run deploy:prod
 ## 📝 **Content Standards**
 
 ### **Lists and Bullets**
+
 ```markdown
 # Standard list
+
 - Item 1
 - Item 2
 - Item 3
 
 # List with status
+
 - ✅ Completed item
 - ⚠️ Partial item
 - ❌ Incomplete item
 
 # List with descriptions
+
 - **Feature 1** - Description of feature
 - **Feature 2** - Description of feature
 ```
 
 ### **Callouts and Notes**
+
 ```markdown
 # Important note
+
 > ⚠️ **Important**: This is an important note
 
 # Success message
+
 > ✅ **Success**: Operation completed successfully
 
 # Warning
+
 > ⚠️ **Warning**: This is a warning message
 
 # Info
+
 > ℹ️ **Info**: This is an informational message
 ```
 
 ### **Code Examples**
-```markdown
+
+````markdown
 # Command examples
+
 ```bash
 # Install dependencies
 bun install
@@ -191,13 +223,16 @@ bun install
 # Run tests
 bun test
 ```
+````
 
 # API examples
+
 ```bash
 # Get betting exposure
 curl https://api.example.com/getBettingExposure?eid=nba_123
 ```
-```
+
+````
 
 ## 🎯 **Section Organization**
 
@@ -279,9 +314,10 @@ curl https://api.example.com/getBettingExposure?eid=nba_123
    ```bash
    git clone https://github.com/user/repo.git
    cd repo
-   ```
+````
 
 2. **Install dependencies**
+
    ```bash
    bun install
    ```
@@ -293,10 +329,13 @@ curl https://api.example.com/getBettingExposure?eid=nba_123
 
 ### 📚 **Related Documentation**
 
-- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Code quality enforcement
+- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Code quality
+  enforcement
 - **[API Patterns](.cursor/rules/api-patterns.mdc)** - API design patterns
-- **[Testing Guide](docs/testing/INTEGRATED_TESTING_SYSTEM.md)** - Testing system
-```
+- **[Testing Guide](docs/testing/INTEGRATED_TESTING_SYSTEM.md)** - Testing
+  system
+
+````
 
 ### **Bad Formatting Example**
 ```markdown
@@ -316,11 +355,12 @@ Related docs:
 - Quality Standards
 - API Patterns
 - Testing Guide
-```
+````
 
 ## 🎯 **Best Practices**
 
 ### **For Writers**
+
 1. **Follow the standards** - Use the formatting patterns consistently
 2. **Be consistent** - Use the same formatting for similar content
 3. **Test links** - Ensure all cross-references work correctly
@@ -328,6 +368,7 @@ Related docs:
 5. **Keep it organized** - Follow the standard section order
 
 ### **For Reviewers**
+
 1. **Check formatting** - Ensure all formatting follows standards
 2. **Verify links** - Test all cross-references
 3. **Review content** - Ensure information is accurate and clear
@@ -343,6 +384,5 @@ Related docs:
 
 ---
 
-**Status:** Complete formatting consistency guide
-**Last Updated:** 2025-10-08
+**Status:** Complete formatting consistency guide **Last Updated:** 2025-10-08
 **Applies To:** All documentation files

@@ -94,7 +94,7 @@ export class TradingLogger {
       r_squared,
       std_error,
       samples,
-      quality: r_squared >= 0.85 ? 'excellent' : r_squared >= 0.70 ? 'good' : 'poor',
+      quality: r_squared >= 0.85 ? 'excellent' : r_squared >= 0.7 ? 'good' : 'poor',
     });
   }
 

@@ -65,46 +65,48 @@ export interface MCPEnv extends Env {
 export const GetBettingExposureRequest = z.object({
   eid: z.string().min(1, 'Event ID is required'),
   includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().min(1).max(24).optional().default(1) // hours
+  timeWindow: z.number().min(1).max(24).optional().default(1), // hours
 });
 
 export const GetSharpScoreRequest = z.object({
   cid: z.string().min(1, 'Customer ID is required'),
   includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().min(1).max(168).optional().default(24) // hours
+  timeWindow: z.number().min(1).max(168).optional().default(24), // hours
 });
 
 export const GetHoldPercentageRequest = z.object({
   eid: z.string().min(1, 'Event ID is required'),
   mt: z.enum(['SPREAD', 'TOTAL', 'MONEYLINE'], {
-    errorMap: () => ({ message: 'Market Type must be one of: SPREAD, TOTAL, MONEYLINE' })
+    errorMap: () => ({ message: 'Market Type must be one of: SPREAD, TOTAL, MONEYLINE' }),
   }),
   includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().min(1).max(24).optional().default(1) // hours
+  timeWindow: z.number().min(1).max(24).optional().default(1), // hours
 });
 
 export const GetCLVRequest = z.object({
   cid: z.string().min(1, 'Customer ID is required'),
   includeHistory: z.boolean().optional().default(false),
-  timeWindow: z.number().min(1).max(168).optional().default(24) // hours
+  timeWindow: z.number().min(1).max(168).optional().default(24), // hours
 });
 
 // Response schemas
 export const BettingExposureResponse = z.object({
   eid: z.string(),
-  sides: z.array(z.object({
-    side: z.enum(['HOME', 'AWAY']),
-    risk: z.number(),
-    net: z.number(),
-    percentage: z.number()
-  })),
+  sides: z.array(
+    z.object({
+      side: z.enum(['HOME', 'AWAY']),
+      risk: z.number(),
+      net: z.number(),
+      percentage: z.number(),
+    })
+  ),
   totalRisk: z.number(),
   maxExposure: z.number(),
   lastUpdated: z.string(),
   alertThreshold: z.object({
     maxAmount: z.number(),
-    maxPercentage: z.number()
-  })
+    maxPercentage: z.number(),
+  }),
 });
 
 export const SharpScoreResponse = z.object({
@@ -114,7 +116,7 @@ export const SharpScoreResponse = z.object({
   winRate: z.number(),
   actionCount: z.number(),
   lastUpdated: z.string(),
-  alertThreshold: z.number()
+  alertThreshold: z.number(),
 });
 
 export const HoldPercentageResponse = z.object({
@@ -126,8 +128,8 @@ export const HoldPercentageResponse = z.object({
   lastUpdated: z.string(),
   alertThreshold: z.object({
     min: z.number(),
-    max: z.number()
-  })
+    max: z.number(),
+  }),
 });
 
 export const CLVResponse = z.object({
@@ -137,7 +139,7 @@ export const CLVResponse = z.object({
   actionCount: z.number(),
   netBet: z.number(),
   lastUpdated: z.string(),
-  alertThreshold: z.number()
+  alertThreshold: z.number(),
 });
 
 // Error response schema
@@ -145,7 +147,7 @@ export const ErrorResponse = z.object({
   error: z.string(),
   code: z.string().optional(),
   details: z.record(z.any()).optional(),
-  timestamp: z.string()
+  timestamp: z.string(),
 });
 
 // Type exports

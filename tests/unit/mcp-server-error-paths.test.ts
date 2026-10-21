@@ -3,7 +3,7 @@
  * Comprehensive error handling tests for MCP JSON-RPC 2.0 server
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import { handleMCPRequest } from '../../src/mcp/server';
 import type { MCPEnv } from '../../src/types/api';
 
@@ -589,21 +589,21 @@ describe('MCP Server Error Paths', () => {
 
   describe('Concurrent Requests', () => {
     test('should handle multiple concurrent requests', async () => {
-      const requests = Array.from({ length: 10 }, (_, i) =>
-        new Request('https://test.com/mcp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'initialize',
-            id: i,
-          }),
-        })
+      const requests = Array.from(
+        { length: 10 },
+        (_, i) =>
+          new Request('https://test.com/mcp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'initialize',
+              id: i,
+            }),
+          })
       );
 
-      const responses = await Promise.all(
-        requests.map(req => handleMCPRequest(req, mockEnv))
-      );
+      const responses = await Promise.all(requests.map(req => handleMCPRequest(req, mockEnv)));
 
       expect(responses).toHaveLength(10);
       responses.forEach((response, i) => {
@@ -627,9 +627,7 @@ describe('MCP Server Error Paths', () => {
         }),
       ];
 
-      const responses = await Promise.all(
-        requests.map(req => handleMCPRequest(req, mockEnv))
-      );
+      const responses = await Promise.all(requests.map(req => handleMCPRequest(req, mockEnv)));
 
       expect(responses).toHaveLength(3);
       expect(responses[0].status).toBe(200);

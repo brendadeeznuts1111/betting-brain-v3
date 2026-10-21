@@ -28,7 +28,7 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
     const params = {
       cid: url.searchParams.get('cid') || '',
       includeHistory: url.searchParams.get('includeHistory') === 'true',
-      timeWindow: parseInt(url.searchParams.get('timeWindow') || '24')
+      timeWindow: parseInt(url.searchParams.get('timeWindow') || '24'),
     };
 
     const validation = GetCLVRequestSchema.safeParse(params);
@@ -40,10 +40,9 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
 
     // Query CLV data
     const db = createDatabaseHelper(env);
-    const clvData = await db.executeQueryFirst<any>(
-      `SELECT cid, clv, wr, ao, nb FROM sharp_indicators WHERE cid = ?`,
-      [validatedParams.cid]
-    );
+    const clvData = await db.executeQueryFirst<any>(`SELECT cid, clv, wr, ao, nb FROM sharp_indicators WHERE cid = ?`, [
+      validatedParams.cid,
+    ]);
 
     if (!clvData) {
       return createErrorResponse(Errors.notFound('CLV data'), Date.now().toString(36), '/api/clv');
@@ -56,7 +55,7 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
       actionCount: clvData.ao || 0,
       netBet: clvData.nb || 0,
       lastUpdated: new Date().toISOString(),
-      alertThreshold: -2 // Alert if CLV drops below -2%
+      alertThreshold: -2, // Alert if CLV drops below -2%
     };
 
     // Validate response
@@ -64,14 +63,18 @@ export async function getCLV(request: Request, env: Env): Promise<Response> {
 
     return new Response(JSON.stringify(validatedResponse), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-
   } catch (error) {
     console.error('Error in getCLV:', error);
-    return new Response(JSON.stringify(createErrorResponse(Errors.databaseError('getCLV query failed'), Date.now().toString(36), '/api/clv')), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify(
+        createErrorResponse(Errors.databaseError('getCLV query failed'), Date.now().toString(36), '/api/clv')
+      ),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }

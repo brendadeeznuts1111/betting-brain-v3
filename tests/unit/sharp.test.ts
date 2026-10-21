@@ -3,7 +3,7 @@
  * Alert threshold: > 60
  */
 
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect, beforeEach } from 'bun:test';
 import { getSharpScore } from '../../src/tools/intelligence/getSharpScore';
 
 describe('Sharp Score Calculations', () => {
@@ -21,24 +21,24 @@ describe('Sharp Score Calculations', () => {
               cid: 'test-customer-1',
               clv: 5000,
               wr: 58,
-              ao: 150
+              ao: 150,
             }),
             all: async () => [],
-            run: async () => ({ success: true })
+            run: async () => ({ success: true }),
           }),
           first: async () => ({
             cid: 'test-customer-1',
             clv: 5000,
             wr: 58,
-            ao: 150
+            ao: 150,
           }),
           all: async () => [],
-          run: async () => ({ success: true })
-        })
+          run: async () => ({ success: true }),
+        }),
       },
       ANALYTICS_ENGINE: {
-        writeDataPoint: async () => {}
-      }
+        writeDataPoint: async () => {},
+      },
     };
 
     mockRequest = new Request('https://test.com/getSharpScore?cid=test-customer-1');
@@ -60,19 +60,19 @@ describe('Sharp Score Calculations', () => {
           cid: 'sharp-customer',
           clv: 25000,
           wr: 65,
-          ao: 500
+          ao: 500,
         }),
         all: async () => [],
-        run: async () => ({ success: true })
+        run: async () => ({ success: true }),
       }),
       first: async () => ({
         cid: 'sharp-customer',
         clv: 25000,
         wr: 65,
-        ao: 500
+        ao: 500,
       }),
       all: async () => [],
-      run: async () => ({ success: true })
+      run: async () => ({ success: true }),
     });
 
     const response = await getSharpScore(mockRequest, mockEnv);
@@ -93,19 +93,19 @@ describe('Sharp Score Calculations', () => {
           cid: 'low-activity',
           clv: 100,
           wr: 48,
-          ao: 5
+          ao: 5,
         }),
         all: async () => [],
-        run: async () => ({ success: true })
+        run: async () => ({ success: true }),
       }),
       first: async () => ({
         cid: 'low-activity',
         clv: 100,
         wr: 48,
-        ao: 5
+        ao: 5,
       }),
       all: async () => [],
-      run: async () => ({ success: true })
+      run: async () => ({ success: true }),
     });
 
     const response = await getSharpScore(mockRequest, mockEnv);
@@ -126,11 +126,11 @@ describe('Sharp Score Calculations', () => {
       bind: () => ({
         first: async () => null,
         all: async () => [],
-        run: async () => ({ success: true })
+        run: async () => ({ success: true }),
       }),
       first: async () => null,
       all: async () => [],
-      run: async () => ({ success: true })
+      run: async () => ({ success: true }),
     });
 
     const response = await getSharpScore(mockRequest, mockEnv);

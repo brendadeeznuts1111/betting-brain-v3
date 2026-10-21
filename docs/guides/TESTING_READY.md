@@ -3,6 +3,7 @@
 ## ✅ **COMPLETED TASKS**
 
 ### 📁 **File Organization**
+
 - [x] **Moved untracked files to proper locations**
   - Debug docs → `docs/debug/`
   - Implementation docs → `docs/implementation/`
@@ -22,6 +23,7 @@
   - Files organized by category
 
 ### 🔧 **Extension Setup**
+
 - [x] **Debug extension ready**
   - `manifest.json` - Debug manifest (MV3 compliant)
   - `debug-content.js` - Minimal debug script (37 lines)
@@ -36,6 +38,7 @@
 ## 🎯 **READY FOR TESTING**
 
 ### **Step 1: Load Debug Extension**
+
 1. Open Chrome → `chrome://extensions/`
 2. Enable "Developer mode"
 3. Click "Load unpacked"
@@ -43,12 +46,14 @@
 5. Verify "BetTicker Debug Extension" appears
 
 ### **Step 2: Test on fantasy402.com**
+
 1. Go to `https://fantasy402.com`
 2. **Log in** (crucial for cookies)
 3. Open Developer Tools (F12) → Console
 4. Look for `🔍 DEBUG:` messages
 
 ### **Step 3: Expected Debug Messages**
+
 ```
 🔍 DEBUG: Log Forwarder initialized
 🔍 DEBUG: Content script injected successfully
@@ -61,24 +66,29 @@
 ```
 
 ### **Step 4: Monitor Logs**
+
 - **Terminal**: Log monitor running and showing worker health
-- **Browser**: Open `file:///Users/nolarose/ffffff/tools/logging/log-viewer.html`
+- **Browser**: Open
+  `file:///Users/nolarose/ffffff/tools/logging/log-viewer.html`
 - **Worker**: Check logs at `/logs` endpoint
 
 ## 🔍 **AUTHENTICATION DEBUGGING**
 
 ### **Current Issue**
+
 - Worker receiving requests but returning 401 errors
 - Cookies not being forwarded correctly
 - Origin requests failing authentication
 
 ### **Debug Steps**
+
 1. **Check cookie availability** on fantasy402.com
 2. **Verify extension cookie capture**
 3. **Test worker cookie processing**
 4. **Debug authentication flow**
 
 ### **Files to Check**
+
 - `browser-extension/content.js` - Cookie forwarding logic
 - `src/interceptors/bet-ticker-sniffer.ts` - Worker cookie processing
 - `src/index.ts` - Worker logs endpoint
@@ -86,6 +96,7 @@
 ## 📋 **TESTING CHECKLIST**
 
 ### **Pre-Testing**
+
 - [x] Log monitor running
 - [x] Worker healthy
 - [x] Debug extension ready
@@ -93,6 +104,7 @@
 - [x] Documentation consolidated
 
 ### **Extension Testing**
+
 - [ ] Load debug extension in Chrome
 - [ ] Test on fantasy402.com
 - [ ] Check console for debug messages
@@ -101,6 +113,7 @@
 - [ ] Test fetch interception
 
 ### **Authentication Testing**
+
 - [ ] Check cookie availability
 - [ ] Verify cookie forwarding
 - [ ] Test worker authentication
@@ -170,4 +183,6 @@ browser-extension/
 
 **Ready to test!** 🚀
 
-The debug extension is prepared, files are organized, and the monitoring system is active. Load the extension and test on fantasy402.com to verify content script injection and debug the authentication issues.
+The debug extension is prepared, files are organized, and the monitoring system
+is active. Load the extension and test on fantasy402.com to verify content
+script injection and debug the authentication issues.

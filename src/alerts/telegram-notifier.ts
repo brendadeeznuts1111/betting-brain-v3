@@ -86,13 +86,8 @@ ${metricsText}
   /**
    * Send model training update
    */
-  async sendModelUpdate(
-    r_squared: number,
-    std_error: number,
-    samples: number
-  ): Promise<boolean> {
-    const quality =
-      r_squared >= 0.85 ? '✅ Excellent' : r_squared >= 0.70 ? '⚠️ Good' : '❌ Poor';
+  async sendModelUpdate(r_squared: number, std_error: number, samples: number): Promise<boolean> {
+    const quality = r_squared >= 0.85 ? '✅ Excellent' : r_squared >= 0.7 ? '⚠️ Good' : '❌ Poor';
 
     const text = `
 🤖 <b>MODEL TRAINING COMPLETE</b>
@@ -137,11 +132,7 @@ ${metricsText}
   /**
    * Send generic alert message
    */
-  async sendAlert(
-    title: string,
-    message: string,
-    severity: 'info' | 'warning' | 'error' = 'info'
-  ): Promise<boolean> {
+  async sendAlert(title: string, message: string, severity: 'info' | 'warning' | 'error' = 'info'): Promise<boolean> {
     const emoji = severity === 'error' ? '🚨' : severity === 'warning' ? '⚠️' : 'ℹ️';
 
     const text = `
@@ -224,9 +215,6 @@ ${message}
 /**
  * Factory function to create Telegram notifier
  */
-export function createTelegramNotifier(
-  botToken: string,
-  chatId: string
-): TelegramNotifier {
+export function createTelegramNotifier(botToken: string, chatId: string): TelegramNotifier {
   return new TelegramNotifier(botToken, chatId);
 }

@@ -2,7 +2,7 @@
 
 /**
  * 🚀 Bun CI Integration Script
- * 
+ *
  * Integrates cursor rules with Bun's built-in speed tools
  * No separate installs, no Node fallback - pure Bun speed
  */
@@ -49,18 +49,14 @@ class BunCI {
       skipSecurity: false,
       skipTypeCheck: false,
       skipFormat: false,
-      ...config
+      ...config,
     };
     this.startTime = Date.now();
   }
 
   private isAIEnvironment(): boolean {
     // Detect AI coding assistant environments
-    return !!(
-      process.env.CLAUDECODE ||
-      process.env.REPL_ID ||
-      process.env.AGENT
-    );
+    return !!(process.env.CLAUDECODE || process.env.REPL_ID || process.env.AGENT);
   }
 
   private async runStep(name: string, command: string, args: string[] = []): Promise<boolean> {
@@ -75,7 +71,7 @@ class BunCI {
         name,
         success: true,
         duration,
-        output: result.stdout?.toString() || ''
+        output: result.stdout?.toString() || '',
       });
 
       console.log(`✅ ${name} completed in ${duration}ms`);
@@ -87,7 +83,7 @@ class BunCI {
         name,
         success: false,
         duration,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
 
       console.error(`❌ ${name} failed in ${duration}ms:`, error);
@@ -105,17 +101,19 @@ class BunCI {
     }
 
     // Check version format
-    const versionMatch = Bun.file('.cursorrules').text().then(content => {
-      const versionLine = content.split('\n').find(line => line.startsWith('version:'));
-      if (!versionLine) {
-        throw new Error('Missing version in .cursorrules');
-      }
-      const version = versionLine.split(':')[1].trim();
-      if (!/^\d+\.\d+\.\d+$/.test(version)) {
-        throw new Error(`Invalid version format: ${version}`);
-      }
-      return version;
-    });
+    const versionMatch = Bun.file('.cursorrules')
+      .text()
+      .then(content => {
+        const versionLine = content.split('\n').find(line => line.startsWith('version:'));
+        if (!versionLine) {
+          throw new Error('Missing version in .cursorrules');
+        }
+        const version = versionLine.split(':')[1].trim();
+        if (!/^\d+\.\d+\.\d+$/.test(version)) {
+          throw new Error(`Invalid version format: ${version}`);
+        }
+        return version;
+      });
 
     try {
       const version = await versionMatch;
@@ -131,18 +129,23 @@ class BunCI {
     console.log('🔍 Running Bun-aware linting...');
 
     // ESLint via bunx
-    const eslintSuccess = await this.runStep(
-      'ESLint',
-      'bunx',
-      ['eslint@latest', 'src', '--ext', '.js,.jsx,.ts,.tsx', '--max-warnings', '0']
-    );
+    const eslintSuccess = await this.runStep('ESLint', 'bunx', [
+      'eslint@latest',
+      'src',
+      '--ext',
+      '.js,.jsx,.ts,.tsx',
+      '--max-warnings',
+      '0',
+    ]);
 
     // Prettier check
-    const prettierSuccess = await this.runStep(
-      'Prettier',
-      'bunx',
-      ['prettier@latest', '--check', 'src', 'tests', 'docs']
-    );
+    const prettierSuccess = await this.runStep('Prettier', 'bunx', [
+      'prettier@latest',
+      '--check',
+      'src',
+      'tests',
+      'docs',
+    ]);
 
     return eslintSuccess && prettierSuccess;
   }
@@ -151,24 +154,30 @@ class BunCI {
     console.log('🔒 Running security scan...');
 
     // ast-grep security scan
-    const astGrepSuccess = await this.runStep(
-      'ast-grep Security',
-      'bunx',
-      ['ast-grep@latest', 'scan', '--filter', 'sql-injection-risk', '--error']
-    );
+    const astGrepSuccess = await this.runStep('ast-grep Security', 'bunx', [
+      'ast-grep@latest',
+      'scan',
+      '--filter',
+      'sql-injection-risk',
+      '--error',
+    ]);
 
     // Additional security checks
-    const stakeValidationSuccess = await this.runStep(
-      'Stake Validation',
-      'bunx',
-      ['ast-grep@latest', 'scan', '--filter', 'no-parsefloat-stake', '--error']
-    );
+    const stakeValidationSuccess = await this.runStep('Stake Validation', 'bunx', [
+      'ast-grep@latest',
+      'scan',
+      '--filter',
+      'no-parsefloat-stake',
+      '--error',
+    ]);
 
-    const corsValidationSuccess = await this.runStep(
-      'CORS Validation',
-      'bunx',
-      ['ast-grep@latest', 'scan', '--filter', 'missing-cors-headers', '--error']
-    );
+    const corsValidationSuccess = await this.runStep('CORS Validation', 'bunx', [
+      'ast-grep@latest',
+      'scan',
+      '--filter',
+      'missing-cors-headers',
+      '--error',
+    ]);
 
     return astGrepSuccess && stakeValidationSuccess && corsValidationSuccess;
   }
@@ -176,11 +185,7 @@ class BunCI {
   private async runTypeCheck(): Promise<boolean> {
     console.log('📝 Running TypeScript type check...');
 
-    return await this.runStep(
-      'TypeScript',
-      'bun',
-      ['run', 'tsc', '--noEmit']
-    );
+    return await this.runStep('TypeScript', 'bun', ['run', 'tsc', '--noEmit']);
   }
 
   private async runTests(): Promise<boolean> {
@@ -193,21 +198,13 @@ class BunCI {
     }
 
     // Run tests with coverage and randomization for analytics testing
-    return await this.runStep(
-      'Tests',
-      'bun',
-      ['run', 'test:ci']
-    );
+    return await this.runStep('Tests', 'bun', ['run', 'test:ci']);
   }
 
   private async runBuild(): Promise<boolean> {
     console.log('🏗️ Building project...');
 
-    return await this.runStep(
-      'Build',
-      'bun',
-      ['run', 'build:worker']
-    );
+    return await this.runStep('Build', 'bun', ['run', 'build:worker']);
   }
 
   private async validateFileNaming(): Promise<boolean> {
@@ -215,7 +212,8 @@ class BunCI {
 
     try {
       // Check for kebab-case files
-      const { stdout } = await $`find . -name "*.ts" -o -name "*.js" -o -name "*.md" | grep -E '[A-Z]' | grep -v node_modules`.quiet();
+      const { stdout } =
+        await $`find . -name "*.ts" -o -name "*.js" -o -name "*.md" | grep -E '[A-Z]' | grep -v node_modules`.quiet();
 
       if (stdout.toString().trim()) {
         console.warn('⚠️  Found files with uppercase letters:');
@@ -234,7 +232,8 @@ class BunCI {
     console.log('📂 Validating root directory cleanliness...');
 
     try {
-      const { stdout } = await $`ls -la | grep -E '\.(md|txt|json)$' | grep -v -E '^(README|LICENSE|CLAUDE|package|tsconfig|wrangler)\.'`.quiet();
+      const { stdout } =
+        await $`ls -la | grep -E '\.(md|txt|json)$' | grep -v -E '^(README|LICENSE|CLAUDE|package|tsconfig|wrangler)\.'`.quiet();
 
       if (stdout.toString().trim()) {
         console.error('❌ Found unexpected files in root directory:');
@@ -297,7 +296,7 @@ class BunCI {
     const result: CIResult = {
       success: allSuccess,
       duration,
-      steps: this.results
+      steps: this.results,
     };
 
     // Print summary

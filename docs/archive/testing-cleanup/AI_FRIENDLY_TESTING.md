@@ -8,11 +8,14 @@
 
 ## Overview
 
-This project integrates with Bun's AI-friendly test output feature to provide quieter, more readable test results when working with AI coding assistants like Claude Code, Replit AI, and other agents.
+This project integrates with Bun's AI-friendly test output feature to provide
+quieter, more readable test results when working with AI coding assistants like
+Claude Code, Replit AI, and other agents.
 
 ### What It Does
 
 When AI environments are detected, test output is automatically minimized to:
+
 - ✅ Show **only test failures** in detail
 - ✅ Hide passing test indicators
 - ✅ Hide skipped/todo test noise
@@ -36,6 +39,7 @@ bun run ci:bun
 ```
 
 **Detected environments:**
+
 - `CLAUDECODE=1` - Claude Code
 - `REPL_ID=1` - Replit AI
 - `AGENT=1` - Generic AI agent
@@ -64,11 +68,11 @@ CLAUDECODE=1 bun test --coverage
 
 Set any of these to enable quiet mode:
 
-| Variable | Use Case |
-|---|---|
-| `CLAUDECODE=1` | Claude Code sessions |
-| `REPL_ID=1` | Replit AI environments |
-| `AGENT=1` | Generic AI agent flag |
+| Variable       | Use Case               |
+| -------------- | ---------------------- |
+| `CLAUDECODE=1` | Claude Code sessions   |
+| `REPL_ID=1`    | Replit AI environments |
+| `AGENT=1`      | Generic AI agent flag  |
 
 ### Package Scripts
 
@@ -134,8 +138,8 @@ Both CI scripts auto-detect AI environments:
 ```typescript
 private isAIEnvironment(): boolean {
   return !!(
-    process.env.CLAUDECODE || 
-    process.env.REPL_ID || 
+    process.env.CLAUDECODE ||
+    process.env.REPL_ID ||
     process.env.AGENT
   );
 }
@@ -145,7 +149,7 @@ private async runTests(): Promise<boolean> {
     console.log('  🤖 AI environment detected - enabling quiet mode');
     process.env.CLAUDECODE = '1';
   }
-  
+
   return await this.runStep('Tests', 'bun', ['test', '--concurrent']);
 }
 ```
@@ -159,7 +163,7 @@ async run(): Promise<boolean> {
     console.log('🤖 AI Environment: Quiet test output enabled');
     process.env.CLAUDECODE = '1';
   }
-  
+
   // ... rest of pipeline
 }
 ```
@@ -205,12 +209,12 @@ bun test
 
 ### For AI Context Windows
 
-| Feature | Without AI Mode | With AI Mode |
-|---|---|---|
-| Token usage per test run | ~5,000 tokens | ~500 tokens |
-| Context efficiency | Low | High |
-| Failure visibility | Buried in output | Prominent |
-| Summary clarity | Mixed with noise | Clean |
+| Feature                  | Without AI Mode  | With AI Mode |
+| ------------------------ | ---------------- | ------------ |
+| Token usage per test run | ~5,000 tokens    | ~500 tokens  |
+| Context efficiency       | Low              | High         |
+| Failure visibility       | Buried in output | Prominent    |
+| Summary clarity          | Mixed with noise | Clean        |
 
 ### For Developers
 
@@ -274,6 +278,7 @@ bun test  # Normal verbose output
 ### Issue: Quiet mode not activating
 
 **Check environment variables:**
+
 ```bash
 echo $CLAUDECODE
 echo $REPL_ID
@@ -281,6 +286,7 @@ echo $AGENT
 ```
 
 **Solution:**
+
 ```bash
 # Manually set
 export CLAUDECODE=1
@@ -292,6 +298,7 @@ bun run test:ai
 ### Issue: Still seeing verbose output
 
 **Check if running through CI:**
+
 ```bash
 # CI scripts should auto-detect
 bun run ci:local   # ✅ Auto-detects
@@ -299,6 +306,7 @@ bun test           # ❌ Needs manual env var
 ```
 
 **Solution:**
+
 ```bash
 # Use CI commands or set env var
 CLAUDECODE=1 bun test
@@ -307,6 +315,7 @@ CLAUDECODE=1 bun test
 ### Issue: Want verbose output in AI session
 
 **Temporarily disable:**
+
 ```bash
 # Unset variables
 unset CLAUDECODE
@@ -351,7 +360,8 @@ Potential improvements being considered:
 
 ## References
 
-- **[Bun Test Documentation](https://bun.sh/docs/cli/test)** - Official Bun test docs
+- **[Bun Test Documentation](https://bun.sh/docs/cli/test)** - Official Bun test
+  docs
 - **[Cursor Rules](.cursor/rules/testing-patterns.mdc)** - Testing patterns
 - **[CI/CD Guide](../guides/CI_CD_GUIDE.md)** - Continuous integration
 
@@ -360,4 +370,3 @@ Potential improvements being considered:
 **Status:** Production-Ready ✅  
 **Maintenance:** Automated via CI  
 **Support:** Check [TESTING_STATUS.md](../TESTING_STATUS.md) for issues
-

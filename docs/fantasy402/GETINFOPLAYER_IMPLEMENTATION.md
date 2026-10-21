@@ -2,7 +2,8 @@
 
 ## Overview
 
-Added support for the `getInfoPlayer` Fantasy402 operation to capture and process player information from the Fantasy402.com API.
+Added support for the `getInfoPlayer` Fantasy402 operation to capture and
+process player information from the Fantasy402.com API.
 
 ## Implementation Details
 
@@ -13,12 +14,14 @@ Added support for the `getInfoPlayer` Fantasy402 operation to capture and proces
 Created two new tables:
 
 #### `fantasy402_players`
+
 - Stores comprehensive player information
 - Includes financial data, status flags, limits, and preferences
 - Uses `ON CONFLICT` for upsert operations
 - Indexed for performance on key fields
 
 #### `fantasy402_player_activity`
+
 - Tracks player activity events
 - Records balance changes and metadata
 - Indexed for efficient querying
@@ -28,6 +31,7 @@ Created two new tables:
 **File:** `src/utils/fantasy402-parser.ts`
 
 Added `parsePlayerInfo()` function that:
+
 - Extracts player details from Fantasy402 API response
 - Handles financial data conversion (cents to dollars)
 - Normalizes status flags and permissions
@@ -38,6 +42,7 @@ Added `parsePlayerInfo()` function that:
 **File:** `src/api/fantasy402-ingest.ts`
 
 Added `processPlayerInfo()` function that:
+
 - Processes player information from intercepted requests
 - Stores data in both KV cache and D1 database
 - Tracks player activity events
@@ -46,6 +51,7 @@ Added `processPlayerInfo()` function that:
 ### 4. Operation Routing
 
 Updated the switch statement to handle `getInfoPlayer` operations:
+
 ```typescript
 case 'getInfoPlayer':
     await processPlayerInfo(packet, parsedData, env, requestId);
@@ -64,23 +70,27 @@ case 'getInfoPlayer':
 ## Supported Data Fields
 
 ### Player Information
+
 - Customer ID, Agent ID, Player Name
 - Player Type, Office, Status
 - Registration Date, Last Login
 
 ### Financial Data
+
 - Total Wagers, Risk, Win, Net Income
 - Commission Rate, Credit Limit
 - Available Balance, Pending Balance
 - Free Play Balance, Currency Code
 
 ### Status & Limits
+
 - Active Status, Sportsbook Suspension
 - Read-Only Flag
 - Wager Limits, Minimum Wager
 - Maximum Prop Payout
 
 ### Additional Data
+
 - Permissions (JSON)
 - Preferences (JSON)
 - Contact Information (JSON)
@@ -88,11 +98,14 @@ case 'getInfoPlayer':
 ## Testing
 
 ### Test Scripts
+
 - `scripts/test-getinfoplayer.ts` - Full integration test
 - `scripts/test-player-parser.ts` - Parser validation
 
 ### Test Data
+
 Uses realistic Fantasy402 response structure with:
+
 - Customer ID: `14801_6`
 - Agent ID: `BILLY666`
 - Financial data in cents (converted to dollars)
@@ -103,10 +116,11 @@ Uses realistic Fantasy402 response structure with:
 The system will automatically process `getInfoPlayer` requests when:
 
 1. Browser extension intercepts the request:
+
 ```javascript
-fetch("https://fantasy402.com/cloud/api/Manager/getInfoPlayer", {
-  "method": "POST",
-  "body": "customerID=14801_6&agentID=BILLY666&operation=getInfoPlayer&RRO=0&agentOwner=BILLY666&agentSite=1"
+fetch('https://fantasy402.com/cloud/api/Manager/getInfoPlayer', {
+  method: 'POST',
+  body: 'customerID=14801_6&agentID=BILLY666&operation=getInfoPlayer&RRO=0&agentOwner=BILLY666&agentSite=1',
 });
 ```
 
@@ -117,31 +131,35 @@ fetch("https://fantasy402.com/cloud/api/Manager/getInfoPlayer", {
 ## Database Queries
 
 ### Get Player Information
+
 ```sql
-SELECT * FROM fantasy402_players 
-WHERE customer_id = '14801_6' 
-ORDER BY captured_at DESC 
+SELECT * FROM fantasy402_players
+WHERE customer_id = '14801_6'
+ORDER BY captured_at DESC
 LIMIT 1;
 ```
 
 ### Get Player Activity
+
 ```sql
-SELECT * FROM fantasy402_player_activity 
-WHERE customer_id = '14801_6' 
+SELECT * FROM fantasy402_player_activity
+WHERE customer_id = '14801_6'
 ORDER BY captured_at DESC;
 ```
 
 ### Get Players by Agent
+
 ```sql
-SELECT customer_id, player_name, available_balance, status 
-FROM fantasy402_players 
-WHERE agent_id = 'BILLY666' 
+SELECT customer_id, player_name, available_balance, status
+FROM fantasy402_players
+WHERE agent_id = 'BILLY666'
 AND active = 1;
 ```
 
 ## Monitoring
 
 The implementation includes comprehensive logging:
+
 - Player information processing
 - Financial metrics (balance, risk, win)
 - Activity tracking
@@ -159,6 +177,7 @@ All data is also sent to the Analytics Engine for monitoring and alerting.
 ## Future Enhancements
 
 Potential improvements:
+
 - Player performance analytics
 - Risk assessment algorithms
 - Automated alerts for suspicious activity

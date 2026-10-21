@@ -1,14 +1,15 @@
 # Cache Architecture - v1.0
 
-**Version:** 1.0-cache-optimization
-**Performance:** 90%+ cache hit rate, 93.3% D1 write reduction
-**Last Updated:** 2025-10-08
+**Version:** 1.0-cache-optimization **Performance:** 90%+ cache hit rate, 93.3%
+D1 write reduction **Last Updated:** 2025-10-08
 
 ---
 
 ## Overview
 
-Betting-Brain v1.0 implements a **multi-tier caching architecture** with hash-based change detection, achieving enterprise-grade performance for Fantasy402 data ingestion.
+Betting-Brain v1.0 implements a **multi-tier caching architecture** with
+hash-based change detection, achieving enterprise-grade performance for
+Fantasy402 data ingestion.
 
 ---
 
@@ -178,6 +179,7 @@ Response: 200 OK
 ```
 
 **Performance:**
+
 - KV cache miss: 0ms (no data)
 - D1 query: ~100ms
 - KV write (3 keys): ~50ms (parallel)
@@ -198,6 +200,7 @@ Response: 200 OK
 ```
 
 **Performance:**
+
 - KV cache hit: ~10-20ms
 - Total: ~10-20ms
 
@@ -222,6 +225,7 @@ Response: 200 OK
 ```
 
 **Performance:**
+
 - KV cache hit: ~10ms
 - Hash computation: <1ms
 - D1 write: ~50ms
@@ -247,6 +251,7 @@ Response: 200 OK
 ```
 
 **Performance:**
+
 - KV cache hit: ~10ms
 - Hash computation: <1ms
 - Total: ~11ms
@@ -274,6 +279,7 @@ fantasy402:agents:latest:{OWNER}
 ```
 
 **Value Structure:**
+
 ```json
 {
   "agents": [
@@ -293,11 +299,14 @@ fantasy402:agents:latest:{OWNER}
 
 ```typescript
 // Individual agent lookup
-fantasy402:agent:{AGENT_ID}
+fantasy402: agent: {
+  AGENT_ID;
+}
 // Example: fantasy402:agent:AGENT_123
 ```
 
 **Value Structure:**
+
 ```json
 {
   "agentID": "AGENT_123",
@@ -312,11 +321,14 @@ fantasy402:agent:{AGENT_ID}
 
 ```typescript
 // Change detection hash
-fantasy402:agents:hash:{OWNER}
+fantasy402: agents: hash: {
+  OWNER;
+}
 // Example: fantasy402:agents:hash:BILLY666
 ```
 
 **Value:** Stringified JSON of essential fields
+
 ```json
 "[{\"id\":\"AGENT_123\",\"owner\":\"BILLY666\",\"type\":\"MASTER\",\"office\":\"OFFSHORE\"}]"
 ```
@@ -325,11 +337,14 @@ fantasy402:agents:hash:{OWNER}
 
 ```typescript
 // Pre-built tree for dashboard
-fantasy402:agentTree:{OWNER}
+fantasy402: agentTree: {
+  OWNER;
+}
 // Example: fantasy402:agentTree:BILLY666
 ```
 
 **Value Structure:**
+
 ```json
 {
   "name": "BILLY666",
@@ -350,11 +365,11 @@ fantasy402:agentTree:{OWNER}
 
 ```typescript
 // Metrics (7-day retention)
-fantasy402:metrics:agent_list_requests
-fantasy402:metrics:agent_list_cache_hits
-fantasy402:metrics:agent_list_cache_misses
-fantasy402:metrics:agent_list_d1_writes_skipped
-fantasy402:metrics:agent_list_d1_writes_executed
+fantasy402: metrics: agent_list_requests;
+fantasy402: metrics: agent_list_cache_hits;
+fantasy402: metrics: agent_list_cache_misses;
+fantasy402: metrics: agent_list_d1_writes_skipped;
+fantasy402: metrics: agent_list_d1_writes_executed;
 ```
 
 **Value:** String number (e.g., "150")
@@ -423,6 +438,7 @@ Cache Warm               0           60+          Bulk population
 ### Capacity Estimates
 
 #### For 1,000 Agents
+
 - **KV Storage:** ~500 KB (multi-key + individual indexing)
 - **D1 Storage:** ~100 KB (structured data)
 - **KV Reads/Day:** ~50K (assuming 10 req/s × 86400s × 0.1 cache miss rate)
@@ -432,6 +448,7 @@ Cache Warm               0           60+          Bulk population
 ✅ **Well within limits**
 
 #### For 10,000 Agents
+
 - **KV Storage:** ~5 MB
 - **D1 Storage:** ~1 MB
 - **KV Reads/Day:** ~500K
@@ -441,6 +458,7 @@ Cache Warm               0           60+          Bulk population
 ✅ **Still well within limits**
 
 #### For 100,000 Agents (Enterprise)
+
 - **KV Storage:** ~50 MB
 - **D1 Storage:** ~10 MB
 - **KV Reads/Day:** ~5M
@@ -448,6 +466,7 @@ Cache Warm               0           60+          Bulk population
 - **D1 Writes/Day:** ~50K
 
 ⚠️ **May need optimization:**
+
 - Consider sharding by owner prefix
 - Increase TTL to 24 hours
 - Implement tiered caching (hot/cold data)
@@ -463,7 +482,8 @@ Cache Warm               0           60+          Bulk population
    - Alert: < 80%
 
 2. **D1 Write Reduction** (Target: 90%+)
-   - Formula: `d1_writes_skipped / (d1_writes_skipped + d1_writes_executed) × 100`
+   - Formula:
+     `d1_writes_skipped / (d1_writes_skipped + d1_writes_executed) × 100`
    - Alert: < 80%
 
 3. **Response Time** (Target: P95 < 200ms)
@@ -481,6 +501,7 @@ Cache Warm               0           60+          Bulk population
 ### Dashboard Cards
 
 **Floor Control Dashboard** displays:
+
 - ⚡ Cache Performance (hit rate, write reduction)
 - 🎯 Agent Hierarchy (ASCII + D3.js tree)
 - 💾 Database Metrics (line movements, sharp indicators, exposure)
@@ -543,13 +564,15 @@ Cache Warm               0           60+          Bulk population
 
 ## Related Documentation
 
-- **[PRODUCTION_CONFIG.md](./PRODUCTION_CONFIG.md)** - Production configuration guide
+- **[PRODUCTION_CONFIG.md](./PRODUCTION_CONFIG.md)** - Production configuration
+  guide
 - **[RELEASE_v1.0.md](../../RELEASE_v1.0.md)** - v1.0 release notes
-- **[cache-optimization.mdc](../../.cursor/rules/cache-optimization.mdc)** - Caching patterns rule
-- **[post-deployment.md](../checklists/post-deployment.md)** - Verification checklist
+- **[cache-optimization.mdc](../../.cursor/rules/cache-optimization.mdc)** -
+  Caching patterns rule
+- **[post-deployment.md](../checklists/post-deployment.md)** - Verification
+  checklist
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-10-08
-**Maintained By:** Betting-Brain Team
+**Document Version:** 1.0 **Last Updated:** 2025-10-08 **Maintained By:**
+Betting-Brain Team

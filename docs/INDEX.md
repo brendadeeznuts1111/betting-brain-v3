@@ -1,216 +1,239 @@
 # 📚 Documentation Index - Betting-Brain v3
 
-**Complete Navigation Map** | [Quick Start](QUICKSTART.md) | [Architecture](IMPLEMENTATION_SUMMARY.md) | [CI/CD](../.github/workflows/deploy.yml)
+**Complete Navigation Map** | [Quick Start](QUICKSTART.md) |
+[Architecture](IMPLEMENTATION_SUMMARY.md) |
+[CI/CD](../.github/workflows/deploy.yml)
 
 ---
 
 ## 🎯 Quick Navigation
 
-| Area | Entry Point | Description |
-|------|-------------|-------------|
-| **Overview** | [README.md](../README.md) | Main project documentation |
-| **Quick Start** | [QUICKSTART.md](QUICKSTART.md) | 15-second setup guide |
-| **Architecture** | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Technical deep-dive |
-| **Structure** | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | File organization guide |
-| **Deployment** | [DEPLOYMENT.md](DEPLOYMENT.md) | Complete deployment guide |
-| **API Docs** | _Generated at build time_ | OpenAPI 3.0 specification |
-| **Database** | [../migrations/](../migrations/) | D1 schema & migrations |
-| **Tests** | [../tests/](../tests/) | Unit test suite |
-| **Scripts** | [../scripts/](../scripts/) | Automation & deployment |
-| **Deploy Scripts** | [../deployment/deploy/](../deployment/deploy/) | Production deployment tools |
-| **Dashboards** | [DASHBOARD_DOCUMENTATION.md](DASHBOARD_DOCUMENTATION.md) | Complete dashboard guide 🆕 |
-| **Grafana** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | Grafana monitoring |
-| **CI/CD** | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml) | GitHub Actions |
-| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
-| **Changelog** | [CHANGELOG.md](CHANGELOG.md) | Version history |
-| **License** | [../LICENSE](../LICENSE) | MIT License |
+| Area               | Entry Point                                                                  | Description                 |
+| ------------------ | ---------------------------------------------------------------------------- | --------------------------- |
+| **Overview**       | [README.md](../README.md)                                                    | Main project documentation  |
+| **Quick Start**    | [QUICKSTART.md](QUICKSTART.md)                                               | 15-second setup guide       |
+| **Architecture**   | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)                       | Technical deep-dive         |
+| **Structure**      | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)                                 | File organization guide     |
+| **Deployment**     | [DEPLOYMENT.md](DEPLOYMENT.md)                                               | Complete deployment guide   |
+| **API Docs**       | _Generated at build time_                                                    | OpenAPI 3.0 specification   |
+| **Database**       | [../migrations/](../migrations/)                                             | D1 schema & migrations      |
+| **Tests**          | [../tests/](../tests/)                                                       | Unit test suite             |
+| **Scripts**        | [../scripts/](../scripts/)                                                   | Automation & deployment     |
+| **Deploy Scripts** | [../deployment/deploy/](../deployment/deploy/)                               | Production deployment tools |
+| **Dashboards**     | [DASHBOARD_DOCUMENTATION.md](DASHBOARD_DOCUMENTATION.md)                     | Complete dashboard guide 🆕 |
+| **Grafana**        | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | Grafana monitoring          |
+| **CI/CD**          | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml)           | GitHub Actions              |
+| **Contributing**   | [CONTRIBUTING.md](CONTRIBUTING.md)                                           | How to contribute           |
+| **Changelog**      | [CHANGELOG.md](CHANGELOG.md)                                                 | Version history             |
+| **License**        | [../LICENSE](../LICENSE)                                                     | MIT License                 |
 
 ---
 
 ## 📖 Documentation Files
 
 ### Core Documentation
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [QUICKSTART.md](QUICKSTART.md) | Fast setup & deployment | Developers | ✅ Complete |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Full deployment guide | DevOps, All Devs | ✅ Complete |
-| [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Architecture overview | Architects | ✅ Complete |
-| [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | Codebase organization | All Devs | ✅ Complete |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues & solutions | All Devs | ✅ Complete |
-| [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md) | Complete codebase analysis | All Teams | ✅ Complete |
-| [ROOT_STRUCTURE.md](ROOT_STRUCTURE.md) | Root directory reference | Maintainers | ✅ Complete |
-| [DOCUMENTATION_FLOW.md](DOCUMENTATION_FLOW.md) | Documentation navigation guide | All Users | ✅ Complete |
-| [RULES_INDEX.md](RULES_INDEX.md) | Complete rules reference | AI Assistants, Developers | ✅ Complete |
-| [FORMATTING_CONSISTENCY_GUIDE.md](FORMATTING_CONSISTENCY_GUIDE.md) | Formatting standards guide | Writers, Reviewers | ✅ Complete |
+
+| Document                                                           | Purpose                        | Audience                  | Status      |
+| ------------------------------------------------------------------ | ------------------------------ | ------------------------- | ----------- |
+| [QUICKSTART.md](QUICKSTART.md)                                     | Fast setup & deployment        | Developers                | ✅ Complete |
+| [DEPLOYMENT.md](DEPLOYMENT.md)                                     | Full deployment guide          | DevOps, All Devs          | ✅ Complete |
+| [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)             | Architecture overview          | Architects                | ✅ Complete |
+| [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)                       | Codebase organization          | All Devs                  | ✅ Complete |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                           | Common issues & solutions      | All Devs                  | ✅ Complete |
+| [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md)                           | Complete codebase analysis     | All Teams                 | ✅ Complete |
+| [ROOT_STRUCTURE.md](ROOT_STRUCTURE.md)                             | Root directory reference       | Maintainers               | ✅ Complete |
+| [DOCUMENTATION_FLOW.md](DOCUMENTATION_FLOW.md)                     | Documentation navigation guide | All Users                 | ✅ Complete |
+| [RULES_INDEX.md](RULES_INDEX.md)                                   | Complete rules reference       | AI Assistants, Developers | ✅ Complete |
+| [FORMATTING_CONSISTENCY_GUIDE.md](FORMATTING_CONSISTENCY_GUIDE.md) | Formatting standards guide     | Writers, Reviewers        | ✅ Complete |
 
 ### API Documentation ✨ NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [REST_API_REFERENCE.md](REST_API_REFERENCE.md) | Complete REST API docs (9 endpoints) 🆕 | Developers | ✅ Complete |
-| [API_ENHANCEMENT_SUMMARY.md](API_ENHANCEMENT_SUMMARY.md) | API layer overview & features 🆕 | All Teams | ✅ Complete |
+
+| Document                                                 | Purpose                                 | Audience   | Status      |
+| -------------------------------------------------------- | --------------------------------------- | ---------- | ----------- |
+| [REST_API_REFERENCE.md](REST_API_REFERENCE.md)           | Complete REST API docs (9 endpoints) 🆕 | Developers | ✅ Complete |
+| [API_ENHANCEMENT_SUMMARY.md](API_ENHANCEMENT_SUMMARY.md) | API layer overview & features 🆕        | All Teams  | ✅ Complete |
 
 ### CI & Testing ✨ NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [CI_AND_ZOMBIE_FIX_SUMMARY.md](CI_AND_ZOMBIE_FIX_SUMMARY.md) | Complete CI & zombie fix implementation 🆕 | All Devs | ✅ Complete |
-| [ZOMBIE_PROCESS_FIX.md](ZOMBIE_PROCESS_FIX.md) | Zombie process fix technical details 🆕 | DevOps | ✅ Complete |
-| [TESTING_STATUS.md](TESTING_STATUS.md) | Test health & coverage | QA, Devs | ✅ Complete |
-| **[ERROR_PATH_TESTING.md](ERROR_PATH_TESTING.md)** | **📋 Comprehensive error path test suite (299 tests, 81% coverage)** 🆕⭐ | QA, Devs, Tech Leads | ✅ Complete |
-| [testing/TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | Testing patterns & best practices | All Devs | ✅ Complete |
+
+| Document                                                     | Purpose                                                                   | Audience             | Status      |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------- | -------------------- | ----------- |
+| [CI_AND_ZOMBIE_FIX_SUMMARY.md](CI_AND_ZOMBIE_FIX_SUMMARY.md) | Complete CI & zombie fix implementation 🆕                                | All Devs             | ✅ Complete |
+| [ZOMBIE_PROCESS_FIX.md](ZOMBIE_PROCESS_FIX.md)               | Zombie process fix technical details 🆕                                   | DevOps               | ✅ Complete |
+| [TESTING_STATUS.md](TESTING_STATUS.md)                       | Test health & coverage                                                    | QA, Devs             | ✅ Complete |
+| **[ERROR_PATH_TESTING.md](ERROR_PATH_TESTING.md)**           | **📋 Comprehensive error path test suite (299 tests, 81% coverage)** 🆕⭐ | QA, Devs, Tech Leads | ✅ Complete |
+| [testing/TESTING_GUIDE.md](guides/TESTING_GUIDE.md)          | Testing patterns & best practices                                         | All Devs             | ✅ Complete |
 
 ### MCP Integration ✨ NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) | MCP server status & overview | All Teams | ✅ Complete |
-| [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md) | Complete API docs (13 tools) | Developers | ✅ Complete |
-| [MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | Testing procedures | QA, Developers | ✅ Complete |
-| [SPORTS_API_DEPLOYMENT.md](SPORTS_API_DEPLOYMENT.md) | Sports API production deployment | DevOps, All Devs | ✅ Complete |
-| [MCP_CONFIG_UPDATE.md](MCP_CONFIG_UPDATE.md) | MCP v3.3.0 status & configuration | All Teams | ✅ Complete |
+
+| Document                                               | Purpose                           | Audience         | Status      |
+| ------------------------------------------------------ | --------------------------------- | ---------------- | ----------- |
+| [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md) | MCP server status & overview      | All Teams        | ✅ Complete |
+| [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md)                   | Complete API docs (13 tools)      | Developers       | ✅ Complete |
+| [MCP_TESTING_GUIDE.md](guides/TESTING_GUIDE.md)        | Testing procedures                | QA, Developers   | ✅ Complete |
+| [SPORTS_API_DEPLOYMENT.md](SPORTS_API_DEPLOYMENT.md)   | Sports API production deployment  | DevOps, All Devs | ✅ Complete |
+| [MCP_CONFIG_UPDATE.md](MCP_CONFIG_UPDATE.md)           | MCP v3.3.0 status & configuration | All Teams        | ✅ Complete |
 
 ### AI Floor System 🤖 NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| **[FLOOR_SYSTEM.md](FLOOR_SYSTEM.md)** | **🤖 AI-native autonomous operations layer** 🆕⭐ | All Teams | ✅ Complete |
-| **[FLOOR_SMOKE_TEST.md](FLOOR_SMOKE_TEST.md)** | **⚡ 60-second end-to-end validation** 🆕🔥 | All Teams | ✅ Complete |
-| **[COMMAND_REFERENCE.md](COMMAND_REFERENCE.md)** | **📋 Three-tier command guide (CLI → Forest → Floor)** 🆕🔥 | All Teams | ✅ Complete |
-| [.cursor/rules/99-floor.mdc](../.cursor/rules/99-floor.mdc) | Consolidated AI rules (highest priority) | AI Assistants | ✅ Complete |
-| [scripts/floor-health.ts](../scripts/floor-health.ts) | One-command health check & auto-fix | DevOps, AI | ✅ Complete |
-| [scripts/floor-smoke-test.sh](../scripts/floor-smoke-test.sh) | Comprehensive smoke test script | DevOps, QA | ✅ Complete |
-| [src/routes/floor-status.ts](../src/routes/floor-status.ts) | Live system status endpoint | Monitoring | ✅ Complete |
-| [.github/workflows/floor-badge.yml](../.github/workflows/floor-badge.yml) | Automated status badges | CI/CD | ✅ Complete |
+
+| Document                                                                  | Purpose                                                     | Audience      | Status      |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------- | ----------- |
+| **[FLOOR_SYSTEM.md](FLOOR_SYSTEM.md)**                                    | **🤖 AI-native autonomous operations layer** 🆕⭐           | All Teams     | ✅ Complete |
+| **[FLOOR_SMOKE_TEST.md](FLOOR_SMOKE_TEST.md)**                            | **⚡ 60-second end-to-end validation** 🆕🔥                 | All Teams     | ✅ Complete |
+| **[COMMAND_REFERENCE.md](COMMAND_REFERENCE.md)**                          | **📋 Three-tier command guide (CLI → Forest → Floor)** 🆕🔥 | All Teams     | ✅ Complete |
+| [.cursor/rules/99-floor.mdc](../.cursor/rules/99-floor.mdc)               | Consolidated AI rules (highest priority)                    | AI Assistants | ✅ Complete |
+| [scripts/floor-health.ts](../scripts/floor-health.ts)                     | One-command health check & auto-fix                         | DevOps, AI    | ✅ Complete |
+| [scripts/floor-smoke-test.sh](../scripts/floor-smoke-test.sh)             | Comprehensive smoke test script                             | DevOps, QA    | ✅ Complete |
+| [src/routes/floor-status.ts](../src/routes/floor-status.ts)               | Live system status endpoint                                 | Monitoring    | ✅ Complete |
+| [.github/workflows/floor-badge.yml](../.github/workflows/floor-badge.yml) | Automated status badges                                     | CI/CD         | ✅ Complete |
 
 ### Fantasy402 Integration 🎯 NEW
 
 **⭐ START HERE:**
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
+
+| Document                                                     | Purpose                                             | Audience  | Status      |
+| ------------------------------------------------------------ | --------------------------------------------------- | --------- | ----------- |
 | **[COMPLETE_SYSTEM_SUMMARY.md](COMPLETE_SYSTEM_SUMMARY.md)** | **📖 Complete system overview & achievements** 🆕🎉 | All Teams | ✅ Complete |
-| **[ARCHITECTURE_COMPLETE.md](ARCHITECTURE_COMPLETE.md)** | **🏗️ Full architecture with Mermaid diagrams** 🆕🎨 | All Teams | ✅ Complete |
+| **[ARCHITECTURE_COMPLETE.md](ARCHITECTURE_COMPLETE.md)**     | **🏗️ Full architecture with Mermaid diagrams** 🆕🎨 | All Teams | ✅ Complete |
 
 **Core Documentation:**
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [FANTASY402_INTEGRATION_COMPLETE.md](FANTASY402_INTEGRATION_COMPLETE.md) | Complete integration summary 🆕 | All Teams | ✅ Complete |
-| [FANTASY402_DASHBOARD_COMPLETE.md](FANTASY402_DASHBOARD_COMPLETE.md) | Dashboard & scaling system 🆕 | All Teams | ✅ Complete |
-| [FANTASY402_AUDIT.md](FANTASY402_AUDIT.md) | Deep system audit & root cause analysis 🆕 | All Teams | ✅ Complete |
-| [CONFIG_CACHING_STRATEGY.md](CONFIG_CACHING_STRATEGY.md) | **Multi-tier configuration caching** 🆕📦⚡ | All Teams | ✅ Complete |
-| [ARCHITECTURE_UPGRADE_COMPLETE.md](ARCHITECTURE_UPGRADE_COMPLETE.md) | Queue-based architecture upgrade 🆕⚡ | Architects | ✅ Complete |
-| [QUEUE_BASED_LOGGING.md](QUEUE_BASED_LOGGING.md) | Async logging architecture guide 🆕⚡ | Developers | ✅ Complete |
-| [FANTASY402_AUTHENTICATED_API.md](API.md) | Server-side API client guide 🆕🔐 | Developers | ✅ Complete |
-| [WEBSOCKET_IMPLEMENTATION_COMPLETE.md](WEBSOCKET_IMPLEMENTATION_COMPLETE.md) | WebSocket implementation guide 🆕🔌 | Developers | ✅ Complete |
-| [WEBSOCKET_ENHANCEMENT_PLAN.md](WEBSOCKET_ENHANCEMENT_PLAN.md) | Future WebSocket enhancements 🆕 | Architects | 📋 Planned |
-| [guides/FANTASY402_INTEGRATION_GUIDE.md](guides/FANTASY402_INTEGRATION_GUIDE.md) | Setup & testing guide 🆕 | Developers | ✅ Complete |
-| [guides/AGENT_PERFORMANCE_INTEGRATION.md](guides/AGENT_PERFORMANCE_INTEGRATION.md) | Agent performance endpoint guide 🆕 | Developers | ✅ Complete |
-| [guides/FANTASY402_SCALING_BLUEPRINT.md](guides/FANTASY402_SCALING_BLUEPRINT.md) | Systematic scaling framework 🆕 | Developers | ✅ Complete |
-| [guides/CLOUDFLARE_WRANGLER_SETUP.md](guides/CLOUDFLARE_WRANGLER_SETUP.md) | Worker deployment guide 🆕 | DevOps | ✅ Complete |
-| [MCP_VERIFICATION_REPORT.md](MCP_VERIFICATION_REPORT.md) | Complete MCP verification results 🆕 | All Teams | ✅ Complete |
+
+| Document                                                                           | Purpose                                     | Audience   | Status      |
+| ---------------------------------------------------------------------------------- | ------------------------------------------- | ---------- | ----------- |
+| [FANTASY402_INTEGRATION_COMPLETE.md](FANTASY402_INTEGRATION_COMPLETE.md)           | Complete integration summary 🆕             | All Teams  | ✅ Complete |
+| [FANTASY402_DASHBOARD_COMPLETE.md](FANTASY402_DASHBOARD_COMPLETE.md)               | Dashboard & scaling system 🆕               | All Teams  | ✅ Complete |
+| [FANTASY402_AUDIT.md](FANTASY402_AUDIT.md)                                         | Deep system audit & root cause analysis 🆕  | All Teams  | ✅ Complete |
+| [CONFIG_CACHING_STRATEGY.md](CONFIG_CACHING_STRATEGY.md)                           | **Multi-tier configuration caching** 🆕📦⚡ | All Teams  | ✅ Complete |
+| [ARCHITECTURE_UPGRADE_COMPLETE.md](ARCHITECTURE_UPGRADE_COMPLETE.md)               | Queue-based architecture upgrade 🆕⚡       | Architects | ✅ Complete |
+| [QUEUE_BASED_LOGGING.md](QUEUE_BASED_LOGGING.md)                                   | Async logging architecture guide 🆕⚡       | Developers | ✅ Complete |
+| [FANTASY402_AUTHENTICATED_API.md](API.md)                                          | Server-side API client guide 🆕🔐           | Developers | ✅ Complete |
+| [WEBSOCKET_IMPLEMENTATION_COMPLETE.md](WEBSOCKET_IMPLEMENTATION_COMPLETE.md)       | WebSocket implementation guide 🆕🔌         | Developers | ✅ Complete |
+| [WEBSOCKET_ENHANCEMENT_PLAN.md](WEBSOCKET_ENHANCEMENT_PLAN.md)                     | Future WebSocket enhancements 🆕            | Architects | 📋 Planned  |
+| [guides/FANTASY402_INTEGRATION_GUIDE.md](guides/FANTASY402_INTEGRATION_GUIDE.md)   | Setup & testing guide 🆕                    | Developers | ✅ Complete |
+| [guides/AGENT_PERFORMANCE_INTEGRATION.md](guides/AGENT_PERFORMANCE_INTEGRATION.md) | Agent performance endpoint guide 🆕         | Developers | ✅ Complete |
+| [guides/FANTASY402_SCALING_BLUEPRINT.md](guides/FANTASY402_SCALING_BLUEPRINT.md)   | Systematic scaling framework 🆕             | Developers | ✅ Complete |
+| [guides/CLOUDFLARE_WRANGLER_SETUP.md](guides/CLOUDFLARE_WRANGLER_SETUP.md)         | Worker deployment guide 🆕                  | DevOps     | ✅ Complete |
+| [MCP_VERIFICATION_REPORT.md](MCP_VERIFICATION_REPORT.md)                           | Complete MCP verification results 🆕        | All Teams  | ✅ Complete |
 
 **Fantasy402 Operation Implementations 🆕:**
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [GETINFOPLAYER_IMPLEMENTATION.md](GETINFOPLAYER_IMPLEMENTATION.md) | Player info operation implementation 🆕 | Developers | ✅ Complete |
-| [GETPERFORMANCEPLAYER_IMPLEMENTATION.md](GETPERFORMANCEPLAYER_IMPLEMENTATION.md) | Player performance operation implementation 🆕 | Developers | ✅ Complete |
-| [GETREPORTPLAYERANALYSIS_IMPLEMENTATION.md](GETREPORTPLAYERANALYSIS_IMPLEMENTATION.md) | Player analysis operation implementation 🆕 | Developers | ✅ Complete |
-| [FLOOR_CONTROL_FANTASY402_CARDS.md](FLOOR_CONTROL_FANTASY402_CARDS.md) | Floor Control dashboard integration 🆕 | All Teams | ✅ Complete |
+
+| Document                                                                               | Purpose                                        | Audience   | Status      |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------- | ----------- |
+| [GETINFOPLAYER_IMPLEMENTATION.md](GETINFOPLAYER_IMPLEMENTATION.md)                     | Player info operation implementation 🆕        | Developers | ✅ Complete |
+| [GETPERFORMANCEPLAYER_IMPLEMENTATION.md](GETPERFORMANCEPLAYER_IMPLEMENTATION.md)       | Player performance operation implementation 🆕 | Developers | ✅ Complete |
+| [GETREPORTPLAYERANALYSIS_IMPLEMENTATION.md](GETREPORTPLAYERANALYSIS_IMPLEMENTATION.md) | Player analysis operation implementation 🆕    | Developers | ✅ Complete |
+| [FLOOR_CONTROL_FANTASY402_CARDS.md](FLOOR_CONTROL_FANTASY402_CARDS.md)                 | Floor Control dashboard integration 🆕         | All Teams  | ✅ Complete |
 
 ### System Integration ✨ NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) | Endpoint & dashboard mapping | All Devs | ✅ Complete |
-| [SYSTEM_INTEGRATION_MAP.md](SYSTEM_INTEGRATION_MAP.md) | Visual architecture diagrams | Architects | ✅ Complete |
-| [DATABASE_CRON_VERIFICATION.md](DATABASE_CRON_VERIFICATION.md) | Database & cron verification | DevOps | ✅ Complete |
+
+| Document                                                               | Purpose                      | Audience   | Status      |
+| ---------------------------------------------------------------------- | ---------------------------- | ---------- | ----------- |
+| [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) | Endpoint & dashboard mapping | All Devs   | ✅ Complete |
+| [SYSTEM_INTEGRATION_MAP.md](SYSTEM_INTEGRATION_MAP.md)                 | Visual architecture diagrams | Architects | ✅ Complete |
+| [DATABASE_CRON_VERIFICATION.md](DATABASE_CRON_VERIFICATION.md)         | Database & cron verification | DevOps     | ✅ Complete |
 
 ### Production Observability 🚨 NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| **[OBSERVABILITY_COMPLETE.md](OBSERVABILITY_COMPLETE.md)** | **📊 Complete observability implementation** 🆕🚨⭐ | All Teams | ✅ Complete |
-| **[PRODUCTION_ALERTS_SETUP.md](PRODUCTION_ALERTS_SETUP.md)** | **⚡ 15-min alert setup guide** 🆕🚨 | DevOps | ✅ Complete |
-| [runbooks/queue-backlog.md](runbooks/queue-backlog.md) | Queue back-pressure response 🆕 | DevOps | ✅ Complete |
-| [runbooks/d1-busy.md](runbooks/d1-busy.md) | D1 SQLITE_BUSY resolution 🆕 | DevOps | ✅ Complete |
-| [runbooks/rollback.md](runbooks/rollback.md) | Emergency rollback procedure 🆕 | DevOps | ✅ Complete |
+
+| Document                                                     | Purpose                                             | Audience  | Status      |
+| ------------------------------------------------------------ | --------------------------------------------------- | --------- | ----------- |
+| **[OBSERVABILITY_COMPLETE.md](OBSERVABILITY_COMPLETE.md)**   | **📊 Complete observability implementation** 🆕🚨⭐ | All Teams | ✅ Complete |
+| **[PRODUCTION_ALERTS_SETUP.md](PRODUCTION_ALERTS_SETUP.md)** | **⚡ 15-min alert setup guide** 🆕🚨                | DevOps    | ✅ Complete |
+| [runbooks/queue-backlog.md](runbooks/queue-backlog.md)       | Queue back-pressure response 🆕                     | DevOps    | ✅ Complete |
+| [runbooks/d1-busy.md](runbooks/d1-busy.md)                   | D1 SQLITE_BUSY resolution 🆕                        | DevOps    | ✅ Complete |
+| [runbooks/rollback.md](runbooks/rollback.md)                 | Emergency rollback procedure 🆕                     | DevOps    | ✅ Complete |
 
 ### Quality & Testing ✨ NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [TEST_AUDIT_REPORT.md](TEST_AUDIT_REPORT.md) | Test quality audit (100/100) | QA, Leads | ✅ Complete |
-| [CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md) | Code quality review | All Devs | ✅ Complete |
-| [TESTING_STATUS.md](TESTING_STATUS.md) | Current testing status | QA | ✅ Complete |
-| [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md) | API interception docs | Developers | ✅ Complete |
+
+| Document                                       | Purpose                      | Audience   | Status      |
+| ---------------------------------------------- | ---------------------------- | ---------- | ----------- |
+| [TEST_AUDIT_REPORT.md](TEST_AUDIT_REPORT.md)   | Test quality audit (100/100) | QA, Leads  | ✅ Complete |
+| [CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md) | Code quality review          | All Devs   | ✅ Complete |
+| [TESTING_STATUS.md](TESTING_STATUS.md)         | Current testing status       | QA         | ✅ Complete |
+| [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md) | API interception docs        | Developers | ✅ Complete |
 
 ### Integrated Testing System 🧪 NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [testing/INTEGRATED_TESTING_SYSTEM.md](testing/INTEGRATED_TESTING_SYSTEM.md) | Complete testing system guide 🆕 | All Devs | ✅ Complete |
+
+| Document                                                                                 | Purpose                           | Audience  | Status      |
+| ---------------------------------------------------------------------------------------- | --------------------------------- | --------- | ----------- |
+| [testing/INTEGRATED_TESTING_SYSTEM.md](testing/INTEGRATED_TESTING_SYSTEM.md)             | Complete testing system guide 🆕  | All Devs  | ✅ Complete |
 | [archive/testing-cleanup/CLEANUP_SUMMARY.md](archive/testing-cleanup/CLEANUP_SUMMARY.md) | Testing system cleanup summary 🗑️ | All Teams | ✅ Complete |
 
 ### Enhanced Analytics Architecture 🧠 NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| **[ENHANCED_ANALYTICS_ARCHITECTURE.md](ENHANCED_ANALYTICS_ARCHITECTURE.md)** | **📊 Complete analytics architecture (6 modules)** 🆕⭐ | All Teams | ✅ Complete |
-| **[ENHANCED_ANALYTICS_DEPLOYMENT.md](ENHANCED_ANALYTICS_DEPLOYMENT.md)** | **🚀 Deployment summary & checklist** 🆕🔥 | DevOps, All Teams | ✅ Complete |
-| **[HIERARCHY_ENHANCED.md](HIERARCHY_ENHANCED.md)** | **🌳 Agent hierarchy dashboard with search & analytics** 🆕 | Frontend, Product | ✅ Complete |
+
+| Document                                                                     | Purpose                                                     | Audience          | Status      |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------- | ----------- |
+| **[ENHANCED_ANALYTICS_ARCHITECTURE.md](ENHANCED_ANALYTICS_ARCHITECTURE.md)** | **📊 Complete analytics architecture (6 modules)** 🆕⭐     | All Teams         | ✅ Complete |
+| **[ENHANCED_ANALYTICS_DEPLOYMENT.md](ENHANCED_ANALYTICS_DEPLOYMENT.md)**     | **🚀 Deployment summary & checklist** 🆕🔥                  | DevOps, All Teams | ✅ Complete |
+| **[HIERARCHY_ENHANCED.md](HIERARCHY_ENHANCED.md)**                           | **🌳 Agent hierarchy dashboard with search & analytics** 🆕 | Frontend, Product | ✅ Complete |
 
 ### Developer UX System 🚀 NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
+
+| Document                                             | Purpose                                                                   | Audience       | Status      |
+| ---------------------------------------------------- | ------------------------------------------------------------------------- | -------------- | ----------- |
 | **[DEVELOPER_UX_SYSTEM.md](DEVELOPER_UX_SYSTEM.md)** | **⚡ Single-command dev environment (<30s startup, <20ms search)** 🆕🔥⭐ | All Developers | ✅ Complete |
 
 ### Developer Resources ✨ NEW
-| Document | Purpose | Audience | Status |
-|----------|---------|----------|--------|
-| [CURSOR_RULES.md](CURSOR_RULES.md) | AI assistant rules guide (10 rules) | AI Assistants | ✅ Complete |
-| [AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md) | Testing workflows | Developers | ✅ Complete |
-| [SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md) | Complete src/ analysis | All Devs | ✅ Complete |
-| [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md) | fantasy402.com integration guide | All Devs | ✅ Complete |
-| [DASHBOARD_REFACTORING_SUMMARY.md](DASHBOARD_REFACTORING_SUMMARY.md) | Dashboard refactoring (60% reduction) 🆕 | All Devs | ✅ Complete |
-| [dashboards/README.md](../dashboards/README.md) | Dashboard organization & shared utilities 🆕 | Frontend | ✅ Complete |
-| [AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md) | ast-grep code search guide (WORKING!) 🆕 | All Devs | ✅ Complete |
-| [sgconfig.yml](../sgconfig.yml) | ast-grep project configuration 🆕 | All Devs | ✅ Complete |
+
+| Document                                                             | Purpose                                      | Audience      | Status      |
+| -------------------------------------------------------------------- | -------------------------------------------- | ------------- | ----------- |
+| [CURSOR_RULES.md](CURSOR_RULES.md)                                   | AI assistant rules guide (10 rules)          | AI Assistants | ✅ Complete |
+| [AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md)                           | Testing workflows                            | Developers    | ✅ Complete |
+| [SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md)                   | Complete src/ analysis                       | All Devs      | ✅ Complete |
+| [FANTASY402_INTEGRATION.md](FANTASY402_INTEGRATION.md)               | fantasy402.com integration guide             | All Devs      | ✅ Complete |
+| [DASHBOARD_REFACTORING_SUMMARY.md](DASHBOARD_REFACTORING_SUMMARY.md) | Dashboard refactoring (60% reduction) 🆕     | All Devs      | ✅ Complete |
+| [dashboards/README.md](../dashboards/README.md)                      | Dashboard organization & shared utilities 🆕 | Frontend      | ✅ Complete |
+| [AST_GREP_QUICKSTART.md](AST_GREP_QUICKSTART.md)                     | ast-grep code search guide (WORKING!) 🆕     | All Devs      | ✅ Complete |
+| [sgconfig.yml](../sgconfig.yml)                                      | ast-grep project configuration 🆕            | All Devs      | ✅ Complete |
 
 ### Archive (Historical)
-| Document | Purpose | Status |
-|----------|---------|--------|
-| [archive/BUILD_REPORT.md](archive/BUILD_REPORT.md) | Historical build stats | 📦 Archived |
-| [archive/FINAL_REVIEW.md](archive/FINAL_REVIEW.md) | Previous review | 📦 Archived |
-| [archive/FIXES_APPLIED.md](archive/FIXES_APPLIED.md) | Historical fixes | 📦 Archived |
-| [archive/LINK_VERIFICATION.md](archive/LINK_VERIFICATION.md) | Previous link audit | 📦 Archived |
+
+| Document                                                     | Purpose                | Status      |
+| ------------------------------------------------------------ | ---------------------- | ----------- |
+| [archive/BUILD_REPORT.md](archive/BUILD_REPORT.md)           | Historical build stats | 📦 Archived |
+| [archive/FINAL_REVIEW.md](archive/FINAL_REVIEW.md)           | Previous review        | 📦 Archived |
+| [archive/FIXES_APPLIED.md](archive/FIXES_APPLIED.md)         | Historical fixes       | 📦 Archived |
+| [archive/LINK_VERIFICATION.md](archive/LINK_VERIFICATION.md) | Previous link audit    | 📦 Archived |
 
 ### Deployment Scripts
-| Script | Purpose | Usage |
-|--------|---------|-------|
-| [../deploy/setup-production.sh](../deploy/setup-production.sh) | Initial production setup | One-time environment creation |
+
+| Script                                                           | Purpose                    | Usage                                |
+| ---------------------------------------------------------------- | -------------------------- | ------------------------------------ |
+| [../deploy/setup-production.sh](../deploy/setup-production.sh)   | Initial production setup   | One-time environment creation        |
 | [../deploy/production-deploy.sh](../deploy/production-deploy.sh) | Safe production deployment | Deploy with health checks & rollback |
-| [../deploy/staging-deploy.sh](../deploy/staging-deploy.sh) | Quick staging deployment | Test changes before production |
-| [../deploy/README.md](../README.md) | Deployment guide | Full deployment documentation |
+| [../deploy/staging-deploy.sh](../deploy/staging-deploy.sh)       | Quick staging deployment   | Test changes before production       |
+| [../deploy/README.md](../README.md)                              | Deployment guide           | Full deployment documentation        |
 
 ---
 
 ## 🏗️ Infrastructure
 
 ### Cloudflare Workers
-| Component | Path | Description |
-|-----------|------|-------------|
-| **Main Worker** | [../src/index.ts](../src/index.ts) | Entry point & routing |
-| **Wrangler Config** | [../wrangler.toml](../wrangler.toml) | Worker configuration |
-| **Environment** | [../.env.example](../.env.example) | Env variable template |
+
+| Component           | Path                                 | Description           |
+| ------------------- | ------------------------------------ | --------------------- |
+| **Main Worker**     | [../src/index.ts](../src/index.ts)   | Entry point & routing |
+| **Wrangler Config** | [../wrangler.toml](../wrangler.toml) | Worker configuration  |
+| **Environment**     | [../.env.example](../.env.example)   | Env variable template |
 
 ### Database (D1)
-| Component | Path | Description |
-|-----------|------|-------------|
-| **Initial Schema** | [../migrations/0001_initial_schema.sql](../migrations/0001_initial_schema.sql) | Tables & indexes |
-| **TTL Triggers** | [../migrations/0002_add_ttl.sql](../migrations/0002_add_ttl.sql) | Auto-cleanup triggers |
-| **Type Definitions** | [../src/types/database.ts](../src/types/database.ts) | TypeScript types |
+
+| Component            | Path                                                                           | Description           |
+| -------------------- | ------------------------------------------------------------------------------ | --------------------- |
+| **Initial Schema**   | [../migrations/0001_initial_schema.sql](../migrations/0001_initial_schema.sql) | Tables & indexes      |
+| **TTL Triggers**     | [../migrations/0002_add_ttl.sql](../migrations/0002_add_ttl.sql)               | Auto-cleanup triggers |
+| **Type Definitions** | [../src/types/database.ts](../src/types/database.ts)                           | TypeScript types      |
 
 ### Queues
-| Queue | Consumer | Purpose |
-|-------|----------|---------|
-| **line-ingress** | [../src/queues/lineIngress.ts](../src/queues/lineIngress.ts) | Line movement ingestion |
-| **steam-webhook** | [../src/queues/steamWebhook.ts](../src/queues/steamWebhook.ts) | Steam detection alerts |
+
+| Queue             | Consumer                                                       | Purpose                 |
+| ----------------- | -------------------------------------------------------------- | ----------------------- |
+| **line-ingress**  | [../src/queues/lineIngress.ts](../src/queues/lineIngress.ts)   | Line movement ingestion |
+| **steam-webhook** | [../src/queues/steamWebhook.ts](../src/queues/steamWebhook.ts) | Steam detection alerts  |
 
 ### Scheduled Jobs
-| Schedule | Handler | Frequency |
-|----------|---------|-----------|
-| **Sharp Calc** | [../src/schedules/sharpCalc.ts](../src/schedules/sharpCalc.ts) | Hourly |
+
+| Schedule          | Handler                                                              | Frequency |
+| ----------------- | -------------------------------------------------------------------- | --------- |
+| **Sharp Calc**    | [../src/schedules/sharpCalc.ts](../src/schedules/sharpCalc.ts)       | Hourly    |
 | **Exposure Calc** | [../src/schedules/exposureCalc.ts](../src/schedules/exposureCalc.ts) | Every 30s |
 
 ---
@@ -218,79 +241,85 @@
 ## 🔧 Development
 
 ### Setup & Scripts
-| Script | Path | Purpose |
-|--------|------|---------|
-| **Bootstrap** | [../scripts/bootstrap.ts](../scripts/bootstrap.ts) | Zero-config setup |
-| **Codegen** | [../scripts/codegen.ts](../scripts/codegen.ts) | Generate OpenAPI docs |
-| **Deploy** | [../scripts/deploy.ts](../scripts/deploy.ts) | Production deployment |
+
+| Script        | Path                                               | Purpose               |
+| ------------- | -------------------------------------------------- | --------------------- |
+| **Bootstrap** | [../scripts/bootstrap.ts](../scripts/bootstrap.ts) | Zero-config setup     |
+| **Codegen**   | [../scripts/codegen.ts](../scripts/codegen.ts)     | Generate OpenAPI docs |
+| **Deploy**    | [../scripts/deploy.ts](../scripts/deploy.ts)       | Production deployment |
 
 ### Testing
-| Test Suite | Path | Coverage |
-|------------|------|----------|
-| **CLV Tests** | [../tests/clv.test.ts](../tests/clv.test.ts) | Customer lifetime value |
-| **Hold Tests** | [../tests/hold.test.ts](../tests/hold.test.ts) | Hold percentage |
-| **Exposure Tests** | [../tests/exposure.test.ts](../tests/exposure.test.ts) | Risk exposure |
-| **Sharp Tests** | [../tests/sharp.test.ts](../tests/sharp.test.ts) | Sharp scores |
-| **Steam Tests** | [../tests/steam.test.ts](../tests/steam.test.ts) | Steam detection |
-| **Config** | [../vitest.config.ts](../vitest.config.ts) | Test configuration |
+
+| Test Suite         | Path                                                   | Coverage                |
+| ------------------ | ------------------------------------------------------ | ----------------------- |
+| **CLV Tests**      | [../tests/clv.test.ts](../tests/clv.test.ts)           | Customer lifetime value |
+| **Hold Tests**     | [../tests/hold.test.ts](../tests/hold.test.ts)         | Hold percentage         |
+| **Exposure Tests** | [../tests/exposure.test.ts](../tests/exposure.test.ts) | Risk exposure           |
+| **Sharp Tests**    | [../tests/sharp.test.ts](../tests/sharp.test.ts)       | Sharp scores            |
+| **Steam Tests**    | [../tests/steam.test.ts](../tests/steam.test.ts)       | Steam detection         |
+| **Config**         | [../vitest.config.ts](../vitest.config.ts)             | Test configuration      |
 
 ---
 
 ## 🔌 MCP Intelligence APIs
 
-| API | Handler | Description |
-|-----|---------|-------------|
+| API                               | Handler                                                                                            | Description               |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------- |
 | **GET /tools/getBettingExposure** | [../src/tools/intelligence/getBettingExposure.ts](../src/tools/intelligence/getBettingExposure.ts) | Current exposure by event |
-| **GET /tools/getSharpScore** | [../src/tools/intelligence/getSharpScore.ts](../src/tools/intelligence/getSharpScore.ts) | Customer sharp scores |
-| **GET /tools/getHoldPercentage** | [../src/tools/intelligence/getHoldPercentage.ts](../src/tools/intelligence/getHoldPercentage.ts) | Hold % and volume |
-| **GET /tools/getCLV** | [../src/tools/intelligence/getCLV.ts](../src/tools/intelligence/getCLV.ts) | Customer lifetime value |
+| **GET /tools/getSharpScore**      | [../src/tools/intelligence/getSharpScore.ts](../src/tools/intelligence/getSharpScore.ts)           | Customer sharp scores     |
+| **GET /tools/getHoldPercentage**  | [../src/tools/intelligence/getHoldPercentage.ts](../src/tools/intelligence/getHoldPercentage.ts)   | Hold % and volume         |
+| **GET /tools/getCLV**             | [../src/tools/intelligence/getCLV.ts](../src/tools/intelligence/getCLV.ts)                         | Customer lifetime value   |
 
 ---
 
 ## 📊 Monitoring & Observability
 
 ### Dashboards
-| Dashboard | Path | Description |
-|-----------|------|-------------|
-| **Grafana Config** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | 17-panel monitoring |
-| **Dashboard Docs** | [../monitoring/grafana/README.md](../README.md) | Installation & setup guide |
-| **Import Script** | [../monitoring/grafana/import.sh](../monitoring/grafana/import.sh) | Automated dashboard deployment |
-| **Cost Metrics** | _Embedded in dashboard_ | 4 cost cap gauges |
-| **Performance** | _Embedded in dashboard_ | Request latency & error tracking |
+
+| Dashboard          | Path                                                                         | Description                      |
+| ------------------ | ---------------------------------------------------------------------------- | -------------------------------- |
+| **Grafana Config** | [../monitoring/grafana/dashboard.json](../monitoring/grafana/dashboard.json) | 17-panel monitoring              |
+| **Dashboard Docs** | [../monitoring/grafana/README.md](../README.md)                              | Installation & setup guide       |
+| **Import Script**  | [../monitoring/grafana/import.sh](../monitoring/grafana/import.sh)           | Automated dashboard deployment   |
+| **Cost Metrics**   | _Embedded in dashboard_                                                      | 4 cost cap gauges                |
+| **Performance**    | _Embedded in dashboard_                                                      | Request latency & error tracking |
 
 ### Guards & Limits
-| Component | Path | Purpose |
-|-----------|------|---------|
-| **Cost Cap** | [../src/guards/costCap.ts](../src/guards/costCap.ts) | Resource limits |
+
+| Component      | Path                                                     | Purpose         |
+| -------------- | -------------------------------------------------------- | --------------- |
+| **Cost Cap**   | [../src/guards/costCap.ts](../src/guards/costCap.ts)     | Resource limits |
 | **Rate Limit** | [../src/guards/rateLimit.ts](../src/guards/rateLimit.ts) | 10 req/s per IP |
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-| Stage | Workflow | Description |
-|-------|----------|-------------|
-| **Test** | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml) | Run all tests |
-| **Deploy Staging** | _Same workflow_ | PR deployments |
-| **Deploy Production** | _Same workflow_ | Main branch auto-deploy |
-| **Rollback** | `npm run rollback` | Instant rollback |
+| Stage                 | Workflow                                                           | Description             |
+| --------------------- | ------------------------------------------------------------------ | ----------------------- |
+| **Test**              | [../.github/workflows/deploy.yml](../.github/workflows/deploy.yml) | Run all tests           |
+| **Deploy Staging**    | _Same workflow_                                                    | PR deployments          |
+| **Deploy Production** | _Same workflow_                                                    | Main branch auto-deploy |
+| **Rollback**          | `npm run rollback`                                                 | Instant rollback        |
 
 ---
 
 ## 📦 Package Configuration
 
-| File | Purpose |
-|------|---------|
-| [../package.json](../package.json) | Dependencies & scripts |
-| [../tsconfig.json](../tsconfig.json) | TypeScript config |
-| [../.gitignore](../.gitignore) | Git exclusions |
+| File                                 | Purpose                |
+| ------------------------------------ | ---------------------- |
+| [../package.json](../package.json)   | Dependencies & scripts |
+| [../tsconfig.json](../tsconfig.json) | TypeScript config      |
+| [../.gitignore](../.gitignore)       | Git exclusions         |
 
 ---
 
 ## 🔗 Auto-Generated Link Registry (CI-Checked)
 
 <!-- LINKMAP_START -->
+
 **Root Documentation:**
+
 - README.md → docs/QUICKSTART.md
 - README.md → docs/IMPLEMENTATION_SUMMARY.md
 - README.md → docs/BUILD_REPORT.md
@@ -303,6 +332,7 @@
 - CHANGELOG.md → docs/FIXES_APPLIED.md
 
 **Documentation Cross-References:**
+
 - docs/INDEX.md → ../README.md
 - docs/INDEX.md → QUICKSTART.md
 - docs/INDEX.md → IMPLEMENTATION_SUMMARY.md
@@ -317,6 +347,7 @@
 - docs/INDEX.md → ../LICENSE
 
 **Source Code References:**
+
 - docs/INDEX.md → ../src/index.ts
 - docs/INDEX.md → ../src/types/database.ts
 - docs/INDEX.md → ../src/queues/lineIngress.ts
@@ -335,12 +366,14 @@
 ## ✅ Link Validation Status
 
 This index is automatically validated by CI:
+
 - ✅ All internal links checked on every commit
 - ✅ Dead link detection in PR checks
 - ✅ Link registry auto-updated
 - ✅ Fails build if broken links found
 
 Run locally:
+
 ```bash
 npm run link-check
 ```
@@ -349,17 +382,17 @@ npm run link-check
 
 ## 🆘 Quick Help
 
-| Need to... | Go to... |
-|------------|----------|
-| Set up the project | [QUICKSTART.md](QUICKSTART.md) |
-| Fix common issues | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
+| Need to...              | Go to...                                               |
+| ----------------------- | ------------------------------------------------------ |
+| Set up the project      | [QUICKSTART.md](QUICKSTART.md)                         |
+| Fix common issues       | [TROUBLESHOOTING.md](TROUBLESHOOTING.md)               |
 | Understand architecture | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) |
-| Find a specific file | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) |
-| Check build stats | [BUILD_REPORT.md](archive/BUILD_REPORT.md) |
-| See recent fixes | [FIXES_APPLIED.md](archive/FIXES_APPLIED.md) |
-| Review code quality | [REVIEW_AND_GAPS.md](archive/REVIEW_AND_GAPS.md) |
-| Contribute code | [../CONTRIBUTING.md](CONTRIBUTING.md) |
-| See all links | [LINK_VERIFICATION.md](archive/LINK_VERIFICATION.md) |
+| Find a specific file    | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)           |
+| Check build stats       | [BUILD_REPORT.md](archive/BUILD_REPORT.md)             |
+| See recent fixes        | [FIXES_APPLIED.md](archive/FIXES_APPLIED.md)           |
+| Review code quality     | [REVIEW_AND_GAPS.md](archive/REVIEW_AND_GAPS.md)       |
+| Contribute code         | [../CONTRIBUTING.md](CONTRIBUTING.md)                  |
+| See all links           | [LINK_VERIFICATION.md](archive/LINK_VERIFICATION.md)   |
 
 ---
 
@@ -375,30 +408,46 @@ npm run link-check
 ## 🏷️ Documentation Topics & Tags
 
 ### By Topic
+
 - **#developer-ux** - DEVELOPER_UX_SYSTEM.md (search, format, docs, dataflow)
-- **#analytics** - ENHANCED_ANALYTICS_ARCHITECTURE.md, ENHANCED_ANALYTICS_DEPLOYMENT.md
+- **#analytics** - ENHANCED_ANALYTICS_ARCHITECTURE.md,
+  ENHANCED_ANALYTICS_DEPLOYMENT.md
 - **#mcp** - MCP_INTEGRATION_STATUS.md, MCP_ENDPOINTS.md, MCP_TESTING_GUIDE.md
-- **#testing** - TEST_AUDIT_REPORT.md, TESTING_STATUS.md, MCP_TESTING_GUIDE.md, AUTOMATION_GUIDE.md
-- **#deployment** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, QUICKSTART.md, ENHANCED_ANALYTICS_DEPLOYMENT.md
-- **#architecture** - IMPLEMENTATION_SUMMARY.md, SYSTEM_INTEGRATION_MAP.md, PROJECT_STRUCTURE.md, ENHANCED_ANALYTICS_ARCHITECTURE.md
+- **#testing** - TEST_AUDIT_REPORT.md, TESTING_STATUS.md, MCP_TESTING_GUIDE.md,
+  AUTOMATION_GUIDE.md
+- **#deployment** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, QUICKSTART.md,
+  ENHANCED_ANALYTICS_DEPLOYMENT.md
+- **#architecture** - IMPLEMENTATION_SUMMARY.md, SYSTEM_INTEGRATION_MAP.md,
+  PROJECT_STRUCTURE.md, ENHANCED_ANALYTICS_ARCHITECTURE.md
 - **#quality** - CODE_QUALITY_AUDIT.md, TEST_AUDIT_REPORT.md, CODEBASE_REVIEW.md
-- **#integration** - ENDPOINT_DASHBOARD_INTEGRATION.md, SYSTEM_INTEGRATION_MAP.md, DATABASE_CRON_VERIFICATION.md
-- **#developer-tools** - CURSOR_RULES.md, ROOT_STRUCTURE.md, AUTOMATION_GUIDE.md, DEVELOPER_UX_SYSTEM.md
-- **#api** - MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md, ENDPOINT_DASHBOARD_INTEGRATION.md
-- **#security** - ENHANCED_ANALYTICS_ARCHITECTURE.md (GDPR, fingerprinting, rate limiting)
+- **#integration** - ENDPOINT_DASHBOARD_INTEGRATION.md,
+  SYSTEM_INTEGRATION_MAP.md, DATABASE_CRON_VERIFICATION.md
+- **#developer-tools** - CURSOR_RULES.md, ROOT_STRUCTURE.md,
+  AUTOMATION_GUIDE.md, DEVELOPER_UX_SYSTEM.md
+- **#api** - MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md,
+  ENDPOINT_DASHBOARD_INTEGRATION.md
+- **#security** - ENHANCED_ANALYTICS_ARCHITECTURE.md (GDPR, fingerprinting, rate
+  limiting)
 - **#performance** - DEVELOPER_UX_SYSTEM.md (<20ms search, <30s startup)
 
 ### By Audience
-- **Developers** - QUICKSTART.md, MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md, CODE_QUALITY_AUDIT.md
+
+- **Developers** - QUICKSTART.md, MCP_ENDPOINTS.md, BET_TICKER_SNIFFER.md,
+  CODE_QUALITY_AUDIT.md
 - **DevOps** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, TESTING_STATUS.md
 - **Architects** - IMPLEMENTATION_SUMMARY.md, SYSTEM_INTEGRATION_MAP.md
 - **QA** - TEST_AUDIT_REPORT.md, TESTING_STATUS.md, MCP_TESTING_GUIDE.md
 - **AI Assistants** - CURSOR_RULES.md, ROOT_STRUCTURE.md, CODEBASE_REVIEW.md
-- **All Teams** - MCP_INTEGRATION_STATUS.md, CODEBASE_REVIEW.md, TROUBLESHOOTING.md
+- **All Teams** - MCP_INTEGRATION_STATUS.md, CODEBASE_REVIEW.md,
+  TROUBLESHOOTING.md
 
 ### By Priority
+
 - **🚀 Start Here** - README.md, QUICKSTART.md, INDEX.md
 - **🏗️ Core** - IMPLEMENTATION_SUMMARY.md, PROJECT_STRUCTURE.md, DEPLOYMENT.md
-- **✨ New Features** - MCP_INTEGRATION_STATUS.md, MCP_ENDPOINTS.md, ENDPOINT_DASHBOARD_INTEGRATION.md
-- **🔧 Operations** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md, TROUBLESHOOTING.md
-- **📊 Quality** - TEST_AUDIT_REPORT.md, CODE_QUALITY_AUDIT.md, TESTING_STATUS.md
+- **✨ New Features** - MCP_INTEGRATION_STATUS.md, MCP_ENDPOINTS.md,
+  ENDPOINT_DASHBOARD_INTEGRATION.md
+- **🔧 Operations** - DEPLOYMENT.md, DATABASE_CRON_VERIFICATION.md,
+  TROUBLESHOOTING.md
+- **📊 Quality** - TEST_AUDIT_REPORT.md, CODE_QUALITY_AUDIT.md,
+  TESTING_STATUS.md

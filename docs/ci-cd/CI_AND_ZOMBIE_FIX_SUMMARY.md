@@ -8,15 +8,15 @@
 
 ## 📊 Quick Stats
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Zombie Processes | 27 | **0** | ✅ 100% |
-| CPU Usage | 600%+ | Normal | ✅ Fixed |
-| Test Timeout | None | 10s | ✅ Added |
-| Signal Handling | None | Full | ✅ Added |
-| Process Tracking | None | Global | ✅ Added |
-| CI Commands | None | 4 | ✅ Added |
-| Test Coverage | - | 13 tests | ✅ Complete |
+| Metric           | Before | After    | Improvement |
+| ---------------- | ------ | -------- | ----------- |
+| Zombie Processes | 27     | **0**    | ✅ 100%     |
+| CPU Usage        | 600%+  | Normal   | ✅ Fixed    |
+| Test Timeout     | None   | 10s      | ✅ Added    |
+| Signal Handling  | None   | Full     | ✅ Added    |
+| Process Tracking | None   | Global   | ✅ Added    |
+| CI Commands      | None   | 4        | ✅ Added    |
+| Test Coverage    | -      | 13 tests | ✅ Complete |
 
 ---
 
@@ -28,7 +28,7 @@
 # Full CI pipeline (5-8 minutes)
 bun run ci
 
-# Quick CI - skip slow checks (2-3 minutes)  
+# Quick CI - skip slow checks (2-3 minutes)
 bun run ci:quick
 
 # Interactive CI with reporting
@@ -41,6 +41,7 @@ bun test
 ### GitHub Actions
 
 Automatic CI on push to `main` or `develop`:
+
 - 🔒 Security scan (blocks everything if fails)
 - 🧪 Unit + Integration tests
 - 📊 Coverage reporting
@@ -57,6 +58,7 @@ Automatic CI on push to `main` or `develop`:
 **File:** `tests/utils/process-cleanup.ts`
 
 Global singleton that:
+
 - ✅ Tracks all spawned processes
 - ✅ Auto-removes on exit/error
 - ✅ Handles SIGINT, SIGTERM, SIGHUP
@@ -65,6 +67,7 @@ Global singleton that:
 - ✅ beforeExit cleanup
 
 **Usage:**
+
 ```typescript
 import processManager from './tests/utils/process-cleanup';
 
@@ -84,12 +87,15 @@ const active = processManager.count();
 ### 2. Fixed Scripts
 
 #### `scripts/automation/build-and-test.ts`
+
 **Before:**
+
 ```typescript
 Bun.spawn(...).exited  // ❌ Never killed on timeout
 ```
 
 **After:**
+
 ```typescript
 proc = processManager.spawn([...]);
 try {
@@ -100,13 +106,16 @@ try {
 ```
 
 #### `scripts/testing/extension-test-runner.ts`
+
 **Before:**
+
 ```typescript
 import { spawn } from 'bun';  // ❌ Wrong import
 spawn({ cmd: [...] });         // ❌ Wrong API
 ```
 
 **After:**
+
 ```typescript
 import processManager from '../../tests/utils/process-cleanup';
 processManager.spawn([...]);   // ✅ Correct API + tracking
@@ -117,6 +126,7 @@ processManager.spawn([...]);   // ✅ Correct API + tracking
 **File:** `scripts/ci-local.ts`
 
 Full-featured CI with:
+
 - ✅ Security scan
 - ✅ SQL migration validation
 - ✅ Linting
@@ -130,6 +140,7 @@ Full-featured CI with:
 - ✅ Detailed reporting
 
 **Modes:**
+
 ```bash
 bun run ci:local          # Full mode
 bun run ci:local --quick  # Quick mode (skip slow checks)
@@ -140,6 +151,7 @@ bun run ci:local --quick  # Quick mode (skip slow checks)
 **File:** `.github/workflows/ci.yml`
 
 Production-grade CI with:
+
 - ✅ Concurrency control (cancel outdated runs)
 - ✅ Security gate (blocks if fails)
 - ✅ Parallel test execution
@@ -150,6 +162,7 @@ Production-grade CI with:
 - ✅ Job dependencies
 
 **Flow:**
+
 ```
 Security → Tests → Docs → Build → Status → Deploy
    ↓         ↓       ↓       ↓       ↓        ↓
@@ -161,8 +174,9 @@ Security → Tests → Docs → Build → Status → Deploy
 **File:** `tests/unit/process-cleanup.test.ts`
 
 13 tests covering:
+
 - ✅ Process tracking
-- ✅ Timeout killing  
+- ✅ Timeout killing
 - ✅ Multiple processes
 - ✅ Normal exit
 - ✅ Error exit
@@ -180,6 +194,7 @@ Security → Tests → Docs → Build → Status → Deploy
 ## 📝 Files Changed
 
 ### Created (5 files)
+
 1. ✅ `tests/utils/process-cleanup.ts` - Process manager utility
 2. ✅ `tests/unit/process-cleanup.test.ts` - Comprehensive tests
 3. ✅ `scripts/ci-local.ts` - Local CI script
@@ -187,6 +202,7 @@ Security → Tests → Docs → Build → Status → Deploy
 5. ✅ `docs/ZOMBIE_PROCESS_FIX.md` - Detailed documentation
 
 ### Modified (4 files)
+
 1. ✅ `scripts/automation/build-and-test.ts` - Added process cleanup
 2. ✅ `scripts/testing/extension-test-runner.ts` - Fixed spawn usage
 3. ✅ `package.json` - Added ci, ci:full, ci:quick, ci:local scripts
@@ -278,6 +294,7 @@ ps aux | grep bun
 ## 📚 Documentation
 
 Comprehensive docs in:
+
 - [Zombie Process Fix](ZOMBIE_PROCESS_FIX.md) - Technical details
 - [CI Implementation](CI_AND_ZOMBIE_FIX_SUMMARY.md) - This doc
 - [Testing Guide](guides/TESTING_GUIDE.md) - Test patterns
@@ -290,6 +307,7 @@ Comprehensive docs in:
 All objectives achieved:
 
 ### ✅ Zombie Process Fix
+
 - [x] Zero zombie processes
 - [x] Automatic cleanup on exit
 - [x] Signal handling (SIGINT, SIGTERM, SIGHUP)
@@ -298,6 +316,7 @@ All objectives achieved:
 - [x] Process tracking
 
 ### ✅ One-Click CI
+
 - [x] Local CI script (`bun run ci`)
 - [x] Quick mode (`bun run ci:quick`)
 - [x] GitHub Actions workflow
@@ -307,12 +326,14 @@ All objectives achieved:
 - [x] Detailed reporting
 
 ### ✅ Testing
+
 - [x] 13 comprehensive tests
 - [x] All tests passing
 - [x] Process cleanup verified
 - [x] No zombie processes
 
 ### ✅ Documentation
+
 - [x] README updated
 - [x] Detailed fix documentation
 - [x] Usage examples
@@ -323,9 +344,10 @@ All objectives achieved:
 ## 🔮 Next Steps (Optional)
 
 Future improvements:
+
 - [ ] Add watch mode to ci-local.ts
 - [ ] Add process metrics (peak count, cleanup time)
-- [ ] Add process tree visualization  
+- [ ] Add process tree visualization
 - [ ] Integration with monitoring tools
 - [ ] Automatic zombie detection alerts
 - [ ] Performance benchmarks
@@ -377,6 +399,7 @@ bun run build:worker
 **Result:** Zero zombies, clean exits, fast iteration
 
 **One Command:**
+
 ```bash
 bun run ci
 ```
@@ -386,6 +409,7 @@ bun run ci
 ---
 
 **Key Metrics:**
+
 - 🧹 27 → 0 zombie processes
 - ⚡ 600%+ → Normal CPU
 - 🎯 5 files created
@@ -405,4 +429,3 @@ bun run ci
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-

@@ -26,7 +26,7 @@ const SYMBOL_ICONS = {
   class: '◆',
   interface: '◇',
   const: '■',
-  type: '▲'
+  type: '▲',
 };
 
 // Load index
@@ -45,7 +45,7 @@ function fuzzySearch(query: string, entries: IndexEntry[]): IndexEntry[] {
   const fuse = new Fuse(entries, {
     keys: ['text', 'keyword', 'file'],
     threshold: 0.3, // Typo tolerance
-    includeScore: true
+    includeScore: true,
   });
 
   const results = fuse.search(query);

@@ -74,7 +74,7 @@ export async function createHierarchyStream(env: Env): Promise<Response> {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'X-Accel-Buffering': 'no', // Disable nginx buffering
     },
@@ -118,7 +118,7 @@ export async function createHealthStream(env: Env): Promise<Response> {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'X-Accel-Buffering': 'no',
     },
@@ -162,7 +162,7 @@ export async function createBetsStream(env: Env): Promise<Response> {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'X-Accel-Buffering': 'no',
     },

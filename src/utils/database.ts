@@ -31,10 +31,7 @@ export class DatabaseHelper {
           setTimeout(() => reject(new Error('Timeout')), timeout);
         });
 
-        const result = await Promise.race([
-          bound.all(),
-          timeoutPromise
-        ]);
+        const result = await Promise.race([bound.all(), timeoutPromise]);
 
         // Handle D1 result format: { results: T[] }
         const d1Result = result as unknown as { results: T[] };
@@ -74,10 +71,7 @@ export class DatabaseHelper {
           setTimeout(() => reject(new Error('Timeout')), timeout);
         });
 
-        const result = await Promise.race([
-          bound.first(),
-          timeoutPromise
-        ]);
+        const result = await Promise.race([bound.first(), timeoutPromise]);
 
         return result as T | null;
       } catch (error) {
@@ -95,17 +89,14 @@ export class DatabaseHelper {
   /**
    * Execute a write operation (INSERT, UPDATE, DELETE)
    */
-  async executeWrite(
-    query: string,
-    params: any[] = []
-  ): Promise<{ success: boolean; rowsAffected: number }> {
+  async executeWrite(query: string, params: any[] = []): Promise<{ success: boolean; rowsAffected: number }> {
     try {
       const stmt = this.env.ANALYTICS.prepare(query);
       const bound = params.length > 0 ? stmt.bind(...params) : stmt;
       const result = await bound.run();
       return {
         success: result.success || false,
-        rowsAffected: result.meta?.changes || 0
+        rowsAffected: result.meta?.changes || 0,
       };
     } catch (error) {
       console.error('Write operation failed:', error);
@@ -135,7 +126,7 @@ export class DatabaseHelper {
 
       return {
         success: results.every(r => r.success),
-        rowsAffected: totalRows
+        rowsAffected: totalRows,
       };
     } catch (error) {
       console.error('Batch operation failed:', error);
@@ -158,9 +149,7 @@ export class DatabaseHelper {
    * Get table row count
    */
   async getRowCount(tableName: string): Promise<number> {
-    const result = await this.executeQueryFirst<{ count: number }>(
-      `SELECT COUNT(*) as count FROM ${tableName}`
-    );
+    const result = await this.executeQueryFirst<{ count: number }>(`SELECT COUNT(*) as count FROM ${tableName}`);
     return result?.count || 0;
   }
 

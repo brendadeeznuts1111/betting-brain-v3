@@ -10,14 +10,10 @@ import {
   DEFAULT_AGENT_QUERY_LIMIT,
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_NOT_FOUND,
-  HTTP_STATUS_SERVER_ERROR
+  HTTP_STATUS_SERVER_ERROR,
 } from './constants';
 
-export async function getAgentPerformance(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getAgentPerformance(request: Request, env: Env, requestId: string): Promise<Response> {
   const url = new URL(request.url);
   const period = url.searchParams.get('period') || 'today';
 
@@ -39,17 +35,20 @@ export async function getAgentPerformance(
     }
 
     // 1. Get total PNL across all agents for period
-    const totalPnlQuery = await env.ANALYTICS.prepare(`
+    const totalPnlQuery = (await env.ANALYTICS.prepare(
+      `
       SELECT SUM(net_income) as totalPnl
       FROM fantasy402_agent_performance
       WHERE ${dateFilter}
-    `).first() as { totalPnl: number | null } | null;
+    `
+    ).first()) as { totalPnl: number | null } | null;
 
     const totalPnl = totalPnlQuery?.totalPnl || 0;
     console.log(`[${requestId}] 💰 Total PNL (${period}): $${totalPnl.toFixed(2)}`);
 
     // 2. Get top 3 agents by net income
-    const topAgentsQuery = await env.ANALYTICS.prepare(`
+    const topAgentsQuery = await env.ANALYTICS.prepare(
+      `
       SELECT
         agent_id as id,
         SUM(net_income) as pnl
@@ -58,9 +57,10 @@ export async function getAgentPerformance(
       GROUP BY agent_id
       ORDER BY pnl DESC
       LIMIT 3
-    `).all();
+    `
+    ).all();
 
-    const topAgents = (topAgentsQuery.results as Array<{ id: string; pnl: number }>).map((agent) => ({
+    const topAgents = (topAgentsQuery.results as Array<{ id: string; pnl: number }>).map(agent => ({
       id: agent.id,
       pnl: agent.pnl,
     }));
@@ -75,7 +75,6 @@ export async function getAgentPerformance(
     return new Response(JSON.stringify(response), {
       headers: CORS_HEADERS,
     });
-
   } catch (error) {
     console.error(`[${requestId}] ❌ Error fetching agent performance:`, error);
 
@@ -97,11 +96,7 @@ export async function getAgentPerformance(
  * GET /api/f402/agents/list?owner=BILLY666
  * Returns cached agent list by owner (fast login flow)
  */
-export async function getAgentList(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getAgentList(request: Request, env: Env, requestId: string): Promise<Response> {
   const url = new URL(request.url);
   const owner = url.searchParams.get('owner');
   const agentID = url.searchParams.get('agentID');
@@ -164,19 +159,27 @@ export async function getAgentList(
     // Fallback to D1 if cache miss
     if (env.RAW_FEED_DB) {
       const query = owner
-        ? await env.RAW_FEED_DB.prepare(`
+        ? await env.RAW_FEED_DB.prepare(
+            `
             SELECT * FROM fantasy402_agents
             WHERE agent_owner = ?
             ORDER BY last_active DESC
             LIMIT ${DEFAULT_AGENT_QUERY_LIMIT}
-          `).bind(owner).all()
+          `
+          )
+            .bind(owner)
+            .all()
         : agentID
-          ? await env.RAW_FEED_DB.prepare(`
+          ? await env.RAW_FEED_DB.prepare(
+              `
             SELECT * FROM fantasy402_agents
             WHERE agent_id = ?
             ORDER BY last_active DESC
             LIMIT ${DEFAULT_AGENT_QUERY_LIMIT}
-          `).bind(agentID).all()
+          `
+            )
+              .bind(agentID)
+              .all()
           : null;
 
       if (query && query.results.length > 0) {
@@ -216,7 +219,6 @@ export async function getAgentList(
         },
       }
     );
-
   } catch (error) {
     console.error(`[${requestId}] ❌ Error fetching agent list:`, error);
 
@@ -286,11 +288,15 @@ export async function getAgentDetail(
 
     // Fallback to D1
     if (env.RAW_FEED_DB) {
-      const result = await env.RAW_FEED_DB.prepare(`
+      const result = await env.RAW_FEED_DB.prepare(
+        `
         SELECT * FROM fantasy402_agents
         WHERE agent_id = ?
         LIMIT 1
-      `).bind(agentID).first();
+      `
+      )
+        .bind(agentID)
+        .first();
 
       if (result) {
         console.log(`[${requestId}] 📊 D1 fallback: Found agent ${agentID}`);
@@ -323,7 +329,6 @@ export async function getAgentDetail(
         headers: CORS_HEADERS,
       }
     );
-
   } catch (error) {
     console.error(`[${requestId}] ❌ Error fetching agent detail:`, error);
 

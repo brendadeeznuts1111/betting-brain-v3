@@ -1,10 +1,12 @@
 # 🎯 BetTicker Sniffer - API Interception & Archiving
 
-**Transparent proxy that intercepts and archives `getBetTicker` API responses with zero client impact.**
+**Transparent proxy that intercepts and archives `getBetTicker` API responses
+with zero client impact.**
 
 ## 📋 Overview
 
 The BetTicker Sniffer is a transparent API interceptor that:
+
 - Intercepts all calls to `fantasy402.com/cloud/api/Manager/getBetTicker`
 - Stores raw JSON responses in Cloudflare KV
 - Returns original response to client (completely transparent)
@@ -93,6 +95,7 @@ This endpoint is automatically intercepted. No client changes required!
 **GET** `/interceptor/history`
 
 Query parameters:
+
 - `limit` (optional): Number of records to return (default: 100)
 - `startTime` (optional): Unix timestamp (ms) - filter start
 - `endTime` (optional): Unix timestamp (ms) - filter end
@@ -109,6 +112,7 @@ curl "https://brain.mybook.com/interceptor/history?startTime=1696300000000&endTi
 ```
 
 Response:
+
 ```json
 [
   {
@@ -135,6 +139,7 @@ curl "https://brain.mybook.com/interceptor/response?key=raw:getBetTicker:1728300
 ```
 
 Response:
+
 ```json
 {
   "body": "{\"success\":true,\"data\":{...}}",
@@ -152,7 +157,10 @@ Response:
 ### Programmatic Access
 
 ```typescript
-import { getBetTickerHistory, getBetTickerResponse } from './interceptors/bet-ticker-sniffer';
+import {
+  getBetTickerHistory,
+  getBetTickerResponse,
+} from './interceptors/bet-ticker-sniffer';
 
 // Get recent history
 const history = await getBetTickerHistory(env, {
@@ -161,7 +169,10 @@ const history = await getBetTickerHistory(env, {
 });
 
 // Retrieve specific response
-const response = await getBetTickerResponse(env, 'raw:getBetTicker:1728300000000');
+const response = await getBetTickerResponse(
+  env,
+  'raw:getBetTicker:1728300000000'
+);
 console.log(response?.body); // Raw JSON
 console.log(response?.metadata); // Request metadata
 ```
@@ -301,7 +312,7 @@ async function handleInterceptorAPI(request: Request, env: Env) {
   if (!isAuthorized(authHeader)) {
     return new Response('Unauthorized', { status: 401 });
   }
-  
+
   // ... existing code
 }
 ```
@@ -374,21 +385,23 @@ await env.BET_TICKER_BUCKET.put(key, rawBody, {
 
 ### Cost Comparison
 
-| Storage | Cost (1M requests) | Retention | Best For |
-|---------|-------------------|-----------|----------|
-| **KV** | ~$5 | 7-30 days | Hot data, fast access |
-| **R2** | ~$0.015 | Unlimited | Cold data, archival |
+| Storage | Cost (1M requests) | Retention | Best For              |
+| ------- | ------------------ | --------- | --------------------- |
+| **KV**  | ~$5                | 7-30 days | Hot data, fast access |
+| **R2**  | ~$0.015            | Unlimited | Cold data, archival   |
 
 ## 🐛 Troubleshooting
 
 ### Interception Not Working
 
 1. **Check route configuration**
+
    ```bash
    wrangler routes list
    ```
 
 2. **Verify KV binding**
+
    ```bash
    wrangler kv:namespace list
    ```
@@ -451,7 +464,8 @@ console.log(`Average response size: ${avgSize} bytes`);
 ```typescript
 // Monitor success rates
 const history = await getBetTickerHistory(env, { limit: 100 });
-const successRate = history.filter(h => h.metadata.status === 200).length / history.length;
+const successRate =
+  history.filter(h => h.metadata.status === 200).length / history.length;
 console.log(`Success rate: ${successRate * 100}%`);
 ```
 
@@ -483,4 +497,3 @@ MIT License - see [LICENSE](../LICENSE) file for details
 ---
 
 **Built with ❤️ on Cloudflare Edge**
-

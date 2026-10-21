@@ -8,16 +8,19 @@
 ## 🚨 CRITICAL ISSUES
 
 ### 1. `~/` Symlink (IMMEDIATE ACTION REQUIRED)
+
 **Status:** 🔴 **CRITICAL**  
 **Size:** 240MB  
 **Issue:** Symlink to user's home directory in project root
 
 **Risk:**
+
 - Exposing entire home directory structure
 - Potential security/privacy issue if committed
 - 240MB of unnecessary data in project tree
 
 **Action:**
+
 ```bash
 # Remove symlink immediately
 rm ~/
@@ -34,9 +37,11 @@ ls -la | grep "~"
 ## ⚠️ HIGH PRIORITY ISSUES
 
 ### 2. Duplicate Configuration Files
+
 **Status:** ⚠️ **REDUNDANT**
 
 **Duplicates Found:**
+
 ```
 ROOT:
 - tsconfig.json (584B)
@@ -52,11 +57,13 @@ config/:
 ```
 
 **Questions:**
+
 - Which tsconfig.json is actually used?
 - Are vitest configs still needed? (project uses Bun Test)
 - Should all configs live in `config/` directory?
 
 **Recommendation:**
+
 ```bash
 # Option A: Keep root configs (common practice)
 rm config/tsconfig.json
@@ -71,16 +78,19 @@ mv vitest.config.ts config/
 ---
 
 ### 3. Vitest Configs (Obsolete?)
+
 **Status:** ⚠️ **POTENTIALLY OBSOLETE**  
 **Files:** 5 vitest config files  
 **Size:** ~4KB
 
 **Issue:**
+
 - Project uses Bun Test (not Vitest)
 - package.json has no vitest dependency
 - 5 vitest config files taking up space
 
 **Action:**
+
 ```bash
 # Verify vitest is not used
 grep -r "vitest" package.json  # No matches found
@@ -93,12 +103,15 @@ rm config/vitest*.ts
 ---
 
 ### 4. `.env` Files in Root
+
 **Status:** ⚠️ **REVIEW NEEDED**  
 **Files:**
+
 - `.env.example` (1KB) - not found?
 - `.env.local` (1.7KB) - in .gitignore ✅
 
 **Action:**
+
 - Verify .env files are properly gitignored
 - Create .env.example template if needed
 - Document required env vars
@@ -106,11 +119,13 @@ rm config/vitest*.ts
 ---
 
 ### 5. `test-results.json` Not Ignored
+
 **Status:** ⚠️ **SHOULD BE GITIGNORED**  
 **Size:** 719B  
 **Issue:** CI artifact in root
 
 **Current .gitignore:**
+
 ```gitignore
 # Test Results & CI Artifacts
 test-results.json  ← Already listed!
@@ -119,6 +134,7 @@ test-results.json  ← Already listed!
 **Problem:** File exists despite being in .gitignore
 
 **Action:**
+
 ```bash
 # Remove from git if tracked
 git rm --cached test-results.json
@@ -132,6 +148,7 @@ git status
 ## 📋 MEDIUM PRIORITY
 
 ### 6. Large Ignored Directories
+
 **Status:** ℹ️ **GITIGNORED BUT LARGE**
 
 ```
@@ -146,13 +163,16 @@ dist/          132KB  ✅ Ignored
 ---
 
 ### 7. Multiple Wrangler Configs
+
 **Status:** ℹ️ **OK BUT COULD BE ORGANIZED**  
 **Files:**
+
 - `wrangler.toml` (base config)
 - `wrangler.staging.toml`
 - `wrangler.production.toml`
 
 **Options:**
+
 - Keep as-is (common practice)
 - Move to `config/wrangler/` directory
 - Use single wrangler.toml with env variables
@@ -162,6 +182,7 @@ dist/          132KB  ✅ Ignored
 ## 🎯 RECOMMENDED ROOT STRUCTURE
 
 ### Current Root Files
+
 ```
 ❌ ~/                     # REMOVE IMMEDIATELY
 ❌ test-results.json      # Already gitignored (but tracked?)
@@ -180,6 +201,7 @@ dist/          132KB  ✅ Ignored
 ```
 
 ### Ideal Root Structure (Option A: Keep Common Configs)
+
 ```
 ROOT FILES (14 files):
 ✅ README.md              # Documentation
@@ -216,6 +238,7 @@ ROOT DIRECTORIES:
 ```
 
 ### Ideal Root Structure (Option B: Centralized Config)
+
 ```
 Same as above but:
 - Move tsconfig.json → config/
@@ -228,17 +251,20 @@ Same as above but:
 ## ✅ ACTION CHECKLIST
 
 ### IMMEDIATE (Security Risk)
+
 - [ ] Remove `~/` symlink
 - [ ] Add `~/` to .gitignore
 - [ ] Verify removal: `ls -la | grep ~`
 
 ### HIGH PRIORITY (Cleanup)
+
 - [ ] Remove or untrack `test-results.json`
 - [ ] Decide on vitest configs (delete if unused)
 - [ ] Resolve tsconfig.json duplication
 - [ ] Review .env files
 
 ### MEDIUM PRIORITY (Organization)
+
 - [ ] Consider consolidating configs in `config/`
 - [ ] Document required env variables
 - [ ] Review wrangler config structure
@@ -248,6 +274,7 @@ Same as above but:
 ## 🚀 Cleanup Commands
 
 ### Quick Cleanup Script
+
 ```bash
 #!/bin/bash
 # cleanup-root.sh
@@ -289,6 +316,7 @@ echo "✅ Cleanup complete!"
 ## 📊 Before/After Comparison
 
 ### Before
+
 ```
 Root Files: 15+ config files
 Symlinks: 1 (~/  - 240MB home directory)
@@ -297,6 +325,7 @@ Clutter: High
 ```
 
 ### After
+
 ```
 Root Files: 11 essential files
 Symlinks: 0
@@ -329,5 +358,3 @@ Clutter: Minimal
 ---
 
 **Next Actions:** Review this plan and approve immediate fixes!
-
-

@@ -8,12 +8,7 @@ import { MCPToolResult } from '../types';
 
 export async function getSteamMoves(args: Record<string, any>, env: Env): Promise<MCPToolResult> {
   try {
-    const {
-      agentID = 'DEMO',
-      sport,
-      lookbackMinutes = 60,
-      threshold = 3.0,
-    } = args;
+    const { agentID = 'DEMO', sport, lookbackMinutes = 60, threshold = 3.0 } = args;
 
     if (!env.ANALYTICS) {
       throw new Error('ANALYTICS database not available');
@@ -55,7 +50,9 @@ export async function getSteamMoves(args: Record<string, any>, env: Env): Promis
 
     query += ' ORDER BY ABS(la - lb) DESC, (va - vb) DESC LIMIT 50';
 
-    const result = await env.ANALYTICS.prepare(query).bind(...params).all();
+    const result = await env.ANALYTICS.prepare(query)
+      .bind(...params)
+      .all();
 
     // Calculate steam move statistics
     const steamMoves = result.results || [];
@@ -64,8 +61,10 @@ export async function getSteamMoves(args: Record<string, any>, env: Env): Promis
       critical: steamMoves.filter((m: any) => m.severity === 'CRITICAL').length,
       high: steamMoves.filter((m: any) => m.severity === 'HIGH').length,
       medium: steamMoves.filter((m: any) => m.severity === 'MEDIUM').length,
-      avg_line_change: steamMoves.reduce((sum: number, m: any) => sum + Math.abs(m.line_change), 0) / (steamMoves.length || 1),
-      avg_volume_change: steamMoves.reduce((sum: number, m: any) => sum + m.volume_change, 0) / (steamMoves.length || 1),
+      avg_line_change:
+        steamMoves.reduce((sum: number, m: any) => sum + Math.abs(m.line_change), 0) / (steamMoves.length || 1),
+      avg_volume_change:
+        steamMoves.reduce((sum: number, m: any) => sum + m.volume_change, 0) / (steamMoves.length || 1),
       lookback_minutes: lookbackMinutes,
     };
 

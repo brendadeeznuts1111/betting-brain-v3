@@ -11,12 +11,7 @@ export * from './player-parser';
 
 // Import for extractOperationData
 import { parseSportTypes, parseAuthResponse } from './auth-parser';
-import {
-  parseWeeklyFigures,
-  parseAgentList,
-  parseAccountInfo,
-  parseAuthorizations,
-} from './agent-parser';
+import { parseWeeklyFigures, parseAgentList, parseAccountInfo, parseAuthorizations } from './agent-parser';
 import {
   parsePlayerInfo,
   parsePlayerPerformance,

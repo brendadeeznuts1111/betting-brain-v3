@@ -9,6 +9,7 @@
 ## 📋 Problem
 
 **Before:**
+
 - 27 zombie Bun test processes running indefinitely
 - 600%+ CPU usage from zombie processes
 - Tests hanging without timeout
@@ -16,8 +17,11 @@
 - `Bun.spawn()` processes not killed on timeout
 
 **Root Causes:**
-1. ❌ `build-and-test.ts` - Used `Promise.race` for timeout but didn't kill spawned process
-2. ❌ `extension-test-runner.ts` - Wrong import (`spawn` from 'bun' instead of `Bun.spawn`)
+
+1. ❌ `build-and-test.ts` - Used `Promise.race` for timeout but didn't kill
+   spawned process
+2. ❌ `extension-test-runner.ts` - Wrong import (`spawn` from 'bun' instead of
+   `Bun.spawn`)
 3. ❌ No global process tracking for cleanup
 4. ❌ No signal handlers (SIGINT, SIGTERM, SIGHUP)
 5. ❌ Test processes continued running after parent exit
@@ -29,6 +33,7 @@
 ### 1. **Process Cleanup Utility** (`tests/utils/process-cleanup.ts`)
 
 Created a singleton `ProcessManager` that:
+
 - ✅ Tracks all spawned processes
 - ✅ Auto-removes processes when they exit
 - ✅ Handles SIGINT, SIGTERM, SIGHUP signals
@@ -37,6 +42,7 @@ Created a singleton `ProcessManager` that:
 - ✅ Timeout enforcement (5s default, configurable)
 
 **Key Features:**
+
 ```typescript
 // Track and auto-cleanup
 const proc = processManager.spawn(['bun', 'test']);
@@ -54,6 +60,7 @@ const count = processManager.count();
 ### 2. **Fixed `build-and-test.ts`**
 
 **Before:**
+
 ```typescript
 const result = await Promise.race([
   Bun.spawn(step.command, {...}).exited,  // ❌ Process never killed
@@ -62,6 +69,7 @@ const result = await Promise.race([
 ```
 
 **After:**
+
 ```typescript
 proc = processManager.spawn(step.command, {...});
 try {
@@ -77,6 +85,7 @@ try {
 ### 3. **Fixed `extension-test-runner.ts`**
 
 **Before:**
+
 ```typescript
 import { spawn } from 'bun';  // ❌ Wrong import
 this.logMonitor = spawn({ cmd: [...] });  // ❌ Wrong API
@@ -84,6 +93,7 @@ this.logMonitor.kill();  // ❌ No proper cleanup
 ```
 
 **After:**
+
 ```typescript
 import processManager from '../../tests/utils/process-cleanup';
 this.logMonitor = processManager.spawn([...]);  // ✅ Tracked
@@ -93,6 +103,7 @@ await processManager.kill(this.logMonitor, 15, 2000);  // ✅ Proper cleanup
 ### 4. **One-Click CI** (`scripts/ci-local.ts`)
 
 Created comprehensive local CI with:
+
 - ✅ Full pipeline (security, lint, type-check, test, build)
 - ✅ Quick mode (`--quick` flag)
 - ✅ Automatic process cleanup
@@ -101,6 +112,7 @@ Created comprehensive local CI with:
 - ✅ Exit code handling
 
 **Usage:**
+
 ```bash
 bun run ci           # Full CI
 bun run ci:quick     # Quick CI
@@ -110,6 +122,7 @@ bun run ci:local     # Same as full
 ### 5. **GitHub Actions CI** (`.github/workflows/ci.yml`)
 
 Created production-grade CI with:
+
 - ✅ Security gate (blocks everything if security fails)
 - ✅ Parallel test execution (unit + integration)
 - ✅ Coverage reporting (Codecov)
@@ -126,6 +139,7 @@ Created production-grade CI with:
 ### Unit Tests (`tests/unit/process-cleanup.test.ts`)
 
 Comprehensive test suite covering:
+
 - ✅ Process tracking
 - ✅ Timeout killing
 - ✅ Multiple process management
@@ -136,6 +150,7 @@ Comprehensive test suite covering:
 - ✅ Spawn wrapper functionality
 
 **Run tests:**
+
 ```bash
 bun test tests/unit/process-cleanup.test.ts
 ```
@@ -145,22 +160,24 @@ bun test tests/unit/process-cleanup.test.ts
 ## 📊 Results
 
 ### Before Fix
-| Metric | Value |
-|--------|-------|
-| Zombie Processes | 27 |
-| CPU Usage | 600%+ |
-| Test Timeout | None |
-| Signal Handling | None |
-| Process Tracking | None |
+
+| Metric           | Value |
+| ---------------- | ----- |
+| Zombie Processes | 27    |
+| CPU Usage        | 600%+ |
+| Test Timeout     | None  |
+| Signal Handling  | None  |
+| Process Tracking | None  |
 
 ### After Fix
-| Metric | Value |
-|--------|-------|
-| Zombie Processes | **0** ✅ |
-| CPU Usage | Normal |
-| Test Timeout | 10s (bunfig.toml) |
-| Signal Handling | SIGINT, SIGTERM, SIGHUP |
-| Process Tracking | Full tracking |
+
+| Metric           | Value                   |
+| ---------------- | ----------------------- |
+| Zombie Processes | **0** ✅                |
+| CPU Usage        | Normal                  |
+| Test Timeout     | 10s (bunfig.toml)       |
+| Signal Handling  | SIGINT, SIGTERM, SIGHUP |
+| Process Tracking | Full tracking           |
 
 ---
 
@@ -210,8 +227,9 @@ await processManager.killAll(3000);
 ### Signal Handling
 
 The `ProcessManager` sets up handlers for:
+
 - **SIGINT** (Ctrl+C) → Cleanup and exit
-- **SIGTERM** (kill command) → Cleanup and exit  
+- **SIGTERM** (kill command) → Cleanup and exit
 - **SIGHUP** (terminal close) → Cleanup and exit
 - **beforeExit** → Cleanup lingering processes
 
@@ -226,6 +244,7 @@ The `ProcessManager` sets up handlers for:
 ### Auto-Cleanup
 
 Processes are automatically removed from tracking when:
+
 - Process exits normally (exit code 0)
 - Process exits with error (exit code != 0)
 - Process is killed manually
@@ -236,6 +255,7 @@ Processes are automatically removed from tracking when:
 ## 📚 Files Changed
 
 ### Created
+
 - ✅ `tests/utils/process-cleanup.ts` - Process manager utility
 - ✅ `tests/unit/process-cleanup.test.ts` - Comprehensive tests
 - ✅ `scripts/ci-local.ts` - Local CI script
@@ -243,6 +263,7 @@ Processes are automatically removed from tracking when:
 - ✅ `docs/ZOMBIE_PROCESS_FIX.md` - This document
 
 ### Modified
+
 - ✅ `scripts/automation/build-and-test.ts` - Added process cleanup
 - ✅ `scripts/testing/extension-test-runner.ts` - Fixed spawn usage
 - ✅ `package.json` - Added ci, ci:full, ci:quick, ci:local scripts
@@ -334,10 +355,12 @@ bun test tests/integration --timeout 60000
 ## ✨ Summary
 
 **Problem:** 27 zombie processes eating 600%+ CPU  
-**Solution:** Global process manager with signal handling and timeout enforcement  
-**Result:** 0 zombie processes, clean shutdowns, faster CI  
+**Solution:** Global process manager with signal handling and timeout
+enforcement  
+**Result:** 0 zombie processes, clean shutdowns, faster CI
 
 **One-Click CI:**
+
 ```bash
 bun run ci
 ```
@@ -351,4 +374,3 @@ bun run ci
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-

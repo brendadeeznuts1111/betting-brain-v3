@@ -372,6 +372,7 @@ git ls-remote --tags origin | grep v4.1.0
 ## 🎯 **Quick Commands Cheat Sheet**
 
 ### Version Management
+
 ```bash
 # Update version
 sed -i '' 's/version: 4.0.0/version: 4.1.0/' .cursorrules
@@ -384,6 +385,7 @@ grep '^version:' .cursorrules
 ```
 
 ### Git Operations
+
 ```bash
 # Stage all
 git add .cursorrules CHANGELOG.md
@@ -396,6 +398,7 @@ git push origin feat/zombie-process-fix-and-ci --tags
 ```
 
 ### Local Validation
+
 ```bash
 # Quick precheck
 bun run precheck
@@ -412,6 +415,7 @@ bun run ci:bun
 ## 📊 **Final Checklist**
 
 ### Pre-Release
+
 - [x] All files staged (67 files)
 - [ ] Version updated (.cursorrules: 4.0.0 → 4.1.0)
 - [ ] CHANGELOG.md updated (v4.1.0 entry added)
@@ -419,6 +423,7 @@ bun run ci:bun
 - [ ] Local CI passes (bun run ci:bun)
 
 ### Release
+
 - [ ] Version bump script executed
 - [ ] Commit created
 - [ ] Git tag created (v4.1.0)
@@ -427,6 +432,7 @@ bun run ci:bun
 - [ ] PR reviewed and approved
 
 ### Post-Release
+
 - [ ] PR merged to main
 - [ ] GitHub release created
 - [ ] Release notes published
@@ -441,4 +447,5 @@ bun run ci:bun
 **Performance**: 3x faster CI  
 **Documentation**: Complete
 
-Copy and run these commands in order for a smooth, professional release of Cursor Rules v4.1.0! 🚀
+Copy and run these commands in order for a smooth, professional release of
+Cursor Rules v4.1.0! 🚀

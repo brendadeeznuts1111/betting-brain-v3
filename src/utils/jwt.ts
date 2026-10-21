@@ -19,10 +19,7 @@ export interface JWTPayload {
  * @param secret - Secret key for HMAC validation
  * @returns true if valid, false otherwise
  */
-export async function validateJWT(
-  token: string | undefined,
-  secret: string
-): Promise<boolean> {
+export async function validateJWT(token: string | undefined, secret: string): Promise<boolean> {
   if (!token) return false;
 
   try {
@@ -45,13 +42,7 @@ export async function validateJWT(
     const data = encoder.encode(`${headerB64}.${payloadB64}`);
     const keyData = encoder.encode(secret);
 
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
+    const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
 
     const signature = await crypto.subtle.sign('HMAC', cryptoKey, data);
 
@@ -77,11 +68,7 @@ export async function validateJWT(
  * @param expiresInSeconds - Expiration time in seconds (default: 3600)
  * @returns JWT token string
  */
-export async function createJWT(
-  payload: JWTPayload,
-  secret: string,
-  expiresInSeconds: number = 3600
-): Promise<string> {
+export async function createJWT(payload: JWTPayload, secret: string, expiresInSeconds: number = 3600): Promise<string> {
   const header = { alg: 'HS256', typ: 'JWT' };
 
   const now = Math.floor(Date.now() / 1000);
@@ -91,27 +78,15 @@ export async function createJWT(
     exp: now + expiresInSeconds,
   };
 
-  const headerB64 = btoa(JSON.stringify(header))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
+  const headerB64 = btoa(JSON.stringify(header)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
-  const payloadB64 = btoa(JSON.stringify(fullPayload))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
+  const payloadB64 = btoa(JSON.stringify(fullPayload)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
   const encoder = new TextEncoder();
   const data = encoder.encode(`${headerB64}.${payloadB64}`);
   const keyData = encoder.encode(secret);
 
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
+  const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
 
   const signature = await crypto.subtle.sign('HMAC', cryptoKey, data);
   const signatureArray = new Uint8Array(signature);

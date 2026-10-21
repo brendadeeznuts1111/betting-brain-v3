@@ -15,27 +15,27 @@ export function createMockEnv(): Env {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([])
-        })
+          all: vi.fn().mockResolvedValue([]),
+        }),
       }),
-      exec: vi.fn().mockResolvedValue({ success: true })
+      exec: vi.fn().mockResolvedValue({ success: true }),
     } as any,
     LINE_INGRESS: {
-      send: vi.fn().mockResolvedValue({ success: true })
+      send: vi.fn().mockResolvedValue({ success: true }),
     } as any,
     STEAM_WEBHOOK: {
-      send: vi.fn().mockResolvedValue({ success: true })
+      send: vi.fn().mockResolvedValue({ success: true }),
     } as any,
     ANALYTICS_ENGINE: {
-      writeDataPoint: vi.fn().mockResolvedValue(undefined)
-    } as any
+      writeDataPoint: vi.fn().mockResolvedValue(undefined),
+    } as any,
   };
 }
 
 export function createMockExecutionContext(): ExecutionContext {
   return {
     waitUntil: vi.fn(),
-    passThroughOnException: vi.fn()
+    passThroughOnException: vi.fn(),
   } as any;
 }
 
@@ -44,14 +44,14 @@ export function createMockMessage(body: any): Message {
     id: 'test-message-id',
     body: typeof body === 'string' ? body : JSON.stringify(body),
     timestamp: new Date().toISOString(),
-    attempts: 1
+    attempts: 1,
   } as any;
 }
 
 export function createMockMessageBatch(messages: Message[], queueName: string): MessageBatch {
   return {
     messages,
-    queue: queueName
+    queue: queueName,
   } as any;
 }
 
@@ -59,6 +59,6 @@ export function createMockScheduledEvent(cron: string): ScheduledEvent {
   return {
     cron,
     scheduledTime: Date.now(),
-    noRetry: vi.fn()
+    noRetry: vi.fn(),
   } as any;
 }

@@ -1,11 +1,11 @@
 /**
  * Test Utilities and Helpers
- * 
+ *
  * Provides shared utilities for test isolation, mock management,
  * and common test patterns to prevent test pollution.
  */
 
-import { vi, expect } from "bun:test";
+import { vi, expect } from 'bun:test';
 import type { Env } from '../../src/types/api';
 import { createAnalyticsEngineStub, type AnalyticsEngineStub } from './analytics-engine-stub';
 import { getGlobalAnalyticsStub } from '../setup/test-setup';
@@ -26,26 +26,26 @@ export function createMockEnv(): { env: Env; analytics: AnalyticsEngineStub } {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       }),
-      exec: vi.fn().mockResolvedValue({ success: true })
+      exec: vi.fn().mockResolvedValue({ success: true }),
     } as any,
     STEAM_WEBHOOK: {
-      send: vi.fn().mockResolvedValue({ success: true })
+      send: vi.fn().mockResolvedValue({ success: true }),
     } as any,
     QUEUE_PRODUCER: {
-      send: vi.fn().mockResolvedValue({ success: true })
+      send: vi.fn().mockResolvedValue({ success: true }),
     } as any,
     ANALYTICS_ENGINE: {
-      writeDataPoint: analyticsStub.writeDataPoint.bind(analyticsStub)
+      writeDataPoint: analyticsStub.writeDataPoint.bind(analyticsStub),
     } as any,
     BET_TICKER_RAW: {
       put: vi.fn().mockResolvedValue(undefined),
       get: vi.fn().mockResolvedValue(null),
       delete: vi.fn().mockResolvedValue(undefined),
-      list: vi.fn().mockResolvedValue({ keys: [] })
-    } as any
+      list: vi.fn().mockResolvedValue({ keys: [] }),
+    } as any,
   };
 
   return { env, analytics: analyticsStub };
@@ -58,7 +58,7 @@ export function createMockCtx(): ExecutionContext {
   return {
     waitUntil: vi.fn(),
     passUntil: vi.fn(),
-    passThroughOnException: vi.fn()
+    passThroughOnException: vi.fn(),
   } as any;
 }
 
@@ -76,8 +76,8 @@ export function resetAllMocks(mockEnv: Env, mockCtx: ExecutionContext): void {
     bind: vi.fn().mockReturnValue({
       first: vi.fn().mockResolvedValue({ count: 0 }),
       run: vi.fn().mockResolvedValue({ success: true }),
-      all: vi.fn().mockResolvedValue({ results: [] })
-    })
+      all: vi.fn().mockResolvedValue({ results: [] }),
+    }),
   });
 
   (mockEnv.STEAM_WEBHOOK.send as any).mockResolvedValue({ success: true });
@@ -103,7 +103,7 @@ export async function readResponseBody(response: Response): Promise<any> {
 export function createMockRequest(url: string, options?: RequestInit): Request {
   return new Request(url, {
     method: 'GET',
-    ...options
+    ...options,
   });
 }
 
@@ -120,7 +120,7 @@ export function createMockLineMovement(overrides: Partial<any> = {}): any {
     va: 15000,
     ts: new Date().toISOString(),
     ing: new Date().toISOString(),
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -134,7 +134,7 @@ export function createMockCustomer(overrides: Partial<any> = {}): any {
     wr: 55,
     ao: 100,
     nb: 1500,
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -164,8 +164,8 @@ export function setupDatabaseMock(
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
         run: vi.fn().mockRejectedValue(new Error('Database error')),
-        all: vi.fn().mockRejectedValue(new Error('Database error'))
-      })
+        all: vi.fn().mockRejectedValue(new Error('Database error')),
+      }),
     });
   } else {
     (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -175,8 +175,8 @@ export function setupDatabaseMock(
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: queryResults })
-      })
+        all: vi.fn().mockResolvedValue({ results: queryResults }),
+      }),
     });
   }
 }
@@ -192,7 +192,7 @@ export function setupCostCapDatabaseMock(mockEnv: Env, size: number = 1000000, r
         first: async () => ({ size, rows }),
         bind: () => ({ first: async () => ({ size, rows }) }),
         run: async () => ({ success: true }),
-        all: async () => []
+        all: async () => [],
       };
     }
 
@@ -201,7 +201,7 @@ export function setupCostCapDatabaseMock(mockEnv: Env, size: number = 1000000, r
       first: async () => null,
       bind: () => ({ first: async () => null }),
       run: async () => ({ success: true }),
-      all: async () => []
+      all: async () => [],
     };
   });
 }
@@ -271,11 +271,10 @@ export function expectAnalyticsDoubles(
   tolerance: number = 0.001
 ): void {
   const calls = analytics.getCalls();
-  const found = calls.some(call =>
-    call.doubles.length === expectedDoubles.length &&
-    call.doubles.every((val, index) =>
-      Math.abs(val - expectedDoubles[index]) < tolerance
-    )
+  const found = calls.some(
+    call =>
+      call.doubles.length === expectedDoubles.length &&
+      call.doubles.every((val, index) => Math.abs(val - expectedDoubles[index]) < tolerance)
   );
   expect(found).toBe(true);
 }

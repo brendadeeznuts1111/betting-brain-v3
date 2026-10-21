@@ -26,17 +26,17 @@ const openAPISpec: OpenAPISpec = {
   info: {
     title: 'Betting-Brain v3 Intelligence API',
     version: '3.1.0',
-    description: 'Edge-native betting intelligence layer with zero-downtime deployment'
+    description: 'Edge-native betting intelligence layer with zero-downtime deployment',
   },
   servers: [
     {
       url: 'https://betting-brain-v3.your-domain.workers.dev',
-      description: 'Production'
+      description: 'Production',
     },
     {
       url: 'http://localhost:8787',
-      description: 'Development'
-    }
+      description: 'Development',
+    },
   ],
   paths: {
     '/tools/getBettingExposure': {
@@ -49,42 +49,42 @@ const openAPISpec: OpenAPISpec = {
             in: 'query',
             required: true,
             schema: { type: 'string' },
-            description: 'Event ID'
+            description: 'Event ID',
           },
           {
             name: 'includeHistory',
             in: 'query',
             required: false,
             schema: { type: 'boolean', default: false },
-            description: 'Include historical data'
+            description: 'Include historical data',
           },
           {
             name: 'timeWindow',
             in: 'query',
             required: false,
             schema: { type: 'integer', minimum: 1, maximum: 24, default: 1 },
-            description: 'Time window in hours'
-          }
+            description: 'Time window in hours',
+          },
         ],
         responses: {
           '200': {
             description: 'Successful response',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/BettingExposureResponse' }
-              }
-            }
+                schema: { $ref: '#/components/schemas/BettingExposureResponse' },
+              },
+            },
           },
           '404': {
             description: 'Event not found',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/ErrorResponse' }
-              }
-            }
-          }
-        }
-      }
+                schema: { $ref: '#/components/schemas/ErrorResponse' },
+              },
+            },
+          },
+        },
+      },
     },
     '/tools/getSharpScore': {
       get: {
@@ -96,20 +96,20 @@ const openAPISpec: OpenAPISpec = {
             in: 'query',
             required: true,
             schema: { type: 'string' },
-            description: 'Customer ID'
-          }
+            description: 'Customer ID',
+          },
         ],
         responses: {
           '200': {
             description: 'Successful response',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/SharpScoreResponse' }
-              }
-            }
-          }
-        }
-      }
+                schema: { $ref: '#/components/schemas/SharpScoreResponse' },
+              },
+            },
+          },
+        },
+      },
     },
     '/tools/getHoldPercentage': {
       get: {
@@ -121,27 +121,27 @@ const openAPISpec: OpenAPISpec = {
             in: 'query',
             required: true,
             schema: { type: 'string' },
-            description: 'Event ID'
+            description: 'Event ID',
           },
           {
             name: 'mt',
             in: 'query',
             required: true,
             schema: { type: 'string', enum: ['SPREAD', 'MONEYLINE', 'TOTAL', 'PROP'] },
-            description: 'Market Type'
-          }
+            description: 'Market Type',
+          },
         ],
         responses: {
           '200': {
             description: 'Successful response',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/HoldPercentageResponse' }
-              }
-            }
-          }
-        }
-      }
+                schema: { $ref: '#/components/schemas/HoldPercentageResponse' },
+              },
+            },
+          },
+        },
+      },
     },
     '/tools/getCLV': {
       get: {
@@ -153,21 +153,21 @@ const openAPISpec: OpenAPISpec = {
             in: 'query',
             required: true,
             schema: { type: 'string' },
-            description: 'Customer ID'
-          }
+            description: 'Customer ID',
+          },
         ],
         responses: {
           '200': {
             description: 'Successful response',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/CLVResponse' }
-              }
-            }
-          }
-        }
-      }
-    }
+                schema: { $ref: '#/components/schemas/CLVResponse' },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -183,9 +183,9 @@ const openAPISpec: OpenAPISpec = {
                 side: { type: 'string', enum: ['HOME', 'AWAY'] },
                 risk: { type: 'number' },
                 net: { type: 'number' },
-                percentage: { type: 'number' }
-              }
-            }
+                percentage: { type: 'number' },
+              },
+            },
           },
           totalRisk: { type: 'number' },
           maxExposure: { type: 'number' },
@@ -194,10 +194,10 @@ const openAPISpec: OpenAPISpec = {
             type: 'object',
             properties: {
               maxAmount: { type: 'number' },
-              maxPercentage: { type: 'number' }
-            }
-          }
-        }
+              maxPercentage: { type: 'number' },
+            },
+          },
+        },
       },
       SharpScoreResponse: {
         type: 'object',
@@ -208,8 +208,8 @@ const openAPISpec: OpenAPISpec = {
           winRate: { type: 'number' },
           actionCount: { type: 'integer' },
           lastUpdated: { type: 'string', format: 'date-time' },
-          alertThreshold: { type: 'number' }
-        }
+          alertThreshold: { type: 'number' },
+        },
       },
       HoldPercentageResponse: {
         type: 'object',
@@ -224,10 +224,10 @@ const openAPISpec: OpenAPISpec = {
             type: 'object',
             properties: {
               min: { type: 'number' },
-              max: { type: 'number' }
-            }
-          }
-        }
+              max: { type: 'number' },
+            },
+          },
+        },
       },
       CLVResponse: {
         type: 'object',
@@ -238,8 +238,8 @@ const openAPISpec: OpenAPISpec = {
           actionCount: { type: 'integer' },
           netBet: { type: 'number' },
           lastUpdated: { type: 'string', format: 'date-time' },
-          alertThreshold: { type: 'number' }
-        }
+          alertThreshold: { type: 'number' },
+        },
       },
       ErrorResponse: {
         type: 'object',
@@ -247,23 +247,23 @@ const openAPISpec: OpenAPISpec = {
           error: { type: 'string' },
           code: { type: 'string' },
           details: { type: 'object' },
-          timestamp: { type: 'string', format: 'date-time' }
-        }
-      }
-    }
-  }
+          timestamp: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
+  },
 };
 
 async function main() {
   console.log('🔧 Generating MCP tools...');
-  
+
   // Create dist directory if it doesn't exist
   await Bun.write('dist/.keep', '');
-  
+
   // Write OpenAPI spec using Bun
   await Bun.write('dist/openapi.json', JSON.stringify(openAPISpec, null, 2));
   console.log('✅ Generated dist/openapi.json');
-  
+
   // Generate Redoc HTML
   const redocHTML = `
 <!DOCTYPE html>
@@ -286,10 +286,10 @@ async function main() {
   </body>
 </html>
 `;
-  
+
   await Bun.write('dist/redoc.html', redocHTML);
   console.log('✅ Generated dist/redoc.html');
-  
+
   console.log('\n✨ Code generation complete!');
   console.log('📚 View API docs: open dist/redoc.html');
 }

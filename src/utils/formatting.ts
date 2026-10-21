@@ -11,7 +11,7 @@ export function formatCurrency(amount: number, currency: string = 'USD'): string
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 
@@ -33,19 +33,19 @@ export function formatNumber(value: number, decimals: number = 2): string {
   }
   return value.toLocaleString('en-US', {
     minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
+    maximumFractionDigits: decimals,
   });
 }
 
 // Timestamp formatting
 export function formatTimestamp(timestamp: string | Date, includeTime: boolean = true): string {
   const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
-  
+
   // Check if date is valid
   if (isNaN(date.getTime())) {
     return 'Invalid Date';
   }
-  
+
   if (includeTime) {
     return date.toLocaleString('en-US', {
       year: 'numeric',
@@ -54,34 +54,34 @@ export function formatTimestamp(timestamp: string | Date, includeTime: boolean =
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      timeZoneName: 'short'
+      timeZoneName: 'short',
     });
   }
-  
+
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
 }
 
 // Relative time formatting
 export function formatRelativeTime(timestamp: string | Date): string {
   const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
-  
+
   // Check if date is valid
   if (isNaN(date.getTime())) {
     return 'Invalid Date';
   }
-  
+
   const now = Date.now();
   const diff = now - date.getTime();
-  
+
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  
+
   if (days > 0) return `${days}d ago`;
   if (hours > 0) return `${hours}h ago`;
   if (minutes > 0) return `${minutes}m ago`;
@@ -96,15 +96,15 @@ export function formatExposureMetrics(metrics: ExposureMetrics): string {
     `Total Risk: ${formatCurrency(metrics.totalRisk)}`,
     `Max Exposure: ${formatCurrency(metrics.maxExposure)}`,
     `Last Updated: ${formatRelativeTime(metrics.lastUpdated)}`,
-    `\nSides:`
+    `\nSides:`,
   ];
-  
+
   for (const side of metrics.sides) {
     lines.push(
       `  ${side.side}: ${formatCurrency(side.risk)} risk, ${formatCurrency(side.net)} net (${formatPercentage(side.percentage)})`
     );
   }
-  
+
   return lines.join('\n');
 }
 
@@ -116,7 +116,7 @@ export function formatSharpScoreMetrics(metrics: SharpScoreMetrics): string {
     `CLV: ${formatCurrency(metrics.clv)}`,
     `Win Rate: ${formatPercentage(metrics.winRate)}`,
     `Actions: ${formatNumber(metrics.actionCount, 0)}`,
-    `Last Updated: ${formatRelativeTime(metrics.lastUpdated)}`
+    `Last Updated: ${formatRelativeTime(metrics.lastUpdated)}`,
   ].join('\n');
 }
 
@@ -129,7 +129,7 @@ export function formatHoldMetrics(metrics: HoldMetrics): string {
     `Total Volume: ${formatCurrency(metrics.totalVolume)}`,
     `Total Risk: ${formatCurrency(metrics.totalRisk)}`,
     `Threshold: ${formatPercentage(metrics.alertThreshold.min)} - ${formatPercentage(metrics.alertThreshold.max)}`,
-    `Last Updated: ${formatRelativeTime(metrics.lastUpdated)}`
+    `Last Updated: ${formatRelativeTime(metrics.lastUpdated)}`,
   ].join('\n');
 }
 
@@ -142,7 +142,7 @@ export function formatCLVMetrics(metrics: CLVMetrics): string {
     `Actions: ${formatNumber(metrics.actionCount, 0)}`,
     `Net Bet: ${formatCurrency(metrics.netBet)}`,
     `Alert Threshold: ${formatPercentage(metrics.alertThreshold)}`,
-    `Last Updated: ${formatRelativeTime(metrics.lastUpdated)}`
+    `Last Updated: ${formatRelativeTime(metrics.lastUpdated)}`,
   ].join('\n');
 }
 
@@ -155,25 +155,21 @@ export function formatSteamMoveMetrics(metrics: SteamMoveMetrics): string {
     `Volume Change: ${metrics.volumeChange > 0 ? '+' : ''}${formatNumber(metrics.volumeChange, 0)}`,
     `Sigma: ${formatNumber(metrics.sigma, 2)}σ`,
     `Is Steam Move: ${metrics.isSteamMove ? '🔥 YES' : 'No'}`,
-    `Time: ${formatRelativeTime(metrics.timestamp)}`
+    `Time: ${formatRelativeTime(metrics.timestamp)}`,
   ].join('\n');
 }
 
 // Format table data for console output
 export function formatTable(data: any[], columns: string[]): string {
   if (data.length === 0) return 'No data';
-  
+
   const rows = data.map(row => columns.map(col => String(row[col] ?? '')));
-  const colWidths = columns.map((col, i) => 
-    Math.max(col.length, ...rows.map(row => row[i].length))
-  );
-  
+  const colWidths = columns.map((col, i) => Math.max(col.length, ...rows.map(row => row[i].length)));
+
   const headerRow = columns.map((col, i) => col.padEnd(colWidths[i])).join(' | ');
   const separator = colWidths.map(w => '-'.repeat(w)).join('-+-');
-  const dataRows = rows.map(row => 
-    row.map((cell, i) => cell.padEnd(colWidths[i])).join(' | ')
-  );
-  
+  const dataRows = rows.map(row => row.map((cell, i) => cell.padEnd(colWidths[i])).join(' | '));
+
   return [headerRow, separator, ...dataRows].join('\n');
 }
 
@@ -187,12 +183,12 @@ export function formatBytes(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = bytes;
   let unitIndex = 0;
-  
+
   while (size >= 1024 && unitIndex < units.length - 1) {
     size /= 1024;
     unitIndex++;
   }
-  
+
   return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
 

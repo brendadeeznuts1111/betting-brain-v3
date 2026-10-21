@@ -81,21 +81,15 @@ interface MissionControlResponse {
 /**
  * GET /api/f402/mission-control
  * Reads from KV-stored BetTicker responses
- * 
+ *
  * Query Parameters:
  * - expand=true: Include analytics data for drill-down cards
  */
-export async function getMissionControl(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getMissionControl(request: Request, env: Env, requestId: string): Promise<Response> {
   console.log(`[${requestId}] 🎯 GET /api/f402/mission-control (KV-backed)`);
 
   const url = new URL(request.url);
   const expand = url.searchParams.get('expand') === 'true';
-
-
 
   try {
     // 1. Get latest BetTicker data from KV
@@ -122,12 +116,12 @@ export async function getMissionControl(
             steamAlerts: analytics.steamAlerts || [],
             riskByAgent: analytics.riskByAgent || {},
             exposureBySide: analytics.exposureBySide || {},
-            custRecency: analytics.custRecency || {}
+            custRecency: analytics.custRecency || {},
           };
           console.log(`[${requestId}] 📊 Added analytics to liveBets:`, {
             steamAlerts: analytics.steamAlerts?.length || 0,
             agents: Object.keys(analytics.riskByAgent || {}).length,
-            games: Object.keys(analytics.exposureBySide || {}).length
+            games: Object.keys(analytics.exposureBySide || {}).length,
           });
         } else {
           console.log(`[${requestId}] ⚠️ No analytics data found in cache`);
@@ -139,7 +133,7 @@ export async function getMissionControl(
 
     // 3. Aggregate agents
     const agentMap = new Map<string, number>();
-    wagers.forEach((w) => {
+    wagers.forEach(w => {
       const agent = w.agentId || 'unknown';
       agentMap.set(agent, (agentMap.get(agent) || 0) + (w.agentPnl || 0));
     });
@@ -155,14 +149,14 @@ export async function getMissionControl(
     };
 
     // 4. Aggregate customers
-    const uniqueCustomers = new Set(wagers.map((w) => w.customerId).filter(Boolean));
+    const uniqueCustomers = new Set(wagers.map(w => w.customerId).filter(Boolean));
     const customers = {
       active: uniqueCustomers.size,
       staked: wagers.reduce((sum, w) => sum + (w.risk || 0), 0),
     };
 
     // 5. Last 10 transactions
-    const transactions = wagers.slice(0, 10).map((w) => ({
+    const transactions = wagers.slice(0, 10).map(w => ({
       type: w.type || 'wager',
       customerId: w.customerId || 'unknown',
       amount: w.risk || 0,
@@ -180,14 +174,7 @@ export async function getMissionControl(
       },
       mcp: {
         count: 6,
-        tools: [
-          'forest-status',
-          'deploy-dashboards',
-          'release',
-          'live-odds',
-          'live-scores',
-          'push-sports-data',
-        ],
+        tools: ['forest-status', 'deploy-dashboards', 'release', 'live-odds', 'live-scores', 'push-sports-data'],
       },
       liveBets,
       agents,
@@ -230,10 +217,7 @@ export async function getMissionControl(
 /**
  * Get latest BetTicker response from KV
  */
-async function getLatestBetTickerFromKV(
-  env: Env,
-  requestId: string
-): Promise<BetTickerResponse | null> {
+async function getLatestBetTickerFromKV(env: Env, requestId: string): Promise<BetTickerResponse | null> {
   try {
     if (!env.BET_TICKER_RAW) {
       console.warn(`[${requestId}] ⚠️  BET_TICKER_RAW KV not configured`);

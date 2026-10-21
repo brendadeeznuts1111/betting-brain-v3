@@ -3,7 +3,11 @@
  * Returns hold percentage and volume metrics for an event
  */
 
-import { Env, GetHoldPercentageRequest as GetHoldPercentageRequestSchema, HoldPercentageResponse as HoldPercentageResponseSchema } from '../../types/api';
+import {
+  Env,
+  GetHoldPercentageRequest as GetHoldPercentageRequestSchema,
+  HoldPercentageResponse as HoldPercentageResponseSchema,
+} from '../../types/api';
 import { createErrorResponse, Errors } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
@@ -20,7 +24,11 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
     // Cost cap check
     const costCheck = await costCapGuard.checkRequest(request, env);
     if (!costCheck.allowed) {
-      return createErrorResponse(Errors.serviceUnavailable('Cost cap exceeded'), Date.now().toString(36), '/api/hold-percentage');
+      return createErrorResponse(
+        Errors.serviceUnavailable('Cost cap exceeded'),
+        Date.now().toString(36),
+        '/api/hold-percentage'
+      );
     }
 
     // Parse and validate request
@@ -29,13 +37,17 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
       eid: url.searchParams.get('eid') || '',
       mt: url.searchParams.get('mt') || '',
       includeHistory: url.searchParams.get('includeHistory') === 'true',
-      timeWindow: parseInt(url.searchParams.get('timeWindow') || '1')
+      timeWindow: parseInt(url.searchParams.get('timeWindow') || '1'),
     };
 
     // Validate request with Zod schema
     const validationResult = GetHoldPercentageRequestSchema.safeParse(params);
     if (!validationResult.success) {
-      return createErrorResponse(Errors.validationError(['eid and mt required']), Date.now().toString(36), '/api/hold-percentage');
+      return createErrorResponse(
+        Errors.validationError(['eid and mt required']),
+        Date.now().toString(36),
+        '/api/hold-percentage'
+      );
     }
 
     // Query line movement data for hold calculation
@@ -48,12 +60,20 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
     );
 
     if (lineData.length === 0) {
-      return createErrorResponse(Errors.notFound('Line movement data'), Date.now().toString(36), '/api/hold-percentage');
+      return createErrorResponse(
+        Errors.notFound('Line movement data'),
+        Date.now().toString(36),
+        '/api/hold-percentage'
+      );
     }
 
     const latest = lineData[0];
     if (!latest || typeof latest !== 'object') {
-      return createErrorResponse(Errors.notFound('Line movement data'), Date.now().toString(36), '/api/hold-percentage');
+      return createErrorResponse(
+        Errors.notFound('Line movement data'),
+        Date.now().toString(36),
+        '/api/hold-percentage'
+      );
     }
 
     const totalVolume = (latest.va || 0) + (latest.vb || 0);
@@ -73,19 +93,22 @@ export async function getHoldPercentage(request: Request, env: Env): Promise<Res
       lastUpdated: new Date().toISOString(),
       alertThreshold: {
         min: 4,
-        max: 8
-      }
+        max: 8,
+      },
     };
 
     // Validate response
 
     return new Response(JSON.stringify(response), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-
   } catch (error) {
     console.error('Error in getHoldPercentage:', error);
-    return createErrorResponse(Errors.databaseError('getHoldPercentage query failed'), Date.now().toString(36), '/api/hold-percentage');
+    return createErrorResponse(
+      Errors.databaseError('getHoldPercentage query failed'),
+      Date.now().toString(36),
+      '/api/hold-percentage'
+    );
   }
 }

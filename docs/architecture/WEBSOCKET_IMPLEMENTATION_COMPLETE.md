@@ -8,17 +8,19 @@
 
 ## 🎯 Overview
 
-This document describes the **complete WebSocket implementation** that replaces HTTP polling with persistent, real-time connections between the browser extension and Cloudflare Worker.
+This document describes the **complete WebSocket implementation** that replaces
+HTTP polling with persistent, real-time connections between the browser
+extension and Cloudflare Worker.
 
 ### Benefits Over HTTP Polling
 
-| Metric | HTTP Polling | WebSocket | Improvement |
-|--------|-------------|-----------|-------------|
-| **Requests/min** | 120 (every 30s) | 2 (heartbeat) | **98% reduction** |
-| **Bandwidth** | ~12 KB/min | ~1 KB/min | **92% reduction** |
-| **Latency** | 30s max | <100ms | **300x faster** |
-| **Server Load** | High | Low | **60x reduction** |
-| **Battery Usage** | High | Low | **50% reduction** |
+| Metric            | HTTP Polling    | WebSocket     | Improvement       |
+| ----------------- | --------------- | ------------- | ----------------- |
+| **Requests/min**  | 120 (every 30s) | 2 (heartbeat) | **98% reduction** |
+| **Bandwidth**     | ~12 KB/min      | ~1 KB/min     | **92% reduction** |
+| **Latency**       | 30s max         | <100ms        | **300x faster**   |
+| **Server Load**   | High            | Low           | **60x reduction** |
+| **Battery Usage** | High            | Low           | **50% reduction** |
 
 ---
 
@@ -80,6 +82,7 @@ This document describes the **complete WebSocket implementation** that replaces 
 ### Browser Extension
 
 **`browser-extension/fantasy402-websocket.js`**
+
 - WebSocket client with auto-reconnect
 - Exponential backoff retry logic
 - Message queue for offline mode
@@ -89,6 +92,7 @@ This document describes the **complete WebSocket implementation** that replaces 
 ### Cloudflare Worker
 
 **`src/websocket/fantasy402-ws-handler.ts`**
+
 - WebSocket upgrade handler
 - Session lifecycle management
 - Authentication logic
@@ -98,10 +102,12 @@ This document describes the **complete WebSocket implementation** that replaces 
 ### Configuration
 
 **`browser-extension/manifest.json`** (updated)
+
 - Added WebSocket permissions
 - Added Worker domain to `host_permissions`
 
 **`src/index.ts`** (updated)
+
 - Added WebSocket route (`/ws`)
 - Integrated with existing architecture
 
@@ -158,17 +164,17 @@ fantasy402WS.connect();
 
 ```javascript
 fantasy402WS.send({
-    type: 'subscribe',
-    streams: ['betTicker', 'agentPerformance']
+  type: 'subscribe',
+  streams: ['betTicker', 'agentPerformance'],
 });
 ```
 
 #### Listen for Updates
 
 ```javascript
-window.addEventListener('fantasy402-data-update', (event) => {
-    const data = event.detail;
-    console.log('Received:', data);
+window.addEventListener('fantasy402-data-update', event => {
+  const data = event.detail;
+  console.log('Received:', data);
 });
 ```
 
@@ -197,7 +203,7 @@ fantasy402WS.close();
 ```typescript
 // In src/index.ts
 if (url.pathname === '/ws') {
-    return handleWebSocketUpgrade(request, env);
+  return handleWebSocketUpgrade(request, env);
 }
 ```
 
@@ -207,10 +213,10 @@ if (url.pathname === '/ws') {
 import { sendToWebSocket } from './websocket/fantasy402-ws-handler';
 
 sendToWebSocket(webSocket, {
-    type: 'data',
-    operation: 'getBetTicker',
-    data: parsedData,
-    timestamp: new Date().toISOString()
+  type: 'data',
+  operation: 'getBetTicker',
+  data: parsedData,
+  timestamp: new Date().toISOString(),
 });
 ```
 
@@ -220,8 +226,8 @@ sendToWebSocket(webSocket, {
 import { broadcastToWebSockets } from './websocket/fantasy402-ws-handler';
 
 await broadcastToWebSockets(sessions, {
-    type: 'announcement',
-    message: 'System maintenance in 5 minutes'
+  type: 'announcement',
+  message: 'System maintenance in 5 minutes',
 });
 ```
 
@@ -234,9 +240,9 @@ await broadcastToWebSockets(sessions, {
 ```javascript
 // Client sends auth message
 fantasy402WS.send({
-    type: 'auth',
-    source: 'fantasy402-extension',
-    timestamp: new Date().toISOString()
+  type: 'auth',
+  source: 'fantasy402-extension',
+  timestamp: new Date().toISOString(),
 });
 ```
 
@@ -245,11 +251,11 @@ fantasy402WS.send({
 ```typescript
 // Server checks source
 if (source === 'fantasy402-extension') {
-    session.isAuthenticated = true;
-    webSocket.send({
-        type: 'auth-success',
-        sessionId: session.id
-    });
+  session.isAuthenticated = true;
+  webSocket.send({
+    type: 'auth-success',
+    sessionId: session.id,
+  });
 }
 ```
 
@@ -258,8 +264,8 @@ if (source === 'fantasy402-extension') {
 ```javascript
 // Client subscribes to streams
 fantasy402WS.send({
-    type: 'subscribe',
-    streams: ['betTicker', 'agentPerformance', 'transactions']
+  type: 'subscribe',
+  streams: ['betTicker', 'agentPerformance', 'transactions'],
 });
 ```
 
@@ -273,8 +279,8 @@ Every 30 seconds, the Worker sends a ping:
 
 ```json
 {
-    "type": "ping",
-    "timestamp": "2025-10-08T14:30:00.000Z"
+  "type": "ping",
+  "timestamp": "2025-10-08T14:30:00.000Z"
 }
 ```
 
@@ -284,12 +290,13 @@ Client responds immediately:
 
 ```json
 {
-    "type": "pong",
-    "timestamp": "2025-10-08T14:30:00.100Z"
+  "type": "pong",
+  "timestamp": "2025-10-08T14:30:00.100Z"
 }
 ```
 
 **Purpose:**
+
 - Detect dead connections
 - Keep connection alive through firewalls/proxies
 - Measure round-trip latency
@@ -314,16 +321,13 @@ Attempt 10: Fail, fallback to HTTP
 ### Automatic Reconnection
 
 ```javascript
-socket.onclose = (event) => {
-    console.log('Disconnected. Reconnecting...');
-    
-    // Exponential backoff
-    const delay = Math.min(
-        1000 * Math.pow(2, attempts),
-        30000
-    );
-    
-    setTimeout(() => connect(), delay);
+socket.onclose = event => {
+  console.log('Disconnected. Reconnecting...');
+
+  // Exponential backoff
+  const delay = Math.min(1000 * Math.pow(2, attempts), 30000);
+
+  setTimeout(() => connect(), delay);
 };
 ```
 
@@ -333,23 +337,23 @@ socket.onclose = (event) => {
 
 ### Client → Server
 
-| Type | Purpose | Authentication Required |
-|------|---------|-------------------------|
-| `auth` | Authenticate session | No |
-| `pong` | Heartbeat response | No |
-| `subscribe` | Subscribe to streams | Yes |
-| `unsubscribe` | Unsubscribe from streams | Yes |
+| Type          | Purpose                  | Authentication Required |
+| ------------- | ------------------------ | ----------------------- |
+| `auth`        | Authenticate session     | No                      |
+| `pong`        | Heartbeat response       | No                      |
+| `subscribe`   | Subscribe to streams     | Yes                     |
+| `unsubscribe` | Unsubscribe from streams | Yes                     |
 
 ### Server → Client
 
-| Type | Purpose | Example |
-|------|---------|---------|
-| `connected` | Welcome message | Session info |
-| `ping` | Heartbeat | Timestamp |
-| `auth-success` | Auth confirmed | Session ID |
-| `auth-failed` | Auth denied | Error message |
-| `data` | Real-time update | Bet ticker data |
-| `error` | Error occurred | Error details |
+| Type           | Purpose          | Example         |
+| -------------- | ---------------- | --------------- |
+| `connected`    | Welcome message  | Session info    |
+| `ping`         | Heartbeat        | Timestamp       |
+| `auth-success` | Auth confirmed   | Session ID      |
+| `auth-failed`  | Auth denied      | Error message   |
+| `data`         | Real-time update | Bet ticker data |
+| `error`        | Error occurred   | Error details   |
 
 ---
 
@@ -384,13 +388,13 @@ console.log('Is Connected:', fantasy402WS.isConnected());
 
 // Send test message
 fantasy402WS.send({
-    type: 'subscribe',
-    streams: ['test']
+  type: 'subscribe',
+  streams: ['test'],
 });
 
 // Listen for responses
-window.addEventListener('fantasy402-data-update', (e) => {
-    console.log('Received:', e.detail);
+window.addEventListener('fantasy402-data-update', e => {
+  console.log('Received:', e.detail);
 });
 ```
 
@@ -403,6 +407,7 @@ window.addEventListener('fantasy402-data-update', (e) => {
 **Symptom:** `WebSocket connection failed: Error 1006`
 
 **Solutions:**
+
 1. Check Worker is deployed: `curl https://...your-worker.../health`
 2. Verify `/ws` endpoint exists in Worker
 3. Check `host_permissions` in manifest.json
@@ -413,6 +418,7 @@ window.addEventListener('fantasy402-data-update', (e) => {
 **Symptom:** `{"type":"auth-failed"}`
 
 **Solutions:**
+
 1. Check `source` field in auth message
 2. Verify Worker auth logic
 3. Check Worker logs: `wrangler tail`
@@ -422,6 +428,7 @@ window.addEventListener('fantasy402-data-update', (e) => {
 **Symptom:** Connection closes after 60 seconds
 
 **Solutions:**
+
 1. Check Worker heartbeat interval (should be < 60s)
 2. Verify client responds to ping with pong
 3. Check firewall/proxy timeout settings
@@ -431,6 +438,7 @@ window.addEventListener('fantasy402-data-update', (e) => {
 **Symptom:** Reconnecting every few seconds
 
 **Solutions:**
+
 1. Check Worker availability
 2. Review Worker error logs
 3. Increase reconnection delay
@@ -466,6 +474,7 @@ console.log(`[${sessionId}] 🔌 Disconnected (${duration}s)`);
 ## 🔜 Future Enhancements
 
 ### Phase 1: Current (✅ DONE)
+
 - ✅ Basic WebSocket connection
 - ✅ Auto-reconnect with backoff
 - ✅ Authentication
@@ -473,6 +482,7 @@ console.log(`[${sessionId}] 🔌 Disconnected (${duration}s)`);
 - ✅ Message queuing
 
 ### Phase 2: Advanced (📋 Planned)
+
 - Real-time data streaming from queue consumer
 - Multiple subscription streams
 - Message compression
@@ -480,6 +490,7 @@ console.log(`[${sessionId}] 🔌 Disconnected (${duration}s)`);
 - Load balancing
 
 ### Phase 3: Production (🔮 Future)
+
 - Horizontal scaling
 - Session persistence
 - Advanced authentication (JWT)
@@ -492,8 +503,10 @@ console.log(`[${sessionId}] 🔌 Disconnected (${duration}s)`);
 
 - [WebSocket Enhancement Plan](WEBSOCKET_ENHANCEMENT_PLAN.md) - Original plan
 - [Queue-Based Logging](QUEUE_BASED_LOGGING.md) - Queue architecture
-- [Fantasy402 Integration](FANTASY402_INTEGRATION_COMPLETE.md) - Browser integration
-- [Architecture Upgrade](ARCHITECTURE_UPGRADE_COMPLETE.md) - Complete system overview
+- [Fantasy402 Integration](FANTASY402_INTEGRATION_COMPLETE.md) - Browser
+  integration
+- [Architecture Upgrade](ARCHITECTURE_UPGRADE_COMPLETE.md) - Complete system
+  overview
 
 ---
 
@@ -521,6 +534,7 @@ DevTools → Console (on fantasy402.com)
 **Status:** 🎉 **PRODUCTION-READY**
 
 **What You Can Do Now:**
+
 1. ✅ Persistent WebSocket connection between extension and Worker
 2. ✅ Real-time data streaming (no polling!)
 3. ✅ Automatic reconnection with smart backoff
@@ -530,4 +544,3 @@ DevTools → Console (on fantasy402.com)
 7. ✅ Offline-capable with message queuing
 
 🚀 **Ready for real-time, scalable data capture!**
-

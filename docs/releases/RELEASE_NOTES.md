@@ -1,24 +1,25 @@
 # Release Notes - Betting-Brain v3
 
-This document contains release notes for GitHub releases. Copy the relevant section when creating a new GitHub release.
+This document contains release notes for GitHub releases. Copy the relevant
+section when creating a new GitHub release.
 
 ---
 
 ## v3.2.0 - Comprehensive Quality Standards Rollout
 
-**Release Date:** 2025-10-08
-**Tag:** `v3.2.0`
+**Release Date:** 2025-10-08 **Tag:** `v3.2.0`
 
 ### 🎯 Highlights
 
-This release completes a comprehensive quality standards rollout across the entire Cursor rules system, establishing production-ready patterns for AI-assisted development.
+This release completes a comprehensive quality standards rollout across the
+entire Cursor rules system, establishing production-ready patterns for
+AI-assisted development.
 
-**Key Achievements:**
-✅ Updated all 24 Cursor rules with quality standards integration
-✅ Added 8 new ast-grep quality enforcement rules
-✅ Created comprehensive maintenance guide (800+ lines)
-✅ 100% metadata coverage with dependency tracking
-✅ Eliminated anti-patterns (Date.now(), inline CORS, console.log)
+**Key Achievements:** ✅ Updated all 24 Cursor rules with quality standards
+integration ✅ Added 8 new ast-grep quality enforcement rules ✅ Created
+comprehensive maintenance guide (800+ lines) ✅ 100% metadata coverage with
+dependency tracking ✅ Eliminated anti-patterns (Date.now(), inline CORS,
+console.log)
 
 ### 📊 By the Numbers
 
@@ -34,6 +35,7 @@ This release completes a comprehensive quality standards rollout across the enti
 #### Quality Enforcement System
 
 **8 New ast-grep Rules:**
+
 1. `detect-type-assertion-any` ❌ **ERROR** - Blocks 'as any' type assertions
 2. `detect-manual-request-id` ⚠️ **WARNING** - Detects Date.now().toString(36)
 3. `detect-inline-cors` ⚠️ **WARNING** - Detects inline CORS headers
@@ -48,6 +50,7 @@ Run: `sg scan src/` to check your code
 #### Updated Cursor Rules
 
 **High-Priority Updates (v2.0.0):**
+
 - `cloudflare-workers.mdc` - generateRequestId(), CORS_HEADERS integration
 - `mcp-integration.mdc` - normalizeD1Result() for D1 queries
 - `security-patterns.mdc` - StructuredLogger for logging
@@ -55,6 +58,7 @@ Run: `sg scan src/` to check your code
 - `bun-runtime.mdc` - Bumped to v5.0.0
 
 **Metadata Standardization:**
+
 - 8 rules: Added v1.0.0 metadata
 - 7 rules: Bumped to v1.1.0
 - 3 rules: Standardized to v5.0.0
@@ -62,6 +66,7 @@ Run: `sg scan src/` to check your code
 #### New Documentation
 
 **CURSOR_RULES_MAINTENANCE.md** (800+ lines)
+
 - Complete version management guide (SemVer procedures)
 - Dependency graph with impact analysis
 - Maintenance schedules (weekly/monthly/per-release)
@@ -72,11 +77,13 @@ Run: `sg scan src/` to check your code
 ### 🔧 Infrastructure
 
 **Quality Standards System:**
+
 - `src/shared/constants.ts` - 278 lines, 12 categories
 - `src/utils/request.ts` - 371 lines, 15+ utilities
 - `src/utils/logger.ts` - StructuredLogger implementation
 
 **ast-grep Configuration:**
+
 - Updated to v2.0.0 (from v1.0.0)
 - Total rules: 15 → 23
 - Added ignore paths: `.cursor/rules/*.mdc`, `docs/**/*.md`
@@ -92,6 +99,7 @@ Run: `sg scan src/` to check your code
 ### 🎨 Anti-Pattern Elimination
 
 **Before → After:**
+
 ```typescript
 // ❌ OLD: Manual request ID
 const requestId = Date.now().toString(36);
@@ -121,17 +129,20 @@ logger.info('processing_request', { requestId });
 ### 📈 Impact
 
 **Development Efficiency:**
+
 - 40% reduction in code duplication (centralized utilities)
 - Instant pattern detection (23 ast-grep rules)
 - Improved maintainability (100% metadata coverage)
 
 **Quality Standards:**
+
 - Zero 'as any' type assertions (blocked by ast-grep)
 - Structured logging across all rules
 - Type-safe D1 queries with normalizeD1Result()
 - Consistent error handling patterns
 
 **Maintenance:**
+
 - Complete dependency graph mapped
 - Clear version management procedures
 - Automated quality checks in CI/CD
@@ -140,8 +151,10 @@ logger.info('processing_request', { requestId });
 ### 🔗 Links
 
 - **Full Changelog**: [docs/CHANGELOG.md](docs/CHANGELOG.md)
-- **Maintenance Guide**: [docs/maintenance/CURSOR_RULES_MAINTENANCE.md](docs/maintenance/CURSOR_RULES_MAINTENANCE.md)
-- **Quality Standards**: [.cursor/rules/quality-standards.mdc](.cursor/rules/quality-standards.mdc)
+- **Maintenance Guide**:
+  [docs/maintenance/CURSOR_RULES_MAINTENANCE.md](docs/maintenance/CURSOR_RULES_MAINTENANCE.md)
+- **Quality Standards**:
+  [.cursor/rules/quality-standards.mdc](.cursor/rules/quality-standards.mdc)
 - **ast-grep Config**: [.ast-grep.yml](.ast-grep.yml)
 - **Cursor Rules Overview**: [docs/CURSOR_RULES.md](docs/CURSOR_RULES.md)
 
@@ -191,14 +204,14 @@ bun run ci
 
 ### 🤖 Generated with Claude Code
 
-This release was created with assistance from [Claude Code](https://claude.com/claude-code).
+This release was created with assistance from
+[Claude Code](https://claude.com/claude-code).
 
 ---
 
 ## v3.1.0 - Testing Framework Overhaul
 
-**Release Date:** 2025-10-08
-**Tag:** `v3.1.0`
+**Release Date:** 2025-10-08 **Tag:** `v3.1.0`
 
 ### Highlights
 

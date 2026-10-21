@@ -1,6 +1,7 @@
 # 🚀 Quick Start: Bun v1.2.23 Features
 
-**TL;DR:** Your project is now upgraded and ready to use all the new features! 🎉
+**TL;DR:** Your project is now upgraded and ready to use all the new features!
+🎉
 
 ---
 
@@ -17,6 +18,7 @@
 ## ⚡ Quick Commands
 
 ### Testing (Most Used)
+
 ```bash
 # Run all tests
 bun test
@@ -40,13 +42,14 @@ open coverage/index.html
 # Only unit tests
 bun test:unit
 
-# Only integration tests  
+# Only integration tests
 bun test:integration
 ```
 
 ### New Features You Can Use
 
 #### 1. **Platform-Specific Install** 🌐
+
 ```bash
 # Already done for all platforms
 bun install --os '*' --cpu '*'
@@ -59,6 +62,7 @@ bun install --os darwin --os linux --cpu x64
 ```
 
 #### 2. **Test Randomization** 🎲
+
 ```bash
 # Find hidden test dependencies
 bun test --randomize
@@ -70,29 +74,36 @@ bun test --seed 12345
 ```
 
 #### 3. **Concurrent Testing** ⚡
+
 Your integration tests already use this:
+
 ```typescript
 // tests/integration/queue-integration.test.ts
-describe.concurrent("Queue Tests", () => {
-  test("async test 1", async () => { /* runs in parallel */ });
-  test("async test 2", async () => { /* runs in parallel */ });
+describe.concurrent('Queue Tests', () => {
+  test('async test 1', async () => {
+    /* runs in parallel */
+  });
+  test('async test 2', async () => {
+    /* runs in parallel */
+  });
 });
 ```
 
 #### 4. **Redis Pub/Sub** 🔴 (Future Enhancement)
-```typescript
-import { RedisClient } from "bun";
 
-const client = new RedisClient("redis://localhost:6379");
+```typescript
+import { RedisClient } from 'bun';
+
+const client = new RedisClient('redis://localhost:6379');
 await client.connect();
 
 // Subscribe to real-time updates
-await client.subscribe("bet-updates", (msg, channel) => {
+await client.subscribe('bet-updates', (msg, channel) => {
   console.log(`New bet: ${msg}`);
 });
 
 // Publish updates
-client.publish("bet-updates", JSON.stringify({ bet: "..." }));
+client.publish('bet-updates', JSON.stringify({ bet: '...' }));
 ```
 
 ---
@@ -100,13 +111,15 @@ client.publish("bet-updates", JSON.stringify({ bet: "..." }));
 ## 📊 Performance Gains
 
 ### Test Execution Time
+
 - **Before:** 45-60 seconds
 - **After:** 12-18 seconds
 - **Improvement:** 70% faster ⚡⚡⚡
 
 ### CI/CD Pipeline
+
 - **Before:** 2-3 minutes
-- **After:** 1-1.5 minutes  
+- **After:** 1-1.5 minutes
 - **Improvement:** 50% faster ⚡⚡
 
 ---
@@ -114,6 +127,7 @@ client.publish("bet-updates", JSON.stringify({ bet: "..." }));
 ## 🎯 Recommended Workflow
 
 ### Daily Development
+
 ```bash
 # Watch mode for TDD
 bun test --watch
@@ -126,6 +140,7 @@ bun test --concurrent
 ```
 
 ### Before Pull Request
+
 ```bash
 # Full test suite with randomization
 bun test --randomize
@@ -138,6 +153,7 @@ bun test --seed 12345
 ```
 
 ### CI/CD Pipeline
+
 ```bash
 # Fast concurrent execution with coverage
 bun test:ci
@@ -169,6 +185,7 @@ find tests -name "*.backup" -delete
 ## 🚨 If Something Breaks
 
 ### Restore from Backups
+
 ```bash
 # Restore a single file
 mv tests/unit/formatting.test.ts.backup tests/unit/formatting.test.ts
@@ -178,6 +195,7 @@ for f in tests/**/*.backup; do mv "$f" "${f%.backup}"; done
 ```
 
 ### Revert with Git
+
 ```bash
 # See changes
 git status
@@ -194,6 +212,7 @@ git checkout tests/
 ## 🎉 You're All Set!
 
 Start using the faster test runner:
+
 ```bash
 bun test --concurrent
 ```
@@ -202,6 +221,5 @@ Enjoy the 70% speed improvement! 🚀
 
 ---
 
-*Quick start created: October 7, 2025*  
-*Ready to use immediately* ✅
-
+_Quick start created: October 7, 2025_  
+_Ready to use immediately_ ✅

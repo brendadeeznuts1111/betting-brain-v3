@@ -20,8 +20,8 @@ export async function getPlayerInfo(request: Request, env: Env, requestId?: stri
       { id: 'P002', name: 'Jane Smith', status: 'active', balance: 8900 },
       { id: 'P003', name: 'Bob Johnson', status: 'suspended', balance: 0 },
       { id: 'P004', name: 'Alice Williams', status: 'active', balance: 15600 },
-      { id: 'P005', name: 'Charlie Brown', status: 'active', balance: 6700 }
-    ]
+      { id: 'P005', name: 'Charlie Brown', status: 'active', balance: 6700 },
+    ],
   };
 
   return createJSONResponse({ success: true, data: mock });

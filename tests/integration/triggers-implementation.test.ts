@@ -3,7 +3,7 @@
  * Tests the actual implementation of database triggers
  */
 
-import { describe, test, expect, vi, beforeEach } from "bun:test";
+import { describe, test, expect, vi, beforeEach } from 'bun:test';
 import type { Env } from '../../src/types/api';
 import type { LineMovement } from '../../src/types/database';
 
@@ -17,17 +17,17 @@ const mockEnv: Env = {
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
-      })
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      }),
     }),
-    exec: vi.fn().mockResolvedValue({ success: true })
+    exec: vi.fn().mockResolvedValue({ success: true }),
   } as any,
   STEAM_WEBHOOK: {
-    send: vi.fn().mockResolvedValue({ success: true })
+    send: vi.fn().mockResolvedValue({ success: true }),
   } as any,
   ANALYTICS_ENGINE: {
-    writeDataPoint: vi.fn().mockResolvedValue(undefined)
-  } as any
+    writeDataPoint: vi.fn().mockResolvedValue(undefined),
+  } as any,
 };
 
 describe('Trigger Implementation Tests', () => {
@@ -44,8 +44,8 @@ describe('Trigger Implementation Tests', () => {
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
-      })
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      }),
     });
   });
 
@@ -59,7 +59,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -74,7 +74,7 @@ describe('Trigger Implementation Tests', () => {
           lb: 5.5,
           la: 6.0,
           vb: 10000,
-          va: 15000
+          va: 15000,
         })
       );
     });
@@ -88,7 +88,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -102,8 +102,8 @@ describe('Trigger Implementation Tests', () => {
           metrics: expect.objectContaining({
             lineChange: 2,
             volumeChange: 5000,
-            changePercentage: expect.any(Number)
-          })
+            changePercentage: expect.any(Number),
+          }),
         })
       );
     });
@@ -117,7 +117,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -130,8 +130,8 @@ describe('Trigger Implementation Tests', () => {
           trigger: 'line_movement_trigger',
           metrics: expect.objectContaining({
             lineChange: 1.5,
-            changePercentage: 15
-          })
+            changePercentage: 15,
+          }),
         })
       );
     });
@@ -145,7 +145,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 25000, // 150% volume increase
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -157,8 +157,8 @@ describe('Trigger Implementation Tests', () => {
         expect.objectContaining({
           trigger: 'line_movement_trigger',
           metrics: expect.objectContaining({
-            volumeChange: 15000
-          })
+            volumeChange: 15000,
+          }),
         })
       );
     });
@@ -172,7 +172,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 10500, // Small volume change
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -192,7 +192,7 @@ describe('Trigger Implementation Tests', () => {
         vb: null,
         va: null,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -213,7 +213,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -224,7 +224,7 @@ describe('Trigger Implementation Tests', () => {
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
           lb: 0,
-          la: 0.5
+          la: 0.5,
         })
       );
     });
@@ -238,7 +238,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 25000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -251,8 +251,8 @@ describe('Trigger Implementation Tests', () => {
           trigger: 'line_movement_trigger',
           metrics: expect.objectContaining({
             lineChange: 2.5,
-            volumeChange: 15000
-          })
+            volumeChange: 15000,
+          }),
         })
       );
     });
@@ -266,7 +266,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       // Mock steam webhook to throw error
@@ -287,7 +287,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -313,7 +313,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const startTime = Date.now();
@@ -336,18 +336,16 @@ describe('Trigger Implementation Tests', () => {
         eid: `nba_${i}`,
         mt: 'SPREAD',
         lb: 5.5,
-        la: 5.5 + (i * 0.1),
+        la: 5.5 + i * 0.1,
         vb: 10000,
         va: 15000,
-        ts: new Date().toISOString()
+        ts: new Date().toISOString(),
       }));
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
 
       // Process all movements
-      const promises = highFrequencyMovements.map(movement =>
-        onLineMove(mockEnv, movement)
-      );
+      const promises = highFrequencyMovements.map(movement => onLineMove(mockEnv, movement));
 
       await Promise.all(promises);
 
@@ -366,7 +364,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -378,7 +376,7 @@ describe('Trigger Implementation Tests', () => {
         expect.objectContaining({
           eid: 'nba_123',
           mt: 'SPREAD',
-          trigger: 'line_movement_trigger'
+          trigger: 'line_movement_trigger',
         })
       );
     });
@@ -392,7 +390,7 @@ describe('Trigger Implementation Tests', () => {
         vb: 10000,
         va: 20000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -405,8 +403,8 @@ describe('Trigger Implementation Tests', () => {
           metrics: expect.objectContaining({
             lineChange: 1.5,
             volumeChange: 10000,
-            changePercentage: expect.any(Number)
-          })
+            changePercentage: expect.any(Number),
+          }),
         })
       );
     });

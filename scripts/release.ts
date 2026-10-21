@@ -149,7 +149,7 @@ function updateChangelog(version: string, dryRun: boolean): void {
   if (!dryRun) {
     // Insert after the first heading (# Changelog)
     const lines = changelog.split('\n');
-    const insertIndex = lines.findIndex((line) => line.startsWith('## [')) || 2;
+    const insertIndex = lines.findIndex(line => line.startsWith('## [')) || 2;
     lines.splice(insertIndex, 0, newEntry);
     const updatedChangelog = lines.join('\n');
     writeFileSync(changelogPath, updatedChangelog);
@@ -181,10 +181,7 @@ function updateWranglerToml(version: string, dryRun: boolean): void {
   console.log(`⚙️  wrangler.toml: Updating to ${version}`);
 
   if (!dryRun) {
-    const updatedContent = wranglerContent.replace(
-      /^version = ".*"$/m,
-      `version = "${version}"`
-    );
+    const updatedContent = wranglerContent.replace(/^version = ".*"$/m, `version = "${version}"`);
     writeFileSync(wranglerPath, updatedContent);
     console.log(`   ✓ Updated wrangler.toml`);
   } else {
@@ -325,7 +322,7 @@ async function main() {
 
 // Run if executed directly
 if (import.meta.main) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('');
     console.error('❌ Release failed:', error);
     console.error('');

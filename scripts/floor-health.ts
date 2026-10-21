@@ -84,7 +84,7 @@ try {
   const testOutput = await Bun.$`bun test --reporter=json 2>&1`.quiet();
   const testResults = parseTestResults(testOutput.stdout.toString());
 
-  if (testResults.passRate >= 0.80) {
+  if (testResults.passRate >= 0.8) {
     results.push({
       name: 'Tests',
       passed: true,
@@ -168,7 +168,7 @@ try {
 console.log('═══════════════════════════════════════════════════════\n');
 console.log('📋 Floor Health Summary\n');
 
-const passedChecks = results.filter((r) => r.passed).length;
+const passedChecks = results.filter(r => r.passed).length;
 const totalChecks = results.length;
 const healthPercentage = Math.round((passedChecks / totalChecks) * 100);
 
@@ -215,7 +215,7 @@ if (healthPercentage >= 80) {
 function parseTestResults(output: string): { pass: number; fail: number; total: number; passRate: number } {
   // Try to parse JSON output first
   try {
-    const lines = output.split('\n').filter((line) => line.trim());
+    const lines = output.split('\n').filter(line => line.trim());
     const lastLine = lines[lines.length - 1];
     if (lastLine.includes('pass') && lastLine.includes('fail')) {
       const passMatch = lastLine.match(/(\d+)\s+pass/);
@@ -230,7 +230,7 @@ function parseTestResults(output: string): { pass: number; fail: number; total: 
   }
 
   // Default to known values from test run
-  return { pass: 239, fail: 60, total: 299, passRate: 0.80 };
+  return { pass: 239, fail: 60, total: 299, passRate: 0.8 };
 }
 
 function parseCoverageResults(output: string): { percentage: number } {

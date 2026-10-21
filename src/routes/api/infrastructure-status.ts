@@ -17,31 +17,31 @@ export async function getInfrastructureStatus(request: Request, env: Env): Promi
       status: 'online',
       version: '3.0.0',
       uptime: 86400,
-      region: 'auto'
+      region: 'auto',
     },
     database: {
       status: 'connected',
       type: 'D1',
       latency: 12,
-      connections: 1
+      connections: 1,
     },
     queues: {
       status: 'operational',
       total: 4,
       active: 4,
-      processing: 0
+      processing: 0,
     },
     kv: {
       status: 'operational',
       namespaces: 10,
-      hitRate: 0.95
+      hitRate: 0.95,
     },
     analytics: {
       status: 'recording',
       dataset: 'betting-metrics',
-      eventsPerMin: 150
+      eventsPerMin: 150,
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   return createJSONResponse({ success: true, data: mock });

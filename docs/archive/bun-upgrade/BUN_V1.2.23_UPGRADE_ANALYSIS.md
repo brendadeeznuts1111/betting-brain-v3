@@ -9,7 +9,8 @@
 
 ## 📊 Executive Summary
 
-Bun v1.2.23 introduces **119 bug fixes** and several game-changing features that can significantly improve your project:
+Bun v1.2.23 introduces **119 bug fixes** and several game-changing features that
+can significantly improve your project:
 
 ### 🎯 High-Impact Features for Your Project
 
@@ -43,24 +44,27 @@ Bun v1.2.23 introduces **119 bug fixes** and several game-changing features that
 ### 1. 🧪 Concurrent Test Execution (CRITICAL)
 
 #### Current State
+
 ```typescript
 // vitest.config.ts - Current setup
 export default defineConfig({
   test: {
     testTimeout: 10000,
     hookTimeout: 10000,
-    teardownTimeout: 10000
-  }
+    teardownTimeout: 10000,
+  },
 });
 ```
 
 #### Problem
+
 - **17 test files** running sequentially
 - **409 test cases** (based on typical file structure)
 - Many **async operations** (fetch, KV operations, database queries)
 - Estimated current runtime: **~45-60 seconds**
 
 #### Solution with Concurrent Tests
+
 ```typescript
 // config/bunfig.toml - New configuration
 [test]
@@ -76,37 +80,40 @@ maxConcurrency = 20
 
 ```typescript
 // tests/integration/integration.test.ts - Updated
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from 'bun:test';
 
-describe.concurrent("MCP Tools API Routes", () => {
-  test("should route to getBettingExposure tool", async () => {
+describe.concurrent('MCP Tools API Routes', () => {
+  test('should route to getBettingExposure tool', async () => {
     const request = new Request('https://example.com/tools/getBettingExposure');
     const response = await worker.fetch(request, mockEnv, mockCtx);
     expect(getBettingExposure).toHaveBeenCalled();
   });
 
-  test("should route to getSharpScore tool", async () => {
+  test('should route to getSharpScore tool', async () => {
     const request = new Request('https://example.com/tools/getSharpScore');
     const response = await worker.fetch(request, mockEnv, mockCtx);
     expect(getSharpScore).toHaveBeenCalled();
   });
-  
+
   // These 4 tests will now run in parallel!
 });
 ```
 
 #### Expected Improvements
+
 - ⚡ **70-80% faster test execution** for I/O-bound tests
 - 🎯 **15-20 seconds** total runtime (down from 45-60s)
 - 💰 **Faster CI/CD pipelines** = cost savings
 
 #### Files to Update
+
 1. ✅ `tests/integration/integration.test.ts` (118 lines, 10+ async tests)
 2. ✅ `tests/integration/queue-integration.test.ts` (620 lines, 15+ async tests)
 3. ✅ `tests/integration/scheduled.test.ts` (async scheduled job tests)
 4. ✅ `tests/integration/triggers.test.ts` (async trigger tests)
 
 #### Keep Sequential
+
 - ❌ `tests/unit/*.test.ts` - Fast synchronous tests
 - ❌ Tests with shared state dependencies
 
@@ -115,12 +122,15 @@ describe.concurrent("MCP Tools API Routes", () => {
 ### 2. 🎲 Test Randomization (HIGH PRIORITY)
 
 #### Why This Matters
+
 Your tests currently run in **fixed order**, which can hide:
+
 - Shared state pollution
 - Race conditions
 - Order-dependent bugs
 
 #### Usage
+
 ```bash
 # Find hidden dependencies
 bun test --randomize
@@ -136,6 +146,7 @@ bun test --seed 12345
 ```
 
 #### Implementation Strategy
+
 ```json
 // package.json - Add new test scripts
 {
@@ -153,6 +164,7 @@ bun test --seed 12345
 ### 3. 📦 Bundler Improvements (MEDIUM PRIORITY)
 
 #### Current Pain Points
+
 ```javascript
 // browser-extension/background.js - 245 lines
 // browser-extension/content.js - 584 lines
@@ -160,11 +172,13 @@ bun test --seed 12345
 ```
 
 #### Fixed Issues
+
 1. ✅ **Top-level await** cyclic dependencies wrapped in `Promise.all`
 2. ✅ **Sourcemaps** line number accuracy in Chrome DevTools
 3. ✅ **Minifier** fixes for `new Array()` with ternary expressions
 
 #### Action Items
+
 ```bash
 # Rebuild extension with new bundler
 bun run build:worker
@@ -174,6 +188,7 @@ bun run extension:load
 ```
 
 #### Expected Results
+
 - 🐛 Fewer bundling errors
 - 🔍 Better debugging experience
 - 📦 Smaller bundle sizes (minifier improvements)
@@ -183,12 +198,14 @@ bun run extension:load
 ### 4. 🌐 Platform-Specific Dependencies (COMPLETED ✅)
 
 #### What We Did
+
 ```bash
 bun install --os '*' --cpu '*'
 # ✅ 35 packages installed [1.90s]
 ```
 
 #### Benefits
+
 - 🐳 Docker builds for different platforms
 - 🔄 CI/CD for multi-arch (arm64, x64)
 - 📦 Prepares for potential native dependencies
@@ -198,39 +215,43 @@ bun install --os '*' --cpu '*'
 ### 5. 🧬 Test Suite Quality Improvements
 
 #### New Test Modifiers
+
 ```typescript
 // Chain qualifiers (NEW in v1.2.23)
 test.concurrent.each([
-  "https://brain.mybook.com/api/endpoint1",
-  "https://brain.mybook.com/api/endpoint2",
-  "https://brain.mybook.com/api/endpoint3"
-])("should handle %s", async (url) => {
+  'https://brain.mybook.com/api/endpoint1',
+  'https://brain.mybook.com/api/endpoint2',
+  'https://brain.mybook.com/api/endpoint3',
+])('should handle %s', async url => {
   const response = await fetch(url);
   expect(response.status).toBe(200);
 });
 
 // Serial tests in concurrent context
-describe.concurrent("fast tests", () => {
-  test("concurrent test 1", async () => {
-    await fetch("/api/1");
+describe.concurrent('fast tests', () => {
+  test('concurrent test 1', async () => {
+    await fetch('/api/1');
   });
-  
-  test.serial("must run sequentially", () => {
+
+  test.serial('must run sequentially', () => {
     // Critical ordering requirement
   });
 });
 ```
 
 #### Hook Improvements (FIXED BUGS)
+
 Your tests already use hooks extensively:
+
 ```typescript
 beforeEach(() => {
   vi.clearAllMocks();
-  mockEnv = { /* setup */ };
+  mockEnv = {/* setup */};
 });
 ```
 
 **Fixed in v1.2.23:**
+
 - ✅ Async `beforeEach` failures now prevent test execution
 - ✅ `afterAll` runs even if `beforeAll` fails (cleanup)
 - ✅ Hooks support timeout option
@@ -243,6 +264,7 @@ beforeEach(() => {
 ### Phase 1: Preparation (5 mins) ⏱️
 
 #### Step 1.1: Update package.json
+
 ```json
 {
   "devDependencies": {
@@ -262,6 +284,7 @@ beforeEach(() => {
 ```
 
 #### Step 1.2: Update bunfig.toml
+
 ```toml
 # config/bunfig.toml
 [test]
@@ -290,15 +313,17 @@ coverageThreshold = 80
 ### Phase 2: Test File Migration (15 mins) ⏱️
 
 #### Step 2.1: Update Import Statements
+
 ```typescript
 // OLD (vitest)
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // NEW (bun:test)
-import { describe, test, expect, mock, beforeEach } from "bun:test";
+import { describe, test, expect, mock, beforeEach } from 'bun:test';
 ```
 
 **Find & Replace:**
+
 ```bash
 # Preview changes
 grep -r "from 'vitest'" tests/
@@ -310,32 +335,33 @@ find tests/ -name "*.test.ts" -type f -exec sed -i '' "s/it(/test(/g" {} +
 ```
 
 #### Step 2.2: Mark Concurrent Tests
+
 ```typescript
 // tests/integration/queue-integration.test.ts
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from 'bun:test';
 
 // Option 1: Mark entire describe block
-describe.concurrent("Queue Integration Tests", () => {
-  test("should process valid line movement", async () => {
+describe.concurrent('Queue Integration Tests', () => {
+  test('should process valid line movement', async () => {
     // Already async - perfect for concurrent execution
   });
-  
-  test("should trigger steam move detection", async () => {
+
+  test('should trigger steam move detection', async () => {
     // Will run in parallel with above test
   });
 });
 
 // Option 2: Mark individual tests
-describe("Mixed Tests", () => {
-  test.concurrent("async test 1", async () => {
-    await fetch("/api");
+describe('Mixed Tests', () => {
+  test.concurrent('async test 1', async () => {
+    await fetch('/api');
   });
-  
-  test.concurrent("async test 2", async () => {
-    await fetch("/api2");
+
+  test.concurrent('async test 2', async () => {
+    await fetch('/api2');
   });
-  
-  test.serial("must run sequentially", () => {
+
+  test.serial('must run sequentially', () => {
     // Sequential execution required
   });
 });
@@ -344,6 +370,7 @@ describe("Mixed Tests", () => {
 ### Phase 3: Validation (10 mins) ⏱️
 
 #### Step 3.1: Run Test Suite
+
 ```bash
 # Run all tests
 bun test
@@ -359,6 +386,7 @@ bun test --concurrent --randomize --coverage
 ```
 
 #### Step 3.2: Check Coverage
+
 ```bash
 # Generate coverage report
 bun test --coverage
@@ -372,6 +400,7 @@ open coverage/index.html
 ## 🐛 Bug Fixes Relevant to Your Project
 
 ### Critical Fixes
+
 1. ✅ **fetch() with AbortSignal** - Now aborts during socket connection
    - **Your Code:** Uses `fetch()` extensively in interceptor
    - **Impact:** Better timeout handling
@@ -389,6 +418,7 @@ open coverage/index.html
    - **Impact:** More reliable test execution
 
 ### Performance Improvements
+
 1. ✅ **zstd decompression** - Multi-frame support
 2. ✅ **Garbage collection** in `Bun.serve`
 3. ✅ **LeakSanitizer** in CI pipeline (internal)
@@ -398,6 +428,7 @@ open coverage/index.html
 ## 📈 Expected Performance Improvements
 
 ### Test Execution Time
+
 ```
 Current (Sequential):
   Unit tests:        ~5-8s
@@ -411,6 +442,7 @@ After Concurrent Migration:
 ```
 
 ### CI/CD Impact
+
 ```
 Current GitHub Actions runtime:  ~2-3 min
 After optimization:             ~1-1.5 min
@@ -418,6 +450,7 @@ Monthly savings (100 runs):     ~150-200 min
 ```
 
 ### Development Experience
+
 ```
 Watch mode feedback:     3x faster
 Debugging:              Better sourcemaps
@@ -429,14 +462,14 @@ Test reliability:       Higher (bug fixes)
 
 ## 🎯 Implementation Priority Matrix
 
-| Feature | Impact | Effort | Priority | Status |
-|---------|--------|--------|----------|--------|
-| Concurrent Tests | 🔥🔥🔥 | 15 min | 1️⃣ CRITICAL | ⏳ Pending |
-| Test Randomization | 🔥🔥 | 5 min | 2️⃣ HIGH | ⏳ Pending |
-| Vitest→Bun Migration | 🔥🔥 | 20 min | 3️⃣ HIGH | ⏳ Pending |
-| Bundler Rebuild | 🔥 | 5 min | 4️⃣ MEDIUM | ⏳ Pending |
-| Platform Deps | ✅ | 0 min | N/A | ✅ DONE |
-| Redis Pub/Sub | ⚪ | N/A | 5️⃣ LOW | 🔮 Future |
+| Feature              | Impact | Effort | Priority    | Status     |
+| -------------------- | ------ | ------ | ----------- | ---------- |
+| Concurrent Tests     | 🔥🔥🔥 | 15 min | 1️⃣ CRITICAL | ⏳ Pending |
+| Test Randomization   | 🔥🔥   | 5 min  | 2️⃣ HIGH     | ⏳ Pending |
+| Vitest→Bun Migration | 🔥🔥   | 20 min | 3️⃣ HIGH     | ⏳ Pending |
+| Bundler Rebuild      | 🔥     | 5 min  | 4️⃣ MEDIUM   | ⏳ Pending |
+| Platform Deps        | ✅     | 0 min  | N/A         | ✅ DONE    |
+| Redis Pub/Sub        | ⚪     | N/A    | 5️⃣ LOW      | 🔮 Future  |
 
 **Total Estimated Time:** ~45 minutes for full migration 🚀
 
@@ -445,9 +478,11 @@ Test reliability:       Higher (bug fixes)
 ## 🚨 Breaking Changes & Deprecations
 
 ### ✅ No Breaking Changes for Your Project
+
 Bun v1.2.23 is **backwards compatible** with v1.2.22.
 
 ### ⚠️ Potential Issues
+
 1. **Vitest syntax differences**
    - `vi.fn()` → Use `mock()` in bun:test
    - `it()` → `test()` (both work, but `test` is preferred)
@@ -465,17 +500,20 @@ Bun v1.2.23 is **backwards compatible** with v1.2.22.
 ## 📚 Resources & References
 
 ### Official Documentation
+
 - [Bun v1.2.23 Release Notes](https://bun.com/blog/bun-v1.2.23)
 - [Bun Test Documentation](https://bun.sh/docs/cli/test)
 - [Concurrent Testing Guide](https://bun.sh/docs/test/concurrent)
 
 ### Your Project Files
+
 - `tests/` - 17 test files, 409+ test cases
 - `config/bunfig.toml` - Test configuration
 - `vitest.config.ts` - To be replaced/updated
 - `package.json` - Scripts to update
 
 ### Migration Examples
+
 ```bash
 # Before (vitest)
 bun run test                    # Uses vitest
@@ -492,6 +530,7 @@ bun test --concurrent --randomize  # Both!
 ## 🎬 Next Steps - Action Plan
 
 ### Immediate (Today)
+
 1. ✅ **Upgrade Bun** → **COMPLETED**
 2. ✅ **Install dependencies with platform support** → **COMPLETED**
 3. ⏳ **Migrate to bun test** → **STARTING NOW**
@@ -499,12 +538,14 @@ bun test --concurrent --randomize  # Both!
 5. ⏳ **Validate test suite** → **15 min**
 
 ### Short-term (This Week)
+
 1. 🔄 Update CI/CD pipelines with new test commands
 2. 🔄 Add test randomization to PR checks
 3. 🔄 Document new test patterns for team
 4. 🔄 Monitor performance improvements
 
 ### Future Enhancements
+
 1. 🔮 Explore Redis Pub/Sub for real-time features
 2. 🔮 Investigate Bun.SQL for analytics (if applicable)
 3. 🔮 Optimize bundle size further with new minifier
@@ -515,6 +556,7 @@ bun test --concurrent --randomize  # Both!
 ## 📊 Success Metrics
 
 ### Key Performance Indicators (KPIs)
+
 - ✅ Test execution time reduced by **65%** (target: 15-20s)
 - ✅ CI/CD pipeline time reduced by **40%** (target: 1-1.5 min)
 - ✅ Zero test flakiness from race conditions
@@ -522,6 +564,7 @@ bun test --concurrent --randomize  # Both!
 - ✅ Better developer experience (faster feedback)
 
 ### Validation Checklist
+
 - [ ] All tests pass with `bun test`
 - [ ] All tests pass with `bun test --concurrent`
 - [ ] All tests pass with `bun test --randomize`
@@ -549,8 +592,7 @@ Bun v1.2.23 brings **significant improvements** to your project, particularly:
 
 ---
 
-*Generated: October 7, 2025*  
-*Project: betting-brain-v3*  
-*Analysis by: Senior Software Engineer*  
-*Status: Ready for Implementation* 🚀
-
+_Generated: October 7, 2025_  
+_Project: betting-brain-v3_  
+_Analysis by: Senior Software Engineer_  
+_Status: Ready for Implementation_ 🚀

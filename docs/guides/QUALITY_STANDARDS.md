@@ -1,8 +1,6 @@
 # Code Quality Standards - Betting-Brain v3
 
-**Version:** 1.0.0
-**Last Updated:** 2025-10-08
-**Status:** ✅ Actively Enforced
+**Version:** 1.0.0 **Last Updated:** 2025-10-08 **Status:** ✅ Actively Enforced
 
 ---
 
@@ -22,9 +20,11 @@
 
 ## Overview
 
-These standards raise the bar for code quality across the codebase. All new code MUST follow these standards, and existing code should be gradually migrated.
+These standards raise the bar for code quality across the codebase. All new code
+MUST follow these standards, and existing code should be gradually migrated.
 
 **Key Principles:**
+
 1. **Type Safety First** - No `as any`, proper TypeScript typing
 2. **Centralized Configuration** - All magic numbers in constants
 3. **Structured Logging** - Use `StructuredLogger`, not `console.log`
@@ -156,17 +156,21 @@ const logger = createLogger(request);
 logger.info('request_processing_started', {
   requestId,
   path: request.url,
-  method: request.method
+  method: request.method,
 });
 
-logger.error('processing_failed', {
-  requestId,
-  errorCode: error.code
-}, error);
+logger.error(
+  'processing_failed',
+  {
+    requestId,
+    errorCode: error.code,
+  },
+  error
+);
 
 logger.debug('variable_state', {
   someVariable,
-  otherData
+  otherData,
 });
 ```
 
@@ -225,28 +229,29 @@ try {
 
 ```typescript
 // ✅ GOOD: Proper error handling
-import { createErrorResponse, APIError, ErrorCode } from '../utils/error-handler';
+import {
+  createErrorResponse,
+  APIError,
+  ErrorCode,
+} from '../utils/error-handler';
 
 try {
   await riskyOperation();
 } catch (error) {
-  logger.error('risky_operation_failed', { operation: 'processData' }, error as Error);
-
-  return createErrorResponse(
-    error as Error,
-    requestId,
-    request.url
+  logger.error(
+    'risky_operation_failed',
+    { operation: 'processData' },
+    error as Error
   );
+
+  return createErrorResponse(error as Error, requestId, request.url);
 }
 
 // ✅ GOOD: Specific error types
 if (!params.eid) {
-  throw new APIError(
-    ErrorCode.VALIDATION_ERROR,
-    'Event ID is required',
-    400,
-    { field: 'eid' }
-  );
+  throw new APIError(ErrorCode.VALIDATION_ERROR, 'Event ID is required', 400, {
+    field: 'eid',
+  });
 }
 
 // ✅ GOOD: Retryable vs non-retryable
@@ -257,7 +262,10 @@ function isRetryableError(error: unknown): boolean {
       return false;
     }
     // Retry network errors
-    if (error.message.includes('timeout') || error.message.includes('network')) {
+    if (
+      error.message.includes('timeout') ||
+      error.message.includes('network')
+    ) {
       return true;
     }
   }
@@ -304,7 +312,7 @@ import {
   normalizeD1Result,
   CORS_HEADERS,
   createJSONResponse,
-  createOPTIONSResponse
+  createOPTIONSResponse,
 } from '../utils/request';
 
 // Request ID
@@ -389,6 +397,7 @@ const result = await db.executeBatch([
 ### Automated Checks
 
 1. **TypeScript Strict Mode**
+
    ```bash
    bun run type-check  # Must pass with 0 errors
    ```
@@ -400,6 +409,7 @@ const result = await db.executeBatch([
    - `@typescript-eslint/no-unsafe-member-access`: error
 
 3. **ast-grep Security Scan**
+
    ```bash
    sg scan src/  # Must have 0 blocking violations
    ```
@@ -412,6 +422,7 @@ const result = await db.executeBatch([
 ### Pre-Commit Hooks
 
 Located in `.husky/pre-commit`:
+
 ```bash
 #!/bin/sh
 bun run type-check
@@ -423,6 +434,7 @@ bun test
 ### CI/CD Pipeline
 
 Located in `.github/workflows/deploy.yml`:
+
 ```yaml
 - name: Quality Checks
   run: |
@@ -472,6 +484,7 @@ Located in `.github/workflows/deploy.yml`:
 ### Example Migration
 
 **Before:**
+
 ```typescript
 export async function handler(request: Request, env: any) {
   const requestId = Date.now().toString(36);
@@ -486,25 +499,28 @@ export async function handler(request: Request, env: any) {
         status: 400,
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
     }
 
     return new Response(JSON.stringify(data), {
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
   } catch (error) {
     console.error('Error:', error);
-    return new Response(JSON.stringify({ error: 'Internal error' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal error' }), {
+      status: 500,
+    });
   }
 }
 ```
 
 **After:**
+
 ```typescript
 import { Env } from '../types/api';
 import { createLogger } from '../utils/logger';
@@ -512,7 +528,7 @@ import {
   generateRequestId,
   normalizeD1Result,
   createJSONResponse,
-  createErrorResponse
+  createErrorResponse,
 } from '../utils/request';
 import { PAGINATION } from '../shared/constants';
 
@@ -529,7 +545,7 @@ export async function handler(request: Request, env: Env): Promise<Response> {
     if (data.length > PAGINATION.MAX_LIMIT) {
       logger.warn('result_limit_exceeded', {
         count: data.length,
-        limit: PAGINATION.MAX_LIMIT
+        limit: PAGINATION.MAX_LIMIT,
       });
 
       return createErrorResponse(
@@ -542,7 +558,7 @@ export async function handler(request: Request, env: Env): Promise<Response> {
 
     logger.info('processing_completed', {
       requestId,
-      rowCount: data.length
+      rowCount: data.length,
     });
 
     return createJSONResponse({ success: true, data }, 200);
@@ -566,6 +582,6 @@ export async function handler(request: Request, env: Env): Promise<Response> {
 
 ---
 
-**Status:** These standards are actively enforced in CI/CD. All new code must comply.
-**Violations:** Will block PR merges
-**Questions:** See [CURSOR_RULES.md](./CURSOR_RULES.md) or create an issue
+**Status:** These standards are actively enforced in CI/CD. All new code must
+comply. **Violations:** Will block PR merges **Questions:** See
+[CURSOR_RULES.md](./CURSOR_RULES.md) or create an issue

@@ -9,9 +9,9 @@ import type { Env } from '../types/api';
  * Written to KV key: `signal:{agentId}` every minute
  */
 export function steamSignal(
-  velocity: number,    // bets/min (normalize to 0-100)
-  sharpness: number,   // % steam bets (already 0-100)
-  avgLag: number       // ms (normalize: 0ms=100, 60s+=0)
+  velocity: number, // bets/min (normalize to 0-100)
+  sharpness: number, // % steam bets (already 0-100)
+  avgLag: number // ms (normalize: 0ms=100, 60s+=0)
 ): number {
   // Normalize velocity: 0 bets/min = 0, 50+ bets/min = 100
   const vNorm = Math.min(100, (velocity / 50) * 100);
@@ -32,9 +32,9 @@ export function steamSignal(
  * Formula: 40% concentration + 30% recency + 30% exposure
  */
 export function riskSignal(
-  gini: number,         // 0-1 (convert to 0-100)
-  recency: number,      // 0-1 (convert to 0-100)
-  exposurePct: number   // % of total exposure (0-100)
+  gini: number, // 0-1 (convert to 0-100)
+  recency: number, // 0-1 (convert to 0-100)
+  exposurePct: number // % of total exposure (0-100)
 ): number {
   // Normalize Gini to 0-100 (higher = more risk)
   const cNorm = gini * 100;
@@ -54,9 +54,9 @@ export function riskSignal(
  * Formula: 30% count + 40% size + 30% frequency
  */
 export function volumeSignal(
-  betCount: number,     // normalize to 0-100 (0=0, 100+=100)
-  avgStake: number,     // normalize to 0-100 (0=0, $1000+=100)
-  frequency: number     // bets per hour (0-100)
+  betCount: number, // normalize to 0-100 (0=0, 100+=100)
+  avgStake: number, // normalize to 0-100 (0=0, $1000+=100)
+  frequency: number // bets per hour (0-100)
 ): number {
   // Normalize bet count: 0 = 0, 100+ = 100
   const countNorm = Math.min(100, betCount);
@@ -113,17 +113,19 @@ export async function computeAndStoreSignals(
     steam: Math.round(steam * 100) / 100, // 2 decimals
     risk: Math.round(risk * 100) / 100,
     volume: Math.round(volume * 100) / 100,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   // Write to KV (TTL: 5 min)
   if (env.FANTASY_CACHE) {
-    ctx.waitUntil(Promise.all([
-      env.FANTASY_CACHE.put(`signal:steam:${agentId}`, signals.steam.toFixed(2), { expirationTtl: 300 }),
-      env.FANTASY_CACHE.put(`signal:risk:${agentId}`, signals.risk.toFixed(2), { expirationTtl: 300 }),
-      env.FANTASY_CACHE.put(`signal:volume:${agentId}`, signals.volume.toFixed(2), { expirationTtl: 300 }),
-      env.FANTASY_CACHE.put(`signal:all:${agentId}`, JSON.stringify(signals), { expirationTtl: 300 })
-    ]));
+    ctx.waitUntil(
+      Promise.all([
+        env.FANTASY_CACHE.put(`signal:steam:${agentId}`, signals.steam.toFixed(2), { expirationTtl: 300 }),
+        env.FANTASY_CACHE.put(`signal:risk:${agentId}`, signals.risk.toFixed(2), { expirationTtl: 300 }),
+        env.FANTASY_CACHE.put(`signal:volume:${agentId}`, signals.volume.toFixed(2), { expirationTtl: 300 }),
+        env.FANTASY_CACHE.put(`signal:all:${agentId}`, JSON.stringify(signals), { expirationTtl: 300 }),
+      ])
+    );
   }
 
   return signals;
@@ -132,13 +134,10 @@ export async function computeAndStoreSignals(
 /**
  * Retrieve signals from KV
  */
-export async function getSignals(
-  env: Env,
-  agentId: string
-): Promise<SignalSet | null> {
+export async function getSignals(env: Env, agentId: string): Promise<SignalSet | null> {
   if (!env.FANTASY_CACHE) return null;
 
-  const data = await env.FANTASY_CACHE.get(`signal:all:${agentId}`, 'json') as SignalSet | null;
+  const data = (await env.FANTASY_CACHE.get(`signal:all:${agentId}`, 'json')) as SignalSet | null;
   return data;
 }
 
@@ -159,18 +158,14 @@ export function getSignalThreshold(signal: number): {
  * Export signal to Analytics Engine for downstream ML
  * Data science team can query this for model building
  */
-export async function exportSignalToAE(
-  env: Env,
-  ctx: ExecutionContext,
-  signals: SignalSet
-): Promise<void> {
+export async function exportSignalToAE(env: Env, ctx: ExecutionContext, signals: SignalSet): Promise<void> {
   if (!env.ANALYTICS_ENGINE) return;
 
   ctx.waitUntil(
     env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [signals.agentId, 'steam_signal', 'risk_signal', 'volume_signal'],
       doubles: [signals.steam, signals.risk, signals.volume],
-      indexes: [signals.timestamp.toString()]
+      indexes: [signals.timestamp.toString()],
     })
   );
 }

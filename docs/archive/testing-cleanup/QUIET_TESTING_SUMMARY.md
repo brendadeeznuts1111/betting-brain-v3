@@ -65,13 +65,13 @@ The quiet testing system has been completely redesigned to provide:
 
 ## 📊 Test Categories
 
-| Category | Pattern | Timeout | Parallel | Priority | Description |
-|----------|---------|---------|----------|----------|-------------|
-| **unit** | `tests/unit/**/*.test.ts` | 5s | ✅ | 1 | Fast, isolated tests |
-| **integration** | `tests/integration/**/*.test.ts` | 15s | ✅ | 2 | Integration tests |
-| **e2e** | `tests/e2e/**/*.test.ts` | 30s | ❌ | 3 | End-to-end tests |
-| **performance** | `tests/benchmark/**/*.test.ts` | 60s | ❌ | 4 | Performance tests |
-| **snapshot** | `tests/snapshot/**/*.test.ts` | 10s | ✅ | 2 | Snapshot tests |
+| Category        | Pattern                          | Timeout | Parallel | Priority | Description          |
+| --------------- | -------------------------------- | ------- | -------- | -------- | -------------------- |
+| **unit**        | `tests/unit/**/*.test.ts`        | 5s      | ✅       | 1        | Fast, isolated tests |
+| **integration** | `tests/integration/**/*.test.ts` | 15s     | ✅       | 2        | Integration tests    |
+| **e2e**         | `tests/e2e/**/*.test.ts`         | 30s     | ❌       | 3        | End-to-end tests     |
+| **performance** | `tests/benchmark/**/*.test.ts`   | 60s     | ❌       | 4        | Performance tests    |
+| **snapshot**    | `tests/snapshot/**/*.test.ts`    | 10s     | ✅       | 2        | Snapshot tests       |
 
 ## 🎮 Usage
 
@@ -135,14 +135,14 @@ bun run scripts/test-runner.ts --serial
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `QUIET` | Enable quiet mode | auto-detect |
-| `CLAUDECODE` | Claude Code environment | false |
-| `REPL_ID` | Replit AI environment | false |
-| `AGENT` | Generic AI environment | false |
-| `CI` | CI environment | false |
-| `FORCE_RUN_ALL` | Force run all tests | false |
+| Variable        | Description             | Default     |
+| --------------- | ----------------------- | ----------- |
+| `QUIET`         | Enable quiet mode       | auto-detect |
+| `CLAUDECODE`    | Claude Code environment | false       |
+| `REPL_ID`       | Replit AI environment   | false       |
+| `AGENT`         | Generic AI environment  | false       |
+| `CI`            | CI environment          | false       |
+| `FORCE_RUN_ALL` | Force run all tests     | false       |
 
 ### Test Configuration
 
@@ -228,6 +228,7 @@ bun run test:organize:report
 ### Common Issues
 
 **Tests not running:**
+
 ```bash
 # Check test discovery
 bun run test:organize
@@ -240,6 +241,7 @@ bun run test:all
 ```
 
 **Quiet mode not working:**
+
 ```bash
 # Set environment variable
 export QUIET=1
@@ -249,6 +251,7 @@ export CLAUDECODE=1
 ```
 
 **Cache issues:**
+
 ```bash
 # Clear cache
 bun run test:cache:clear

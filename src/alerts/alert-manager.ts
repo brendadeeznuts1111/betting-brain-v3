@@ -205,13 +205,7 @@ export class AlertManager {
 
     // Log to audit trail
     this.env.ANALYTICS_ENGINE.writeDataPoint({
-      blobs: [
-        'alert_manager',
-        'dispatched',
-        alert.type,
-        alert.priority,
-        JSON.stringify(alert.delivered),
-      ],
+      blobs: ['alert_manager', 'dispatched', alert.type, alert.priority, JSON.stringify(alert.delivered)],
       doubles: [alert.attempts],
       indexes: [Date.now()],
     });
@@ -230,10 +224,7 @@ export class AlertManager {
         case 'hedge_signal':
           return await this.slack.sendHedgeSignal(alert.payload);
         case 'circuit_breaker':
-          return await this.slack.sendCircuitBreakerAlert(
-            alert.payload.reason,
-            alert.payload.metrics
-          );
+          return await this.slack.sendCircuitBreakerAlert(alert.payload.reason, alert.payload.metrics);
         case 'model_update':
           return await this.slack.sendModelUpdate(
             alert.payload.r_squared,
@@ -249,11 +240,7 @@ export class AlertManager {
             alert.payload.side
           );
         case 'generic':
-          return await this.slack.sendAlert(
-            alert.payload.title,
-            alert.payload.message,
-            alert.payload.severity
-          );
+          return await this.slack.sendAlert(alert.payload.title, alert.payload.message, alert.payload.severity);
         default:
           return false;
       }
@@ -274,10 +261,7 @@ export class AlertManager {
         case 'hedge_signal':
           return await this.telegram.sendHedgeSignal(alert.payload);
         case 'circuit_breaker':
-          return await this.telegram.sendCircuitBreakerAlert(
-            alert.payload.reason,
-            alert.payload.metrics
-          );
+          return await this.telegram.sendCircuitBreakerAlert(alert.payload.reason, alert.payload.metrics);
         case 'model_update':
           return await this.telegram.sendModelUpdate(
             alert.payload.r_squared,
@@ -293,11 +277,7 @@ export class AlertManager {
             alert.payload.side
           );
         case 'generic':
-          return await this.telegram.sendAlert(
-            alert.payload.title,
-            alert.payload.message,
-            alert.payload.severity
-          );
+          return await this.telegram.sendAlert(alert.payload.title, alert.payload.message, alert.payload.severity);
         default:
           return false;
       }
@@ -352,10 +332,7 @@ export class AlertManager {
     return {
       queueLength: this.alertQueue.length,
       deliveryCount: this.deliveryCount,
-      rateLimitRemaining: Math.max(
-        0,
-        this.config.rateLimitPerMinute - this.deliveryCount
-      ),
+      rateLimitRemaining: Math.max(0, this.config.rateLimitPerMinute - this.deliveryCount),
     };
   }
 

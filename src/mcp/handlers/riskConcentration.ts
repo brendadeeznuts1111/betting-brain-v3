@@ -8,11 +8,7 @@ import { MCPToolResult } from '../types';
 
 export async function getRiskConcentration(args: Record<string, any>, env: Env): Promise<MCPToolResult> {
   try {
-    const {
-      agentID = 'DEMO',
-      groupBy = 'event',
-      limit = 20,
-    } = args;
+    const { agentID = 'DEMO', groupBy = 'event', limit = 20 } = args;
 
     if (!env.ANALYTICS) {
       throw new Error('ANALYTICS database not available');
@@ -81,11 +77,15 @@ export async function getRiskConcentration(args: Record<string, any>, env: Env):
           content: [
             {
               type: 'text',
-              text: JSON.stringify({
-                message: 'Sport grouping requires extended schema',
-                suggestion: 'Use groupBy: event, customer, or market',
-                agentID,
-              }, null, 2),
+              text: JSON.stringify(
+                {
+                  message: 'Sport grouping requires extended schema',
+                  suggestion: 'Use groupBy: event, customer, or market',
+                  agentID,
+                },
+                null,
+                2
+              ),
             },
           ],
           isError: false,
@@ -105,11 +105,10 @@ export async function getRiskConcentration(args: Record<string, any>, env: Env):
       group_by: groupBy,
       total_groups: concentrations.length,
       total_risk: totalRisk,
-      top_10_pct: concentrations.slice(0, Math.ceil(concentrations.length * 0.1))
+      top_10_pct: concentrations
+        .slice(0, Math.ceil(concentrations.length * 0.1))
         .reduce((sum: number, c: any) => sum + (c.total_risk || 0), 0),
-      concentration_ratio: concentrations.length > 0
-        ? (concentrations[0] as any).total_risk / totalRisk
-        : 0,
+      concentration_ratio: concentrations.length > 0 ? (concentrations[0] as any).total_risk / totalRisk : 0,
       diversification_score: Math.min(100, (concentrations.length / limit) * 100),
     };
 

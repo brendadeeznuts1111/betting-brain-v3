@@ -14,7 +14,10 @@ export class CostCapGuard {
   /**
    * Check if request is within cost limits
    */
-  async checkRequest(request: Request, env: Env): Promise<{
+  async checkRequest(
+    request: Request,
+    env: Env
+  ): Promise<{
     allowed: boolean;
     reason?: string;
     metrics: CostCapMetrics;
@@ -27,15 +30,15 @@ export class CostCapGuard {
           size: 0,
           rows: 0,
           limit: { size: TEST_LIMITS.D1_SIZE, rows: TEST_LIMITS.D1_ROWS },
-          percentage: 0
+          percentage: 0,
         },
         queue: { operations: 0, limit: TEST_LIMITS.QUEUE_OPS, percentage: 0 },
-        analytics: { points: 0, limit: TEST_LIMITS.ANALYTICS_POINTS, percentage: 0 }
+        analytics: { points: 0, limit: TEST_LIMITS.ANALYTICS_POINTS, percentage: 0 },
       };
 
       return {
         allowed: true,
-        metrics: testMetrics
+        metrics: testMetrics,
       };
     }
 
@@ -46,7 +49,7 @@ export class CostCapGuard {
       return {
         allowed: false,
         reason: 'D1 database approaching capacity limit',
-        metrics
+        metrics,
       };
     }
 
@@ -55,7 +58,7 @@ export class CostCapGuard {
       return {
         allowed: false,
         reason: 'Queue operations approaching monthly limit',
-        metrics
+        metrics,
       };
     }
 
@@ -64,7 +67,7 @@ export class CostCapGuard {
       return {
         allowed: false,
         reason: 'Analytics Engine approaching monthly limit',
-        metrics
+        metrics,
       };
     }
 
@@ -73,7 +76,7 @@ export class CostCapGuard {
       return {
         allowed: false,
         reason: 'Request rate approaching daily limit',
-        metrics
+        metrics,
       };
     }
 
@@ -88,14 +91,14 @@ export class CostCapGuard {
       this.getD1Metrics(env),
       this.getQueueMetrics(env),
       this.getAnalyticsMetrics(env),
-      this.getRequestMetrics(env)
+      this.getRequestMetrics(env),
     ]);
 
     return {
       requests: requestMetrics,
       d1: d1Metrics,
       queue: queueMetrics,
-      analytics: analyticsMetrics
+      analytics: analyticsMetrics,
     };
   }
 
@@ -110,7 +113,7 @@ export class CostCapGuard {
           size: 0,
           rows: 0,
           limit: this.config.d1.maxSize,
-          percentage: 0
+          percentage: 0,
         };
       }
 
@@ -122,17 +125,17 @@ export class CostCapGuard {
         FROM dbstat
         WHERE name NOT LIKE 'sqlite_%'
       `);
-      
+
       if (!prepared || typeof prepared.first !== 'function') {
         return {
           size: 0,
           rows: 0,
           limit: this.config.d1.maxSize,
-          percentage: 0
+          percentage: 0,
         };
       }
-      
-      const sizeResult = await prepared.first() as { size: number; rows: number } | null;
+
+      const sizeResult = (await prepared.first()) as { size: number; rows: number } | null;
 
       const size = typeof sizeResult?.size === 'number' ? sizeResult.size : 0;
       const rows = typeof sizeResult?.rows === 'number' ? sizeResult.rows : 0;
@@ -142,12 +145,9 @@ export class CostCapGuard {
         rows,
         limit: {
           size: this.config.d1.maxSize,
-          rows: this.config.d1.maxRows
+          rows: this.config.d1.maxRows,
         },
-        percentage: Math.min(
-          (size / this.config.d1.maxSize) * 100,
-          (rows / this.config.d1.maxRows) * 100
-        )
+        percentage: Math.min((size / this.config.d1.maxSize) * 100, (rows / this.config.d1.maxRows) * 100),
       };
     } catch (error) {
       console.error('Error getting D1 metrics:', error);
@@ -156,9 +156,9 @@ export class CostCapGuard {
         rows: 0,
         limit: {
           size: this.config.d1.maxSize,
-          rows: this.config.d1.maxRows
+          rows: this.config.d1.maxRows,
         },
-        percentage: 0
+        percentage: 0,
       };
     }
   }
@@ -175,7 +175,7 @@ export class CostCapGuard {
     return {
       operations,
       limit: maxOperations,
-      percentage: (operations / maxOperations) * 100
+      percentage: (operations / maxOperations) * 100,
     };
   }
 
@@ -190,7 +190,7 @@ export class CostCapGuard {
     return {
       points,
       limit: this.config.analytics.maxPointsPerMonth,
-      percentage: (points / this.config.analytics.maxPointsPerMonth) * 100
+      percentage: (points / this.config.analytics.maxPointsPerMonth) * 100,
     };
   }
 
@@ -206,7 +206,7 @@ export class CostCapGuard {
     return {
       current,
       limit: maxPerDay,
-      percentage: (current / maxPerDay) * 100
+      percentage: (current / maxPerDay) * 100,
     };
   }
 
@@ -253,20 +253,20 @@ export const defaultCostCapConfig: CostCapConfig = {
   d1: {
     maxSize: 5 * 1024 * 1024 * 1024, // 5GB
     maxRows: 50_000_000, // 50M rows
-    ttlDays: 7
+    ttlDays: 7,
   },
   queue: {
     maxOperationsPerMonth: 1_000_000, // 1M ops
-    maxBatchSize: 10
+    maxBatchSize: 10,
   },
   analytics: {
     maxPointsPerMonth: 25_000_000, // 25M points
-    samplingRate: 0.1 // 10% sampling when approaching limit
+    samplingRate: 0.1, // 10% sampling when approaching limit
   },
   requests: {
     maxPerDay: 100_000, // 100k requests/day
-    hardStop: true
-  }
+    hardStop: true,
+  },
 };
 
 // Global instance

@@ -5,7 +5,7 @@
  * - handleAndHold, customerVolume, timeSeriesAnalytics
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import { getTimeSeriesCLV } from '../../src/mcp/handlers/timeSeriesCLV';
 import { getEnhancedSharpScore } from '../../src/mcp/handlers/enhancedSharpScore';
 import { getHoldForecast } from '../../src/mcp/handlers/holdForecast';
@@ -50,10 +50,7 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer' },
-        envWithoutAnalytics
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -66,10 +63,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesCLV(
-        { cid: 'nonexistent-customer' },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'nonexistent-customer' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Customer not found');
@@ -89,10 +83,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer', lookbackDays: 30 },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer', lookbackDays: 30 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -100,20 +91,14 @@ describe('Extended MCP Handler Error Paths', () => {
     });
 
     test('should handle invalid lookbackDays parameter', async () => {
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer', lookbackDays: -30 },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer', lookbackDays: -30 }, mockEnv);
 
       // Should still process with negative value (results in future date)
       expect(result.isError).toBe(false || true); // May error depending on implementation
     });
 
     test('should handle zero lookbackDays', async () => {
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer', lookbackDays: 0 },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer', lookbackDays: 0 }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Customer not found');
@@ -144,10 +129,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer', lookbackDays: 30 },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer', lookbackDays: 30 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -179,19 +161,13 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer', lookbackDays: 30 },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer', lookbackDays: 30 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle invalid granularity parameter', async () => {
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer', granularity: 'invalid' },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer', granularity: 'invalid' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Customer not found');
@@ -200,18 +176,15 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle database query timeout', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Query timeout')), 100)
-            )
-          ),
+          first: vi
+            .fn()
+            .mockImplementation(
+              () => new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 100))
+            ),
         }),
       });
 
-      const result = await getTimeSeriesCLV(
-        { cid: 'test-customer' },
-        mockEnv
-      );
+      const result = await getTimeSeriesCLV({ cid: 'test-customer' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Query timeout');
@@ -229,10 +202,7 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getEnhancedSharpScore(
-        { cid: 'test-customer' },
-        envWithoutAnalytics
-      );
+      const result = await getEnhancedSharpScore({ cid: 'test-customer' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -245,10 +215,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getEnhancedSharpScore(
-        { cid: 'nonexistent-customer' },
-        mockEnv
-      );
+      const result = await getEnhancedSharpScore({ cid: 'nonexistent-customer' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Customer not found');
@@ -275,10 +242,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getEnhancedSharpScore(
-        { cid: 'test-customer', includeFeatures: true },
-        mockEnv
-      );
+      const result = await getEnhancedSharpScore({ cid: 'test-customer', includeFeatures: true }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -308,19 +272,13 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getEnhancedSharpScore(
-        { cid: 'test-customer', includeFeatures: true },
-        mockEnv
-      );
+      const result = await getEnhancedSharpScore({ cid: 'test-customer', includeFeatures: true }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle negative lookbackDays', async () => {
-      const result = await getEnhancedSharpScore(
-        { cid: 'test-customer', lookbackDays: -30 },
-        mockEnv
-      );
+      const result = await getEnhancedSharpScore({ cid: 'test-customer', lookbackDays: -30 }, mockEnv);
 
       expect(result.isError).toBe(false || true);
     });
@@ -338,10 +296,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getEnhancedSharpScore(
-        { cid: 'test-customer', includeFeatures: false },
-        mockEnv
-      );
+      const result = await getEnhancedSharpScore({ cid: 'test-customer', includeFeatures: false }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -367,10 +322,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getEnhancedSharpScore(
-        { cid: 'test-customer', includeFeatures: true },
-        mockEnv
-      );
+      const result = await getEnhancedSharpScore({ cid: 'test-customer', includeFeatures: true }, mockEnv);
 
       expect(result.isError).toBe(true);
     });
@@ -380,10 +332,7 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getHoldForecast(
-        { eventID: 'event-1' },
-        envWithoutAnalytics
-      );
+      const result = await getHoldForecast({ eventID: 'event-1' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -399,10 +348,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getHoldForecast(
-        { eventID: 'event-1' },
-        mockEnv
-      );
+      const result = await getHoldForecast({ eventID: 'event-1' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -422,10 +368,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getHoldForecast(
-        { eventID: 'event-1' },
-        mockEnv
-      );
+      const result = await getHoldForecast({ eventID: 'event-1' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -450,10 +393,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getHoldForecast(
-        { eventID: 'event-1' },
-        mockEnv
-      );
+      const result = await getHoldForecast({ eventID: 'event-1' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -470,10 +410,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getHoldForecast(
-        { eventID: 'event-1', lookbackDays: -30 },
-        mockEnv
-      );
+      const result = await getHoldForecast({ eventID: 'event-1', lookbackDays: -30 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -485,10 +422,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getHoldForecast(
-        { eventID: 'event-1' },
-        mockEnv
-      );
+      const result = await getHoldForecast({ eventID: 'event-1' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Database error');
@@ -506,10 +440,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getHoldForecast(
-        { eventID: 'event-1' },
-        mockEnv
-      );
+      const result = await getHoldForecast({ eventID: 'event-1' }, mockEnv);
 
       expect(result.isError).toBe(false || true);
     });
@@ -519,10 +450,7 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getHandleAndHold(
-        { agentID: 'test' },
-        envWithoutAnalytics
-      );
+      const result = await getHandleAndHold({ agentID: 'test' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -536,10 +464,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getHandleAndHold(
-        { agentID: 'test', lookbackDays: 30 },
-        mockEnv
-      );
+      const result = await getHandleAndHold({ agentID: 'test', lookbackDays: 30 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -550,17 +475,12 @@ describe('Extended MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { ts: '2024-01-01', handle: null, hold_pct: null },
-            ],
+            results: [{ ts: '2024-01-01', handle: null, hold_pct: null }],
           }),
         }),
       });
 
-      const result = await getHandleAndHold(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getHandleAndHold({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -569,17 +489,12 @@ describe('Extended MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { ts: '2024-01-01', handle: 0, hold_pct: 4.5 },
-            ],
+            results: [{ ts: '2024-01-01', handle: 0, hold_pct: 4.5 }],
           }),
         }),
       });
 
-      const result = await getHandleAndHold(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getHandleAndHold({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -588,17 +503,12 @@ describe('Extended MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { ts: '2024-01-01', handle: -10000, hold_pct: 4.5 },
-            ],
+            results: [{ ts: '2024-01-01', handle: -10000, hold_pct: 4.5 }],
           }),
         }),
       });
 
-      const result = await getHandleAndHold(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getHandleAndHold({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -611,10 +521,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getHandleAndHold(
-        { agentID: 'test', lookbackDays: -30 },
-        mockEnv
-      );
+      const result = await getHandleAndHold({ agentID: 'test', lookbackDays: -30 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -622,18 +529,13 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle database timeout', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          all: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          ),
+          all: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
         }),
       });
 
-      const result = await getHandleAndHold(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getHandleAndHold({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Timeout');
@@ -644,10 +546,7 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getCustomerVolume(
-        { agentID: 'test' },
-        envWithoutAnalytics
-      );
+      const result = await getCustomerVolume({ agentID: 'test' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -661,10 +560,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getCustomerVolume(
-        { agentID: 'test', lookbackDays: 30 },
-        mockEnv
-      );
+      const result = await getCustomerVolume({ agentID: 'test', lookbackDays: 30 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -675,17 +571,12 @@ describe('Extended MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { cid: 'customer1', total_volume: null, bet_count: 10 },
-            ],
+            results: [{ cid: 'customer1', total_volume: null, bet_count: 10 }],
           }),
         }),
       });
 
-      const result = await getCustomerVolume(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getCustomerVolume({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -694,17 +585,12 @@ describe('Extended MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { cid: 'customer1', total_volume: 10000, bet_count: 100 },
-            ],
+            results: [{ cid: 'customer1', total_volume: 10000, bet_count: 100 }],
           }),
         }),
       });
 
-      const result = await getCustomerVolume(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getCustomerVolume({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -712,19 +598,13 @@ describe('Extended MCP Handler Error Paths', () => {
     });
 
     test('should handle zero volume threshold', async () => {
-      const result = await getCustomerVolume(
-        { agentID: 'test', minVolume: 0 },
-        mockEnv
-      );
+      const result = await getCustomerVolume({ agentID: 'test', minVolume: 0 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle negative volume threshold', async () => {
-      const result = await getCustomerVolume(
-        { agentID: 'test', minVolume: -1000 },
-        mockEnv
-      );
+      const result = await getCustomerVolume({ agentID: 'test', minVolume: -1000 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -737,10 +617,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getCustomerVolume(
-        { agentID: 'test', lookbackDays: -30 },
-        mockEnv
-      );
+      const result = await getCustomerVolume({ agentID: 'test', lookbackDays: -30 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -752,10 +629,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getCustomerVolume(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getCustomerVolume({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Query failed');
@@ -766,10 +640,7 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'volume', agentID: 'test' },
-        envWithoutAnalytics
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'volume', agentID: 'test' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -783,10 +654,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'volume', agentID: 'test', lookbackDays: 30 },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'volume', agentID: 'test', lookbackDays: 30 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -805,10 +673,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'volume', agentID: 'test' },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'volume', agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -826,10 +691,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'hold', agentID: 'test' },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'hold', agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -849,10 +711,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'hold', agentID: 'test' },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'hold', agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -867,10 +726,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -885,10 +741,7 @@ describe('Extended MCP Handler Error Paths', () => {
         all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'volume', agentID: 'test', lookbackDays: -30 },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'volume', agentID: 'test', lookbackDays: -30 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -896,18 +749,15 @@ describe('Extended MCP Handler Error Paths', () => {
     test('should handle database timeout', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          all: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Query timeout')), 100)
-            )
-          ),
+          all: vi
+            .fn()
+            .mockImplementation(
+              () => new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 100))
+            ),
         }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'volume', agentID: 'test' },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'volume', agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Query timeout');
@@ -933,10 +783,7 @@ describe('Extended MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getTimeSeriesAnalytics(
-        { metric: 'volume', agentID: 'test' },
-        mockEnv
-      );
+      const result = await getTimeSeriesAnalytics({ metric: 'volume', agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });

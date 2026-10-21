@@ -73,8 +73,8 @@ async function runRipgrep(keywords: string[]): Promise<IndexEntry[]> {
               symbolType: detectSymbolType(match.lines.text),
               context: {
                 before: contextBefore.slice(-2),
-                after: []
-              }
+                after: [],
+              },
             };
           } else if (data.type === 'context') {
             const context = data.data;
@@ -141,7 +141,7 @@ async function buildIndex(): Promise<void> {
     generatedAt: Date.now(),
     totalEntries: entries.length,
     keywords,
-    fileCount: uniqueFiles.size
+    fileCount: uniqueFiles.size,
   };
 
   // Write index and metadata

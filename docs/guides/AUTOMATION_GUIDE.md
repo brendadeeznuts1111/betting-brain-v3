@@ -1,25 +1,30 @@
 # 🤖 Automation & Testing Guide
 
-This guide covers the automated testing and build pipeline for the Betting Brain v3 project.
+This guide covers the automated testing and build pipeline for the Betting Brain
+v3 project.
 
 ## 🚀 Quick Start
 
 ### Run All Tests
+
 ```bash
 bun run test:automation
 ```
 
 ### Run Extension Tests Only
+
 ```bash
 bun run test:extension
 ```
 
 ### Monitor Logs
+
 ```bash
 bun run monitor:logs
 ```
 
 ### Open Testing Dashboard
+
 ```bash
 bun run test:injection
 ```
@@ -27,6 +32,7 @@ bun run test:injection
 ## 📋 Available Scripts
 
 ### Core Scripts
+
 - `bun run dev` - Start development server
 - `bun run build` - Build project
 - `bun run test` - Run unit tests
@@ -34,16 +40,19 @@ bun run test:injection
 - `bun run format` - Format code
 
 ### Testing Scripts
+
 - `bun run test:extension` - Test extension functionality
 - `bun run test:automation` - Run full automation pipeline
 - `bun run test:injection` - Open injection testing dashboard
 - `bun run test:coverage` - Generate test coverage report
 
 ### Monitoring Scripts
+
 - `bun run monitor:logs` - Monitor extension logs in real-time
 - `bun run health:check` - Check worker health status
 
 ### Deployment Scripts
+
 - `bun run deploy` - Deploy to default environment
 - `bun run deploy:staging` - Deploy to staging
 - `bun run deploy:production` - Deploy to production
@@ -62,11 +71,13 @@ Comprehensive testing suite that validates:
 6. **Authentication Flow** - Validates auth requirements
 
 #### Usage
+
 ```bash
 bun run scripts/testing/extension-test-runner.ts
 ```
 
 #### Output
+
 - Detailed test results
 - Performance metrics
 - Error reporting
@@ -87,11 +98,13 @@ Complete CI/CD pipeline that:
 9. **Generates** documentation
 
 #### Usage
+
 ```bash
 bun run scripts/automation/build-and-test.ts
 ```
 
 #### Output
+
 - Step-by-step progress
 - Success/failure status
 - Performance metrics
@@ -111,6 +124,7 @@ Interactive web-based testing dashboard that provides:
 - **Manual Tests** - Step-by-step testing instructions
 
 #### Features
+
 - Visual status indicators
 - Real-time log monitoring
 - Test result visualization
@@ -128,11 +142,13 @@ Enhanced real-time log monitoring with:
 - **Graceful Shutdown** - Clean exit handling
 
 #### Usage
+
 ```bash
 bun run tools/logging/log-monitor.js
 ```
 
 #### Features
+
 - Color-coded log levels
 - Timestamp formatting
 - Error highlighting
@@ -142,6 +158,7 @@ bun run tools/logging/log-monitor.js
 ## 📊 Testing Workflow
 
 ### 1. Development Testing
+
 ```bash
 # Start development
 bun run dev
@@ -154,6 +171,7 @@ bun run test:extension
 ```
 
 ### 2. Pre-deployment Testing
+
 ```bash
 # Run full automation pipeline
 bun run test:automation
@@ -164,6 +182,7 @@ cat dist/build-report.json
 ```
 
 ### 3. Production Deployment
+
 ```bash
 # Deploy to production
 bun run deploy:production
@@ -175,6 +194,7 @@ bun run health:check
 ## 🔍 Debugging
 
 ### Extension Not Injecting
+
 1. Check extension loading in Chrome
 2. Verify manifest.json permissions
 3. Test on simple page first
@@ -182,12 +202,14 @@ bun run health:check
 5. Use injection tester dashboard
 
 ### Worker Connectivity Issues
+
 1. Check worker health endpoint
 2. Verify network connectivity
 3. Check CORS headers
 4. Validate authentication
 
 ### Log Forwarding Problems
+
 1. Check extension injection
 2. Verify worker logs endpoint
 3. Test with manual log generation
@@ -196,6 +218,7 @@ bun run health:check
 ## 📈 Performance Monitoring
 
 ### Key Metrics
+
 - **Response Time** - Worker response latency
 - **Success Rate** - Request success percentage
 - **Error Rate** - Error frequency
@@ -203,6 +226,7 @@ bun run health:check
 - **Uptime** - Service availability
 
 ### Monitoring Tools
+
 - Log monitor for real-time metrics
 - Health check for status validation
 - Test automation for performance validation
@@ -213,24 +237,28 @@ bun run health:check
 ### Common Issues
 
 #### Extension Not Loading
+
 - Check Chrome extension permissions
 - Verify manifest.json syntax
 - Check for JavaScript errors
 - Test on different domains
 
 #### Worker Not Responding
+
 - Check Cloudflare Worker status
 - Verify deployment
 - Check network connectivity
 - Validate authentication
 
 #### Logs Not Forwarding
+
 - Check extension injection
 - Verify worker endpoint
 - Test network connectivity
 - Check CORS configuration
 
 ### Debug Commands
+
 ```bash
 # Check worker health
 curl -s https://betting-brain-v3.nolarose1968-806.workers.dev/health

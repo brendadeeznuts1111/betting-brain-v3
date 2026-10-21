@@ -8,6 +8,7 @@
 ## 🎯 Current Root Structure
 
 ### Files (9 essential files only)
+
 ```
 CLAUDE.md                 # AI assistant guidance (14KB)
 LICENSE                   # MIT License (1KB)
@@ -22,6 +23,7 @@ wrangler.production.toml  # Cloudflare production config
 ```
 
 ### Directories (17 directories)
+
 ```
 src/                  # Source code (268KB, 29 files)
 tests/                # Test suite (252KB, 28 files)
@@ -47,6 +49,7 @@ coverage/             # Test coverage (18MB, gitignored)
 ## 🚫 What's NOT in Root
 
 ### Removed/Cleaned Up
+
 - ❌ `~/` directory (240MB tilde directory - REMOVED)
 - ❌ `vitest.config.ts` (obsolete - using Bun Test)
 - ❌ `test-results.json` (CI artifact)
@@ -55,6 +58,7 @@ coverage/             # Test coverage (18MB, gitignored)
 - ❌ 4 vitest config files from `config/` (obsolete)
 
 ### Properly Gitignored
+
 - ✅ `node_modules/` (440MB)
 - ✅ `dist/` (build output)
 - ✅ `coverage/` (test coverage)
@@ -69,7 +73,9 @@ coverage/             # Test coverage (18MB, gitignored)
 ## 📋 File Organization Rules
 
 ### Root Files Policy
+
 **ONLY these file types allowed in root:**
+
 1. **README.md** - Main documentation (standard)
 2. **LICENSE** - Project license (standard)
 3. **CLAUDE.md** - AI assistant guidance (like CONTRIBUTING.md)
@@ -78,9 +84,10 @@ coverage/             # Test coverage (18MB, gitignored)
 6. **bun.lock** - Bun lock (auto-generated)
 7. **tsconfig.json** - TypeScript config (standard)
 8. **wrangler.toml** - Cloudflare config (required)
-9. **wrangler.*.toml** - Environment configs (required)
+9. **wrangler.\*.toml** - Environment configs (required)
 
 ### Where Things Go
+
 ```
 Documentation → docs/
 Status files → docs/
@@ -92,6 +99,7 @@ Archive → docs/archive/
 ```
 
 ### Forbidden in Root
+
 - ❌ Markdown files (except README.md, LICENSE, CLAUDE.md)
 - ❌ Test results / CI artifacts
 - ❌ Backup files
@@ -105,6 +113,7 @@ Archive → docs/archive/
 ## 🔍 Directory Purposes
 
 ### `/src` (Source Code)
+
 ```
 src/
 ├── index.ts              # Main entry point
@@ -120,6 +129,7 @@ src/
 ```
 
 ### `/tests` (Test Suite)
+
 ```
 tests/
 ├── unit/                 # Unit tests (9 files)
@@ -131,6 +141,7 @@ tests/
 ```
 
 ### `/docs` (Documentation)
+
 ```
 docs/
 ├── guides/               # User guides (9 files)
@@ -144,6 +155,7 @@ docs/
 ```
 
 ### `/scripts` (Automation)
+
 ```
 scripts/
 ├── automation/           # Build & test scripts
@@ -156,6 +168,7 @@ scripts/
 ```
 
 ### `/tools` (HTML Tools)
+
 ```
 tools/
 ├── index.html            # Tools hub
@@ -168,6 +181,7 @@ tools/
 ```
 
 ### `/dashboards` (HTML Dashboards)
+
 ```
 dashboards/
 ├── index.html            # Dashboard hub
@@ -178,6 +192,7 @@ dashboards/
 ```
 
 ### `/config` (Additional Configs)
+
 ```
 config/
 ├── bunfig.toml           # Bun configuration
@@ -189,6 +204,7 @@ config/
 ## 📊 Size Analysis
 
 ### Total Project Size
+
 ```
 Source code:       268KB
 Tests:            252KB
@@ -209,6 +225,7 @@ Total:          ~460MB
 ```
 
 ### Cleanup Impact
+
 ```
 Before Cleanup:
 - Root files: 15+
@@ -231,6 +248,7 @@ Organization: ✅ CLEAN
 ## ✅ Verification Commands
 
 ### Check Root Cleanliness
+
 ```bash
 # List root files only
 ls -1 *.{md,json,toml,ts} 2>/dev/null
@@ -247,6 +265,7 @@ ls -1 *.{md,json,toml,ts} 2>/dev/null
 ```
 
 ### Verify Gitignore
+
 ```bash
 # Check ignored files
 git status --ignored
@@ -260,6 +279,7 @@ git status --ignored
 ```
 
 ### Count Files
+
 ```bash
 # Root files only (should be ~9)
 ls -1 | grep -E "\.(md|json|toml|ts)$" | wc -l
@@ -273,12 +293,16 @@ ls -d */ | wc -l
 ## 🔒 Maintenance Rules
 
 ### Before Creating Any File in Root
+
 **Ask yourself:**
+
 1. Is this a standard project file? (package.json, README.md, etc.)
 2. Is this a required configuration? (tsconfig.json, wrangler.toml)
-3. Can this go in a subdirectory instead? (**YES → Move it to docs/ or appropriate dir**)
+3. Can this go in a subdirectory instead? (**YES → Move it to docs/ or
+   appropriate dir**)
 
 ### Regular Cleanup Checklist
+
 - [ ] No temporary files in root
 - [ ] No test artifacts in root
 - [ ] No backup files anywhere
@@ -291,7 +315,8 @@ ls -d */ | wc -l
 
 ## 📚 Related Documentation
 
-- **[docs/CLEANUP_PLAN.md](./CLEANUP_PLAN.md)** - Detailed cleanup plan & decisions
+- **[docs/CLEANUP_PLAN.md](./CLEANUP_PLAN.md)** - Detailed cleanup plan &
+  decisions
 - **[docs/CODEBASE_REVIEW.md](./CODEBASE_REVIEW.md)** - Full codebase review
 - **[docs/PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Project architecture
 
@@ -303,5 +328,5 @@ ls -d */ | wc -l
 
 ---
 
-*This document is auto-generated and should be updated whenever root structure changes.*
-
+_This document is auto-generated and should be updated whenever root structure
+changes._

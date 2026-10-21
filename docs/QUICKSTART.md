@@ -3,6 +3,7 @@
 ## Zero-Config Boot (15 seconds) ⚡
 
 ### 1. Clone & Install
+
 ```bash
 git clone https://github.com/mybook/betting-brain-v3.git
 cd betting-brain-v3
@@ -10,12 +11,15 @@ bun install
 ```
 
 ### 2. Bootstrap (Creates D1, Queues, Applies Migrations)
+
 ```bash
 bun run bootstrap
 ```
 
 ### 3. Configure Cloudflare
+
 Update `wrangler.toml` with your database ID from the bootstrap output:
+
 ```toml
 [[d1_databases]]
 binding = "ANALYTICS"
@@ -24,6 +28,7 @@ database_id = "your-database-id-from-bootstrap"  # ← Update this
 ```
 
 ### 4. Start Development Server
+
 ```bash
 bun run dev
 ```
@@ -33,21 +38,25 @@ Your API is now live at `http://localhost:8787` 🎉
 ## Test the API
 
 ### Get Betting Exposure
+
 ```bash
 curl "http://localhost:8787/tools/getBettingExposure?eid=nba_123"
 ```
 
 ### Get Sharp Score
+
 ```bash
 curl "http://localhost:8787/tools/getSharpScore?cid=customer_456"
 ```
 
 ### Get Hold Percentage
+
 ```bash
 curl "http://localhost:8787/tools/getHoldPercentage?eid=nba_123&mt=SPREAD"
 ```
 
 ### Get CLV
+
 ```bash
 curl "http://localhost:8787/tools/getCLV?cid=customer_456"
 ```
@@ -55,11 +64,13 @@ curl "http://localhost:8787/tools/getCLV?cid=customer_456"
 ## Deploy to Production 🚀
 
 ### One-Command Deploy
+
 ```bash
 bun run deploy:prod
 ```
 
 This will:
+
 1. ✅ Run all tests
 2. ✅ Build TypeScript
 3. ✅ Apply migrations to production
@@ -68,6 +79,7 @@ This will:
 6. ✅ Output Grafana dashboard URL
 
 ### Rollback (If Needed)
+
 ```bash
 bun run rollback v3.1.0-abc123
 ```
@@ -123,22 +135,22 @@ betting-brain-v3/
 
 ## Core Metrics & Alerts 📊
 
-| Metric | Alert Threshold | Cost Cap | Unit Test |
-|--------|----------------|----------|-----------|
-| **CLV** | < -2% | 1k customers/hour | `clv.test.ts` |
-| **Hold %** | < 4% or > 8% | 300s cache | `hold.test.ts` |
-| **Exposure** | > $50k or > 60% | 50 rows/event | `exposure.test.ts` |
-| **Sharp Score** | > 60 | top-100 only | `sharp.test.ts` |
-| **Steam Move** | ≥ 3σ in ≤ 60s | 5min dedupe | `steam.test.ts` |
+| Metric          | Alert Threshold | Cost Cap          | Unit Test          |
+| --------------- | --------------- | ----------------- | ------------------ |
+| **CLV**         | < -2%           | 1k customers/hour | `clv.test.ts`      |
+| **Hold %**      | < 4% or > 8%    | 300s cache        | `hold.test.ts`     |
+| **Exposure**    | > $50k or > 60% | 50 rows/event     | `exposure.test.ts` |
+| **Sharp Score** | > 60            | top-100 only      | `sharp.test.ts`    |
+| **Steam Move**  | ≥ 3σ in ≤ 60s   | 5min dedupe       | `steam.test.ts`    |
 
 ## Cost-Cap Guardrails 💰
 
-| Tier | Free Limit | Hit Action |
-|------|-----------|------------|
-| **Requests** | 100k/day | 429 + alert |
-| **D1 rows** | 50M | TTL auto-purge |
-| **Queue ops** | 1M/month | Pause ingestion |
-| **Analytics** | 25M pts/month | 10% sample |
+| Tier          | Free Limit    | Hit Action      |
+| ------------- | ------------- | --------------- |
+| **Requests**  | 100k/day      | 429 + alert     |
+| **D1 rows**   | 50M           | TTL auto-purge  |
+| **Queue ops** | 1M/month      | Pause ingestion |
+| **Analytics** | 25M pts/month | 10% sample      |
 
 All enforced in `src/guards/costCap.ts` with Grafana monitoring.
 
@@ -162,6 +174,7 @@ bun run codegen
 ```
 
 This regenerates:
+
 - `dist/openapi.json` - OpenAPI 3.0 spec
 - `dist/redoc.html` - Interactive API documentation
 
@@ -176,6 +189,7 @@ cp .env.example .env
 ```
 
 Key variables:
+
 - `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token
 - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
 - `D1_DATABASE_ID` - Your D1 database ID
@@ -183,12 +197,15 @@ Key variables:
 ## Monitoring 📈
 
 ### Grafana Dashboard
+
 After deployment, you'll get a Grafana sidecar URL:
+
 ```
 ✔ Grafana sidecar: https://grafana-abc123.pages.dev
 ```
 
 The dashboard auto-imports and shows:
+
 - Cost Cap Remaining (alerts at 80%)
 - CLV, Hold, Exposure, Sharp, Steam alerts
 - Real-time request rates
@@ -196,31 +213,38 @@ The dashboard auto-imports and shows:
 - Queue operations
 
 ### Cloudflare Dashboard
-Monitor your deployment at:
-https://dash.cloudflare.com
+
+Monitor your deployment at: https://dash.cloudflare.com
 
 ### Troubleshooting 🔧
 
 ### Database ID Not Found
+
 If you see "Database not found" after bootstrap:
+
 1. Check the bootstrap output for your database ID
 2. Update `wrangler.toml` with the correct `database_id`
 3. Run `bun run db:apply` to apply migrations
 
 ### Rate Limit Errors
+
 Default rate limit is 10 req/s per IP. To adjust:
+
 1. Edit `src/guards/rateLimit.ts`
 2. Update `defaultRateLimitConfig.requestsPerSecond`
 
 ### Cost Cap Triggered
+
 If you hit cost caps:
+
 1. Check Grafana dashboard "Cost Remaining" panel
 2. Review `.env` to adjust limits
 3. Consider upgrading Cloudflare plan
 
 ## Support 📞
 
-- **Documentation**: [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
+- **Documentation**:
+  [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - **Issues**: [GitHub Issues](https://github.com/mybook/betting-brain-v3/issues)
 - **Discord**: [Cloudflare Discord](https://discord.cloudflare.com/)
 

@@ -3,10 +3,12 @@
 ## Three Dashboards, Progressive Enhancement
 
 ### 1. **dashboard.html** - Basic Monitoring
+
 **Use Case**: Simple API monitoring  
-**Level**: Beginner  
+**Level**: Beginner
 
 **Features**:
+
 - ✅ Basic request/response tracking
 - ✅ Simple statistics
 - ✅ Response viewer
@@ -17,10 +19,12 @@
 ---
 
 ### 2. **dashboard-enhanced.html** - Advanced Analytics
+
 **Use Case**: Full betting analytics with exports  
-**Level**: Intermediate  
+**Level**: Intermediate
 
 **Features**:
+
 - ✅ All basic features +
 - ✅ **5 interactive charts** (types, agents, timeline, segments, hourly)
 - ✅ **CSV/JSON export** with full data
@@ -35,10 +39,12 @@
 ---
 
 ### 3. **dashboard-pro.html** - Intelligence Hub 🧠
+
 **Use Case**: AI-powered betting intelligence  
-**Level**: Professional  
+**Level**: Professional
 
 **Features**:
+
 - ✅ All enhanced features +
 - ✅ **AI-Powered Insights**
   - Automatic anomaly detection
@@ -85,54 +91,56 @@
 
 ## Feature Comparison Matrix
 
-| Feature | Basic | Enhanced | Pro |
-|---------|-------|----------|-----|
-| **Core Analytics** |
-| Request/Response Tracking | ✅ | ✅ | ✅ |
-| Basic Stats | ✅ | ✅ | ✅ |
-| Response Viewer | ✅ | ✅ | ✅ |
+| Feature                    | Basic  | Enhanced     | Pro           |
+| -------------------------- | ------ | ------------ | ------------- |
+| **Core Analytics**         |
+| Request/Response Tracking  | ✅     | ✅           | ✅            |
+| Basic Stats                | ✅     | ✅           | ✅            |
+| Response Viewer            | ✅     | ✅           | ✅            |
 | **Charts & Visualization** |
-| Interactive Charts | ❌ | ✅ (5) | ✅ (10+) |
-| Real-time Updates | ✅ | ✅ | ✅ |
-| Multiple Views | ❌ | ❌ | ✅ (6 tabs) |
-| **Data Export** |
-| CSV Export | ❌ | ✅ | ✅ |
-| JSON Export | ❌ | ✅ | ✅ |
-| **Intelligence** |
-| AI Insights | ❌ | ❌ | ✅ |
-| Anomaly Detection | ❌ | Basic | Advanced |
-| Risk Scoring | ❌ | ❌ | ✅ (0-100) |
-| Pattern Recognition | ❌ | ❌ | ✅ |
-| **Alerts** |
-| Configurable Alerts | ❌ | ✅ (3 types) | ✅ (Advanced) |
-| Real-time Notifications | ❌ | ❌ | ✅ |
-| **Search & Filter** |
-| Basic Filter | ❌ | ✅ | ✅ |
-| Global Search | ❌ | ❌ | ✅ (⌘K) |
-| **UX Features** |
-| Keyboard Shortcuts | ❌ | ❌ | ✅ |
-| Toast Notifications | ❌ | ❌ | ✅ |
-| Smooth Animations | ❌ | Basic | Advanced |
-| Responsive Design | ✅ | ✅ | ✅✅ |
-| Dark Mode | ✅ | ✅ | ✅ (+ toggle) |
-| **Performance** |
-| Load Speed | ⚡⚡⚡ | ⚡⚡ | ⚡⚡ |
-| Memory Usage | Low | Medium | Medium |
-| **Customization** |
-| Saved Preferences | ❌ | ❌ | ✅ |
-| Saved Filters | ❌ | ❌ | ✅ |
+| Interactive Charts         | ❌     | ✅ (5)       | ✅ (10+)      |
+| Real-time Updates          | ✅     | ✅           | ✅            |
+| Multiple Views             | ❌     | ❌           | ✅ (6 tabs)   |
+| **Data Export**            |
+| CSV Export                 | ❌     | ✅           | ✅            |
+| JSON Export                | ❌     | ✅           | ✅            |
+| **Intelligence**           |
+| AI Insights                | ❌     | ❌           | ✅            |
+| Anomaly Detection          | ❌     | Basic        | Advanced      |
+| Risk Scoring               | ❌     | ❌           | ✅ (0-100)    |
+| Pattern Recognition        | ❌     | ❌           | ✅            |
+| **Alerts**                 |
+| Configurable Alerts        | ❌     | ✅ (3 types) | ✅ (Advanced) |
+| Real-time Notifications    | ❌     | ❌           | ✅            |
+| **Search & Filter**        |
+| Basic Filter               | ❌     | ✅           | ✅            |
+| Global Search              | ❌     | ❌           | ✅ (⌘K)       |
+| **UX Features**            |
+| Keyboard Shortcuts         | ❌     | ❌           | ✅            |
+| Toast Notifications        | ❌     | ❌           | ✅            |
+| Smooth Animations          | ❌     | Basic        | Advanced      |
+| Responsive Design          | ✅     | ✅           | ✅✅          |
+| Dark Mode                  | ✅     | ✅           | ✅ (+ toggle) |
+| **Performance**            |
+| Load Speed                 | ⚡⚡⚡ | ⚡⚡         | ⚡⚡          |
+| Memory Usage               | Low    | Medium       | Medium        |
+| **Customization**          |
+| Saved Preferences          | ❌     | ❌           | ✅            |
+| Saved Filters              | ❌     | ❌           | ✅            |
 
 ---
 
 ## When to Use Each Dashboard
 
 ### Use **Basic Dashboard** (`dashboard.html`) when:
+
 - 🔍 Quick debugging of API responses
 - 🧪 Testing the interceptor
 - 📱 Minimal resource usage needed
 - 👨‍💻 Simple monitoring only
 
 ### Use **Enhanced Dashboard** (`dashboard-enhanced.html`) when:
+
 - 📊 Need charts and visualizations
 - 💾 Regular data exports required
 - 🔔 Want alerts on specific events
@@ -140,6 +148,7 @@
 - 👥 Comparing customers/agents
 
 ### Use **Pro Dashboard** (`dashboard-pro.html`) when:
+
 - 🧠 Need AI-powered insights
 - ⚠️ Risk management is critical
 - 🔍 Deep pattern analysis required
@@ -153,18 +162,21 @@
 ## Performance Considerations
 
 ### Basic Dashboard
+
 - **Load Time**: < 1s
 - **Memory**: ~20MB
 - **CPU**: Minimal
 - **Best For**: 24/7 monitoring
 
 ### Enhanced Dashboard
+
 - **Load Time**: ~2s
 - **Memory**: ~50MB
 - **CPU**: Low (charts rendering)
 - **Best For**: Daily use, periodic analysis
 
 ### Pro Dashboard
+
 - **Load Time**: ~3s
 - **Memory**: ~80MB
 - **CPU**: Medium (AI processing)
@@ -174,23 +186,24 @@
 
 ## Keyboard Shortcuts (Pro Dashboard)
 
-| Shortcut | Action |
-|----------|--------|
-| `⌘K` / `Ctrl+K` | Open global search |
-| `1` | Overview tab |
-| `2` | Customers tab |
-| `3` | Agents tab |
-| `4` | Patterns tab |
-| `5` | Risk tab |
-| `6` | Live Feed tab |
-| `ESC` | Close modals/search |
-| `⌘R` / `Ctrl+R` | Refresh data |
+| Shortcut        | Action              |
+| --------------- | ------------------- |
+| `⌘K` / `Ctrl+K` | Open global search  |
+| `1`             | Overview tab        |
+| `2`             | Customers tab       |
+| `3`             | Agents tab          |
+| `4`             | Patterns tab        |
+| `5`             | Risk tab            |
+| `6`             | Live Feed tab       |
+| `ESC`           | Close modals/search |
+| `⌘R` / `Ctrl+R` | Refresh data        |
 
 ---
 
 ## Browser Support
 
 All dashboards support:
+
 - ✅ Chrome 90+
 - ✅ Firefox 88+
 - ✅ Safari 14+
@@ -202,12 +215,14 @@ All dashboards support:
 ## Recommendations
 
 **For Most Users**: Start with **Enhanced Dashboard**
+
 - Great balance of features and performance
 - Export capabilities for external analysis
 - Alerts keep you informed
 - Easy to understand interface
 
 **For Advanced Users**: Upgrade to **Pro Dashboard**
+
 - AI insights save time
 - Risk scoring prevents issues
 - Pattern analysis reveals trends
@@ -230,16 +245,19 @@ Each dashboard reads the same data, so you can switch anytime!
 ## Future Enhancements (Coming Soon)
 
 ### All Dashboards
+
 - 🔌 WebSocket real-time updates
 - 💾 Data persistence (IndexedDB)
 - 📧 Email/SMS alerts
 
 ### Enhanced & Pro
+
 - 📱 Mobile app
 - 🤖 Telegram bot integration
 - 📊 Custom dashboard builder
 
 ### Pro Only
+
 - 🧠 Machine learning predictions
 - 🎯 Automated trading signals
 - 📈 Profit/loss tracking
@@ -258,4 +276,3 @@ Each dashboard reads the same data, so you can switch anytime!
 ---
 
 **Built with ❤️ for professional betting analytics**
-

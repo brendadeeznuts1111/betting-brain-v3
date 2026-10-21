@@ -4,19 +4,10 @@
  */
 
 // Re-export analytics functions
-export {
-  getAgentPerformance,
-  getAgentList,
-  getAgentDetail
-} from './analytics';
+export { getAgentPerformance, getAgentList, getAgentDetail } from './analytics';
 
 // Re-export tree functions
-export {
-  getAgentTree,
-  syncAgents
-} from './tree';
+export { getAgentTree, syncAgents } from './tree';
 
 // Re-export cache functions
-export {
-  getCacheMetrics
-} from './cache';
+export { getCacheMetrics } from './cache';

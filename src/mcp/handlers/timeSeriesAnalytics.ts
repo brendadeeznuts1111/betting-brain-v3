@@ -129,20 +129,26 @@ export async function getTimeSeriesAnalytics(args: Record<string, any>, env: Env
     }
 
     const binds = marketType ? [lookbackTime, marketType] : [lookbackTime];
-    const timeSeriesData = await env.ANALYTICS.prepare(query).bind(...binds).all();
+    const timeSeriesData = await env.ANALYTICS.prepare(query)
+      .bind(...binds)
+      .all();
 
     if (!timeSeriesData.results || timeSeriesData.results.length === 0) {
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              message: 'No time-series data found',
-              metric,
-              lookbackDays,
-              granularity,
-              marketType: marketType || 'ALL',
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                message: 'No time-series data found',
+                metric,
+                lookbackDays,
+                granularity,
+                marketType: marketType || 'ALL',
+              },
+              null,
+              2
+            ),
           },
         ],
         isError: false,
@@ -171,7 +177,7 @@ export async function getTimeSeriesAnalytics(args: Record<string, any>, env: Env
         deviation: Math.abs((row.metric_value || 0) - avg) / stdDev,
         is_anomaly: Math.abs((row.metric_value || 0) - avg) > 2 * stdDev,
       }))
-      .filter((a) => a.is_anomaly);
+      .filter(a => a.is_anomaly);
 
     // Group data if requested
     let groupedData = null;
@@ -186,7 +192,7 @@ export async function getTimeSeriesAnalytics(args: Record<string, any>, env: Env
       });
 
       groupedData = Array.from(groups.entries()).map(([key, rows]) => {
-        const groupValues = rows.map((r) => r.metric_value || 0);
+        const groupValues = rows.map(r => r.metric_value || 0);
         return {
           group: key,
           total: groupValues.reduce((sum, val) => sum + val, 0),
@@ -216,7 +222,7 @@ export async function getTimeSeriesAnalytics(args: Record<string, any>, env: Env
         direction: trend > 0.1 ? 'INCREASING' : trend < -0.1 ? 'DECREASING' : 'STABLE',
         slope: Math.round(trend * 1000) / 1000,
       },
-      anomalies: anomalies.map((a) => ({
+      anomalies: anomalies.map(a => ({
         timestamp: a.timestamp,
         value: Math.round(a.value * 100) / 100,
         std_deviations: Math.round(a.deviation * 100) / 100,

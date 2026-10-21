@@ -9,6 +9,7 @@
 ## 🎯 The Problem
 
 ### Current State (HTTP Polling)
+
 ```
 Client → Worker: "Any new data?"  (Request 1)
 Worker → Client: "Here's data"     (Response 1)
@@ -27,6 +28,7 @@ Worker → Client: "No changes"     (Response 3)
 ```
 
 **Problems:**
+
 - 📊 10 requests/second to `/getBetTicker`
 - 🌐 High bandwidth usage (repeated headers, connections)
 - ⏱️ Unnecessary latency (request → process → response)
@@ -34,6 +36,7 @@ Worker → Client: "No changes"     (Response 3)
 - 🔋 Battery drain on mobile devices
 
 ### Desired State (WebSocket Push)
+
 ```
 Client ←→ Worker: [WebSocket connection established ONCE]
 
@@ -45,6 +48,7 @@ Worker → Client: "New data!" (Push)
 ```
 
 **Benefits:**
+
 - ⚡ Instant updates (no polling delay)
 - 📉 90% reduction in requests
 - 🌐 Minimal bandwidth (persistent connection)
@@ -56,6 +60,7 @@ Worker → Client: "New data!" (Push)
 ## 🏗️ Architecture
 
 ### Current HTTP Flow
+
 ```
 ┌──────────────┐
 │   Fantasy402 │
@@ -80,6 +85,7 @@ Worker → Client: "New data!" (Push)
 ```
 
 ### Proposed WebSocket Flow
+
 ```
 ┌──────────────┐
 │   Fantasy402 │
@@ -108,6 +114,7 @@ Worker → Client: "New data!" (Push)
 ```
 
 **Key Changes:**
+
 1. Interceptor maintains **persistent WebSocket connection** to Worker
 2. Worker pushes updates to interceptor in real-time
 3. Interceptor only sends HTTP POST when WebSocket unavailable (fallback)
@@ -124,9 +131,11 @@ Cloudflare Workers support WebSockets natively!
 
 ```typescript
 // src/api/websocket-handler.ts
-export async function handleWebSocketUpgrade(request: Request): Promise<Response> {
+export async function handleWebSocketUpgrade(
+  request: Request
+): Promise<Response> {
   const upgradeHeader = request.headers.get('Upgrade');
-  
+
   if (upgradeHeader !== 'websocket') {
     return new Response('Expected WebSocket', { status: 426 });
   }
@@ -137,19 +146,21 @@ export async function handleWebSocketUpgrade(request: Request): Promise<Response
 
   // Handle WebSocket events
   server.accept();
-  
+
   server.addEventListener('open', () => {
     console.log('WebSocket connected');
   });
 
-  server.addEventListener('message', (event) => {
+  server.addEventListener('message', event => {
     console.log('Received:', event.data);
-    
+
     // Echo back or process
-    server.send(JSON.stringify({
-      type: 'ack',
-      timestamp: new Date().toISOString()
-    }));
+    server.send(
+      JSON.stringify({
+        type: 'ack',
+        timestamp: new Date().toISOString(),
+      })
+    );
   });
 
   server.addEventListener('close', () => {
@@ -165,6 +176,7 @@ export async function handleWebSocketUpgrade(request: Request): Promise<Response
 ```
 
 **Add route in `src/api/routes.ts`:**
+
 ```typescript
 case '/ws':
   return handleWebSocketUpgrade(request);
@@ -189,24 +201,26 @@ class Fantasy402WebSocket {
 
   connect() {
     console.log('[Fantasy402 WS] Connecting to:', this.workerUrl);
-    
+
     try {
-      this.socket = new WebSocket(`wss://${this.workerUrl.replace('https://', '')}/ws`);
-      
+      this.socket = new WebSocket(
+        `wss://${this.workerUrl.replace('https://', '')}/ws`
+      );
+
       this.socket.onopen = () => {
         console.log('[Fantasy402 WS] ✅ Connected');
         this.reconnectAttempts = 0;
         this.reconnectDelay = 1000;
       };
 
-      this.socket.onmessage = (event) => {
+      this.socket.onmessage = event => {
         const data = JSON.parse(event.data);
         console.log('[Fantasy402 WS] 📥 Received:', data);
         // Handle incoming data
         this.handleMessage(data);
       };
 
-      this.socket.onerror = (error) => {
+      this.socket.onerror = error => {
         console.error('[Fantasy402 WS] ❌ Error:', error);
       };
 
@@ -214,7 +228,6 @@ class Fantasy402WebSocket {
         console.log('[Fantasy402 WS] 🔌 Disconnected');
         this.reconnect();
       };
-      
     } catch (error) {
       console.error('[Fantasy402 WS] ❌ Connection failed:', error);
       this.reconnect();
@@ -229,9 +242,11 @@ class Fantasy402WebSocket {
 
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-    
-    console.log(`[Fantasy402 WS] 🔄 Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-    
+
+    console.log(
+      `[Fantasy402 WS] 🔄 Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+    );
+
     setTimeout(() => this.connect(), delay);
   }
 
@@ -266,7 +281,9 @@ class Fantasy402WebSocket {
 }
 
 // Initialize WebSocket connection
-const ws = new Fantasy402WebSocket('betting-brain-v3.nolarose1968-806.workers.dev');
+const ws = new Fantasy402WebSocket(
+  'betting-brain-v3.nolarose1968-806.workers.dev'
+);
 ws.connect();
 ```
 
@@ -295,9 +312,9 @@ async function forwardToWorker(data) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-      keepalive: true
+      keepalive: true,
     });
-    
+
     if (DEBUG) {
       console.log('[Fantasy402] ✅ Forwarded via HTTP:', data.endpoint);
     }
@@ -312,6 +329,7 @@ async function forwardToWorker(data) {
 ## 📊 Expected Impact
 
 ### Bandwidth Reduction
+
 ```
 Before (HTTP Polling):
 - 10 requests/second × 60 seconds = 600 requests/minute
@@ -325,6 +343,7 @@ After (WebSocket):
 ```
 
 ### Latency Improvement
+
 ```
 Before (HTTP Polling):
 - Average: 50-150ms per request
@@ -338,6 +357,7 @@ After (WebSocket):
 ```
 
 ### Cost Reduction
+
 ```
 Before:
 - 600 requests/minute × 60 minutes = 36,000 requests/hour
@@ -355,6 +375,7 @@ After:
 ## 🧪 Testing Plan
 
 ### Phase 1: Local Testing
+
 ```bash
 # Start worker with WebSocket support
 bun run dev
@@ -367,6 +388,7 @@ wscat -c ws://localhost:8787/ws
 ```
 
 ### Phase 2: Extension Testing
+
 1. Load extension with WebSocket code
 2. Connect to Fantasy402
 3. Verify WebSocket connection in console
@@ -374,6 +396,7 @@ wscat -c ws://localhost:8787/ws
 5. Verify data still reaches worker
 
 ### Phase 3: Production Testing
+
 1. Deploy worker with WebSocket support
 2. Test with limited users first
 3. Monitor error rates
@@ -385,12 +408,14 @@ wscat -c ws://localhost:8787/ws
 ## 🚨 Fallback Strategy
 
 **WebSocket may fail due to:**
+
 - Corporate firewalls blocking WebSocket
 - Network proxies
 - Browser extensions interfering
 - Connection instability
 
 **Solution: HTTP Fallback**
+
 ```javascript
 // Always maintain HTTP fallback
 if (!wsConnected || wsFailed) {
@@ -404,24 +429,28 @@ if (!wsConnected || wsFailed) {
 ## 📅 Timeline
 
 ### Week 1: Worker Implementation
+
 - [ ] Add WebSocket handler to worker
 - [ ] Test WebSocket route locally
 - [ ] Deploy to staging
 - [ ] Load test WebSocket endpoint
 
 ### Week 2: Client Implementation
+
 - [ ] Create WebSocket client class
 - [ ] Integrate with interceptor
 - [ ] Add reconnection logic
 - [ ] Add HTTP fallback
 
 ### Week 3: Testing & Refinement
+
 - [ ] Internal testing
 - [ ] Fix bugs
 - [ ] Performance tuning
 - [ ] Documentation
 
 ### Week 4: Rollout
+
 - [ ] Deploy to production
 - [ ] Monitor metrics
 - [ ] Gradual user rollout
@@ -453,4 +482,3 @@ After implementation, we should see:
 **Status:** Ready to implement  
 **Estimated Effort:** 2-3 weeks  
 **ROI:** Very High (90% cost reduction + better UX)
-

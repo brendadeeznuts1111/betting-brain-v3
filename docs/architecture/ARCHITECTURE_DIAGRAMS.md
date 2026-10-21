@@ -1,13 +1,29 @@
 ---
-version: "4.3.0"
-title: "Betting-Brain v3 Architecture Diagrams"
-description: "Comprehensive architecture documentation with ASCII ANSI colors, networking, KV cache, bindings, endpoints, and Cloudflare variables"
-lastUpdated: "2025-10-08"
-author: "Betting-Brain Team"
-account: "nolarose1968-806"
-status: "production-ready"
-dependencies: ["cloudflare-workers", "d1-databases", "kv-cache", "analytics-engine", "queues"]
-tags: ["architecture", "cloudflare", "edge-computing", "betting-intelligence", "real-time-analytics"]
+version: '4.3.0'
+title: 'Betting-Brain v3 Architecture Diagrams'
+description:
+  'Comprehensive architecture documentation with ASCII ANSI colors, networking,
+  KV cache, bindings, endpoints, and Cloudflare variables'
+lastUpdated: '2025-10-08'
+author: 'Betting-Brain Team'
+account: 'nolarose1968-806'
+status: 'production-ready'
+dependencies:
+  [
+    'cloudflare-workers',
+    'd1-databases',
+    'kv-cache',
+    'analytics-engine',
+    'queues',
+  ]
+tags:
+  [
+    'architecture',
+    'cloudflare',
+    'edge-computing',
+    'betting-intelligence',
+    'real-time-analytics',
+  ]
 ---
 
 # 🏗️ Betting-Brain v3 Architecture Diagrams
@@ -21,7 +37,7 @@ graph TB
         DC[Dashboard Client]
         AI[AI Assistant]
     end
-    
+
     subgraph "Cloudflare Edge"
         W[Workers]
         D1[D1 Databases]
@@ -29,22 +45,22 @@ graph TB
         Q[Queues]
         AE[Analytics Engine]
     end
-    
+
     subgraph "External APIs"
         F402[Fantasy402 API]
         BT[BetTicker API]
         SD[SportsData.io]
     end
-    
+
     BE --> W
     DC --> W
     AI --> W
-    
+
     W --> D1
     W --> KV
     W --> Q
     W --> AE
-    
+
     W --> F402
     W --> BT
     W --> SD
@@ -93,19 +109,19 @@ graph TB
         EXT[External Clients]
         API[External APIs]
     end
-    
+
     subgraph "Cloudflare Edge Network"
         subgraph "Account: nolarose1968-806"
             subgraph "Workers"
                 W1[betting-brain-v3-prod<br/>🌐 prod.nolarose1968-806.workers.dev]
                 W2[betting-brain-v3-staging<br/>🌐 staging.nolarose1968-806.workers.dev]
             end
-            
+
             subgraph "D1 Databases"
                 D1A[betting-analytics<br/>📊 32 tables]
                 D1B[fantasy42-raw-feed<br/>📊 20 tables]
             end
-            
+
             subgraph "KV Namespaces"
                 KV1[BET_TICKER_RAW<br/>🗄️ 7-day retention]
                 KV2[FANTASY_CACHE<br/>🗄️ Config cache]
@@ -116,7 +132,7 @@ graph TB
                 KV7[REFRESH_STORE<br/>🗄️ Refresh tokens]
                 KV8[LIVEBETS_STORE<br/>🗄️ Live betting]
             end
-            
+
             subgraph "Queues"
                 Q1[line-ingress<br/>📨 Line movements]
                 Q2[steam-webhook<br/>📨 Steam alerts]
@@ -124,19 +140,19 @@ graph TB
                 Q4[exposure-calculator<br/>📨 Risk calc]
                 Q5[fantasy402-logs<br/>📨 Fantasy402 data]
             end
-            
+
             subgraph "Analytics Engine"
                 AE1[betting-metrics<br/>📈 Time-series data]
             end
         end
     end
-    
+
     subgraph "External Services"
         F402[Fantasy402 API<br/>🎲 fantasy402.com]
         BT[BetTicker API<br/>📊 BetTicker service]
         SD[SportsData.io<br/>⚽ Sports data]
     end
-    
+
     EXT --> W1
     EXT --> W2
     W1 --> D1A
@@ -155,7 +171,7 @@ graph TB
     W1 --> Q4
     W1 --> Q5
     W1 --> AE1
-    
+
     W1 --> F402
     W1 --> BT
     W1 --> SD
@@ -169,7 +185,7 @@ flowchart TD
         EXT[Browser Extension]
         API[External APIs]
     end
-    
+
     subgraph "Processing Layer"
         W[Workers]
         Q1[Line Ingress Queue]
@@ -177,43 +193,43 @@ flowchart TD
         Q3[Steam Processor Queue]
         Q4[Exposure Calculator Queue]
     end
-    
+
     subgraph "Storage Layer"
         D1[D1 Databases]
         KV[KV Cache]
         AE[Analytics Engine]
     end
-    
+
     subgraph "Output Layer"
         DASH[Dashboards]
         MCP[MCP Tools]
         GRAF[Grafana]
     end
-    
+
     EXT --> W
     API --> W
-    
+
     W --> Q1
     W --> Q2
     W --> Q3
     W --> Q4
-    
+
     Q1 --> D1
     Q2 --> D1
     Q3 --> D1
     Q4 --> D1
-    
+
     W --> KV
     W --> AE
-    
+
     D1 --> DASH
     KV --> DASH
     AE --> DASH
-    
+
     D1 --> MCP
     KV --> MCP
     AE --> MCP
-    
+
     AE --> GRAF
 ```
 
@@ -884,39 +900,58 @@ flowchart TD
 ## 🔗 Endpoint Links & References
 
 ### **Quick Access Links**
-- **Production Worker**: https://betting-brain-v3-prod.nolarose1968-806.workers.dev
-- **Health Check**: https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health
-- **Floor Control Dashboard**: [dashboards/floor-control.html](dashboards/floor-control.html)
-- **Mission Control Dashboard**: [dashboards/dashboard-enhanced.html](dashboards/dashboard-enhanced.html)
+
+- **Production Worker**:
+  https://betting-brain-v3-prod.nolarose1968-806.workers.dev
+- **Health Check**:
+  https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health
+- **Floor Control Dashboard**:
+  [dashboards/floor-control.html](dashboards/floor-control.html)
+- **Mission Control Dashboard**:
+  [dashboards/dashboard-enhanced.html](dashboards/dashboard-enhanced.html)
 
 ### **API Documentation**
-- **REST API Reference**: [docs/REST_API_REFERENCE.md](docs/REST_API_REFERENCE.md)
+
+- **REST API Reference**:
+  [docs/REST_API_REFERENCE.md](docs/REST_API_REFERENCE.md)
 - **MCP Endpoints**: [docs/MCP_ENDPOINTS.md](docs/MCP_ENDPOINTS.md)
-- **Fantasy402 Integration**: [docs/FANTASY402_INTEGRATION_COMPLETE.md](docs/FANTASY402_INTEGRATION_COMPLETE.md)
-- **BetTicker Sniffer**: [docs/BET_TICKER_SNIFFER.md](docs/BET_TICKER_SNIFFER.md)
+- **Fantasy402 Integration**:
+  [docs/FANTASY402_INTEGRATION_COMPLETE.md](docs/FANTASY402_INTEGRATION_COMPLETE.md)
+- **BetTicker Sniffer**:
+  [docs/BET_TICKER_SNIFFER.md](docs/BET_TICKER_SNIFFER.md)
 
 ### **Configuration Files**
+
 - **Wrangler Config**: [wrangler.toml](wrangler.toml)
 - **Production Config**: [wrangler.production.toml](wrangler.production.toml)
 - **Staging Config**: [wrangler.staging.toml](wrangler.staging.toml)
 - **Environment Template**: [env.example](env.example)
 
 ### **Database Schema**
+
 - **Migrations**: [migrations/](migrations/)
-- **Initial Schema**: [migrations/0001_initial_schema.sql](migrations/0001_initial_schema.sql)
-- **MCP Tables**: [migrations/0003_mcp_tables.sql](migrations/0003_mcp_tables.sql)
-- **Agent Graph**: [migrations/0004_agent_graph.sql](migrations/0004_agent_graph.sql)
+- **Initial Schema**:
+  [migrations/0001_initial_schema.sql](migrations/0001_initial_schema.sql)
+- **MCP Tables**:
+  [migrations/0003_mcp_tables.sql](migrations/0003_mcp_tables.sql)
+- **Agent Graph**:
+  [migrations/0004_agent_graph.sql](migrations/0004_agent_graph.sql)
 
 ### **Testing & Development**
+
 - **Test Suite**: [tests/](tests/)
 - **Unit Tests**: [tests/unit/](tests/unit/)
 - **Integration Tests**: [tests/integration/](tests/integration/)
 - **Test Setup**: [tests/setup/](tests/setup/)
 
 ### **Monitoring & Analytics**
-- **Grafana Dashboard**: [monitoring/grafana/dashboard.json](monitoring/grafana/dashboard.json)
-- **Grafana Setup**: [monitoring/grafana/README.md](monitoring/grafana/README.md)
-- **Analytics Engine**: [src/utils/analytics-rollups.ts](src/utils/analytics-rollups.ts)
+
+- **Grafana Dashboard**:
+  [monitoring/grafana/dashboard.json](monitoring/grafana/dashboard.json)
+- **Grafana Setup**:
+  [monitoring/grafana/README.md](monitoring/grafana/README.md)
+- **Analytics Engine**:
+  [src/utils/analytics-rollups.ts](src/utils/analytics-rollups.ts)
 
 ## Database Schema
 
@@ -935,7 +970,7 @@ erDiagram
         string ts
         string ing
     }
-    
+
     SHARP_INDICATORS {
         string cid PK
         real clv
@@ -944,7 +979,7 @@ erDiagram
         real nb
         string upd
     }
-    
+
     EXPOSURE_TRACKING {
         string eid PK
         string side PK
@@ -953,7 +988,7 @@ erDiagram
         string ts
         string upd
     }
-    
+
     BET_HISTORY {
         integer id PK
         string cid
@@ -966,7 +1001,7 @@ erDiagram
         integer time_to_event
         string created_at
     }
-    
+
     HOLD_TRACKING {
         integer id PK
         string eid
@@ -976,13 +1011,13 @@ erDiagram
         string ts
         string created_at
     }
-    
+
     STEAM_DEDUPE {
         string eid PK
         string mt PK
         string ts
     }
-    
+
     AGENT_GRAPH {
         integer id PK
         string parent_id
@@ -995,7 +1030,7 @@ erDiagram
         string created_at
         string updated_at
     }
-    
+
     %% Fantasy402 Core Tables
     FANTASY402_RAW_FEED {
         integer id PK
@@ -1018,7 +1053,7 @@ erDiagram
         string metadata
         string created_at
     }
-    
+
     FANTASY402_AGENTS {
         integer id PK
         string agent_id UK
@@ -1032,7 +1067,7 @@ erDiagram
         string created_at
         string updated_at
     }
-    
+
     FANTASY402_AGENT_PERFORMANCE {
         integer id PK
         string agent_id
@@ -1055,7 +1090,7 @@ erDiagram
         string captured_at
         string raw_response_json
     }
-    
+
     FANTASY402_PLAYERS {
         integer id PK
         string customer_id UK
@@ -1090,7 +1125,7 @@ erDiagram
         string created_at
         string updated_at
     }
-    
+
     FANTASY402_PLAYER_PERFORMANCE {
         integer id PK
         string customer_id
@@ -1114,7 +1149,7 @@ erDiagram
         string raw_response_json
         string created_at
     }
-    
+
     FANTASY402_PLAYER_ACTIVITY {
         integer id PK
         string customer_id
@@ -1126,7 +1161,7 @@ erDiagram
         string status
         string created_at
     }
-    
+
     FANTASY402_PLAYER_ANALYSIS {
         integer id PK
         string customer_id
@@ -1148,7 +1183,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_PLAYER_SPORT_ANALYSIS {
         integer id PK
         string customer_id
@@ -1165,7 +1200,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_PLAYER_SPORT_PERFORMANCE {
         integer id PK
         string customer_id
@@ -1182,7 +1217,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_TRANSACTIONS {
         integer id PK
         string document_number UK
@@ -1200,7 +1235,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_TRANSACTION_SUMMARY {
         integer id PK
         string customer_id
@@ -1216,7 +1251,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_PENDING_WAGERS {
         integer id PK
         string wager_id UK
@@ -1236,7 +1271,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_PENDING_SUMMARY {
         integer id PK
         string customer_id
@@ -1251,7 +1286,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_SPORT_PERFORMANCE {
         integer id PK
         string sport
@@ -1266,7 +1301,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_WEEKLY_FIGURES {
         integer id PK
         string period_start
@@ -1282,7 +1317,7 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     FANTASY402_TOKENS {
         integer id PK
         string token_id UK
@@ -1296,7 +1331,7 @@ erDiagram
         string created_at
         string updated_at
     }
-    
+
     FANTASY402_AUTHORIZATIONS {
         integer id PK
         string customer_id
@@ -1311,7 +1346,7 @@ erDiagram
         string created_at
         string updated_at
     }
-    
+
     FANTASY402_ACCOUNT_SNAPSHOTS {
         integer id PK
         string customer_id
@@ -1328,25 +1363,25 @@ erDiagram
         string captured_at
         string created_at
     }
-    
+
     %% System Tables
     D1_MIGRATIONS {
         integer id PK
         string migration_name
         string applied_at
     }
-    
+
     SCHEMA_MIGRATIONS {
         integer id PK
         string migration_name
         string applied_at
     }
-    
+
     SQLITE_SEQUENCE {
         string name PK
         integer seq
     }
-    
+
     _CF_KV {
         string key PK
         string value
@@ -1363,7 +1398,7 @@ graph LR
         TR[Tool Registry]
         TH[Tool Handlers]
     end
-    
+
     subgraph "Available Tools"
         FS[forest-status]
         DD[deploy-dashboards]
@@ -1372,24 +1407,24 @@ graph LR
         LS[live-scores]
         PSD[push-sports-data]
     end
-    
+
     subgraph "Data Sources"
         D1[D1 Databases]
         KV[KV Cache]
         AE[Analytics Engine]
         EXT[External APIs]
     end
-    
+
     MCP --> TR
     TR --> TH
-    
+
     TH --> FS
     TH --> DD
     TH --> REL
     TH --> LO
     TH --> LS
     TH --> PSD
-    
+
     FS --> D1
     DD --> KV
     LO --> EXT
@@ -1406,7 +1441,7 @@ flowchart TD
         CRON[Cron Jobs]
         WEBHOOK[Webhooks]
     end
-    
+
     subgraph "Queues"
         Q1[Line Ingress]
         Q2[Steam Webhook]
@@ -1414,7 +1449,7 @@ flowchart TD
         Q4[Exposure Calculator]
         Q5[Fantasy402 Logs]
     end
-    
+
     subgraph "Queue Consumers"
         C1[Line Processor]
         C2[Steam Handler]
@@ -1422,32 +1457,32 @@ flowchart TD
         C4[Exposure Calculator]
         C5[Log Processor]
     end
-    
+
     subgraph "Outputs"
         D1[D1 Database]
         KV[KV Cache]
         AE[Analytics Engine]
         NOTIF[Notifications]
     end
-    
+
     W --> Q1
     CRON --> Q2
     WEBHOOK --> Q3
     W --> Q4
     W --> Q5
-    
+
     Q1 --> C1
     Q2 --> C2
     Q3 --> C3
     Q4 --> C4
     Q5 --> C5
-    
+
     C1 --> D1
     C2 --> KV
     C3 --> AE
     C4 --> D1
     C5 --> AE
-    
+
     C2 --> NOTIF
     C3 --> NOTIF
 ```
@@ -1461,38 +1496,38 @@ graph TB
         DC[Dashboard Client]
         AI[AI Assistant]
     end
-    
+
     subgraph "Security Layer"
         AUTH[Authentication]
         RATE[Rate Limiting]
         VALID[Input Validation]
         CORS[CORS Headers]
     end
-    
+
     subgraph "Worker Layer"
         W[Workers]
         GUARD[Cost Guards]
         CIRCUIT[Circuit Breakers]
     end
-    
+
     subgraph "Data Layer"
         D1[D1 Databases]
         KV[KV Cache]
         AE[Analytics Engine]
     end
-    
+
     BE --> AUTH
     DC --> AUTH
     AI --> AUTH
-    
+
     AUTH --> RATE
     RATE --> VALID
     VALID --> CORS
-    
+
     CORS --> W
     W --> GUARD
     GUARD --> CIRCUIT
-    
+
     CIRCUIT --> D1
     CIRCUIT --> KV
     CIRCUIT --> AE
@@ -1509,46 +1544,46 @@ graph TB
         Q[Queues]
         AE[Analytics Engine]
     end
-    
+
     subgraph "Metrics Collection"
         MC[Metrics Collector]
         LC[Log Collector]
         TC[Trace Collector]
     end
-    
+
     subgraph "Storage"
         TS[Time Series DB]
         LS[Log Storage]
         CS[Cache Storage]
     end
-    
+
     subgraph "Visualization"
         GRAF[Grafana]
         DASH[Dashboard]
         ALERT[Alerts]
     end
-    
+
     W --> MC
     D1 --> MC
     KV --> MC
     Q --> MC
     AE --> MC
-    
+
     W --> LC
     D1 --> LC
     KV --> LC
-    
+
     W --> TC
     D1 --> TC
-    
+
     MC --> TS
     LC --> LS
     TC --> CS
-    
+
     TS --> GRAF
     LS --> GRAF
     CS --> GRAF
-    
+
     GRAF --> DASH
     GRAF --> ALERT
 ```
@@ -1562,18 +1597,18 @@ graph TB
         TEST[Testing]
         LINT[Linting]
     end
-    
+
     subgraph "CI/CD"
         CI[Continuous Integration]
         CD[Continuous Deployment]
         ROLLBACK[Rollback]
     end
-    
+
     subgraph "Environments"
         STAGING[Staging]
         PROD[Production]
     end
-    
+
     subgraph "Cloudflare Edge"
         W[Workers]
         D1[D1 Databases]
@@ -1581,18 +1616,18 @@ graph TB
         Q[Queues]
         AE[Analytics Engine]
     end
-    
+
     DEV --> TEST
     TEST --> LINT
     LINT --> CI
-    
+
     CI --> CD
     CD --> STAGING
     STAGING --> PROD
-    
+
     CD --> ROLLBACK
     ROLLBACK --> STAGING
-    
+
     PROD --> W
     PROD --> D1
     PROD --> KV
@@ -1610,7 +1645,7 @@ sequenceDiagram
     participant D1 as D1 Database
     participant AE as Analytics Engine
     participant DASH as Dashboard
-    
+
     BE->>W: Intercept API Call
     W->>W: Validate X-Extension-Secret
     W->>KV: Check Cache
@@ -1635,57 +1670,62 @@ flowchart TD
         CRON[3 AM UTC Cron]
         PG[Populate Graph]
     end
-    
+
     subgraph "Data Sources"
         D1[D1 Database]
         AE[Analytics Engine]
         KV[KV Cache]
     end
-    
+
     subgraph "Processing"
         ANALYZE[Analyze Relationships]
         CALC[Calculate Weights]
         BUILD[Build Graph]
     end
-    
+
     subgraph "Output"
         AG[Agent Graph Table]
         API[Graph API]
         DASH[Dashboard]
     end
-    
+
     CRON --> PG
     PG --> D1
     PG --> AE
     PG --> KV
-    
+
     D1 --> ANALYZE
     AE --> ANALYZE
     KV --> ANALYZE
-    
+
     ANALYZE --> CALC
     CALC --> BUILD
     BUILD --> AG
-    
+
     AG --> API
     API --> DASH
 ```
 
 ## 🚀 **Drop-in Agent Tree Population Script**
 
-**One-shot browser snippet** that replays Fantasy402 API calls and populates the agent tree with real data:
+**One-shot browser snippet** that replays Fantasy402 API calls and populates the
+agent tree with real data:
 
 ```javascript
 (async () => {
   // 1. Replay the captured Fantasy402 API call
-  const res = await fetch("https://fantasy402.com/cloud/api/Manager/getListAgenstByAgent", {
-    method: "POST",
-    headers: {
-      "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCSUxMWTY2NiIsInR5cGUiOjAsImFnIjoiIiwiaW1wIjoiIiwib2ZmIjoiTk9MQVJPU0UiLCJyYiI6bnVsbCwibmJmIjoxNzU5OTQyMjM4LCJleHAiOjE3NTk5NDM0OTh9.qRvQ-QOwXCvtZgiLoeAWjtEpEG1c0TzM4r3Syc8KkQs",
-      "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
-    },
-    body: "agentID=BILLY666&agentType=M&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCSUxMWTY2NiIsInR5cGUiOjAsImFnIjoiIiwiaW1wIjoiIiwib2ZmIjoiTk9MQVJPU0UiLCJyYiI6bnVsbCwibmJmIjoxNzU5OTQyMjM4LCJleHAiOjE3NTk5NDM0OTh9.qRvQ-QOwXCvtZgiLoeAWjtEpEG1c0TzM4r3Syc8KkQs&operation=getListAgenstByAgent&RRO=1&agentOwner=BILLY666&agentSite=1"
-  });
+  const res = await fetch(
+    'https://fantasy402.com/cloud/api/Manager/getListAgenstByAgent',
+    {
+      method: 'POST',
+      headers: {
+        authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCSUxMWTY2NiIsInR5cGUiOjAsImFnIjoiIiwiaW1wIjoiIiwib2ZmIjoiTk9MQVJPU0UiLCJyYiI6bnVsbCwibmJmIjoxNzU5OTQyMjM4LCJleHAiOjE3NTk5NDM0OTh9.qRvQ-QOwXCvtZgiLoeAWjtEpEG1c0TzM4r3Syc8KkQs',
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      },
+      body: 'agentID=BILLY666&agentType=M&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCSUxMWTY2NiIsInR5cGUiOjAsImFnIjoiIiwiaW1wIjoiIiwib2ZmIjoiTk9MQVJPU0UiLCJyYiI6bnVsbCwibmJmIjoxNzU5OTQyMjM4LCJleHAiOjE3NTk5NDM0OTh9.qRvQ-QOwXCvtZgiLoeAWjtEpEG1c0TzM4r3Syc8KkQs&operation=getListAgenstByAgent&RRO=1&agentOwner=BILLY666&agentSite=1',
+    }
+  );
 
   // 2. Parse the flat agent list
   const list = await res.json();
@@ -1702,11 +1742,11 @@ flowchart TD
   list.forEach(a => {
     const node = map[a.agentID];
     if (!a.parentID || a.parentID === a.agentID) {
-      root.push(node);                 // top-level
+      root.push(node); // top-level
     } else {
       const parent = map[a.parentID];
       if (parent) parent.children.push(node);
-      else root.push(node);            // orphan → promote
+      else root.push(node); // orphan → promote
     }
   });
 
@@ -1714,17 +1754,17 @@ flowchart TD
   const envelope = {
     tree: root,
     ts: Date.now(),
-    source: "fantasy402-ingest"
+    source: 'fantasy402-ingest',
   };
 
   // 5. Push to Worker via ingest endpoint
-  const ingest = await fetch("/api/fantasy402/ingest", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(envelope)
+  const ingest = await fetch('/api/fantasy402/ingest', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(envelope),
   });
 
-  console.log("Ingest status:", ingest.status, await ingest.text());
+  console.log('Ingest status:', ingest.status, await ingest.text());
 })();
 ```
 
@@ -1763,31 +1803,31 @@ flowchart TD
         CW[Cache Warmer]
         ENDPOINTS[API Endpoints]
     end
-    
+
     subgraph "Cache Layer"
         KV[KV Cache]
         METRICS[Cache Metrics]
     end
-    
+
     subgraph "Data Sources"
         D1[D1 Database]
         EXT[External APIs]
     end
-    
+
     subgraph "Output"
         DASH[Dashboard]
         API[Cache API]
     end
-    
+
     CW --> ENDPOINTS
     ENDPOINTS --> KV
     ENDPOINTS --> D1
     ENDPOINTS --> EXT
-    
+
     KV --> METRICS
     METRICS --> API
     API --> DASH
-    
+
     DASH --> CW
 ```
 
@@ -1801,40 +1841,40 @@ graph TB
         PROCESS[Processing]
         RESP[Response]
     end
-    
+
     subgraph "Error Handling"
         TRY[Try Block]
         CATCH[Catch Block]
         LOG[Logging]
         RETRY[Retry Logic]
     end
-    
+
     subgraph "Circuit Breakers"
         CB[Circuit Breaker]
         THRESHOLD[Threshold Check]
         FALLBACK[Fallback]
     end
-    
+
     subgraph "Monitoring"
         METRICS[Metrics]
         ALERTS[Alerts]
         DASH[Dashboard]
     end
-    
+
     REQ --> VALID
     VALID --> PROCESS
     PROCESS --> RESP
-    
+
     PROCESS --> TRY
     TRY --> CATCH
     CATCH --> LOG
     LOG --> RETRY
     RETRY --> CB
-    
+
     CB --> THRESHOLD
     THRESHOLD --> FALLBACK
     THRESHOLD --> METRICS
-    
+
     METRICS --> ALERTS
     ALERTS --> DASH
 ```
@@ -1850,38 +1890,38 @@ graph TB
         CPU[CPU Usage]
         MEM[Memory Usage]
     end
-    
+
     subgraph "Data Collection"
         COLLECT[Collector]
         AGGREGATE[Aggregator]
         STORE[Storage]
     end
-    
+
     subgraph "Analysis"
         ANALYZE[Analyzer]
         TREND[Trend Analysis]
         ANOMALY[Anomaly Detection]
     end
-    
+
     subgraph "Output"
         DASH[Dashboard]
         ALERT[Alerts]
         REPORT[Reports]
     end
-    
+
     RT --> COLLECT
     THROUGHPUT --> COLLECT
     ERROR --> COLLECT
     CPU --> COLLECT
     MEM --> COLLECT
-    
+
     COLLECT --> AGGREGATE
     AGGREGATE --> STORE
-    
+
     STORE --> ANALYZE
     ANALYZE --> TREND
     ANALYZE --> ANOMALY
-    
+
     TREND --> DASH
     ANOMALY --> ALERT
     DASH --> REPORT
@@ -1896,34 +1936,34 @@ graph TB
         KV[KV Cache]
         AE[Analytics Engine]
     end
-    
+
     subgraph "Retention Policies"
         TTL7[7-Day TTL]
         TTL30[30-Day TTL]
         TTL365[365-Day TTL]
         PERMANENT[Permanent]
     end
-    
+
     subgraph "Cleanup Jobs"
         CLEANUP[Cleanup Job]
         ARCHIVE[Archive Job]
         DELETE[Delete Job]
     end
-    
+
     subgraph "Storage Tiers"
         HOT[Hot Storage]
         WARM[Warm Storage]
         COLD[Cold Storage]
     end
-    
+
     D1 --> TTL7
     KV --> TTL7
     AE --> TTL30
-    
+
     TTL7 --> CLEANUP
     TTL30 --> ARCHIVE
     TTL365 --> DELETE
-    
+
     CLEANUP --> HOT
     ARCHIVE --> WARM
     DELETE --> COLD
@@ -1939,38 +1979,38 @@ graph TB
         AE[Analytics Engine]
         CONFIG[Configuration]
     end
-    
+
     subgraph "Backup Jobs"
         DAILY[Daily Backup]
         WEEKLY[Weekly Backup]
         MONTHLY[Monthly Backup]
     end
-    
+
     subgraph "Storage"
         LOCAL[Local Storage]
         CLOUD[Cloud Storage]
         REPLICA[Replica]
     end
-    
+
     subgraph "Recovery"
         RESTORE[Restore]
         VALIDATE[Validate]
         DEPLOY[Deploy]
     end
-    
+
     D1 --> DAILY
     KV --> DAILY
     AE --> WEEKLY
     CONFIG --> MONTHLY
-    
+
     DAILY --> LOCAL
     WEEKLY --> CLOUD
     MONTHLY --> REPLICA
-    
+
     LOCAL --> RESTORE
     CLOUD --> RESTORE
     REPLICA --> RESTORE
-    
+
     RESTORE --> VALIDATE
     VALIDATE --> DEPLOY
 ```
@@ -1985,41 +2025,41 @@ graph TB
         TRANSACTIONS[Transactions]
         ACCESS[Access Logs]
     end
-    
+
     subgraph "Audit Processing"
         COLLECT[Collect]
         PROCESS[Process]
         ANALYZE[Analyze]
         REPORT[Report]
     end
-    
+
     subgraph "Compliance"
         GDPR[GDPR]
         SOX[SOX]
         PCI[PCI DSS]
         INTERNAL[Internal]
     end
-    
+
     subgraph "Output"
         AUDIT[Audit Reports]
         ALERT[Compliance Alerts]
         DASH[Compliance Dashboard]
     end
-    
+
     LOGS --> COLLECT
     METRICS --> COLLECT
     TRANSACTIONS --> COLLECT
     ACCESS --> COLLECT
-    
+
     COLLECT --> PROCESS
     PROCESS --> ANALYZE
     ANALYZE --> REPORT
-    
+
     REPORT --> GDPR
     REPORT --> SOX
     REPORT --> PCI
     REPORT --> INTERNAL
-    
+
     GDPR --> AUDIT
     SOX --> ALERT
     PCI --> DASH

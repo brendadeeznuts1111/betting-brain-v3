@@ -12,6 +12,7 @@ bun install --frozen-lockfile --production --silent
 ```
 
 **Guarantees:**
+
 - ✅ Same dependency tree every time (frozen lockfile)
 - ✅ No devDependencies in production (--production)
 - ✅ Clean CI logs (--silent)
@@ -30,6 +31,7 @@ bun install --frozen-lockfile --production --silent
 ```
 
 **Why it's fast:**
+
 - Remote cache hits 99% of the time (`[install.cache]`)
 - Binary lockfile (`bun.lock` vs `package-lock.json`)
 - Native Bun speed (20-100x faster than npm)
@@ -48,6 +50,7 @@ bun test --coverage            # Unit + integration tests
 ```
 
 **Exit codes:**
+
 - `0` = Pass → Continue pipeline
 - `1` = Fail → Block deployment
 
@@ -59,6 +62,7 @@ wrangler d1 migrations apply betting-analytics --remote
 ```
 
 **Safety:**
+
 - Migrations run before worker deployment
 - Idempotent SQL (safe to re-run)
 - Rollback available via `--local` testing
@@ -74,6 +78,7 @@ curl -f https://betting-brain-v3-prod.workers.dev/health
 ```
 
 **Zero-downtime:**
+
 - Cloudflare routes traffic to new version
 - Old version stays live during rollout
 - Health check validates deployment
@@ -86,6 +91,7 @@ wrangler pages deploy dashboards --project-name=betting-brain-dashboards
 ```
 
 **Auto-updated:**
+
 - floor-control.html
 - hierarchy-enhanced.html
 - All CDN assets (Chart.js, htmx)
@@ -137,6 +143,7 @@ NPM_TOKEN                  # Private registry (if used)
 ```
 
 **Set via:**
+
 ```bash
 gh secret set CLOUDFLARE_API_TOKEN
 gh secret set CLOUDFLARE_ACCOUNT_ID
@@ -164,6 +171,7 @@ git push
 ```
 
 **CI automatically:**
+
 - Installs with new lockfile
 - Runs all tests
 - Deploys if green
@@ -203,6 +211,7 @@ trustLevel = "low"  # Disables postinstall hooks
 **Why:** Prevents supply chain attacks via malicious install scripts.
 
 **Whitelist if needed:**
+
 ```toml
 allowedScripts = ["esbuild", "@prisma/engines"]
 ```
@@ -274,6 +283,7 @@ curl https://betting-brain-v3-prod.workers.dev/mcp \
 ### Analytics Engine
 
 Check Cloudflare Dashboard → Analytics Engine for:
+
 - Request volume
 - Error rates
 - P50/P95/P99 latency
@@ -286,6 +296,7 @@ Check Cloudflare Dashboard → Analytics Engine for:
 **Error:** `lockfile drift detected`
 
 **Fix:**
+
 ```bash
 # Regenerate lockfile locally
 rm bun.lock
@@ -307,6 +318,7 @@ wrangler d1 migrations list betting-analytics --remote
 ### Worker Returns 500
 
 **Debug:**
+
 ```bash
 # Check logs
 wrangler tail --format=pretty
@@ -318,12 +330,14 @@ wrangler tail | grep ERROR
 ### Dashboard Shows No Data
 
 **Checklist:**
+
 1. ✅ Worker deployed and healthy?
 2. ✅ Database migrations applied?
 3. ✅ Agent data synced? (`bun scripts/sync-agent-tree.js`)
 4. ✅ CORS headers set in worker?
 
 **Test data flow:**
+
 ```bash
 # 1. Worker responds
 curl https://betting-brain-v3-prod.workers.dev/api/f402/agents
@@ -360,11 +374,12 @@ curl -f https://betting-brain-v3-prod.workers.dev/health || \
 ## 🔗 Production URLs
 
 - **Worker**: https://betting-brain-v3-prod.nolarose1968-806.workers.dev
-- **Mission Control**: https://betting-brain-dashboards.pages.dev/floor-control.html
-- **Hierarchy**: https://betting-brain-dashboards.pages.dev/hierarchy-enhanced.html
+- **Mission Control**:
+  https://betting-brain-dashboards.pages.dev/floor-control.html
+- **Hierarchy**:
+  https://betting-brain-dashboards.pages.dev/hierarchy-enhanced.html
 
 ---
 
-**Last Updated:** 2025-10-08
-**Bun Version:** 1.2.23
-**Deployment Strategy:** Zero-drift, frozen lockfile, production-only deps
+**Last Updated:** 2025-10-08 **Bun Version:** 1.2.23 **Deployment Strategy:**
+Zero-drift, frozen lockfile, production-only deps

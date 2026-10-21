@@ -1,13 +1,16 @@
 # 📊 Dashboard Collection
 
-This directory contains all the betting intelligence dashboards for the Betting-Brain v3 system.
+This directory contains all the betting intelligence dashboards for the
+Betting-Brain v3 system.
 
 ## 🎯 Dashboard Overview
 
 ### **Position & Risk Tracker** ⭐
+
 **File:** `dashboard-positions.html`  
 **Purpose:** Real-time position tracking and risk analysis  
 **Features:**
+
 - Game-level exposure (home vs away)
 - Customer position tracking
 - Agent risk summary with scoring
@@ -15,9 +18,11 @@ This directory contains all the betting intelligence dashboards for the Betting-
 - Export functionality
 
 ### **Enhanced Analytics Dashboard**
+
 **File:** `dashboard-enhanced.html`  
 **Purpose:** Advanced analytics with charts and alerts  
 **Features:**
+
 - 5 interactive charts
 - CSV/JSON export
 - Configurable alerts
@@ -25,9 +30,11 @@ This directory contains all the betting intelligence dashboards for the Betting-
 - Detailed wager modals
 
 ### **AI Intelligence Hub**
+
 **File:** `dashboard-pro.html`  
 **Purpose:** AI-powered insights and pattern recognition  
 **Features:**
+
 - 6 specialized tabs
 - AI anomaly detection
 - Smart search (⌘K)
@@ -36,9 +43,11 @@ This directory contains all the betting intelligence dashboards for the Betting-
 - Customer segmentation
 
 ### **Basic Dashboard**
+
 **File:** `dashboard.html`  
 **Purpose:** Simple monitoring and debugging  
 **Features:**
+
 - Basic request/response tracking
 - Simple statistics
 - Response viewer
@@ -58,29 +67,32 @@ This directory contains all the betting intelligence dashboards for the Betting-
 
 ## 📖 Documentation
 
-- **[Agent Risk Guide](../guides/AGENT_RISK_GUIDE.md)** - Detailed agent risk analysis
+- **[Agent Risk Guide](../guides/AGENT_RISK_GUIDE.md)** - Detailed agent risk
+  analysis
 - **[Logging Guide](../guides/LOGGING_GUIDE.md)** - System logging and debugging
 - **[Quick Start Guide](../guides/START_HERE.md)** - Complete setup guide
-- **[BetTicker Sniffer](../BET_TICKER_SNIFFER.md)** - API interception documentation
+- **[BetTicker Sniffer](../BET_TICKER_SNIFFER.md)** - API interception
+  documentation
 
 ## 🔧 Tools
 
 Additional tools are available in the `tools/` directory:
+
 - `capture-live-data.html` - Data capture tool
 - `diagnostic-suite.html` - System diagnostics
 - `test-*.html` - Testing utilities
 
 ## 📊 Dashboard Comparison
 
-| Feature | Basic | Enhanced | Pro | Positions |
-|---------|-------|----------|-----|-----------|
-| Real-time Data | ✅ | ✅ | ✅ | ✅ |
-| Charts | ❌ | ✅ | ✅ | ❌ |
-| Export | ❌ | ✅ | ✅ | ✅ |
-| Alerts | ❌ | ✅ | ✅ | ❌ |
-| AI Insights | ❌ | ❌ | ✅ | ❌ |
-| Risk Analysis | ❌ | ❌ | ✅ | ✅ |
-| Position Tracking | ❌ | ❌ | ❌ | ✅ |
+| Feature           | Basic | Enhanced | Pro | Positions |
+| ----------------- | ----- | -------- | --- | --------- |
+| Real-time Data    | ✅    | ✅       | ✅  | ✅        |
+| Charts            | ❌    | ✅       | ✅  | ❌        |
+| Export            | ❌    | ✅       | ✅  | ✅        |
+| Alerts            | ❌    | ✅       | ✅  | ❌        |
+| AI Insights       | ❌    | ❌       | ✅  | ❌        |
+| Risk Analysis     | ❌    | ❌       | ✅  | ✅        |
+| Position Tracking | ❌    | ❌       | ❌  | ✅        |
 
 ## 🎯 Recommended Usage
 
@@ -91,4 +103,5 @@ Additional tools are available in the `tools/` directory:
 
 ---
 
-**🎉 All dashboards are designed to work together for comprehensive betting intelligence!**
+**🎉 All dashboards are designed to work together for comprehensive betting
+intelligence!**

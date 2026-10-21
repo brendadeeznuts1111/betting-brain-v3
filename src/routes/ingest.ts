@@ -26,20 +26,12 @@
  *   }
  */
 
-import type {
-  SportsEnv,
-  IngestDataPoint,
-  IngestResponse,
-} from '../types/api';
+import type { SportsEnv, IngestDataPoint, IngestResponse } from '../types/api';
 import { CORS_HEADERS, createJSONResponse, createOPTIONSResponse, generateRequestId } from '../utils/request';
 import { validateJWT } from '../utils/jwt';
 
-export async function handleIngest(
-  req: Request,
-  env: SportsEnv
-): Promise<Response> {
+export async function handleIngest(req: Request, env: SportsEnv): Promise<Response> {
   // CORS headers
-
 
   // Handle OPTIONS preflight
   if (req.method === 'OPTIONS') {
@@ -56,18 +48,19 @@ export async function handleIngest(
     const ip = req.headers.get('cf-connecting-ip') || 'unknown';
     const rateLimitKey = `ingest:${ip}:${Math.floor(Date.now() / 60000)}`;
 
-    const currentCount = parseInt(
-      (await env.RATE_LIMITER.get(rateLimitKey)) || '0'
-    );
+    const currentCount = parseInt((await env.RATE_LIMITER.get(rateLimitKey)) || '0');
 
     if (currentCount >= 100) {
       console.log(`[${requestId}] ⚠️ Rate limit exceeded for ${ip}`);
-      return createJSONResponse({
-        error: 'Too Many Requests',
-        message: 'Rate limit: 100 requests per minute',
-        remaining: 0,
-        reset: 60,
-      }, 429);
+      return createJSONResponse(
+        {
+          error: 'Too Many Requests',
+          message: 'Rate limit: 100 requests per minute',
+          remaining: 0,
+          reset: 60,
+        },
+        429
+      );
     }
 
     await env.RATE_LIMITER.put(rateLimitKey, String(currentCount + 1), {
@@ -86,10 +79,13 @@ export async function handleIngest(
 
     if (!isValidToken) {
       console.log(`[${requestId}] 🔒 Invalid JWT token`);
-      return createJSONResponse({
-        error: 'Unauthorized',
-        message: 'Invalid or expired JWT token',
-      }, 401);
+      return createJSONResponse(
+        {
+          error: 'Unauthorized',
+          message: 'Invalid or expired JWT token',
+        },
+        401
+      );
     }
 
     // ========================================================================
@@ -98,10 +94,13 @@ export async function handleIngest(
     const body = await req.json();
 
     if (!Array.isArray(body)) {
-      return createJSONResponse({
-        error: 'Bad request',
-        message: 'Body must be an array of data points',
-      }, 400);
+      return createJSONResponse(
+        {
+          error: 'Bad request',
+          message: 'Body must be an array of data points',
+        },
+        400
+      );
     }
 
     // ========================================================================
@@ -114,35 +113,22 @@ export async function handleIngest(
       const dataPoint = body[i] as IngestDataPoint;
 
       // Validate required fields
-      if (
-        !dataPoint.eventId ||
-        !dataPoint.timestamp ||
-        typeof dataPoint.odds !== 'number'
-      ) {
-        errors.push(
-          `Invalid data point at index ${i}: missing required fields`
-        );
+      if (!dataPoint.eventId || !dataPoint.timestamp || typeof dataPoint.odds !== 'number') {
+        errors.push(`Invalid data point at index ${i}: missing required fields`);
         continue;
       }
 
       try {
         // Write to Analytics Engine
         env.ANALYTICS_ENGINE.writeDataPoint({
-          blobs: [
-            dataPoint.eventId,
-            dataPoint.market || 'unknown',
-            dataPoint.source || 'mcp',
-          ],
+          blobs: [dataPoint.eventId, dataPoint.market || 'unknown', dataPoint.source || 'mcp'],
           doubles: [dataPoint.odds, dataPoint.volume || 0],
           indexes: [dataPoint.timestamp],
         });
 
         written++;
       } catch (error) {
-        errors.push(
-          `Failed to write data point ${i}: ${error instanceof Error ? error.message : String(error)
-          }`
-        );
+        errors.push(`Failed to write data point ${i}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -160,16 +146,17 @@ export async function handleIngest(
       timestamp: new Date().toISOString(),
     };
 
-    console.log(
-      `[${requestId}] ✅ Ingested ${written}/${body.length} records`
-    );
+    console.log(`[${requestId}] ✅ Ingested ${written}/${body.length} records`);
 
     return createJSONResponse(response, written > 0 ? 200 : 400);
   } catch (error) {
     console.error(`[${requestId}] ❌ Ingest error:`, error);
-    return createJSONResponse({
-      error: 'Internal error',
-      message: error instanceof Error ? error.message : String(error),
-    }, 500);
+    return createJSONResponse(
+      {
+        error: 'Internal error',
+        message: error instanceof Error ? error.message : String(error),
+      },
+      500
+    );
   }
 }

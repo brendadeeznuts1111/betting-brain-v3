@@ -30,8 +30,8 @@ async function testTradingStream(): Promise<void> {
   try {
     const response = await fetch(`${WORKER_URL}/api/trading-stream`, {
       headers: {
-        'Accept': 'text/event-stream',
-        'Authorization': `Bearer ${DASHBOARD_TOKEN}`,
+        Accept: 'text/event-stream',
+        Authorization: `Bearer ${DASHBOARD_TOKEN}`,
       },
       signal: AbortSignal.timeout(3000), // 3s timeout
     });
@@ -58,7 +58,7 @@ async function testTradingStream(): Promise<void> {
   } catch (error) {
     if ((error as Error).message.includes('aborted')) {
       console.log('⚠️  WARN: Connection timeout (expected for SSE streams)');
-      console.log('   Note: SSE streams don\'t close, timeout is normal');
+      console.log("   Note: SSE streams don't close, timeout is normal");
       results.push({
         test: 'SSE Trading Stream',
         passed: true,
@@ -254,9 +254,7 @@ async function testMCPToolsList(): Promise<void> {
     const data = await response.json();
 
     if (data.result && data.result.tools) {
-      const tradingTools = data.result.tools.filter((t: any) =>
-        t.name === 'placeHedgeBet'
-      );
+      const tradingTools = data.result.tools.filter((t: any) => t.name === 'placeHedgeBet');
 
       if (tradingTools.length > 0) {
         console.log('✅ PASS: placeHedgeBet tool registered');

@@ -3,7 +3,11 @@
  * Returns current exposure metrics for a given event
  */
 
-import { Env, GetBettingExposureRequest as GetBettingExposureRequestSchema, BettingExposureResponse as BettingExposureResponseSchema } from '../../types/api';
+import {
+  Env,
+  GetBettingExposureRequest as GetBettingExposureRequestSchema,
+  BettingExposureResponse as BettingExposureResponseSchema,
+} from '../../types/api';
 import { createErrorResponse, Errors } from '../../utils/error-handler';
 import { createDatabaseHelper } from '../../utils/database';
 import { rateLimitGuard } from '../../guards/rateLimit';
@@ -20,7 +24,11 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
     // Cost cap check
     const costCheck = await costCapGuard.checkRequest(request, env);
     if (!costCheck.allowed) {
-      return createErrorResponse(Errors.serviceUnavailable('Cost cap exceeded'), Date.now().toString(36), '/api/betting-exposure');
+      return createErrorResponse(
+        Errors.serviceUnavailable('Cost cap exceeded'),
+        Date.now().toString(36),
+        '/api/betting-exposure'
+      );
     }
 
     // Parse and validate request
@@ -28,28 +36,34 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
     const params = {
       eid: url.searchParams.get('eid') || '',
       includeHistory: url.searchParams.get('includeHistory') === 'true',
-      timeWindow: parseInt(url.searchParams.get('timeWindow') || '1')
+      timeWindow: parseInt(url.searchParams.get('timeWindow') || '1'),
     };
-
 
     // Validate input
     const validation = GetBettingExposureRequestSchema.safeParse(params);
     if (!validation.success) {
-      return createErrorResponse(Errors.validationError(['eid is required']), Date.now().toString(36), '/api/betting-exposure');
+      return createErrorResponse(
+        Errors.validationError(['eid is required']),
+        Date.now().toString(36),
+        '/api/betting-exposure'
+      );
     }
 
     // Query exposure data
     const db = createDatabaseHelper(env);
-    const queryResult = await db.executeQuery<any>(
-      `SELECT side, risk, net FROM exposure_tracking WHERE eid = ?`,
-      [params.eid]
-    );
+    const queryResult = await db.executeQuery<any>(`SELECT side, risk, net FROM exposure_tracking WHERE eid = ?`, [
+      params.eid,
+    ]);
 
     // Handle both {results: []} and [] formats
     const exposureData = Array.isArray(queryResult) ? queryResult : (queryResult as any).results || [];
 
     if (!exposureData || exposureData.length === 0) {
-      return createErrorResponse(Errors.notFound('Betting exposure data'), Date.now().toString(36), '/api/betting-exposure');
+      return createErrorResponse(
+        Errors.notFound('Betting exposure data'),
+        Date.now().toString(36),
+        '/api/betting-exposure'
+      );
     }
 
     // Build response
@@ -65,7 +79,7 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
         side: row.side as 'HOME' | 'AWAY',
         risk,
         net,
-        percentage: risk > 0 ? (net / risk) * 100 : 0
+        percentage: risk > 0 ? (net / risk) * 100 : 0,
       };
     });
 
@@ -77,19 +91,22 @@ export async function getBettingExposure(request: Request, env: Env): Promise<Re
       lastUpdated: new Date().toISOString(),
       alertThreshold: {
         maxAmount: 50000,
-        maxPercentage: 60
-      }
+        maxPercentage: 60,
+      },
     };
 
     // Validate response
 
     return new Response(JSON.stringify(response), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-
   } catch (error) {
     console.error('Error in getBettingExposure:', error);
-    return createErrorResponse(Errors.databaseError('getBettingExposure query failed'), Date.now().toString(36), '/api/betting-exposure');
+    return createErrorResponse(
+      Errors.databaseError('getBettingExposure query failed'),
+      Date.now().toString(36),
+      '/api/betting-exposure'
+    );
   }
 }

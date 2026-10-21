@@ -4,15 +4,16 @@ Comprehensive deployment infrastructure for Betting Brain v3.
 
 ## 📁 Scripts Overview
 
-| Script | Purpose | When to Use |
-|--------|---------|-------------|
-| `setup-production.sh` | Initial production setup | One-time, before first deployment |
-| `staging-deploy.sh` | Quick staging deployment | Testing changes before production |
-| `production-deploy.sh` | Safe production deployment | Deploying to live environment |
+| Script                 | Purpose                    | When to Use                       |
+| ---------------------- | -------------------------- | --------------------------------- |
+| `setup-production.sh`  | Initial production setup   | One-time, before first deployment |
+| `staging-deploy.sh`    | Quick staging deployment   | Testing changes before production |
+| `production-deploy.sh` | Safe production deployment | Deploying to live environment     |
 
 ## 🎯 Quick Start
 
 ### 1. Initial Setup (One Time)
+
 ```bash
 # Make scripts executable
 chmod +x deploy/*.sh
@@ -22,11 +23,13 @@ chmod +x deploy/*.sh
 ```
 
 This creates:
+
 - ✅ Production D1 database
 - ✅ Production queues (line-ingress, steam-webhook, DLQs)
 - ✅ Required secrets configuration
 
 ### 2. Regular Deployment Flow
+
 ```bash
 # Step 1: Deploy to staging for testing
 ./deploy/staging-deploy.sh
@@ -41,9 +44,11 @@ curl https://betting-brain-v3-staging.workers.dev/health
 ## 🔧 Script Details
 
 ### setup-production.sh
+
 **Initial production environment setup**
 
 Features:
+
 - Checks Cloudflare authentication
 - Creates D1 database
 - Creates all required queues
@@ -51,28 +56,34 @@ Features:
 - Provides next steps guidance
 
 Example:
+
 ```bash
 ./deploy/setup-production.sh
 ```
 
 ### staging-deploy.sh
+
 **Quick staging deployment for testing**
 
 Features:
+
 - Runs quick tests
 - Applies database migrations
 - Deploys to staging environment
 - Provides staging URL for testing
 
 Example:
+
 ```bash
 ./deploy/staging-deploy.sh
 ```
 
 ### production-deploy.sh
+
 **Safe production deployment with rollback**
 
 Features:
+
 - Dependency validation
 - Comprehensive testing
 - Automatic backup creation
@@ -83,6 +94,7 @@ Features:
 - Rollback capability
 
 Example:
+
 ```bash
 ./deploy/production-deploy.sh
 ```
@@ -90,12 +102,14 @@ Example:
 ## 🌍 Environments
 
 ### Staging Environment
+
 - **Purpose:** Testing and validation
 - **URL:** `https://betting-brain-v3-staging.workers.dev`
 - **Database:** Local/staging D1
 - **Deployment:** Quick, no health checks required
 
 ### Production Environment
+
 - **Purpose:** Live traffic
 - **URL:** `https://betting-brain-v3-prod.workers.dev`
 - **Database:** Production D1 with backups
@@ -115,6 +129,7 @@ wrangler secret put CLONE_BOTANICA_API_KEY --env=production
 ```
 
 Or use the setup script which will prompt for each:
+
 ```bash
 ./deploy/setup-production.sh
 ```
@@ -122,6 +137,7 @@ Or use the setup script which will prompt for each:
 ## 📊 Monitoring
 
 ### Health Check Endpoints
+
 ```bash
 # Basic health
 curl https://betting-brain-v3-prod.workers.dev/health
@@ -131,17 +147,21 @@ curl https://betting-brain-v3-prod.workers.dev/api/v3/status
 ```
 
 ### Cloudflare Dashboard
+
 Monitor your deployment at: https://dash.cloudflare.com
 
 ### Grafana Dashboard
+
 View real-time metrics in your Grafana dashboard (see `grafana/` directory)
 
 ## 🚨 Rollback Procedures
 
 ### Automatic Rollback
+
 The production deployment script creates automatic rollback tags.
 
 ### Manual Rollback
+
 ```bash
 # Find rollback tag
 cat backups/*/rollback-tag.txt
@@ -156,12 +176,14 @@ npx wrangler deploy --env=production
 The deployment scripts integrate with GitHub Actions:
 
 ### Workflows
+
 - `.github/workflows/deploy.yml` - Main deployment pipeline
 - Automated testing on PRs
 - Staging deployment for PRs
 - Production deployment on main branch
 
 ### GitHub Secrets Required
+
 - `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token
 - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
 
@@ -180,22 +202,26 @@ Before deploying to production:
 ## 🐛 Troubleshooting
 
 ### "wrangler not found"
+
 ```bash
 npm install -g wrangler@latest
 ```
 
 ### "Not authenticated"
+
 ```bash
 wrangler login
 ```
 
 ### "Database not found"
+
 ```bash
 # Run setup script
 ./deploy/setup-production.sh
 ```
 
 ### "Deployment failed"
+
 ```bash
 # Check logs
 wrangler tail --env=production
@@ -214,6 +240,7 @@ wrangler secret list --env=production
 ## 🎉 Success Indicators
 
 After deployment, verify:
+
 - ✅ Health endpoint returns 200
 - ✅ No errors in Cloudflare dashboard
 - ✅ Grafana dashboard shows metrics
@@ -225,4 +252,3 @@ After deployment, verify:
 **Version:** 3.0.0  
 **Last Updated:** October 7, 2025  
 **Maintained By:** Betting-Brain Team
-

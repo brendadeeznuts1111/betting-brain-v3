@@ -17,26 +17,26 @@ class Formatter {
 
   async runFormatting(): Promise<void> {
     console.log('🎨 Starting code formatting...');
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
 
     // Format TypeScript files
     await this.formatTypeScriptFiles();
-    
+
     // Format JavaScript files
     await this.formatJavaScriptFiles();
-    
+
     // Format JSON files
     await this.formatJsonFiles();
-    
+
     // Generate report
     this.generateReport();
   }
 
   private async formatTypeScriptFiles(): Promise<void> {
     console.log('\n📝 Formatting TypeScript files...');
-    
+
     const tsFiles = await glob('**/*.ts', {
-      ignore: ['node_modules/**', 'dist/**', 'coverage/**']
+      ignore: ['node_modules/**', 'dist/**', 'coverage/**'],
     });
 
     for (const file of tsFiles) {
@@ -46,9 +46,9 @@ class Formatter {
 
   private async formatJavaScriptFiles(): Promise<void> {
     console.log('\n📝 Formatting JavaScript files...');
-    
+
     const jsFiles = await glob('**/*.js', {
-      ignore: ['node_modules/**', 'dist/**', 'coverage/**']
+      ignore: ['node_modules/**', 'dist/**', 'coverage/**'],
     });
 
     for (const file of jsFiles) {
@@ -58,9 +58,9 @@ class Formatter {
 
   private async formatJsonFiles(): Promise<void> {
     console.log('\n📝 Formatting JSON files...');
-    
+
     const jsonFiles = await glob('**/*.json', {
-      ignore: ['node_modules/**', 'dist/**', 'coverage/**']
+      ignore: ['node_modules/**', 'dist/**', 'coverage/**'],
     });
 
     for (const file of jsonFiles) {
@@ -72,7 +72,7 @@ class Formatter {
     try {
       const result = await this.formatFileContent(file, type);
       this.results.push(result);
-      
+
       if (result.status === 'formatted') {
         console.log(`✅ ${file} (formatted)`);
       } else if (result.status === 'unchanged') {
@@ -85,7 +85,7 @@ class Formatter {
       this.results.push({
         file,
         status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
@@ -109,19 +109,19 @@ class Formatter {
         await Bun.write(file, formattedContent);
         return {
           file,
-          status: 'formatted'
+          status: 'formatted',
         };
       } else {
         return {
           file,
-          status: 'unchanged'
+          status: 'unchanged',
         };
       }
     } catch (error) {
       return {
         file,
         status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -148,7 +148,7 @@ class Formatter {
 
     const formattedLines = lines.map(line => {
       const trimmed = line.trim();
-      
+
       // Decrease indent for closing braces/brackets
       if (trimmed === '}' || trimmed === ']' || trimmed === ')') {
         indentLevel = Math.max(0, indentLevel - 1);
@@ -178,9 +178,9 @@ class Formatter {
   }
 
   private generateReport(): void {
-    console.log('\n' + '=' .repeat(50));
+    console.log('\n' + '='.repeat(50));
     console.log('📊 FORMATTING REPORT');
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
 
     const formatted = this.results.filter(r => r.status === 'formatted').length;
     const unchanged = this.results.filter(r => r.status === 'unchanged').length;
@@ -200,11 +200,18 @@ class Formatter {
 
     // Save report
     const reportPath = join(process.cwd(), 'format-report.json');
-    Bun.write(reportPath, JSON.stringify({
-      timestamp: new Date().toISOString(),
-      summary: { formatted, unchanged, errors, total },
-      results: this.results
-    }, null, 2));
+    Bun.write(
+      reportPath,
+      JSON.stringify(
+        {
+          timestamp: new Date().toISOString(),
+          summary: { formatted, unchanged, errors, total },
+          results: this.results,
+        },
+        null,
+        2
+      )
+    );
 
     console.log(`\n💾 Detailed report saved to: ${reportPath}`);
 

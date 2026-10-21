@@ -8,7 +8,8 @@
 
 ## Overview
 
-This guide documents **5 production-grade modules** for real-time betting operations:
+This guide documents **5 production-grade modules** for real-time betting
+operations:
 
 1. **Live Bet Ticker** - WebSocket, sub-150ms propagation
 2. **Position Ledger** - Per-user P&L tracking, integer-only
@@ -39,6 +40,7 @@ Durable Object (TickerRoom) - One per market
 ### Wire Format
 
 **MessagePack for efficiency:**
+
 ```javascript
 // Raw data (38 bytes)
 {
@@ -58,10 +60,10 @@ Durable Object (TickerRoom) - One per market
 await fetch('https://internal/api/ticker-push', {
   method: 'POST',
   headers: {
-    'X-Ticker-Push': '1',  // ✅ Required by ticker-push-typed rule
-    'X-Signature': await signEd25519(body)
+    'X-Ticker-Push': '1', // ✅ Required by ticker-push-typed rule
+    'X-Signature': await signEd25519(body),
   },
-  body: JSON.stringify({ marketId, odds, volume })
+  body: JSON.stringify({ marketId, odds, volume }),
 });
 
 // Worker validates sig → forwards to TickerRoom
@@ -74,7 +76,7 @@ await tickerRoom.fetch(request);
 ```javascript
 const ws = new WebSocket('wss://api.mysportsbook.xyz/ticker/MLS_2024_LA_NY');
 
-ws.onmessage = (event) => {
+ws.onmessage = event => {
   const tick = msgpack.decode(new Uint8Array(event.data));
   console.log('Odds update:', tick.odds, 'in', Date.now() - tick.t, 'ms');
 };
@@ -86,6 +88,7 @@ ws.send(JSON.stringify({ since: lastTimestamp }));
 ### Back-Pressure Strategy
 
 **Fast propagation over guaranteed delivery:**
+
 - If `socket.readyState !== WebSocket.OPEN` → drop message
 - Client can request `?since=timestamp` to fill gaps from buffer
 - Circular buffer holds last 1,000 ticks (~38 KB)
@@ -93,6 +96,7 @@ ws.send(JSON.stringify({ since: lastTimestamp }));
 ### ast-grep Protection
 
 **Rule:** `ticker-push-typed.yaml`
+
 - Enforces `X-Ticker-Push` header on all ticker updates
 - Prevents unauthorized odds manipulation
 
@@ -130,32 +134,33 @@ async function addPosition(
     `SELECT stake_cents, avg_odds_millis 
      FROM positions 
      WHERE user_id = ? AND market_id = ? AND outcome = ?`
-  ).bind(userId, marketId, outcome).first();
+  )
+    .bind(userId, marketId, outcome)
+    .first();
 
   if (existing) {
     // Weighted average (all integer math)
     const totalStake = existing.stake_cents + newStakeCents;
     const newAvgOdds = Math.floor(
-      (existing.stake_cents * existing.avg_odds_millis + 
-       newStakeCents * newOddsMillis) / totalStake
+      (existing.stake_cents * existing.avg_odds_millis +
+        newStakeCents * newOddsMillis) /
+        totalStake
     );
 
     await env.ANALYTICS.prepare(
       `UPDATE positions 
        SET stake_cents = ?, avg_odds_millis = ?, last_updated = ?
        WHERE user_id = ? AND market_id = ? AND outcome = ?`
-    ).bind(
-      totalStake, newAvgOdds, Date.now(),
-      userId, marketId, outcome
-    ).run();
+    )
+      .bind(totalStake, newAvgOdds, Date.now(), userId, marketId, outcome)
+      .run();
   } else {
     // New position
     await env.ANALYTICS.prepare(
       `INSERT INTO positions VALUES (?, ?, ?, ?, ?, ?)`
-    ).bind(
-      userId, marketId, outcome, 
-      newStakeCents, newOddsMillis, Date.now()
-    ).run();
+    )
+      .bind(userId, marketId, outcome, newStakeCents, newOddsMillis, Date.now())
+      .run();
   }
 }
 ```
@@ -164,15 +169,22 @@ async function addPosition(
 
 ```typescript
 // When market settles, calculate P&L
-async function settleMarket(marketId: string, winningOutcome: number, env: Env) {
+async function settleMarket(
+  marketId: string,
+  winningOutcome: number,
+  env: Env
+) {
   const positions = await env.ANALYTICS.prepare(
     `SELECT * FROM positions WHERE market_id = ?`
-  ).bind(marketId).all();
+  )
+    .bind(marketId)
+    .all();
 
   for (const pos of positions.results) {
-    const payout_cents = pos.outcome === winningOutcome
-      ? Math.floor(pos.stake_cents * pos.avg_odds_millis / 1000)  // Winner
-      : 0;  // Loser
+    const payout_cents =
+      pos.outcome === winningOutcome
+        ? Math.floor((pos.stake_cents * pos.avg_odds_millis) / 1000) // Winner
+        : 0; // Loser
 
     // ✅ Idempotent insert (enforced by settlement-idempotent rule)
     await env.ANALYTICS.prepare(
@@ -181,10 +193,16 @@ async function settleMarket(marketId: string, winningOutcome: number, env: Env) 
         stake_cents, payout_cents, nonce
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT (user_id, market_id, outcome) DO NOTHING`
-    ).bind(
-      pos.user_id, marketId, pos.outcome,
-      pos.stake_cents, payout_cents, crypto.randomUUID()
-    ).run();
+    )
+      .bind(
+        pos.user_id,
+        marketId,
+        pos.outcome,
+        pos.stake_cents,
+        payout_cents,
+        crypto.randomUUID()
+      )
+      .run();
   }
 }
 ```
@@ -202,7 +220,9 @@ export class PositionBook implements DurableObject {
     const positions = await this.env.ANALYTICS.prepare(
       `SELECT * FROM positions 
        WHERE user_id = ? AND market_id = ?`
-    ).bind(userId, marketId).all();
+    )
+      .bind(userId, marketId)
+      .all();
 
     // Calculate exposure
     let exposure = 0;
@@ -210,16 +230,18 @@ export class PositionBook implements DurableObject {
     for (const pos of positions.results) {
       exposure += pos.stake_cents;
       const potentialPayout = Math.floor(
-        pos.stake_cents * pos.avg_odds_millis / 1000
+        (pos.stake_cents * pos.avg_odds_millis) / 1000
       );
       maxPayout = Math.max(maxPayout, potentialPayout);
     }
 
-    return new Response(JSON.stringify({
-      exposure: -exposure,  // Negative = user's liability
-      max_payout: maxPayout,
-      trades: positions.results.length
-    }));
+    return new Response(
+      JSON.stringify({
+        exposure: -exposure, // Negative = user's liability
+        max_payout: maxPayout,
+        trades: positions.results.length,
+      })
+    );
   }
 
   async alarm() {
@@ -283,7 +305,7 @@ export async function calculateAgentCommissions(env: Env) {
   for (const settlement of settlements.results) {
     // Get user's agent
     const user = await getUserWithAgent(settlement.user_id, env);
-    
+
     if (user.agent_id) {
       // Walk up tree (max 5 levels)
       await walkAgentTree(
@@ -299,7 +321,9 @@ export async function calculateAgentCommissions(env: Env) {
       `UPDATE settlements 
        SET agent_commission_calculated = 1
        WHERE id = ?`
-    ).bind(settlement.id).run();
+    )
+      .bind(settlement.id)
+      .run();
   }
 }
 
@@ -310,17 +334,17 @@ async function walkAgentTree(
   env: Env,
   depth: number = 0
 ) {
-  if (depth >= 5) return;  // Max depth
+  if (depth >= 5) return; // Max depth
 
-  const agent = await env.ANALYTICS.prepare(
-    `SELECT * FROM agents WHERE id = ?`
-  ).bind(agentId).first();
+  const agent = await env.ANALYTICS.prepare(`SELECT * FROM agents WHERE id = ?`)
+    .bind(agentId)
+    .first();
 
   if (!agent) return;
 
   // Calculate commission
   const commissionCents = Math.floor(
-    stakeCents * agent.rev_share_per_mille / 1000
+    (stakeCents * agent.rev_share_per_mille) / 1000
   );
 
   // ✅ Idempotent insert (composite PK)
@@ -329,15 +353,17 @@ async function walkAgentTree(
      (settlement_id, agent_id, commission_cents, paid_at)
      VALUES (?, ?, ?, ?)
      ON CONFLICT DO NOTHING`
-  ).bind(settlementId, agentId, commissionCents, Date.now()).run();
+  )
+    .bind(settlementId, agentId, commissionCents, Date.now())
+    .run();
 
   // Recurse up tree
   if (agent.parent_id) {
     await walkAgentTree(
-      agent.parent_id, 
-      settlementId, 
+      agent.parent_id,
+      settlementId,
       stakeCents,
-      env, 
+      env,
       depth + 1
     );
   }
@@ -362,9 +388,9 @@ async function recordTransaction(
     id: crypto.randomUUID(),
     user_id: userId,
     amount_cents: amountCents,
-    type,  // 'deposit', 'bet', 'win', 'withdrawal'
+    type, // 'deposit', 'bet', 'win', 'withdrawal'
     timestamp: Date.now(),
-    nonce: crypto.randomUUID()  // Idempotency
+    nonce: crypto.randomUUID(), // Idempotency
   };
 
   // 1. Write to D1 (hot, queryable)
@@ -372,17 +398,23 @@ async function recordTransaction(
     `INSERT INTO transactions 
      (id, user_id, amount_cents, type, timestamp, nonce)
      VALUES (?, ?, ?, ?, ?, ?)`
-  ).bind(
-    txRecord.id, txRecord.user_id, txRecord.amount_cents,
-    txRecord.type, txRecord.timestamp, txRecord.nonce
-  ).run();
+  )
+    .bind(
+      txRecord.id,
+      txRecord.user_id,
+      txRecord.amount_cents,
+      txRecord.type,
+      txRecord.timestamp,
+      txRecord.nonce
+    )
+    .run();
 
   // 2. Write to R2 (cold, immutable audit log)
   const datePath = new Date(txRecord.timestamp)
     .toISOString()
     .split('T')[0]
     .replace(/-/g, '/');
-  
+
   await env.TX_LOG.put(
     `tx/${datePath}/${txRecord.id}.json`,
     JSON.stringify(txRecord),
@@ -392,8 +424,8 @@ async function recordTransaction(
       },
       customMetadata: {
         user_id: txRecord.user_id,
-        type: txRecord.type
-      }
+        type: txRecord.type,
+      },
     }
   );
 
@@ -423,7 +455,7 @@ export async function mergeToClickHouse(env: Env) {
   await fetch('https://clickhouse.internal/transactions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-ndjson' },
-    body: transactions.map(t => JSON.stringify(t)).join('\n')
+    body: transactions.map(t => JSON.stringify(t)).join('\n'),
   });
 }
 ```
@@ -439,15 +471,17 @@ async function gdprDeleteUser(userId: string, env: Env) {
      SET is_deleted = 1, 
          user_id = ? 
      WHERE user_id = ?`
-  ).bind(
-    `deleted_${crypto.randomUUID()}`,  // Anonymize
-    userId
-  ).run();
+  )
+    .bind(
+      `deleted_${crypto.randomUUID()}`, // Anonymize
+      userId
+    )
+    .run();
 
   // 2. Update R2 objects (add is_deleted flag)
   const list = await env.TX_LOG.list({
     prefix: 'tx/',
-    include: ['customMetadata']
+    include: ['customMetadata'],
   });
 
   for (const obj of list.objects) {
@@ -456,7 +490,7 @@ async function gdprDeleteUser(userId: string, env: Env) {
       const tx = await data.json();
       tx.is_deleted = 1;
       tx.user_id = `deleted_${crypto.randomUUID()}`;
-      
+
       await env.TX_LOG.put(obj.key, JSON.stringify(tx));
     }
   }
@@ -481,13 +515,13 @@ export default {
     // ✅ Capture weblog (enforced by weblog-integrity rule)
     const weblog = {
       ts: Date.now(),
-      ip: request.headers.get('CF-Connecting-IP'),  // ⚠️ GDPR-sensitive
+      ip: request.headers.get('CF-Connecting-IP'), // ⚠️ GDPR-sensitive
       ua: request.headers.get('User-Agent'),
       cc: request.cf?.country,
       path: new URL(request.url).pathname,
       ref: request.headers.get('Referer'),
-      sid: getSessionCookie(request),  // ✅ Required for attribution
-      betslip_id: request.headers.get('X-Betslip-ID')
+      sid: getSessionCookie(request), // ✅ Required for attribution
+      betslip_id: request.headers.get('X-Betslip-ID'),
     };
 
     // Send to queue (non-blocking)
@@ -497,7 +531,7 @@ export default {
     const response = await handleRequest(request, env);
 
     return response;
-  }
+  },
 };
 ```
 
@@ -513,7 +547,9 @@ export async function processWeblog(batch: MessageBatch, env: Env) {
     if (log.betslip_id) {
       const bet = await env.ANALYTICS.prepare(
         `SELECT * FROM bets WHERE betslip_id = ?`
-      ).bind(log.betslip_id).first();
+      )
+        .bind(log.betslip_id)
+        .first();
 
       if (bet) {
         // Create attribution event
@@ -524,7 +560,7 @@ export async function processWeblog(batch: MessageBatch, env: Env) {
           country: log.cc,
           stake_cents: bet.stake_cents,
           delay_ms: bet.created_at - log.ts,
-          agent_id: bet.agent_id
+          agent_id: bet.agent_id,
         };
 
         // Stream to ClickHouse
@@ -540,14 +576,17 @@ export async function processWeblog(batch: MessageBatch, env: Env) {
 ### Fraud Detection Rules
 
 **Rule 1:** `no-ip-leak.yaml`
+
 - Never log raw IP to console (GDPR violation)
 - Use country code or hashed IP
 
 **Rule 2:** `weblog-integrity.yaml`
+
 - All weblog entries must have `sid` (session ID)
 - Required for attribution and fraud detection
 
 **Fraud Signals:**
+
 ```sql
 -- Multi-account abuse (same IP, different users)
 SELECT ip_hash, COUNT(DISTINCT user_id) as accounts
@@ -591,18 +630,20 @@ export async function getLivePosition(
   const positionBook = env.PositionBook.get(
     `${params.userId}:${params.marketId}`
   );
-  
+
   const response = await positionBook.fetch(
     new Request(`https://internal/position/${params.userId}/${params.marketId}`)
   );
-  
+
   const position = await response.json();
-  
+
   return {
-    content: [{
-      type: 'text',
-      text: JSON.stringify(position, null, 2)
-    }]
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(position, null, 2),
+      },
+    ],
   };
 }
 
@@ -616,13 +657,17 @@ export async function getAgentCommissions(
      WHERE agent_id = ? 
      AND paid_at > ?
      ORDER BY paid_at DESC`
-  ).bind(params.agentId, params.since || 0).all();
-  
+  )
+    .bind(params.agentId, params.since || 0)
+    .all();
+
   return {
-    content: [{
-      type: 'text',
-      text: JSON.stringify(commissions.results, null, 2)
-    }]
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(commissions.results, null, 2),
+      },
+    ],
   };
 }
 ```
@@ -635,10 +680,10 @@ export async function getAgentCommissions(
 const marketId = extractMarketId(window.location.href);
 const ws = new WebSocket(`wss://api.mysportsbook.xyz/ticker/${marketId}`);
 
-ws.onmessage = (event) => {
+ws.onmessage = event => {
   const tick = msgpack.decode(new Uint8Array(event.data));
   updateOddsDisplay(tick.odds);
-  
+
   // Forward to worker for analytics
   fetch(`${WORKER_URL}/weblog`, {
     method: 'POST',
@@ -646,8 +691,8 @@ ws.onmessage = (event) => {
       type: 'odds_update',
       market_id: marketId,
       odds: tick.odds,
-      sid: getSessionId()
-    })
+      sid: getSessionId(),
+    }),
   });
 };
 ```
@@ -658,22 +703,22 @@ ws.onmessage = (event) => {
 
 ### Required ast-grep Rules (14 total)
 
-| Rule | Severity | Scope |
-|------|----------|-------|
-| `ticker-push-typed` | ERROR | WebSocket ticker |
-| `position-no-float` | ERROR | Position calculations |
-| `agent-depth-limit` | ERROR | Agent tree |
-| `tx-dual-write` | ERROR | Transaction log |
-| `weblog-integrity` | ERROR | Attribution |
-| `no-ip-leak` | ERROR | GDPR compliance |
-| `websocket-upgrade-safe` | WARNING | WebSocket security |
-| `durable-object-alarm` | WARNING | DO cleanup |
-| `position-rowid-off` | ERROR | SQL optimization |
-| `agent-circular-ref` | ERROR | Agent tree integrity |
-| `msgpack-ticker` | WARNING | Performance |
-| `betslip-attribution` | WARNING | Attribution pipeline |
-| `gdpr-delete-flag` | ERROR | GDPR compliance |
-| `settlement-idempotent` | ERROR | Payout safety |
+| Rule                     | Severity | Scope                 |
+| ------------------------ | -------- | --------------------- |
+| `ticker-push-typed`      | ERROR    | WebSocket ticker      |
+| `position-no-float`      | ERROR    | Position calculations |
+| `agent-depth-limit`      | ERROR    | Agent tree            |
+| `tx-dual-write`          | ERROR    | Transaction log       |
+| `weblog-integrity`       | ERROR    | Attribution           |
+| `no-ip-leak`             | ERROR    | GDPR compliance       |
+| `websocket-upgrade-safe` | WARNING  | WebSocket security    |
+| `durable-object-alarm`   | WARNING  | DO cleanup            |
+| `position-rowid-off`     | ERROR    | SQL optimization      |
+| `agent-circular-ref`     | ERROR    | Agent tree integrity  |
+| `msgpack-ticker`         | WARNING  | Performance           |
+| `betslip-attribution`    | WARNING  | Attribution pipeline  |
+| `gdpr-delete-flag`       | ERROR    | GDPR compliance       |
+| `settlement-idempotent`  | ERROR    | Payout safety         |
 
 ---
 
@@ -760,18 +805,21 @@ wscat -c wss://api.mysportsbook.xyz/ticker/TEST_MARKET_123
 ## 🎯 What You Get
 
 ### Performance
+
 - ✅ **1M concurrent WebSocket** connections
 - ✅ **< 150ms** odds propagation
 - ✅ **650k msg/s** ticker throughput
 - ✅ **Integer-only** position math (no rounding errors)
 
 ### Security
+
 - ✅ **14 ast-grep rules** enforcing best practices
 - ✅ **GDPR-compliant** soft delete
 - ✅ **Audit trail** with immutable R2 storage
 - ✅ **Fraud detection** via attribution pipeline
 
 ### Business Logic
+
 - ✅ **Real-time P&L** per user, per market
 - ✅ **5-level agent tree** with nightly settlement
 - ✅ **Click-to-bet attribution** for marketing ROI
@@ -784,4 +832,3 @@ wscat -c wss://api.mysportsbook.xyz/ticker/TEST_MARKET_123
 **Ready for 1M Concurrent Users:** Yes ✅
 
 All patterns are **battle-tested** at scale!
-

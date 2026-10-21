@@ -74,10 +74,12 @@ export const mockLineMovement: LineMovement = {
 ```
 
 **Files to fix:**
+
 - `tests/mocks/data.ts` (line 7, 17)
 - `tests/integration/triggers.test.ts` (lines 156, 208, 248, 316)
 - `tests/integration/triggers-implementation.test.ts` (line 335)
-- `tests/integration/trigger-implementation-detailed.test.ts` (lines 293, 363, 403)
+- `tests/integration/trigger-implementation-detailed.test.ts` (lines 293,
+  363, 403)
 
 **Impact:** Fixes 15 errors ✅
 
@@ -99,6 +101,7 @@ const result = await Promise.race([
 ```
 
 **Also fix in:**
+
 - `src/queues/steamWebhook.ts` (line 170)
 - `src/schedules/exposureCalc.ts` (lines 45, 58)
 - `src/schedules/sharpCalc.ts` (line 51)
@@ -159,11 +162,13 @@ env.ANALYTICS_ENGINE.writeDataPoint({
 ## 📋 Progress Tracker
 
 After 5-minute quick fix:
+
 ```
 █████████████████░░░░░░░░░░░░░░░░░░░ 62% (55/89 errors fixed)
 ```
 
 After all critical fixes:
+
 ```
 ███████████████████████████████████░ 90% (80/89 errors fixed)
 ```
@@ -172,14 +177,14 @@ After all critical fixes:
 
 ## ⏱️ Time Estimate
 
-| Task | Time | Cumulative | Errors Fixed |
-|------|------|------------|--------------|
-| ⚡ Quick Fix #1-3 | 5 min | 5 min | 55 (62%) |
-| 🔴 Fix #4 (ing fields) | 30 min | 35 min | 15 more |
-| 🔴 Fix #5 (D1 casting) | 30 min | 65 min | 6 more |
-| 🔴 Fix #6 (duplicate) | 5 min | 70 min | 1 more |
-| 🔴 Fix #7 (property) | 5 min | 75 min | 1 more |
-| 🟡 Remaining fixes | 45 min | 2 hours | 11 more |
+| Task                   | Time   | Cumulative | Errors Fixed |
+| ---------------------- | ------ | ---------- | ------------ |
+| ⚡ Quick Fix #1-3      | 5 min  | 5 min      | 55 (62%)     |
+| 🔴 Fix #4 (ing fields) | 30 min | 35 min     | 15 more      |
+| 🔴 Fix #5 (D1 casting) | 30 min | 65 min     | 6 more       |
+| 🔴 Fix #6 (duplicate)  | 5 min  | 70 min     | 1 more       |
+| 🔴 Fix #7 (property)   | 5 min  | 75 min     | 1 more       |
+| 🟡 Remaining fixes     | 45 min | 2 hours    | 11 more      |
 
 **Total:** ~2 hours to fix all 89 errors ✅
 
@@ -209,6 +214,7 @@ npm run lint && bun test:ci
 ## 📊 Current vs Target
 
 ### Current State 🚨
+
 ```
 ✅ Tests:      249/249 passing (100%)
 🚨 Types:          89 errors   (FAIL)
@@ -217,6 +223,7 @@ npm run lint && bun test:ci
 ```
 
 ### After Critical Fixes ✅
+
 ```
 ✅ Tests:      249/249 passing (100%)
 ✅ Types:           0 errors   (PASS)
@@ -225,6 +232,7 @@ npm run lint && bun test:ci
 ```
 
 ### After Performance Fixes 🚀
+
 ```
 ✅ Tests:      249/249 passing (100%)
 ✅ Types:           0 errors   (PASS)
@@ -247,5 +255,5 @@ npm run lint             # See progress!
 
 ---
 
-**Remember:** Tests passing doesn't mean type-safe! Fix these errors before production. 🚀
-
+**Remember:** Tests passing doesn't mean type-safe! Fix these errors before
+production. 🚀

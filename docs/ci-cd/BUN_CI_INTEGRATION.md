@@ -1,12 +1,14 @@
 # 🚀 Bun CI Integration with Cursor Rules
 
-**Complete integration of cursor rules with Bun's built-in speed tools - no separate installs, no Node fallback.**
+**Complete integration of cursor rules with Bun's built-in speed tools - no
+separate installs, no Node fallback.**
 
 ---
 
 ## 🎯 Overview
 
 This integration provides:
+
 - ✅ **Bun-native CI**: Uses Bun's built-in speed tools
 - ✅ **Cursor Rules Integration**: Automated rule enforcement
 - ✅ **Zero Dependencies**: No separate installs required
@@ -22,6 +24,7 @@ This integration provides:
 ### 1. VS Code Settings
 
 **File:** `.vscode/settings.json`
+
 ```json
 {
   "editor.formatOnSave": true,
@@ -30,7 +33,12 @@ This integration provides:
   },
   "typescript.preferences.importModuleSpecifier": "relative",
   "eslint.enable": true,
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "eslint.run": "onType",
   "cursor.rules.enabled": true,
   "cursor.rules.autoApply": true,
@@ -39,6 +47,7 @@ This integration provides:
 ```
 
 **File:** `.vscode/extensions.json`
+
 ```json
 {
   "recommendations": [
@@ -53,6 +62,7 @@ This integration provides:
 ### 2. Package.json Scripts
 
 **Precheck Scripts:**
+
 ```json
 {
   "scripts": {
@@ -73,6 +83,7 @@ This integration provides:
 ### Lint Workflow
 
 **File:** `.github/workflows/lint.yml`
+
 ```yaml
 name: 'Lint & Code Quality'
 
@@ -86,34 +97,34 @@ jobs:
   lint:
     name: 'Bun-Aware Linting'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 'Checkout code'
         uses: actions/checkout@v4
-        
+
       - name: 'Setup Bun'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-          
+
       - name: 'Run ast-grep scan (structural linting)'
         run: bunx ast-grep@latest scan --config sgconfig.yml
-        
+
       - name: 'Run ESLint (syntax linting)'
         run: bunx eslint@latest src --ext .js,.jsx,.ts,.tsx --max-warnings 0
-        
+
       - name: 'Check Prettier formatting'
         run: bunx prettier@latest --check src tests docs
-        
+
       - name: 'TypeScript type check'
         run: bun run tsc --noEmit
-        
+
       - name: 'Run security scan'
         run: |
           bunx ast-grep@latest scan --filter "sql-injection-risk" --error
           bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
           bunx ast-grep@latest scan --filter "missing-cors-headers" --error
-          
+
       - name: 'Check cursor rules compliance'
         run: |
           if [ -f ".cursorrules" ]; then
@@ -129,6 +140,7 @@ jobs:
 ### Release Workflow
 
 **File:** `.github/workflows/release.yml`
+
 ```yaml
 name: 'Release Announcement'
 
@@ -143,16 +155,16 @@ jobs:
   announce:
     name: 'Slack Release Announcement'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 'Checkout code'
         uses: actions/checkout@v4
-        
+
       - name: 'Setup Bun'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-          
+
       - name: 'Send Slack notification'
         if: env.SLACK_WEBHOOK_URL != ''
         run: |
@@ -196,14 +208,14 @@ bun run scripts/bun-ci.ts --skip-tests --skip-security --verbose
 
 ```typescript
 interface CIConfig {
-  timeout: number;        // Step timeout (default: 30000ms)
-  parallel: boolean;      // Parallel execution
-  verbose: boolean;       // Verbose output
-  skipTests: boolean;     // Skip test execution
-  skipLint: boolean;      // Skip linting
-  skipSecurity: boolean;  // Skip security scan
+  timeout: number; // Step timeout (default: 30000ms)
+  parallel: boolean; // Parallel execution
+  verbose: boolean; // Verbose output
+  skipTests: boolean; // Skip test execution
+  skipLint: boolean; // Skip linting
+  skipSecurity: boolean; // Skip security scan
   skipTypeCheck: boolean; // Skip TypeScript check
-  skipFormat: boolean;    // Skip formatting check
+  skipFormat: boolean; // Skip formatting check
 }
 ```
 
@@ -212,36 +224,42 @@ interface CIConfig {
 ## 📊 CI Steps
 
 ### 1. Cursor Rules Validation
+
 - ✅ Check .cursorrules file exists
 - ✅ Validate version format (semver)
 - ✅ Check scope configuration
 - ✅ Verify rule references
 
 ### 2. File Naming Validation
+
 - ✅ Check kebab-case conventions
 - ✅ Validate test file patterns
 - ✅ Check documentation structure
 - ✅ Verify root directory cleanliness
 
 ### 3. Linting (Bun-aware)
+
 - ✅ ESLint via `bunx eslint@latest`
 - ✅ Prettier formatting check
 - ✅ TypeScript type checking
 - ✅ Import/export validation
 
 ### 4. Security Scanning
+
 - ✅ SQL injection prevention
 - ✅ Stake validation (no parseFloat)
 - ✅ CORS header validation
 - ✅ Input sanitization checks
 
 ### 5. Testing
+
 - ✅ Unit tests with Bun Test
 - ✅ Integration tests
 - ✅ Coverage reporting
 - ✅ Performance benchmarks
 
 ### 6. Build Validation
+
 - ✅ TypeScript compilation
 - ✅ Bundle generation
 - ✅ Asset optimization
@@ -283,13 +301,13 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 
 ### Speed Comparison
 
-| Tool | Node.js | Bun | Speedup |
-|------|---------|-----|---------|
-| **ESLint** | 2.3s | 0.8s | 2.9x |
-| **Prettier** | 1.1s | 0.4s | 2.8x |
-| **TypeScript** | 3.2s | 1.1s | 2.9x |
-| **ast-grep** | 0.9s | 0.3s | 3.0x |
-| **Total CI** | 12.5s | 4.2s | 3.0x |
+| Tool           | Node.js | Bun  | Speedup |
+| -------------- | ------- | ---- | ------- |
+| **ESLint**     | 2.3s    | 0.8s | 2.9x    |
+| **Prettier**   | 1.1s    | 0.4s | 2.8x    |
+| **TypeScript** | 3.2s    | 1.1s | 2.9x    |
+| **ast-grep**   | 0.9s    | 0.3s | 3.0x    |
+| **Total CI**   | 12.5s   | 4.2s | 3.0x    |
 
 ### Memory Usage
 
@@ -304,16 +322,19 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 ### Automated Security Checks
 
 1. **SQL Injection Prevention**
+
    ```bash
    bunx ast-grep@latest scan --filter "sql-injection-risk" --error
    ```
 
 2. **Stake Validation**
+
    ```bash
    bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
    ```
 
 3. **CORS Headers**
+
    ```bash
    bunx ast-grep@latest scan --filter "missing-cors-headers" --error
    ```
@@ -339,6 +360,7 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 ### Release Announcements
 
 **Features:**
+
 - ✅ **Automatic triggers** on tag push
 - ✅ **Rich formatting** with blocks and buttons
 - ✅ **Cursor rules version** tracking
@@ -346,6 +368,7 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 - ✅ **Direct links** to dashboard and docs
 
 **Message Format:**
+
 ```
 🚀 New Release: v3.1.0
 
@@ -365,6 +388,7 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 ## 🎯 10-Second Checklist
 
 ### Setup Checklist
+
 - [ ] VS Code settings committed
 - [ ] `bunx <linter> src` passes locally
 - [ ] CI uses `bunx` and is marked required
@@ -372,6 +396,7 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 - [ ] Tag push → announcement
 
 ### Daily Usage
+
 - [ ] Run `bun run precheck` before push
 - [ ] Check cursor rules compliance
 - [ ] Verify security scans pass
@@ -379,6 +404,7 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 - [ ] Validate file naming
 
 ### Release Process
+
 - [ ] Update cursor rules version
 - [ ] Run full CI pipeline
 - [ ] Create release tag
@@ -392,12 +418,14 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 ### Common Issues
 
 1. **Bun not found**
+
    ```bash
    # Install Bun
    curl -fsSL https://bun.sh/install | bash
    ```
 
 2. **ESLint errors**
+
    ```bash
    # Clear cache and reinstall
    bun install --force
@@ -405,6 +433,7 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
    ```
 
 3. **ast-grep not found**
+
    ```bash
    # Install ast-grep
    bunx ast-grep@latest --version
@@ -445,4 +474,6 @@ bunx ast-grep@latest scan --filter "no-parsefloat-stake" --error
 **Integration:** Complete  
 **Last Updated:** 2025-10-07
 
-The Bun CI integration provides **sub-second performance** with **zero dependencies** while maintaining **complete cursor rules compliance** and **automated security enforcement**.
+The Bun CI integration provides **sub-second performance** with **zero
+dependencies** while maintaining **complete cursor rules compliance** and
+**automated security enforcement**.

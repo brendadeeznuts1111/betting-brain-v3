@@ -4,7 +4,14 @@
  */
 
 import { Env } from '../types/api';
-import { CORS_HEADERS, createJSONResponse, createOPTIONSResponse, generateRequestId, normalizeD1Result, normalizeD1First } from '../utils/request';
+import {
+  CORS_HEADERS,
+  createJSONResponse,
+  createOPTIONSResponse,
+  generateRequestId,
+  normalizeD1Result,
+  normalizeD1First,
+} from '../utils/request';
 import { validateQueryParams, Validators, validationErrorResponse } from '../utils/validation';
 import { createErrorResponse, Errors, validateEnv } from '../utils/error-handler';
 import { getBettingExposure } from '../tools/intelligence/getBettingExposure';
@@ -14,7 +21,13 @@ import { getHoldPercentage } from '../tools/intelligence/getHoldPercentage';
 import { handleFantasy402Ingest, handleFantasy402IngestHead } from './fantasy402-ingest';
 import { getAgentPerformance, getSportPerformance, getPerformanceSummary } from './fantasy402-performance-api';
 import { getLiveBets } from '../routes/api/f402-bets';
-import { getAgentPerformance as getF402AgentPerformance, getAgentList, getAgentDetail, getAgentTree, getCacheMetrics } from '../routes/api/f402-agents/index';
+import {
+  getAgentPerformance as getF402AgentPerformance,
+  getAgentList,
+  getAgentDetail,
+  getAgentTree,
+  getCacheMetrics,
+} from '../routes/api/f402-agents/index';
 import { warmCache } from '../routes/api/cache-warm';
 import { getActiveCustomers, getStakedTotal } from '../routes/api/f402-customers';
 import { getLatestTransactions } from '../routes/api/f402-transactions';
@@ -24,11 +37,7 @@ import { getAgentGraph } from '../routes/api/f402-graph';
 /**
  * Handle REST API routes
  */
-export async function handleAPIRoute(
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext
-): Promise<Response> {
+export async function handleAPIRoute(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const requestId = generateRequestId();
   const url = new URL(request.url);
   const path = url.pathname.replace('/api', '');
@@ -249,11 +258,7 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
   validateEnv(env, ['ANALYTICS']);
 
   const url = new URL(request.url);
-  const validation = validateQueryParams(url, [
-    Validators.sport(),
-    Validators.limit(500),
-    Validators.offset()
-  ]);
+  const validation = validateQueryParams(url, [Validators.sport(), Validators.limit(500), Validators.offset()]);
 
   if (!validation.valid) {
     return validationErrorResponse(validation.errors, requestId);
@@ -285,7 +290,9 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
 
   params.push(limit, offset);
 
-  const result = await env.ANALYTICS.prepare(query).bind(...params).all();
+  const result = await env.ANALYTICS.prepare(query)
+    .bind(...params)
+    .all();
   interface EventRow {
     eventID: string;
     lastUpdate: string;
@@ -301,7 +308,7 @@ async function getEvents(request: Request, env: Env, requestId: string): Promise
     limit,
     offset,
     requestId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -314,7 +321,7 @@ async function getExposureAPI(request: Request, env: Env, requestId: string): Pr
     Validators.agentID(),
     Validators.eventID(),
     Validators.sport(),
-    Validators.exposureLevel()
+    Validators.exposureLevel(),
   ]);
 
   if (!validation.valid) {
@@ -325,7 +332,7 @@ async function getExposureAPI(request: Request, env: Env, requestId: string): Pr
   const toolRequest = new Request(url.toString(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(validation.sanitized)
+    body: JSON.stringify(validation.sanitized),
   });
 
   return await getBettingExposure(toolRequest, env);
@@ -339,7 +346,7 @@ async function getSharpCustomers(request: Request, env: Env, requestId: string):
   const validation = validateQueryParams(url, [
     Validators.agentID(),
     Validators.threshold(0, 100),
-    Validators.limit(100)
+    Validators.limit(100),
   ]);
 
   if (!validation.valid) {
@@ -352,7 +359,7 @@ async function getSharpCustomers(request: Request, env: Env, requestId: string):
   const toolRequest = new Request(url.toString(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ agentID, minScore: threshold, limit })
+    body: JSON.stringify({ agentID, minScore: threshold, limit }),
   });
 
   return await getSharpScore(toolRequest, env);
@@ -365,11 +372,7 @@ async function getSteamMovesAPI(request: Request, env: Env, requestId: string): 
   validateEnv(env, ['ANALYTICS']);
 
   const url = new URL(request.url);
-  const validation = validateQueryParams(url, [
-    Validators.eventID(),
-    Validators.marketType(),
-    Validators.limit(100)
-  ]);
+  const validation = validateQueryParams(url, [Validators.eventID(), Validators.marketType(), Validators.limit(100)]);
 
   if (!validation.valid) {
     return validationErrorResponse(validation.errors, requestId);
@@ -401,7 +404,9 @@ async function getSteamMovesAPI(request: Request, env: Env, requestId: string): 
   query += ` ORDER BY sd.ts DESC LIMIT ?`;
   params.push(limit);
 
-  const result = await env.ANALYTICS.prepare(query).bind(...params).all();
+  const result = await env.ANALYTICS.prepare(query)
+    .bind(...params)
+    .all();
   interface SteamMoveRow {
     eventID: string;
     marketType: string;
@@ -415,7 +420,7 @@ async function getSteamMovesAPI(request: Request, env: Env, requestId: string): 
     steamMoves,
     total: steamMoves.length,
     requestId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -429,7 +434,7 @@ async function getCLVAPI(request: Request, env: Env, requestId: string): Promise
     Validators.customerID(),
     Validators.date('startDate'),
     Validators.date('endDate'),
-    Validators.threshold(-100, 100)
+    Validators.threshold(-100, 100),
   ]);
 
   if (!validation.valid) {
@@ -440,7 +445,7 @@ async function getCLVAPI(request: Request, env: Env, requestId: string): Promise
   const toolRequest = new Request(url.toString(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(validation.sanitized)
+    body: JSON.stringify(validation.sanitized),
   });
 
   return await getCLV(toolRequest, env);
@@ -456,7 +461,7 @@ async function getHoldAPI(request: Request, env: Env, requestId: string): Promis
     Validators.eventID(),
     Validators.marketType(true),
     Validators.date('startDate'),
-    Validators.date('endDate')
+    Validators.date('endDate'),
   ]);
 
   if (!validation.valid) {
@@ -467,7 +472,7 @@ async function getHoldAPI(request: Request, env: Env, requestId: string): Promis
   const toolRequest = new Request(url.toString(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(validation.sanitized)
+    body: JSON.stringify(validation.sanitized),
   });
 
   return await getHoldPercentage(toolRequest, env);
@@ -480,10 +485,7 @@ async function getMarkets(request: Request, env: Env, requestId: string): Promis
   validateEnv(env, ['ANALYTICS']);
 
   const url = new URL(request.url);
-  const validation = validateQueryParams(url, [
-    Validators.eventID(),
-    Validators.marketType()
-  ]);
+  const validation = validateQueryParams(url, [Validators.eventID(), Validators.marketType()]);
 
   if (!validation.valid) {
     return validationErrorResponse(validation.errors, requestId);
@@ -514,7 +516,9 @@ async function getMarkets(request: Request, env: Env, requestId: string): Promis
 
   query += ` GROUP BY lm.mt ORDER BY updateCount DESC`;
 
-  const result = await env.ANALYTICS.prepare(query).bind(...params).all();
+  const result = await env.ANALYTICS.prepare(query)
+    .bind(...params)
+    .all();
   interface MarketRow {
     marketType: string;
     updateCount: number;
@@ -528,7 +532,7 @@ async function getMarkets(request: Request, env: Env, requestId: string): Promis
     markets,
     total: markets.length,
     requestId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -539,10 +543,7 @@ async function getCustomers(request: Request, env: Env, requestId: string): Prom
   validateEnv(env, ['ANALYTICS']);
 
   const url = new URL(request.url);
-  const validation = validateQueryParams(url, [
-    Validators.agentID(),
-    Validators.limit(500)
-  ]);
+  const validation = validateQueryParams(url, [Validators.agentID(), Validators.limit(500)]);
 
   if (!validation.valid) {
     return validationErrorResponse(validation.errors, requestId);
@@ -550,7 +551,8 @@ async function getCustomers(request: Request, env: Env, requestId: string): Prom
 
   const { agentID, limit = 100 } = validation.sanitized!;
 
-  const result = await env.ANALYTICS.prepare(`
+  const result = await env.ANALYTICS.prepare(
+    `
     SELECT 
       si.cid as customerID,
       si.clv as CLV,
@@ -562,7 +564,10 @@ async function getCustomers(request: Request, env: Env, requestId: string): Prom
     WHERE si.upd > datetime('now', '-7 days')
     ORDER BY si.ao DESC
     LIMIT ?
-  `).bind(limit).all();
+  `
+  )
+    .bind(limit)
+    .all();
   interface CustomerRow {
     customerID: string;
     CLV: number;
@@ -580,7 +585,7 @@ async function getCustomers(request: Request, env: Env, requestId: string): Prom
     total: customers.length,
     agentID,
     requestId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -595,51 +600,56 @@ async function getStats(request: Request, env: Env, requestId: string): Promise<
   validateEnv(env, ['ANALYTICS', 'BET_TICKER_RAW']);
 
   const [lineMovements, steamMoves, sharpCustomers, kvRecords] = await Promise.all([
-    env.ANALYTICS.prepare(`
+    env.ANALYTICS.prepare(
+      `
       SELECT COUNT(*) as count
       FROM line_movements
       WHERE ing > datetime('now', '-24 hours')
-    `).first(),
+    `
+    ).first(),
 
-    env.ANALYTICS.prepare(`
+    env.ANALYTICS.prepare(
+      `
       SELECT COUNT(*) as count
       FROM steam_dedupe
       WHERE ts > datetime('now', '-1 hour')
-    `).first(),
+    `
+    ).first(),
 
-    env.ANALYTICS.prepare(`
+    env.ANALYTICS.prepare(
+      `
       SELECT COUNT(*) as count
       FROM sharp_indicators
       WHERE upd > datetime('now', '-7 days')
-    `).first(),
+    `
+    ).first(),
 
-    env.BET_TICKER_RAW.list({ limit: 1000 })
+    env.BET_TICKER_RAW.list({ limit: 1000 }),
   ]);
 
   const stats = {
     lineMovements: {
-      last24Hours: normalizeD1First<CountResult>(lineMovements)?.count || 0
+      last24Hours: normalizeD1First<CountResult>(lineMovements)?.count || 0,
     },
     steamMoves: {
-      lastHour: normalizeD1First<CountResult>(steamMoves)?.count || 0
+      lastHour: normalizeD1First<CountResult>(steamMoves)?.count || 0,
     },
     customers: {
-      activeLastWeek: normalizeD1First<CountResult>(sharpCustomers)?.count || 0
+      activeLastWeek: normalizeD1First<CountResult>(sharpCustomers)?.count || 0,
     },
     storage: {
       kvRecords: kvRecords.keys.length,
-      kvSizeEstimate: `${(kvRecords.keys.length * 10 / 1024).toFixed(2)} KB`
+      kvSizeEstimate: `${((kvRecords.keys.length * 10) / 1024).toFixed(2)} KB`,
     },
     system: {
       version: '3.0.0',
       uptime: 'N/A (Cloudflare Workers)',
-      requestId
+      requestId,
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   console.log(`[${requestId}] ✅ System stats retrieved`);
 
   return createJSONResponse(stats);
 }
-

@@ -47,42 +47,22 @@ export class HedgeSignalGenerator {
   /**
    * Generate hedge signal from prediction and context
    */
-  async generate(
-    prediction: HoldPrediction,
-    context: HedgeContext
-  ): Promise<HedgeSignal> {
+  async generate(prediction: HoldPrediction, context: HedgeContext): Promise<HedgeSignal> {
     const predicted_hold = prediction.predicted_hold;
     const severity = this.classifySeverity(predicted_hold);
 
     // Calculate hedge parameters
-    const hedge_amount = this.calculateHedgeAmount(
-      predicted_hold,
-      context.current_exposure,
-      context.current_volume
-    );
+    const hedge_amount = this.calculateHedgeAmount(predicted_hold, context.current_exposure, context.current_volume);
 
     const hedge_side = this.determineHedgeSide(context);
     const hedge_odds = hedge_side === 'home' ? context.home_odds : context.away_odds;
 
-    const expected_pnl = this.calculateExpectedPnL(
-      predicted_hold,
-      context.current_volume,
-      hedge_amount
-    );
+    const expected_pnl = this.calculateExpectedPnL(predicted_hold, context.current_volume, hedge_amount);
 
-    const risk_level = this.calculateRiskLevel(
-      predicted_hold,
-      prediction.uncertainty_score,
-      context.current_exposure
-    );
+    const risk_level = this.calculateRiskLevel(predicted_hold, prediction.uncertainty_score, context.current_exposure);
 
     const recommended_action = this.determineAction(severity, prediction.uncertainty_score);
-    const reasoning = this.generateReasoning(
-      severity,
-      predicted_hold,
-      prediction.uncertainty_score,
-      risk_level
-    );
+    const reasoning = this.generateReasoning(severity, predicted_hold, prediction.uncertainty_score, risk_level);
 
     const signal: HedgeSignal = {
       severity,
@@ -102,13 +82,7 @@ export class HedgeSignalGenerator {
 
     // Log signal to audit trail
     this.env.ANALYTICS_ENGINE.writeDataPoint({
-      blobs: [
-        'hedge_signal',
-        'generated',
-        severity,
-        context.event_id,
-        JSON.stringify(signal),
-      ],
+      blobs: ['hedge_signal', 'generated', severity, context.event_id, JSON.stringify(signal)],
       doubles: [predicted_hold, hedge_amount, risk_level],
       indexes: [Date.now()],
     });
@@ -136,11 +110,7 @@ export class HedgeSignalGenerator {
   /**
    * Calculate recommended hedge amount
    */
-  private calculateHedgeAmount(
-    predicted_hold: number,
-    current_exposure: number,
-    current_volume: number
-  ): number {
+  private calculateHedgeAmount(predicted_hold: number, current_exposure: number, current_volume: number): number {
     if (predicted_hold >= 0) return 0;
 
     // Base hedge on predicted loss
@@ -174,11 +144,7 @@ export class HedgeSignalGenerator {
   /**
    * Calculate expected P&L after hedge
    */
-  private calculateExpectedPnL(
-    predicted_hold: number,
-    current_volume: number,
-    hedge_amount: number
-  ): number {
+  private calculateExpectedPnL(predicted_hold: number, current_volume: number, hedge_amount: number): number {
     const predicted_loss = (predicted_hold / 100) * current_volume;
     const hedge_benefit = hedge_amount * 0.5; // Assume 50% hedge effectiveness
     return predicted_loss + hedge_benefit;
@@ -187,11 +153,7 @@ export class HedgeSignalGenerator {
   /**
    * Calculate risk level (0-100)
    */
-  private calculateRiskLevel(
-    predicted_hold: number,
-    uncertainty_score: number,
-    current_exposure: number
-  ): number {
+  private calculateRiskLevel(predicted_hold: number, uncertainty_score: number, current_exposure: number): number {
     // Base risk on predicted hold (more negative = higher risk)
     let risk = Math.abs(predicted_hold) * 10; // Scale to 0-100
 
@@ -242,9 +204,7 @@ export class HedgeSignalGenerator {
     const parts: string[] = [];
 
     // Hold prediction
-    parts.push(
-      `Predicted hold is ${predicted_hold.toFixed(2)}% (${severity} severity)`
-    );
+    parts.push(`Predicted hold is ${predicted_hold.toFixed(2)}% (${severity} severity)`);
 
     // Uncertainty
     if (uncertainty_score > 0.5) {
@@ -275,11 +235,7 @@ export class HedgeSignalGenerator {
   async generateBatch(
     predictions: Array<{ prediction: HoldPrediction; context: HedgeContext }>
   ): Promise<HedgeSignal[]> {
-    const signals = await Promise.all(
-      predictions.map(({ prediction, context }) =>
-        this.generate(prediction, context)
-      )
-    );
+    const signals = await Promise.all(predictions.map(({ prediction, context }) => this.generate(prediction, context)));
 
     // Sort by severity
     const severityOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, NONE: 3 };

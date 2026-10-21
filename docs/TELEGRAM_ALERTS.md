@@ -1,6 +1,7 @@
 # 🔔 Telegram Alert System
 
-Real-time alerts for sharp customers, steam moves, and risk exposure delivered straight to your Telegram.
+Real-time alerts for sharp customers, steam moves, and risk exposure delivered
+straight to your Telegram.
 
 ## 🚀 Quick Start (2 minutes)
 
@@ -43,10 +44,12 @@ Check your Telegram for alerts!
 ### 🔪 Sharp Customer Detection
 
 **Triggers when:**
+
 - Sharp score ≥ 80 (configurable)
 - Customer shows professional betting patterns
 
 **Alert includes:**
+
 - Customer ID
 - Sharp score (0-100)
 - Classification (SHARP/RECREATIONAL/MONITOR)
@@ -57,6 +60,7 @@ Check your Telegram for alerts!
 - Recommended actions
 
 **Example:**
+
 ```
 🔪 SHARP CUSTOMER DETECTED
 
@@ -78,10 +82,12 @@ Check your Telegram for alerts!
 ### 🌊 Steam Move Detection
 
 **Triggers when:**
+
 - Steam move detected
 - Severity ≥ MEDIUM (configurable)
 
 **Alert includes:**
+
 - Game details (teams)
 - Line movement (points)
 - Volume spike (percentage)
@@ -90,6 +96,7 @@ Check your Telegram for alerts!
 - Recommended actions
 
 **Example:**
+
 ```
 🌊 STEAM MOVE DETECTED
 
@@ -109,10 +116,12 @@ Check your Telegram for alerts!
 ### ⚠️ Risk Exposure Alerts
 
 **Triggers when:**
+
 - Net exposure > $2,000 (configurable)
 - Risk level is MEDIUM or higher
 
 **Alert includes:**
+
 - Total exposure
 - Net exposure
 - Risk level
@@ -120,6 +129,7 @@ Check your Telegram for alerts!
 - Immediate actions
 
 **Example:**
+
 ```
 🔥 RISK EXPOSURE ALERT
 
@@ -140,15 +150,18 @@ Consider offsetting 50k on Lakers side
 ### 🏆 Agent Performance Alerts
 
 **Triggers when:**
+
 - Top agent weekly profit > $500 (configurable)
 
 **Alert includes:**
+
 - Top agent ID
 - Weekly profit
 - Risk score
 - Top 5 agents list
 
 **Example:**
+
 ```
 🏆 TOP AGENT ALERT
 
@@ -193,6 +206,7 @@ crontab -e
 ```
 
 Add:
+
 ```
 */2 * * * * /path/to/telegram-alerts.sh
 ```
@@ -218,6 +232,7 @@ sudo journalctl -u telegram-alerts.service -f
 ```
 
 **Benefits of systemd:**
+
 - Automatic restart on failure
 - Better logging (journalctl)
 - Resource limits
@@ -261,11 +276,13 @@ tail -20 /tmp/telegram-alerts.log
 ### No Alerts Received
 
 1. **Check bot token:**
+
    ```bash
    curl "https://api.telegram.org/bot<YOUR_TOKEN>/getMe"
    ```
 
 2. **Check chat ID:**
+
    ```bash
    curl "https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates"
    ```
@@ -280,6 +297,7 @@ tail -20 /tmp/telegram-alerts.log
 ### API Errors
 
 1. **Check API health:**
+
    ```bash
    curl https://fantasy402.com/api/ai/health
    ```
@@ -322,10 +340,10 @@ Edit `telegram-alerts.sh` and add a new function:
 ```bash
 check_custom_alert() {
   log "Checking custom alert..."
-  
+
   local data
   data=$(query_api "your custom query")
-  
+
   # Your logic here
   if [[ condition ]]; then
     local msg="🔔 <b>CUSTOM ALERT</b>
@@ -333,7 +351,7 @@ check_custom_alert() {
 Your message here
 
 ⏰ $(date +'%Y-%m-%d %H:%M:%S')"
-    
+
     send_telegram "$msg"
   fi
 }
@@ -353,7 +371,7 @@ main() {
 Telegram supports HTML formatting:
 
 - `<b>bold</b>` - **bold**
-- `<i>italic</i>` - *italic*
+- `<i>italic</i>` - _italic_
 - `<code>code</code>` - `code`
 - `<pre>preformatted</pre>` - preformatted
 - `<a href="url">link</a>` - link
@@ -399,7 +417,7 @@ if [[ -f "$LAST_ALERT_FILE" ]]; then
   last_time=$(cat "$LAST_ALERT_FILE")
   now=$(date +%s)
   diff=$((now - last_time))
-  
+
   # Only alert once per hour
   if (( diff < 3600 )); then
     log "Skipping alert for $cid (throttled)"
@@ -449,4 +467,3 @@ curl -X POST "https://api.telegram.org/bot$TG_BOT_TOKEN/sendMessage" \
 ## 📝 License
 
 Part of Betting-Brain v3 - See main LICENSE file.
-

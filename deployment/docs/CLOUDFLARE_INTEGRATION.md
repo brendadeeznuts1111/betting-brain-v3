@@ -1,29 +1,29 @@
 # Cloudflare Service Integration Reference
 
-**Version:** 1.0-cache-optimization
-**Last Updated:** 2025-10-08
-**Total Integrations:** 50 (46 bindings + 4 cron triggers)
+**Version:** 1.0-cache-optimization **Last Updated:** 2025-10-08 **Total
+Integrations:** 50 (46 bindings + 4 cron triggers)
 
 ---
 
 ## Integration Summary
 
-| Category | Development | Production | Total |
-|----------|-------------|------------|-------|
-| **D1 Databases** | 2 | 2 | 4 |
-| **KV Namespaces** | 10 | 10 | 20 |
-| **Queue Producers** | 5 | 5 | 10 |
-| **Queue Consumers** | 5 | 5 | 10 |
-| **Analytics Datasets** | 1 | 1 | 2 |
-| **Subtotal (Bindings)** | **23** | **23** | **46** |
-| **Cron Triggers** | - | - | **4** |
-| **GRAND TOTAL** | - | - | **50** |
+| Category                | Development | Production | Total  |
+| ----------------------- | ----------- | ---------- | ------ |
+| **D1 Databases**        | 2           | 2          | 4      |
+| **KV Namespaces**       | 10          | 10         | 20     |
+| **Queue Producers**     | 5           | 5          | 10     |
+| **Queue Consumers**     | 5           | 5          | 10     |
+| **Analytics Datasets**  | 1           | 1          | 2      |
+| **Subtotal (Bindings)** | **23**      | **23**     | **46** |
+| **Cron Triggers**       | -           | -          | **4**  |
+| **GRAND TOTAL**         | -           | -          | **50** |
 
 ---
 
 ## D1 Databases (4 total)
 
 ### Development (2)
+
 1. **ANALYTICS** (binding)
    - Database Name: `betting-analytics`
    - Database ID: `1fd6d6d3-7b0f-4488-a651-a234c61705b1`
@@ -38,9 +38,11 @@
    - Retention: Per-table TTL policies
 
 ### Production (2)
+
 Same bindings as development with identical IDs.
 
 **Configuration:**
+
 ```toml
 # wrangler.toml lines 11-22 (dev)
 # wrangler.toml lines 26-35 (prod)
@@ -57,6 +59,7 @@ database_id = "1b2e8ea8-a702-4cc7-9665-a8bea78b5dea"
 ```
 
 **TypeScript Usage:**
+
 ```typescript
 // From src/types/api.ts
 export interface Env {
@@ -67,7 +70,9 @@ export interface Env {
 // Query example
 const result = await env.ANALYTICS.prepare(
   'SELECT * FROM agent_graph WHERE agent_owner = ?'
-).bind(agentOwner).all();
+)
+  .bind(agentOwner)
+  .all();
 ```
 
 ---
@@ -75,6 +80,7 @@ const result = await env.ANALYTICS.prepare(
 ## KV Namespaces (20 total)
 
 ### Development (10)
+
 1. **FANTASY_CACHE** (primary)
    - ID: `e8ea80789b5246e58ea95798f04d0047`
    - Purpose: Agent hierarchy caching (v1.0 optimization)
@@ -120,9 +126,11 @@ const result = await env.ANALYTICS.prepare(
     - Purpose: Sports API response caching
 
 ### Production (10)
+
 Same 10 namespaces with identical IDs (no preview_id).
 
 **Configuration:**
+
 ```toml
 # wrangler.toml lines 194-237 (dev)
 # wrangler.toml lines 90-129 (prod)
@@ -132,6 +140,7 @@ id = "e8ea80789b5246e58ea95798f04d0047"
 ```
 
 **TypeScript Usage:**
+
 ```typescript
 // From src/types/api.ts
 export interface Env {
@@ -145,13 +154,13 @@ export interface Env {
 const cacheKeys = [
   `fantasy402:agents:by-owner:${agentOwner}`,
   `fantasy402:agents:by-agent:${agentID}`,
-  `fantasy402:agents:latest:${agentOwner}`
+  `fantasy402:agents:latest:${agentOwner}`,
 ].filter(Boolean);
 
 await Promise.all(
   cacheKeys.map(key =>
     env.FANTASY_CACHE.put(key, JSON.stringify(data), {
-      expirationTtl: 3600 // 1 hour
+      expirationTtl: 3600, // 1 hour
     })
   )
 );
@@ -168,6 +177,7 @@ const cached = await env.FANTASY_CACHE.get(
 ## Queues (20 total)
 
 ### Development Producers (5)
+
 1. **LINE_INGRESS**
    - Queue: `line-ingress`
    - Purpose: Line movement ingestion
@@ -189,6 +199,7 @@ const cached = await env.FANTASY_CACHE.get(
    - Purpose: Fantasy402 data ingestion (v1.0)
 
 ### Development Consumers (5)
+
 Same 5 queues with batch configuration:
 
 1. **line-ingress**
@@ -220,7 +231,9 @@ Same 5 queues with batch configuration:
    - Handler: `src/queues/fantasy402-logger.ts`
 
 ### Production (10)
+
 Same 5 producers + 5 consumers with `-prod` suffix:
+
 - `line-ingress-prod`
 - `steam-webhook-prod`
 - `steam-processor-prod`
@@ -228,6 +241,7 @@ Same 5 producers + 5 consumers with `-prod` suffix:
 - `fantasy402-logs-prod`
 
 **Configuration:**
+
 ```toml
 # wrangler.toml lines 130-178 (dev)
 # wrangler.toml lines 37-83 (prod)
@@ -243,6 +257,7 @@ max_retries = 5
 ```
 
 **TypeScript Usage:**
+
 ```typescript
 // From src/types/api.ts
 export interface Env {
@@ -257,7 +272,7 @@ export interface Env {
 await env.FANTASY402_QUEUE.send({
   timestamp: new Date().toISOString(),
   operation: 'getListAgenstByAgent',
-  data: agentData
+  data: agentData,
 });
 
 // Consumer handler
@@ -279,17 +294,20 @@ export async function processFantasy402Logs(
 ## Analytics Engine (2 total)
 
 ### Development (1)
+
 - **Binding:** `ANALYTICS_ENGINE`
 - **Dataset:** `betting-metrics`
 - **Retention:** 7 days
 - **Purpose:** Time-series metrics collection
 
 ### Production (1)
+
 - **Binding:** `ANALYTICS_ENGINE`
 - **Dataset:** `betting-metrics-prod`
 - **Retention:** 7 days
 
 **Configuration:**
+
 ```toml
 # wrangler.toml lines 188-191 (dev)
 # wrangler.toml lines 85-88 (prod)
@@ -300,6 +318,7 @@ retention_days = 7
 ```
 
 **TypeScript Usage:**
+
 ```typescript
 // From src/types/api.ts
 export interface Env {
@@ -310,7 +329,7 @@ export interface Env {
 env.ANALYTICS_ENGINE.writeDataPoint({
   blobs: ['cache-hit'],
   doubles: [1],
-  indexes: [`fantasy402:agents:by-owner:${agentOwner}`]
+  indexes: [`fantasy402:agents:by-owner:${agentOwner}`],
 });
 ```
 
@@ -318,30 +337,36 @@ env.ANALYTICS_ENGINE.writeDataPoint({
 
 ## Cron Triggers (4 total)
 
-**Note:** Cron triggers are not environment-specific (apply to all environments).
+**Note:** Cron triggers are not environment-specific (apply to all
+environments).
 
 ### 1. Hourly Sharp Calculation
+
 - **Schedule:** `0 * * * *` (every hour at :00)
 - **Handler:** `src/schedules/sharpCalc.ts`
 - **Purpose:** Calculate sharp customer indicators
 
 ### 2. Minute Exposure Calculation
+
 - **Schedule:** `* * * * *` (every minute)
 - **Handler:** `src/schedules/exposureCalc.ts`
 - **Purpose:** Exposure tracking (closest to 30s possible)
 - **Note:** 30s cron not supported by Cloudflare
 
 ### 3. Minute MCP Cache Warming
+
 - **Schedule:** `*/1 * * * *` (every minute)
 - **Handler:** `src/schedules/mcpCacheWarm.ts`
 - **Purpose:** Pre-warm cache for MCP queries
 
 ### 4. Daily Cleanup (3 AM UTC)
+
 - **Schedule:** `0 3 * * *` (daily at 3:00 AM UTC)
 - **Handler:** `src/schedules/dailyCleanup.ts`
 - **Purpose:** Cleanup old data + agent graph population
 
 **Configuration:**
+
 ```toml
 # wrangler.toml lines 180-186
 [triggers]
@@ -354,6 +379,7 @@ crons = [
 ```
 
 **TypeScript Usage:**
+
 ```typescript
 // From src/index.ts
 export default {
@@ -371,7 +397,7 @@ export default {
     } else if (cron === '0 3 * * *') {
       await handleDailyCleanup(env);
     }
-  }
+  },
 };
 ```
 
@@ -381,24 +407,26 @@ export default {
 
 ### Workers Paid Plan Limits
 
-| Resource | Limit | Current Usage | Headroom |
-|----------|-------|---------------|----------|
-| **CPU Time** | 50ms per request | ~5-10ms avg | 80-90% |
-| **KV Storage** | 1 GB | ~500 KB (0.05%) | 99.95% |
-| **KV Reads** | 10M/day | ~50K/day (0.5%) | 99.5% |
-| **KV Writes** | 1M/day | ~5K/day (0.5%) | 99.5% |
-| **D1 Rows Read** | Unlimited | - | - |
-| **D1 Rows Written** | Unlimited | - | - |
-| **Queue Messages** | Unlimited | - | - |
-| **Analytics Data Points** | Unlimited | - | - |
+| Resource                  | Limit            | Current Usage   | Headroom |
+| ------------------------- | ---------------- | --------------- | -------- |
+| **CPU Time**              | 50ms per request | ~5-10ms avg     | 80-90%   |
+| **KV Storage**            | 1 GB             | ~500 KB (0.05%) | 99.95%   |
+| **KV Reads**              | 10M/day          | ~50K/day (0.5%) | 99.5%    |
+| **KV Writes**             | 1M/day           | ~5K/day (0.5%)  | 99.5%    |
+| **D1 Rows Read**          | Unlimited        | -               | -        |
+| **D1 Rows Written**       | Unlimited        | -               | -        |
+| **Queue Messages**        | Unlimited        | -               | -        |
+| **Analytics Data Points** | Unlimited        | -               | -        |
 
 ### Optimization Impact (v1.0)
 
 **Before v1.0:**
+
 - KV writes: ~50K/day (5% quota)
 - D1 writes: ~30K/day
 
 **After v1.0:**
+
 - KV writes: ~5K/day (0.5% quota) - **90% reduction**
 - D1 writes: ~2K/day - **93.3% reduction**
 
@@ -469,10 +497,10 @@ When adding new Cloudflare services:
 - **[wrangler.toml](../../wrangler.toml)** - Configuration file
 - **[src/types/api.ts](../../src/types/api.ts)** - TypeScript interfaces
 - **[PRODUCTION_CONFIG.md](./PRODUCTION_CONFIG.md)** - Production setup
-- **[Cloudflare Docs](https://developers.cloudflare.com/workers/)** - Official documentation
+- **[Cloudflare Docs](https://developers.cloudflare.com/workers/)** - Official
+  documentation
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-10-08
-**Maintained By:** Betting-Brain Team
+**Document Version:** 1.0 **Last Updated:** 2025-10-08 **Maintained By:**
+Betting-Brain Team

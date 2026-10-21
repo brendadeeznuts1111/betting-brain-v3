@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Update Cursor Rules Versioning
- * 
+ *
  * Automatically updates versioning metadata for all .cursor/rules/*.mdc files
  */
 

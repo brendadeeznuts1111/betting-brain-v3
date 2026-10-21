@@ -18,32 +18,30 @@ class Linter {
 
   async runLinting(): Promise<void> {
     console.log('🔍 Starting linting process...');
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
 
     // TypeScript files
     await this.lintTypeScriptFiles();
-    
+
     // JavaScript files
     await this.lintJavaScriptFiles();
-    
+
     // JSON files
     await this.lintJsonFiles();
-    
+
     // Generate report
     this.generateReport();
   }
 
   private async lintTypeScriptFiles(): Promise<void> {
     console.log('\n📝 Linting TypeScript files...');
-    
+
     const glob = new Bun.Glob('**/*.ts');
     const tsFiles: string[] = [];
-    
+
     for await (const file of glob.scan('.')) {
       // Skip ignored directories
-      if (file.includes('node_modules/') || 
-          file.includes('dist/') || 
-          file.includes('coverage/')) {
+      if (file.includes('node_modules/') || file.includes('dist/') || file.includes('coverage/')) {
         continue;
       }
       tsFiles.push(file);
@@ -56,15 +54,13 @@ class Linter {
 
   private async lintJavaScriptFiles(): Promise<void> {
     console.log('\n📝 Linting JavaScript files...');
-    
+
     const glob = new Bun.Glob('**/*.js');
     const jsFiles: string[] = [];
-    
+
     for await (const file of glob.scan('.')) {
       // Skip ignored directories
-      if (file.includes('node_modules/') || 
-          file.includes('dist/') || 
-          file.includes('coverage/')) {
+      if (file.includes('node_modules/') || file.includes('dist/') || file.includes('coverage/')) {
         continue;
       }
       jsFiles.push(file);
@@ -77,17 +73,19 @@ class Linter {
 
   private async lintJsonFiles(): Promise<void> {
     console.log('\n📝 Linting JSON files...');
-    
+
     const glob = new Bun.Glob('**/*.json');
     const jsonFiles: string[] = [];
-    
+
     for await (const file of glob.scan('.')) {
       // Skip ignored directories and files
-      if (file.includes('node_modules/') || 
-          file.includes('dist/') || 
-          file.includes('coverage/') ||
-          file.includes('package-lock.json') ||
-          file.includes('bun.lock')) {
+      if (
+        file.includes('node_modules/') ||
+        file.includes('dist/') ||
+        file.includes('coverage/') ||
+        file.includes('package-lock.json') ||
+        file.includes('bun.lock')
+      ) {
         continue;
       }
       jsonFiles.push(file);
@@ -102,7 +100,7 @@ class Linter {
     try {
       const result = await this.runLinter(file, type);
       this.results.push(result);
-      
+
       if (result.status === 'pass') {
         console.log(`✅ ${file}`);
       } else if (result.status === 'fail') {
@@ -119,7 +117,7 @@ class Linter {
         file,
         status: 'fail',
         errors: [error instanceof Error ? error.message : 'Unknown error'],
-        warnings: []
+        warnings: [],
       });
     }
   }
@@ -145,14 +143,14 @@ class Linter {
         file,
         status: errors.length > 0 ? 'fail' : 'pass',
         errors,
-        warnings
+        warnings,
       };
     } catch (error) {
       return {
         file,
         status: 'fail',
         errors: [error instanceof Error ? error.message : 'Unknown error'],
-        warnings
+        warnings,
       };
     }
   }
@@ -160,16 +158,16 @@ class Linter {
   private async lintTypeScript(file: string, errors: string[], warnings: string[]): Promise<void> {
     // Basic TypeScript linting
     const content = await Bun.file(file).text();
-    
+
     // Check for common issues
     if (content.includes('any')) {
       warnings.push('Use of "any" type detected');
     }
-    
+
     if (content.includes('console.log') && !file.includes('test')) {
       warnings.push('console.log found in non-test file');
     }
-    
+
     if (content.includes('TODO') || content.includes('FIXME')) {
       warnings.push('TODO/FIXME comment found');
     }
@@ -178,16 +176,16 @@ class Linter {
   private async lintJavaScript(file: string, errors: string[], warnings: string[]): Promise<void> {
     // Basic JavaScript linting
     const content = await Bun.file(file).text();
-    
+
     // Check for common issues
     if (content.includes('var ')) {
       errors.push('Use "let" or "const" instead of "var"');
     }
-    
+
     if (content.includes('==') && !content.includes('===')) {
       warnings.push('Use strict equality (===) instead of loose equality (==)');
     }
-    
+
     if (content.includes('eval(')) {
       errors.push('eval() usage detected - security risk');
     }
@@ -203,9 +201,9 @@ class Linter {
   }
 
   private generateReport(): void {
-    console.log('\n' + '=' .repeat(50));
+    console.log('\n' + '='.repeat(50));
     console.log('📊 LINTING REPORT');
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
 
     const passed = this.results.filter(r => r.status === 'pass').length;
     const failed = this.results.filter(r => r.status === 'fail').length;
@@ -228,11 +226,18 @@ class Linter {
 
     // Save report
     const reportPath = join(process.cwd(), 'lint-report.json');
-    Bun.write(reportPath, JSON.stringify({
-      timestamp: new Date().toISOString(),
-      summary: { passed, failed, skipped, total },
-      results: this.results
-    }, null, 2));
+    Bun.write(
+      reportPath,
+      JSON.stringify(
+        {
+          timestamp: new Date().toISOString(),
+          summary: { passed, failed, skipped, total },
+          results: this.results,
+        },
+        null,
+        2
+      )
+    );
 
     console.log(`\n💾 Detailed report saved to: ${reportPath}`);
 

@@ -3,7 +3,7 @@
  * Tests error handling in getBettingExposure, getSharpScore, and getHoldPercentage
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import { getBettingExposure } from '../../src/tools/intelligence/getBettingExposure';
 import { getSharpScore } from '../../src/tools/intelligence/getSharpScore';
 import { getHoldPercentage } from '../../src/tools/intelligence/getHoldPercentage';
@@ -148,7 +148,9 @@ describe('Intelligence Tools Error Paths', () => {
     });
 
     test('should handle extremely large timeWindow', async () => {
-      const request = new Request(`https://test.com/api/betting-exposure?eid=event-1&timeWindow=${Number.MAX_SAFE_INTEGER}`);
+      const request = new Request(
+        `https://test.com/api/betting-exposure?eid=event-1&timeWindow=${Number.MAX_SAFE_INTEGER}`
+      );
       const response = await getBettingExposure(request, mockEnv);
 
       // Returns 400 for validation error
@@ -166,11 +168,11 @@ describe('Intelligence Tools Error Paths', () => {
     test('should handle database timeout', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          all: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Query timeout')), 100)
-            )
-          ),
+          all: vi
+            .fn()
+            .mockImplementation(
+              () => new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 100))
+            ),
         }),
       });
 
@@ -182,13 +184,12 @@ describe('Intelligence Tools Error Paths', () => {
 
     test('should handle rate limit exceeded', async () => {
       // Make many rapid requests to trigger rate limit
-      const requests = Array.from({ length: 20 }, () =>
-        new Request('https://test.com/api/betting-exposure?eid=event-1')
+      const requests = Array.from(
+        { length: 20 },
+        () => new Request('https://test.com/api/betting-exposure?eid=event-1')
       );
 
-      const responses = await Promise.all(
-        requests.map(req => getBettingExposure(req, mockEnv))
-      );
+      const responses = await Promise.all(requests.map(req => getBettingExposure(req, mockEnv)));
 
       // Rate limiting is bypassed in test environment
       // All responses should be successful (200) or not found (404)
@@ -390,11 +391,11 @@ describe('Intelligence Tools Error Paths', () => {
     test('should handle database connection timeout', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Connection timeout')), 100)
-            )
-          ),
+          first: vi
+            .fn()
+            .mockImplementation(
+              () => new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 100))
+            ),
         }),
       });
 
@@ -469,9 +470,7 @@ describe('Intelligence Tools Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { vb: null, va: null, lb: -3.5, la: -4.0 },
-            ],
+            results: [{ vb: null, va: null, lb: -3.5, la: -4.0 }],
           }),
         }),
       });
@@ -507,9 +506,7 @@ describe('Intelligence Tools Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { vb: -1000, va: -500, lb: -3.5, la: -4.0 },
-            ],
+            results: [{ vb: -1000, va: -500, lb: -3.5, la: -4.0 }],
           }),
         }),
       });
@@ -596,11 +593,9 @@ describe('Intelligence Tools Error Paths', () => {
     test('should handle database timeout', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          all: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          ),
+          all: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
         }),
       });
 
@@ -622,9 +617,7 @@ describe('Intelligence Tools Error Paths', () => {
             ao: 100,
           }),
           all: vi.fn().mockResolvedValue({
-            results: [
-              { side: 'HOME', risk: 1000, net: 500 },
-            ],
+            results: [{ side: 'HOME', risk: 1000, net: 500 }],
           }),
         }),
       });

@@ -145,12 +145,8 @@ export class SlackNotifier {
   /**
    * Send model training update
    */
-  async sendModelUpdate(
-    r_squared: number,
-    std_error: number,
-    samples: number
-  ): Promise<boolean> {
-    const quality = r_squared >= 0.85 ? '✅ Excellent' : r_squared >= 0.70 ? '⚠️ Good' : '❌ Poor';
+  async sendModelUpdate(r_squared: number, std_error: number, samples: number): Promise<boolean> {
+    const quality = r_squared >= 0.85 ? '✅ Excellent' : r_squared >= 0.7 ? '⚠️ Good' : '❌ Poor';
 
     const message: SlackMessage = {
       text: '🤖 Model Training Complete',

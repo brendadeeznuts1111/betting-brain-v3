@@ -8,11 +8,7 @@ import { MCPToolResult } from '../types';
 
 export async function getEnhancedSharpScore(args: Record<string, any>, env: Env): Promise<MCPToolResult> {
   try {
-    const {
-      cid,
-      lookbackDays = 30,
-      includeFeatures = true,
-    } = args;
+    const { cid, lookbackDays = 30, includeFeatures = true } = args;
 
     if (!cid) {
       throw new Error('Customer ID (cid) is required');
@@ -37,10 +33,14 @@ export async function getEnhancedSharpScore(args: Record<string, any>, env: Env)
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              error: 'Customer not found',
-              cid,
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                error: 'Customer not found',
+                cid,
+              },
+              null,
+              2
+            ),
           },
         ],
         isError: true,
@@ -102,52 +102,60 @@ export async function getEnhancedSharpScore(args: Record<string, any>, env: Env)
     // Feature Engineering: Calculate normalized features (0-100 scale)
     const features = {
       // Core metrics (40 points)
-      clv_score: Math.min(Math.max((Number(baseMetrics.clv) || 0) / 1000 * 50, 0), 20), // 0-20 points
+      clv_score: Math.min(Math.max(((Number(baseMetrics.clv) || 0) / 1000) * 50, 0), 20), // 0-20 points
       win_rate_score: Math.min(Math.max(((Number(baseMetrics.wr) || 50) - 50) * 0.3, 0), 15), // 0-15 points
       volume_score: Math.min(Math.max((Number(baseMetrics.ao) || 0) / 20, 0), 5), // 0-5 points
 
       // Advanced metrics (60 points)
-      steam_correlation: steamData && Number(steamData.significant_moves) > 0
-        ? Math.min((Number(steamData.significant_moves) / Number(steamData.total_line_movements)) * 15, 15)
-        : 0, // 0-15 points
+      steam_correlation:
+        steamData && Number(steamData.significant_moves) > 0
+          ? Math.min((Number(steamData.significant_moves) / Number(steamData.total_line_movements)) * 15, 15)
+          : 0, // 0-15 points
 
-      timing_score: timingData && Number(timingData.early_bets) > 0
-        ? Math.min((Number(timingData.early_bets) / Number(timingData.total_bets)) * 15, 15)
-        : 0, // 0-15 points (early betting is sharp)
+      timing_score:
+        timingData && Number(timingData.early_bets) > 0
+          ? Math.min((Number(timingData.early_bets) / Number(timingData.total_bets)) * 15, 15)
+          : 0, // 0-15 points (early betting is sharp)
 
-      sizing_consistency: sizingData && Number(sizingData.avg_stake) > 0
-        ? Math.min((1 - ((Number(sizingData.max_stake) - Number(sizingData.min_stake)) / Number(sizingData.avg_stake))) * 15, 15)
-        : 0, // 0-15 points (consistent sizing)
+      sizing_consistency:
+        sizingData && Number(sizingData.avg_stake) > 0
+          ? Math.min(
+              (1 - (Number(sizingData.max_stake) - Number(sizingData.min_stake)) / Number(sizingData.avg_stake)) * 15,
+              15
+            )
+          : 0, // 0-15 points (consistent sizing)
 
-      market_diversity: diversityData && Number(diversityData.unique_markets) > 0
-        ? Math.min((Number(diversityData.unique_markets) / 10) * 15, 15)
-        : 0, // 0-15 points (sharps know multiple markets)
+      market_diversity:
+        diversityData && Number(diversityData.unique_markets) > 0
+          ? Math.min((Number(diversityData.unique_markets) / 10) * 15, 15)
+          : 0, // 0-15 points (sharps know multiple markets)
     };
 
     // Calculate composite score (0-100)
     const compositeScore = Math.round(
       features.clv_score +
-      features.win_rate_score +
-      features.volume_score +
-      features.steam_correlation +
-      features.timing_score +
-      features.sizing_consistency +
-      features.market_diversity
+        features.win_rate_score +
+        features.volume_score +
+        features.steam_correlation +
+        features.timing_score +
+        features.sizing_consistency +
+        features.market_diversity
     );
 
     // Classification thresholds
     const classification =
-      compositeScore >= 75 ? 'PROFESSIONAL_SHARP' :
-      compositeScore >= 60 ? 'ADVANCED_SHARP' :
-      compositeScore >= 45 ? 'INTERMEDIATE_SHARP' :
-      compositeScore >= 30 ? 'CASUAL_SHARP' :
-      'RECREATIONAL';
+      compositeScore >= 75
+        ? 'PROFESSIONAL_SHARP'
+        : compositeScore >= 60
+          ? 'ADVANCED_SHARP'
+          : compositeScore >= 45
+            ? 'INTERMEDIATE_SHARP'
+            : compositeScore >= 30
+              ? 'CASUAL_SHARP'
+              : 'RECREATIONAL';
 
     const riskLevel =
-      compositeScore >= 75 ? 'CRITICAL' :
-      compositeScore >= 60 ? 'HIGH' :
-      compositeScore >= 45 ? 'MEDIUM' :
-      'LOW';
+      compositeScore >= 75 ? 'CRITICAL' : compositeScore >= 60 ? 'HIGH' : compositeScore >= 45 ? 'MEDIUM' : 'LOW';
 
     const response: any = {
       customer_id: cid,
@@ -216,11 +224,7 @@ export async function getEnhancedSharpScore(args: Record<string, any>, env: Env)
 /**
  * Generate actionable recommendations based on sharp score
  */
-function generateRecommendations(
-  score: number,
-  classification: string,
-  features: Record<string, number>
-): string[] {
+function generateRecommendations(score: number, classification: string, features: Record<string, number>): string[] {
   const recommendations: string[] = [];
 
   if (score >= 75) {

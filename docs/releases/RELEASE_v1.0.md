@@ -1,16 +1,18 @@
 # 🚀 Betting-Brain v1.0 Release Notes
 
-**Release Date:** 2025-10-08
-**Status:** Production Ready ✅
-**Tag:** `v1.0-cache-optimization`
+**Release Date:** 2025-10-08 **Status:** Production Ready ✅ **Tag:**
+`v1.0-cache-optimization`
 
 ---
 
 ## 🎯 Release Highlights
 
-This release delivers a **self-warming, interactive, exportable Fantasy402 mission-control** with enterprise-grade caching and real-time visualization capabilities.
+This release delivers a **self-warming, interactive, exportable Fantasy402
+mission-control** with enterprise-grade caching and real-time visualization
+capabilities.
 
 ### Key Achievements
+
 - ✅ **90%+ cache hit rate** (down from 0%)
 - ✅ **93.3% D1 write reduction** (hash-based change detection)
 - ✅ **Interactive D3.js agent tree** visualization
@@ -23,45 +25,50 @@ This release delivers a **self-warming, interactive, exportable Fantasy402 missi
 ## 📊 Performance Benchmarks
 
 ### Cache Performance (Baseline)
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Cache Hit Rate** | 90.0% | 🟢 Excellent |
+
+| Metric                 | Value | Status       |
+| ---------------------- | ----- | ------------ |
+| **Cache Hit Rate**     | 90.0% | 🟢 Excellent |
 | **D1 Write Reduction** | 93.3% | 🟢 Excellent |
-| **Total Requests** | 150 | Baseline |
-| **Cache Hits** | 135 | Consistent |
-| **Cache Misses** | 15 | Cold starts |
-| **D1 Writes Skipped** | 140 | Hash matches |
-| **D1 Writes Executed** | 10 | Data changes |
+| **Total Requests**     | 150   | Baseline     |
+| **Cache Hits**         | 135   | Consistent   |
+| **Cache Misses**       | 15    | Cold starts  |
+| **D1 Writes Skipped**  | 140   | Hash matches |
+| **D1 Writes Executed** | 10    | Data changes |
 
 ### Cache Warming Performance
-| Operation | Duration | Throughput |
-|-----------|----------|------------|
-| **D1 Query** | ~100ms/owner | - |
-| **KV Write** | ~50ms (parallel) | - |
-| **Total Warm** | ~450ms | 333 agents/sec |
-| **Agents Warmed** | 150 | 20 owners |
-| **Lists Cached** | 20 | 3 keys/owner |
+
+| Operation         | Duration         | Throughput     |
+| ----------------- | ---------------- | -------------- |
+| **D1 Query**      | ~100ms/owner     | -              |
+| **KV Write**      | ~50ms (parallel) | -              |
+| **Total Warm**    | ~450ms           | 333 agents/sec |
+| **Agents Warmed** | 150              | 20 owners      |
+| **Lists Cached**  | 20               | 3 keys/owner   |
 
 ### UI Rendering Performance
-| Component | Initial Render | Update |
-|-----------|---------------|---------|
-| **ASCII Tree** | <10ms | Instant |
-| **D3 Tree** | ~50ms | ~30ms |
-| **Cache Metrics** | <5ms | Instant |
-| **Export JSON** | <10ms | Instant |
-| **Export CSV** | ~20ms | Formatting |
+
+| Component         | Initial Render | Update     |
+| ----------------- | -------------- | ---------- |
+| **ASCII Tree**    | <10ms          | Instant    |
+| **D3 Tree**       | ~50ms          | ~30ms      |
+| **Cache Metrics** | <5ms           | Instant    |
+| **Export JSON**   | <10ms          | Instant    |
+| **Export CSV**    | ~20ms          | Formatting |
 
 ---
 
 ## ✨ New Features
 
 ### 1. Smart Cache Layer
+
 - **Multi-key indexing**: 3 lookup patterns per agent hierarchy
 - **Hash-based change detection**: Skip D1 writes when data unchanged
 - **Individual agent indexing**: Fast lookups by agent ID
 - **1-hour TTL**: Safe during iteration, adjustable to 24h in production
 
 **Cache Keys:**
+
 ```
 fantasy402:agents:by-owner:{OWNER}     # Primary lookup
 fantasy402:agents:by-agent:{AGENT_ID}  # Secondary lookup
@@ -72,18 +79,21 @@ fantasy402:agentTree:{OWNER}           # Dashboard tree data
 ```
 
 ### 2. Interactive Agent Tree
+
 - **ASCII view**: Classic terminal-style tree
 - **D3.js view**: Collapsible, clickable, color-coded
 - **Toggle buttons**: Switch views seamlessly
 - **Metadata display**: Agent type, request count, hierarchy level
 
 **D3 Features:**
+
 - Click to collapse/expand nodes
 - Color-coded: 🟢 Parents (green), 🔵 Leaves (blue)
 - Horizontal layout (optimized for wide hierarchies)
 - SVG-based (scalable, performant)
 
 ### 3. Cache Warming
+
 - **API Endpoint**: `POST /api/f402/cache/warm`
 - **Dashboard Button**: One-click manual warming
 - **D1 → KV**: Populates cache from database
@@ -91,18 +101,21 @@ fantasy402:agentTree:{OWNER}           # Dashboard tree data
 - **Auto-refresh**: Dashboard updates after warming
 
 **Use Cases:**
+
 - Server restart/deployment
 - Cold start recovery
 - Pre-warming before traffic spikes
 - Testing cache hit rates
 
 ### 4. Metric Exports
+
 - **JSON Export**: Full metrics object with raw data
 - **CSV Export**: Spreadsheet-ready format
 - **Timestamped Filenames**: `cache-metrics-2025-10-08T12-00-00-000Z.{json,csv}`
 - **One-click Downloads**: Client-side blob generation
 
 **CSV Format:**
+
 ```csv
 Metric,Value
 Total Requests,150
@@ -116,6 +129,7 @@ D1 Write Reduction (%),93.3
 ```
 
 ### 5. Secure Ingest Endpoint
+
 - **X-Extension-Secret Header**: Required for `/api/fantasy402/ingest`
 - **401 Unauthorized**: Returns error if secret missing/invalid
 - **Configurable Secret**: `env.EXTENSION_SECRET` in `wrangler.toml`
@@ -126,6 +140,7 @@ D1 Write Reduction (%),93.3
 ## 🛠️ Technical Changes
 
 ### Backend (Worker)
+
 1. **Cache Metrics Tracking** (`src/api/fantasy402-ingest.ts`)
    - Increments KV counters for hits/misses/writes
    - Tracks D1 write reduction
@@ -152,6 +167,7 @@ D1 Write Reduction (%),93.3
    - Logs unauthorized attempts
 
 ### Frontend (Dashboard)
+
 1. **D3.js Integration** (`dashboards/floor-control.html`)
    - 780 lines total (including all features)
    - Collapsible tree rendering
@@ -176,25 +192,27 @@ D1 Write Reduction (%),93.3
 
 ## 📡 New API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/f402/cache/metrics` | GET | Cache performance metrics |
-| `/api/f402/agents/tree?owner=X` | GET | Agent hierarchy tree |
-| `/api/f402/agents/list?owner=X` | GET | Flat agent list (cached) |
-| `/api/f402/agents/{agentID}` | GET | Individual agent details |
-| `/api/f402/cache/warm` | POST | Warm cache from D1 |
+| Endpoint                        | Method | Description               |
+| ------------------------------- | ------ | ------------------------- |
+| `/api/f402/cache/metrics`       | GET    | Cache performance metrics |
+| `/api/f402/agents/tree?owner=X` | GET    | Agent hierarchy tree      |
+| `/api/f402/agents/list?owner=X` | GET    | Flat agent list (cached)  |
+| `/api/f402/agents/{agentID}`    | GET    | Individual agent details  |
+| `/api/f402/cache/warm`          | POST   | Warm cache from D1        |
 
 ---
 
 ## 🔧 Configuration Changes
 
 ### wrangler.toml
+
 ```toml
 [vars]
 EXTENSION_SECRET = "default-dev-secret-change-me"  # ⚠️ CHANGE IN PRODUCTION
 ```
 
 ### KV TTLs (Iteration Phase)
+
 ```typescript
 agent_lists:       3600s (1 hour)  // Was: 86400s (24h)
 individual_agents: 3600s (1 hour)  // Was: 86400s (24h)
@@ -209,6 +227,7 @@ metrics:           604800s (7 days) // Unchanged
 ## 🚀 Deployment Checklist
 
 ### Pre-Deployment
+
 - [x] All tests passing
 - [x] TypeScript compilation clean
 - [x] Security gates passing (0 blocking violations)
@@ -217,6 +236,7 @@ metrics:           604800s (7 days) // Unchanged
 - [x] TTLs set to 1 hour (safe during iteration)
 
 ### Deployment Steps
+
 ```bash
 # 1. Tag the release
 git add -A
@@ -242,6 +262,7 @@ open https://YOUR-DASHBOARD.pages.dev/floor-control.html
 ```
 
 ### Post-Deployment
+
 - [ ] Monitor cache hit rate (expect 90%+)
 - [ ] Check D1 write reduction (expect 93%+)
 - [ ] Test agent tree visualization (both views)
@@ -253,11 +274,13 @@ open https://YOUR-DASHBOARD.pages.dev/floor-control.html
 ## 📖 Documentation Updates
 
 ### New Documentation
+
 - `RELEASE_v1.0.md` - This file
 - Cache warming guide added to README
 - Export functionality documented
 
 ### Updated Documentation
+
 - `CLAUDE.md` - Added cache optimization section
 - `README.md` - Updated with new endpoints
 - `docs/DASHBOARD_API_STATUS.md` - New endpoints documented
@@ -267,14 +290,17 @@ open https://YOUR-DASHBOARD.pages.dev/floor-control.html
 ## 🐛 Bug Fixes
 
 ### Security
+
 - **Fixed:** Ingest endpoint was publicly accessible
 - **Solution:** Added X-Extension-Secret header validation
 
 ### Performance
+
 - **Fixed:** Duplicate agent list writes on every login
 - **Solution:** Hash-based change detection (93% write reduction)
 
 ### UI
+
 - **Fixed:** Dashboard showed stale agent data
 - **Solution:** Real-time cache metrics + manual warming button
 
@@ -283,24 +309,27 @@ open https://YOUR-DASHBOARD.pages.dev/floor-control.html
 ## ⚠️ Breaking Changes
 
 ### Extension Header Required
+
 **Impact:** Browser extension must send `X-Extension-Secret` header
 
 **Before:**
+
 ```javascript
 fetch('/api/fantasy402/ingest', {
   method: 'POST',
-  body: JSON.stringify(data)
+  body: JSON.stringify(data),
 });
 ```
 
 **After:**
+
 ```javascript
 fetch('/api/fantasy402/ingest', {
   method: 'POST',
   headers: {
-    'X-Extension-Secret': 'your-secret-here'
+    'X-Extension-Secret': 'your-secret-here',
   },
-  body: JSON.stringify(data)
+  body: JSON.stringify(data),
 });
 ```
 
@@ -311,20 +340,24 @@ fetch('/api/fantasy402/ingest', {
 ## 🔮 Future Enhancements (Not in v1.0)
 
 ### Automated Cache Warming
+
 ```toml
 [triggers]
 crons = ["0 */6 * * *"]  # Every 6 hours
 ```
 
 ### Cache Staleness Monitoring
+
 - Dashboard card showing last warm time
 - Alert when cache hit rate drops below 80%
 
 ### Agent Performance Integration
+
 - Per-agent PNL in tree view
 - Color-code agents by profitability
 
 ### Deep Linking
+
 - `?owner=BILLY666` URL parameter (✅ already works!)
 - Bookmark specific hierarchies
 
@@ -344,18 +377,21 @@ wrangler deployments list
 wrangler rollback <deployment-id>
 ```
 
-**Known Good Baseline:** `security-gate-v1` (0 blocking violations, 154 TS errors)
+**Known Good Baseline:** `security-gate-v1` (0 blocking violations, 154 TS
+errors)
 
 ---
 
 ## 🙏 Acknowledgments
 
 ### Performance Improvements
+
 - **Cache hit rate**: 0% → 90% (infinite improvement)
 - **D1 write load**: 100% → 6.7% (93.3% reduction)
 - **Dashboard interactivity**: ASCII only → ASCII + D3 interactive
 
 ### Developer Experience
+
 - One-click cache warming
 - Visual tree exploration
 - Metric exports for analysis
@@ -366,10 +402,12 @@ wrangler rollback <deployment-id>
 ## 📞 Support
 
 ### Issues & Bugs
+
 - GitHub Issues: https://github.com/your-org/betting-brain/issues
 - Tag: `v1.0-cache-optimization`
 
 ### Documentation
+
 - README: See root `README.md`
 - CLAUDE.md: See root `CLAUDE.md`
 - API Docs: See `docs/` directory
@@ -378,11 +416,11 @@ wrangler rollback <deployment-id>
 
 ## ✅ v1.0 Sign-Off
 
-**Release Manager:** Claude
-**Date:** 2025-10-08
-**Status:** ✅ APPROVED FOR PRODUCTION
+**Release Manager:** Claude **Date:** 2025-10-08 **Status:** ✅ APPROVED FOR
+PRODUCTION
 
 **Final Checklist:**
+
 - [x] Security: Ingest route locked with secret
 - [x] Performance: 90%+ cache hit rate achieved
 - [x] UX: D3 tree, exports, and warming all functional
@@ -394,6 +432,4 @@ wrangler rollback <deployment-id>
 
 ---
 
-*Generated: 2025-10-08*
-*Version: 1.0.0*
-*Codename: Cache Optimization*
+_Generated: 2025-10-08_ _Version: 1.0.0_ _Codename: Cache Optimization_

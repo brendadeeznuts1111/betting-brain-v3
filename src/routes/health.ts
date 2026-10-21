@@ -25,8 +25,6 @@ export async function dnsHealth(req: Request, env: Env): Promise<Response> {
 
   console.log(`[${requestId}] 🔍 DNS health check for: ${host}`);
 
-
-
   try {
     const result = await resolveHost(host);
 
@@ -79,8 +77,6 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
   const url = new URL(req.url);
   const hostsParam = url.searchParams.get('hosts');
 
-
-
   if (!hostsParam) {
     return new Response(
       JSON.stringify({
@@ -95,7 +91,10 @@ export async function dnsBatchHealth(req: Request, env: Env): Promise<Response> 
     );
   }
 
-  const hosts = hostsParam.split(',').map((h) => h.trim()).filter(Boolean);
+  const hosts = hostsParam
+    .split(',')
+    .map(h => h.trim())
+    .filter(Boolean);
 
   if (hosts.length === 0) {
     return new Response(

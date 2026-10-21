@@ -1,6 +1,6 @@
 /**
  * 🧠 Betting-Brain v3 - Main Entry Point
- * 
+ *
  * Edge-native betting intelligence layer with zero-downtime deployment
  * Runs entirely on Cloudflare Edge (D1, Workers, Queues, Analytics Engine)
  */
@@ -31,7 +31,7 @@ import {
   handleDiagnostics,
   handleLogs,
   handleSystemStatus,
-  handleInterceptorAPI
+  handleInterceptorAPI,
 } from './routes/handlers';
 
 // See .cursor/rules/endpoint-routing.mdc for routing patterns
@@ -54,7 +54,7 @@ export default {
       console.log(`[${requestId}] ✅ OPTIONS preflight request`);
       return new Response(null, {
         status: 204,
-        headers: CORS_HEADERS
+        headers: CORS_HEADERS,
       });
     }
 
@@ -68,18 +68,21 @@ export default {
     if (url.pathname === '/health') {
       console.log(`[${requestId}] 💚 Health check`);
       const duration = Date.now() - startTime;
-      return new Response(JSON.stringify({
-        status: 'healthy',
-        version: '3.0.0',
-        timestamp: new Date(Date.now()).toISOString(),
-        requestId,
-        duration: `${duration}ms`,
-      }), {
-        headers: {
-          ...CORS_HEADERS,
-          'Content-Type': 'application/json',
+      return new Response(
+        JSON.stringify({
+          status: 'healthy',
+          version: '3.0.0',
+          timestamp: new Date(Date.now()).toISOString(),
+          requestId,
+          duration: `${duration}ms`,
+        }),
+        {
+          headers: {
+            ...CORS_HEADERS,
+            'Content-Type': 'application/json',
+          },
         }
-      });
+      );
     }
 
     // Floor status endpoint
@@ -120,7 +123,15 @@ export default {
       console.log(`[${requestId}] 📝 Extension logs received`);
 
       try {
-        const body = await request.json() as { logs?: Array<{ level?: string; timestamp?: string | number; message?: string; url?: string; extensionId?: string }> };
+        const body = (await request.json()) as {
+          logs?: Array<{
+            level?: string;
+            timestamp?: string | number;
+            message?: string;
+            url?: string;
+            extensionId?: string;
+          }>;
+        };
         const sessionId = request.headers.get('X-Session-ID') || 'unknown';
         const extensionId = request.headers.get('X-Extension-ID') || 'unknown';
 
@@ -131,16 +142,21 @@ export default {
         if (body.logs && body.logs.length > 0) {
           body.logs.forEach((log, index) => {
             const level = log.level?.toUpperCase() || 'LOG';
-            const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'UTC' });
+            const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              timeZone: 'UTC',
+            });
             const message = log.message || 'No message';
 
             // Color code by level
             const levelEmojiMap: Record<string, string> = {
-              'ERROR': '❌',
-              'WARN': '⚠️',
-              'INFO': 'ℹ️',
-              'DEBUG': '🔍',
-              'LOG': '📝'
+              ERROR: '❌',
+              WARN: '⚠️',
+              INFO: 'ℹ️',
+              DEBUG: '🔍',
+              LOG: '📝',
             };
             const levelEmoji = levelEmojiMap[level] || '📝';
 
@@ -151,36 +167,41 @@ export default {
               console.log(`[${requestId}] 📍 Log details:`, {
                 url: log.url,
                 domain: log.url ? new URL(log.url).hostname : 'unknown',
-                extensionId: log.extensionId
+                extensionId: log.extensionId,
               });
             }
           });
         }
 
-        return new Response(JSON.stringify({
-          status: 'received',
-          sessionId,
-          logCount: body.logs?.length || 0,
-          timestamp: new Date(Date.now()).toISOString()
-        }), {
-          headers: {
-            ...CORS_HEADERS,
-            'Content-Type': 'application/json'
+        return new Response(
+          JSON.stringify({
+            status: 'received',
+            sessionId,
+            logCount: body.logs?.length || 0,
+            timestamp: new Date(Date.now()).toISOString(),
+          }),
+          {
+            headers: {
+              ...CORS_HEADERS,
+              'Content-Type': 'application/json',
+            },
           }
-        });
-
+        );
       } catch (error) {
         console.error(`[${requestId}] ❌ Log processing error:`, error);
-        return new Response(JSON.stringify({
-          error: 'Invalid log data',
-          message: error instanceof Error ? error.message : 'Unknown error'
-        }), {
-          status: 400,
-          headers: {
-            ...CORS_HEADERS,
-            'Content-Type': 'application/json'
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid log data',
+            message: error instanceof Error ? error.message : 'Unknown error',
+          }),
+          {
+            status: 400,
+            headers: {
+              ...CORS_HEADERS,
+              'Content-Type': 'application/json',
+            },
           }
-        });
+        );
       }
     }
 
@@ -189,14 +210,17 @@ export default {
       console.log(`[${requestId}] 🎯 BetTicker endpoint detected`);
       if (!env.BET_TICKER_RAW) {
         console.error(`[${requestId}] ❌ BET_TICKER_RAW not configured!`);
-        return new Response(JSON.stringify({
-          error: 'BetTicker interception not configured',
-          hint: 'Add BET_TICKER_RAW KV namespace to wrangler.toml',
-          requestId,
-        }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' }
-        });
+        return new Response(
+          JSON.stringify({
+            error: 'BetTicker interception not configured',
+            hint: 'Add BET_TICKER_RAW KV namespace to wrangler.toml',
+            requestId,
+          }),
+          {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       }
       return handleBetTickerInterception(request, env as BetTickerSnifferEnv, ctx);
     }
@@ -213,33 +237,36 @@ export default {
 
       // GET request → return tools list (convenience for dashboard)
       if (request.method === 'GET') {
-        return new Response(JSON.stringify({
-          protocol: 'MCP',
-          version: '1.0',
-          toolsCount: 13,
-          tools: [
-            'getBettingExposure',
-            'getCLV',
-            'getHoldPercentage',
-            'getSharpScore',
-            'getSteamMoves',
-            'getRiskConcentration',
-            'getSharpActivity',
-            'getTimeSeriesCLV',
-            'getEnhancedSharpScore',
-            'getHoldForecast',
-            'getHandleAndHold',
-            'getCustomerVolume',
-            'getTimeSeriesAnalytics'
-          ],
-          timestamp: new Date(Date.now()).toISOString(),
-          requestId
-        }), {
-          headers: {
-            ...CORS_HEADERS,
-            'Content-Type': 'application/json'
+        return new Response(
+          JSON.stringify({
+            protocol: 'MCP',
+            version: '1.0',
+            toolsCount: 13,
+            tools: [
+              'getBettingExposure',
+              'getCLV',
+              'getHoldPercentage',
+              'getSharpScore',
+              'getSteamMoves',
+              'getRiskConcentration',
+              'getSharpActivity',
+              'getTimeSeriesCLV',
+              'getEnhancedSharpScore',
+              'getHoldForecast',
+              'getHandleAndHold',
+              'getCustomerVolume',
+              'getTimeSeriesAnalytics',
+            ],
+            timestamp: new Date(Date.now()).toISOString(),
+            requestId,
+          }),
+          {
+            headers: {
+              ...CORS_HEADERS,
+              'Content-Type': 'application/json',
+            },
           }
-        });
+        );
       }
 
       // POST request → full JSON-RPC 2.0 protocol
@@ -247,14 +274,17 @@ export default {
         return await handleMCPRequest(request, env as MCPEnv);
       } catch (error) {
         console.error(`[${requestId}] ❌ MCP request error:`, error);
-        return new Response(JSON.stringify({
-          error: 'MCP request failed',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          requestId,
-        }), {
-          status: 500,
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-        });
+        return new Response(
+          JSON.stringify({
+            error: 'MCP request failed',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            requestId,
+          }),
+          {
+            status: 500,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+          }
+        );
       }
     }
 
@@ -292,7 +322,6 @@ export default {
       console.log(`[${requestId}] 🔍 AI Query`);
       return handleAIQuery(request, env);
     }
-
 
     // AI Chat endpoint
     if (url.pathname === '/api/ai/chat' && request.method === 'POST') {
@@ -333,10 +362,13 @@ export default {
     // Default response
     console.log(`[${requestId}] ℹ️  Default response (no route matched)`);
     const duration = Date.now() - startTime;
-    return new Response(`Betting-Brain v3 - Edge Intelligence Layer\nRequest ID: ${requestId}\nDuration: ${duration}ms`, {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain' }
-    });
+    return new Response(
+      `Betting-Brain v3 - Edge Intelligence Layer\nRequest ID: ${requestId}\nDuration: ${duration}ms`,
+      {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      }
+    );
   },
 
   // Queue consumers
@@ -393,5 +425,5 @@ export default {
       const { populateAgentGraph } = await import('./schedules/populateGraph');
       await populateAgentGraph(env, ctx);
     }
-  }
+  },
 };

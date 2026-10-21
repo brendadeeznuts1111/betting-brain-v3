@@ -8,7 +8,8 @@
 
 ## 🎯 Overview
 
-This guide covers the **fully automated versioning system** for cursor rules, including the version bump script, CI/CD integration, and team workflow.
+This guide covers the **fully automated versioning system** for cursor rules,
+including the version bump script, CI/CD integration, and team workflow.
 
 ---
 
@@ -19,6 +20,7 @@ This guide covers the **fully automated versioning system** for cursor rules, in
 **File:** `scripts/bump-version.sh`
 
 **Features:**
+
 - ✅ **Automated Version Calculation**: Handles MAJOR.MINOR.PATCH incrementing
 - ✅ **File Update**: Automatically updates `.cursorrules` version
 - ✅ **Git Integration**: Creates commit and tag automatically
@@ -26,6 +28,7 @@ This guide covers the **fully automated versioning system** for cursor rules, in
 - ✅ **Cross-Platform**: Works on macOS and Linux
 
 **Usage:**
+
 ```bash
 # Make script executable (one-time setup)
 chmod +x scripts/bump-version.sh
@@ -45,6 +48,7 @@ chmod +x scripts/bump-version.sh
 **File:** `.github/workflows/rules_version_check.yml`
 
 **Features:**
+
 - ✅ **Path-Based Triggering**: Only runs when `.cursorrules` is modified
 - ✅ **Version Comparison**: Compares old vs new versions automatically
 - ✅ **Automated Validation**: Fails if version not incremented
@@ -55,6 +59,7 @@ chmod +x scripts/bump-version.sh
 **File:** `.github/pull_request_template.md`
 
 **Features:**
+
 - ✅ **Style Guide Rules Update Section**: Dedicated versioning section
 - ✅ **Version Tracking**: Old/New version comparison
 - ✅ **Change Type Classification**: MAJOR/MINOR/PATCH identification
@@ -67,6 +72,7 @@ chmod +x scripts/bump-version.sh
 ### **Developer Workflow**
 
 #### **Step 1: Make Changes**
+
 ```bash
 # Edit the .cursorrules file
 code .cursorrules
@@ -75,6 +81,7 @@ code .cursorrules
 ```
 
 #### **Step 2: Determine Change Type**
+
 ```bash
 # PATCH: Small fixes, typos, documentation
 # MINOR: New features, enhancements (backward compatible)
@@ -82,6 +89,7 @@ code .cursorrules
 ```
 
 #### **Step 3: Run Version Bump Script**
+
 ```bash
 # For a patch change
 ./scripts/bump-version.sh patch "fix(rules): Corrected typo in regex"
@@ -94,6 +102,7 @@ code .cursorrules
 ```
 
 **Script Output:**
+
 ```bash
 Current version: 4.0.0
 New version:     4.1.0
@@ -102,6 +111,7 @@ New version:     4.1.0
 ```
 
 #### **Step 4: Push and Create PR**
+
 ```bash
 # Push changes and tags
 git push origin <your-branch-name> --tags
@@ -111,6 +121,7 @@ git push origin <your-branch-name> --tags
 ```
 
 #### **Step 5: CI Validation**
+
 - ✅ **Automated Check**: CI runs only if `.cursorrules` modified
 - ✅ **Version Validation**: Compares old vs new versions
 - ✅ **Success/Error**: Clear feedback on version increment
@@ -120,18 +131,21 @@ git push origin <your-branch-name> --tags
 ## 📊 Automation Benefits
 
 ### **1. Developer Experience**
+
 - ✅ **One Command**: Single script handles version bump, commit, and tag
 - ✅ **Error Prevention**: Script validates inputs and prevents mistakes
 - ✅ **Clear Feedback**: Success/error messages guide the process
 - ✅ **Cross-Platform**: Works on macOS and Linux
 
 ### **2. Team Consistency**
+
 - ✅ **Standardized Process**: Everyone uses the same script
 - ✅ **Automated Validation**: CI ensures compliance
 - ✅ **Clear Documentation**: Step-by-step process guide
 - ✅ **Quality Assurance**: Automated checks prevent mistakes
 
 ### **3. Professional Output**
+
 - ✅ **Semantic Versioning**: Industry-standard versioning
 - ✅ **Git Tags**: Immutable version records
 - ✅ **Changelog Integration**: Automated changelog entries
@@ -144,6 +158,7 @@ git push origin <your-branch-name> --tags
 ### **Version Bump Script Features**
 
 #### **Input Validation**
+
 ```bash
 if [ -z "$VERSION_TYPE" ] || [ -z "$COMMIT_MESSAGE" ]; then
   echo "❌ Error: Missing arguments."
@@ -153,6 +168,7 @@ fi
 ```
 
 #### **Version Calculation**
+
 ```bash
 case "$VERSION_TYPE" in
   major)
@@ -171,6 +187,7 @@ esac
 ```
 
 #### **File Update**
+
 ```bash
 # Update version in .cursorrules file
 sed -i.bak "s/^version: $CURRENT_VERSION/version: $NEW_VERSION/" $RULES_FILE
@@ -178,6 +195,7 @@ rm "${RULES_FILE}.bak"
 ```
 
 #### **Git Integration**
+
 ```bash
 # Commit and tag
 git add $RULES_FILE
@@ -190,6 +208,7 @@ git tag "v$NEW_VERSION"
 ## 🎯 Usage Examples
 
 ### **Example 1: Patch Change**
+
 ```bash
 # Current version: 4.0.0
 ./scripts/bump-version.sh patch "fix(rules): Corrected typo in regex"
@@ -202,6 +221,7 @@ git tag "v$NEW_VERSION"
 ```
 
 ### **Example 2: Minor Change**
+
 ```bash
 # Current version: 4.0.1
 ./scripts/bump-version.sh minor "feat(rules): Add new rules for async/await"
@@ -214,6 +234,7 @@ git tag "v$NEW_VERSION"
 ```
 
 ### **Example 3: Major Change**
+
 ```bash
 # Current version: 4.1.0
 ./scripts/bump-version.sh major "feat(rules): Restructure rule organization"
@@ -232,6 +253,7 @@ git tag "v$NEW_VERSION"
 ### **Common Errors and Solutions**
 
 #### **Missing Arguments**
+
 ```bash
 ./scripts/bump-version.sh
 # ❌ Error: Missing arguments.
@@ -239,18 +261,21 @@ git tag "v$NEW_VERSION"
 ```
 
 #### **Invalid Version Type**
+
 ```bash
 ./scripts/bump-version.sh invalid "test message"
 # ❌ Error: Invalid version type 'invalid'. Use 'major', 'minor', or 'patch'.
 ```
 
 #### **Version Not Found**
+
 ```bash
 # If .cursorrules doesn't have version field
 # ❌ Error: Could not find version in .cursorrules.
 ```
 
 #### **Git Issues**
+
 ```bash
 # If not in a git repository
 # git: 'add' is not a git command
@@ -261,7 +286,8 @@ git tag "v$NEW_VERSION"
 ## 📚 Related Documentation
 
 - **[Version Bump Script](scripts/bump-version.sh)** - Automation script
-- **[CI Workflow](.github/workflows/rules_version_check.yml)** - Automated validation
+- **[CI Workflow](.github/workflows/rules_version_check.yml)** - Automated
+  validation
 - **[PR Template](.github/pull_request_template.md)** - Enhanced with versioning
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Team workflow guide
 - **[Versioning Guide](../CURSOR_RULES_VERSIONING.md)** - SemVer guidelines
@@ -271,6 +297,7 @@ git tag "v$NEW_VERSION"
 ## 🎯 Quick Reference
 
 ### **Script Usage**
+
 ```bash
 # Make executable (one-time)
 chmod +x scripts/bump-version.sh
@@ -285,6 +312,7 @@ chmod +x scripts/bump-version.sh
 ```
 
 ### **Complete Workflow**
+
 ```bash
 1. Edit .cursorrules file
 2. Determine change type (PATCH/MINOR/MAJOR)
@@ -300,6 +328,8 @@ chmod +x scripts/bump-version.sh
 **Automation Level:** Full  
 **Version:** 4.1.0  
 **Team Adoption:** ✅ Ready  
-**Documentation:** ✅ Comprehensive  
+**Documentation:** ✅ Comprehensive
 
-The cursor rules system now has **full automation** with version bump scripts, CI/CD integration, and comprehensive team documentation. Every developer can easily maintain versioned rules with a single command.
+The cursor rules system now has **full automation** with version bump scripts,
+CI/CD integration, and comprehensive team documentation. Every developer can
+easily maintain versioned rules with a single command.

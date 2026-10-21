@@ -8,18 +8,23 @@
 ---
 
 **Metadata:**
-- **Total Endpoints:** 9 REST API endpoints + 4 intelligence tools + 13 MCP tools = 26 total
+
+- **Total Endpoints:** 9 REST API endpoints + 4 intelligence tools + 13 MCP
+  tools = 26 total
 - **Authentication:** None required (add auth in production)
 - **Rate Limiting:** 10 req/s per IP (Cloudflare Workers)
 - **Topics:** #api #rest #documentation #endpoints
 - **Audience:** Developers, Integrators
-- **Related Docs:** [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md), [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)
+- **Related Docs:** [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md),
+  [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)
 
 ---
 
 ## 📊 API Overview
 
-The Betting-Brain v3 REST API provides easy-to-use endpoints for betting intelligence, analytics, and system monitoring. All endpoints return JSON and support CORS.
+The Betting-Brain v3 REST API provides easy-to-use endpoints for betting
+intelligence, analytics, and system monitoring. All endpoints return JSON and
+support CORS.
 
 ### Endpoint Categories
 
@@ -33,12 +38,14 @@ The Betting-Brain v3 REST API provides easy-to-use endpoints for betting intelli
 ## 🔐 Authentication & Security
 
 ### Current State
+
 - ✅ **CORS Enabled:** All endpoints support cross-origin requests
 - ✅ **Input Validation:** Comprehensive validation on all endpoints
 - ✅ **Error Handling:** Standardized error responses
 - ⚠️ **No Authentication:** Add API keys or JWT tokens for production
 
 ### Recommended for Production
+
 ```typescript
 // Add to request headers:
 {
@@ -62,18 +69,21 @@ All REST API endpoints are prefixed with `/api/` and return JSON.
 Get all active events with recent line movements.
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `sport` | string | No | - | Filter by sport (NFL, NBA, MLB, NHL, etc.) |
-| `limit` | number | No | 100 | Max results (1-500) |
-| `offset` | number | No | 0 | Pagination offset |
+
+| Parameter | Type   | Required | Default | Description                                |
+| --------- | ------ | -------- | ------- | ------------------------------------------ |
+| `sport`   | string | No       | -       | Filter by sport (NFL, NBA, MLB, NHL, etc.) |
+| `limit`   | number | No       | 100     | Max results (1-500)                        |
+| `offset`  | number | No       | 0       | Pagination offset                          |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/events?sport=NFL&limit=50"
 ```
 
 **Example Response:**
+
 ```json
 {
   "events": [
@@ -98,19 +108,22 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/events?sport=NFL
 Get current betting exposure metrics by event, market, or customer.
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `agentID` | string | **Yes** | - | Agent ID (e.g., "DEMO") |
-| `eventID` | string | No | - | Specific event ID |
-| `sport` | string | No | - | Filter by sport |
-| `exposureLevel` | string | No | - | Filter: LOW, MEDIUM, HIGH, CRITICAL |
+
+| Parameter       | Type   | Required | Default | Description                         |
+| --------------- | ------ | -------- | ------- | ----------------------------------- |
+| `agentID`       | string | **Yes**  | -       | Agent ID (e.g., "DEMO")             |
+| `eventID`       | string | No       | -       | Specific event ID                   |
+| `sport`         | string | No       | -       | Filter by sport                     |
+| `exposureLevel` | string | No       | -       | Filter: LOW, MEDIUM, HIGH, CRITICAL |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/exposure?agentID=DEMO&exposureLevel=HIGH"
 ```
 
 **Example Response:**
+
 ```json
 {
   "agentID": "DEMO",
@@ -140,18 +153,21 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/exposure?agentID
 Get list of customers with high sharp scores.
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `agentID` | string | **Yes** | - | Agent ID |
-| `threshold` | number | No | 60 | Minimum sharp score (0-100) |
-| `limit` | number | No | 50 | Max results (1-100) |
+
+| Parameter   | Type   | Required | Default | Description                 |
+| ----------- | ------ | -------- | ------- | --------------------------- |
+| `agentID`   | string | **Yes**  | -       | Agent ID                    |
+| `threshold` | number | No       | 60      | Minimum sharp score (0-100) |
+| `limit`     | number | No       | 50      | Max results (1-100)         |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/sharp-customers?agentID=DEMO&threshold=70"
 ```
 
 **Example Response:**
+
 ```json
 {
   "agentID": "DEMO",
@@ -178,18 +194,21 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/sharp-customers?
 Get recent rapid line movements (steam moves).
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `eventID` | string | No | - | Filter by event |
-| `marketType` | string | No | - | Filter by market (MONEYLINE, SPREAD, TOTAL) |
-| `limit` | number | No | 50 | Max results (1-100) |
+
+| Parameter    | Type   | Required | Default | Description                                 |
+| ------------ | ------ | -------- | ------- | ------------------------------------------- |
+| `eventID`    | string | No       | -       | Filter by event                             |
+| `marketType` | string | No       | -       | Filter by market (MONEYLINE, SPREAD, TOTAL) |
+| `limit`      | number | No       | 50      | Max results (1-100)                         |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/steam-moves?limit=20"
 ```
 
 **Example Response:**
+
 ```json
 {
   "steamMoves": [
@@ -212,20 +231,23 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/steam-moves?limi
 Get Closing Line Value analysis for customers.
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `agentID` | string | **Yes** | - | Agent ID |
-| `customerID` | string | No | - | Specific customer |
-| `startDate` | string | No | - | Start date (YYYY-MM-DD) |
-| `endDate` | string | No | - | End date (YYYY-MM-DD) |
-| `threshold` | number | No | -2.0 | CLV threshold (%) |
+
+| Parameter    | Type   | Required | Default | Description             |
+| ------------ | ------ | -------- | ------- | ----------------------- |
+| `agentID`    | string | **Yes**  | -       | Agent ID                |
+| `customerID` | string | No       | -       | Specific customer       |
+| `startDate`  | string | No       | -       | Start date (YYYY-MM-DD) |
+| `endDate`    | string | No       | -       | End date (YYYY-MM-DD)   |
+| `threshold`  | number | No       | -2.0    | CLV threshold (%)       |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/clv?agentID=DEMO&startDate=2025-10-01&endDate=2025-10-07"
 ```
 
 **Example Response:**
+
 ```json
 {
   "agentID": "DEMO",
@@ -255,20 +277,23 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/clv?agentID=DEMO
 Get hold percentage and volume metrics by market.
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `agentID` | string | **Yes** | - | Agent ID |
-| `eventID` | string | No | - | Specific event |
-| `marketType` | string | **Yes** | - | Market type (required) |
-| `startDate` | string | No | - | Start date (YYYY-MM-DD) |
-| `endDate` | string | No | - | End date (YYYY-MM-DD) |
+
+| Parameter    | Type   | Required | Default | Description             |
+| ------------ | ------ | -------- | ------- | ----------------------- |
+| `agentID`    | string | **Yes**  | -       | Agent ID                |
+| `eventID`    | string | No       | -       | Specific event          |
+| `marketType` | string | **Yes**  | -       | Market type (required)  |
+| `startDate`  | string | No       | -       | Start date (YYYY-MM-DD) |
+| `endDate`    | string | No       | -       | End date (YYYY-MM-DD)   |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/hold?agentID=DEMO&marketType=SPREAD"
 ```
 
 **Example Response:**
+
 ```json
 {
   "agentID": "DEMO",
@@ -289,17 +314,20 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/hold?agentID=DEM
 Get list of markets with activity.
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `eventID` | string | No | - | Filter by event |
-| `marketType` | string | No | - | Filter by market type |
+
+| Parameter    | Type   | Required | Default | Description           |
+| ------------ | ------ | -------- | ------- | --------------------- |
+| `eventID`    | string | No       | -       | Filter by event       |
+| `marketType` | string | No       | -       | Filter by market type |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/markets?eventID=nfl_2024_wk5_chiefs_vs_49ers"
 ```
 
 **Example Response:**
+
 ```json
 {
   "markets": [
@@ -327,17 +355,20 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/markets?eventID=
 Get customer analytics and metrics.
 
 **Query Parameters:**
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `agentID` | string | **Yes** | - | Agent ID |
-| `limit` | number | No | 100 | Max results (1-500) |
+
+| Parameter | Type   | Required | Default | Description         |
+| --------- | ------ | -------- | ------- | ------------------- |
+| `agentID` | string | **Yes**  | -       | Agent ID            |
+| `limit`   | number | No       | 100     | Max results (1-500) |
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/customers?agentID=DEMO&limit=50"
 ```
 
 **Example Response:**
+
 ```json
 {
   "customers": [
@@ -366,11 +397,13 @@ Get system-wide statistics and health metrics.
 **No Parameters Required**
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/api/stats"
 ```
 
 **Example Response:**
+
 ```json
 {
   "lineMovements": {
@@ -410,6 +443,7 @@ Direct access to intelligence tool endpoints (also accessible via MCP).
 See [MCP_ENDPOINTS.md](MCP_ENDPOINTS.md#getbettingexposure) for full details.
 
 **Request Body:**
+
 ```json
 {
   "agentID": "DEMO",
@@ -450,10 +484,7 @@ All endpoints return standardized error responses.
   "code": "VALIDATION_ERROR",
   "message": "Validation failed",
   "details": {
-    "errors": [
-      "agentID is required",
-      "limit must be at most 500"
-    ]
+    "errors": ["agentID is required", "limit must be at most 500"]
   },
   "requestId": "abc123",
   "timestamp": "2025-10-07T14:45:00.000Z",
@@ -463,18 +494,18 @@ All endpoints return standardized error responses.
 
 ### Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `BAD_REQUEST` | 400 | Invalid request format |
-| `VALIDATION_ERROR` | 400 | Input validation failed |
-| `UNAUTHORIZED` | 401 | Authentication required |
-| `FORBIDDEN` | 403 | Access denied |
-| `NOT_FOUND` | 404 | Resource not found |
-| `RATE_LIMIT` | 429 | Too many requests |
-| `INTERNAL_ERROR` | 500 | Internal server error |
-| `DATABASE_ERROR` | 500 | Database query failed |
-| `SERVICE_UNAVAILABLE` | 503 | Service temporarily unavailable |
-| `TIMEOUT` | 504 | Request timeout |
+| Code                  | HTTP Status | Description                     |
+| --------------------- | ----------- | ------------------------------- |
+| `BAD_REQUEST`         | 400         | Invalid request format          |
+| `VALIDATION_ERROR`    | 400         | Input validation failed         |
+| `UNAUTHORIZED`        | 401         | Authentication required         |
+| `FORBIDDEN`           | 403         | Access denied                   |
+| `NOT_FOUND`           | 404         | Resource not found              |
+| `RATE_LIMIT`          | 429         | Too many requests               |
+| `INTERNAL_ERROR`      | 500         | Internal server error           |
+| `DATABASE_ERROR`      | 500         | Database query failed           |
+| `SERVICE_UNAVAILABLE` | 503         | Service temporarily unavailable |
+| `TIMEOUT`             | 504         | Request timeout                 |
 
 ---
 
@@ -500,11 +531,13 @@ All successful responses include:
 **Current:** 10 requests/second per IP (in-memory, per-worker instance)
 
 **Recommended for Production:**
+
 - Implement Cloudflare Durable Objects for distributed rate limiting
 - Add API key-based rate limiting
 - Different limits for different tiers
 
 **Rate Limit Headers** (future):
+
 ```
 X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 999
@@ -518,33 +551,40 @@ X-RateLimit-Reset: 1696723456
 ### Common Validations
 
 **agentID:**
+
 - Required: Yes (most endpoints)
 - Type: string
 - Format: Alphanumeric, underscores, hyphens
 - Length: 1-100 characters
 
 **eventID:**
+
 - Required: No (optional filter)
 - Type: string
 - Length: 1-100 characters
 
 **marketType:**
+
 - Required: Varies by endpoint
 - Type: string
 - Enum: `MONEYLINE`, `SPREAD`, `TOTAL`, `PROP`, `FUTURE`, `PARLAY`
 
 **sport:**
+
 - Required: No
 - Type: string
-- Enum: `NFL`, `NBA`, `MLB`, `NHL`, `NCAAF`, `NCAAB`, `SOCCER`, `MMA`, `BOXING`, `TENNIS`, `GOLF`
+- Enum: `NFL`, `NBA`, `MLB`, `NHL`, `NCAAF`, `NCAAB`, `SOCCER`, `MMA`, `BOXING`,
+  `TENNIS`, `GOLF`
 
 **limit:**
+
 - Required: No
 - Type: number
 - Range: 1-500 (some endpoints: 1-1000)
 - Default: Varies by endpoint
 
 **dates:**
+
 - Required: No
 - Type: string
 - Format: `YYYY-MM-DD`
@@ -554,9 +594,12 @@ X-RateLimit-Reset: 1696723456
 
 ## 📚 Related Documentation
 
-- **[MCP_ENDPOINTS.md](MCP_ENDPOINTS.md)** - Complete MCP API reference (13 tools)
-- **[ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)** - Dashboard integration guide
-- **[MCP_VERIFICATION_REPORT.md](MCP_VERIFICATION_REPORT.md)** - MCP verification results
+- **[MCP_ENDPOINTS.md](MCP_ENDPOINTS.md)** - Complete MCP API reference (13
+  tools)
+- **[ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)** -
+  Dashboard integration guide
+- **[MCP_VERIFICATION_REPORT.md](MCP_VERIFICATION_REPORT.md)** - MCP
+  verification results
 - **[SRC_DIRECTORY_REVIEW.md](SRC_DIRECTORY_REVIEW.md)** - Codebase analysis
 
 ---
@@ -585,16 +628,17 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/api/stats
 const API_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
 
 // Get events
-const events = await fetch(`${API_URL}/api/events?sport=NFL&limit=50`)
-  .then(r => r.json());
+const events = await fetch(`${API_URL}/api/events?sport=NFL&limit=50`).then(r =>
+  r.json()
+);
 
 // Get sharp customers
-const sharpCustomers = await fetch(`${API_URL}/api/sharp-customers?agentID=DEMO&threshold=70`)
-  .then(r => r.json());
+const sharpCustomers = await fetch(
+  `${API_URL}/api/sharp-customers?agentID=DEMO&threshold=70`
+).then(r => r.json());
 
 // Get system stats
-const stats = await fetch(`${API_URL}/api/stats`)
-  .then(r => r.json());
+const stats = await fetch(`${API_URL}/api/stats`).then(r => r.json());
 ```
 
 ### Using Python
@@ -624,16 +668,16 @@ stats = requests.get(f'{API_URL}/api/stats').json()
 
 ## ✅ API Status
 
-| Category | Status | Endpoints |
-|----------|--------|-----------|
-| **REST API** | ✅ Complete | 9 endpoints |
-| **Intelligence Tools** | ✅ Complete | 4 endpoints |
-| **MCP Protocol** | ✅ Complete | 13 tools |
-| **System** | ✅ Complete | 3 endpoints |
-| **Validation** | ✅ Comprehensive | All endpoints |
-| **Error Handling** | ✅ Standardized | All endpoints |
-| **CORS** | ✅ Enabled | All endpoints |
-| **Documentation** | ✅ Complete | This document |
+| Category               | Status           | Endpoints     |
+| ---------------------- | ---------------- | ------------- |
+| **REST API**           | ✅ Complete      | 9 endpoints   |
+| **Intelligence Tools** | ✅ Complete      | 4 endpoints   |
+| **MCP Protocol**       | ✅ Complete      | 13 tools      |
+| **System**             | ✅ Complete      | 3 endpoints   |
+| **Validation**         | ✅ Comprehensive | All endpoints |
+| **Error Handling**     | ✅ Standardized  | All endpoints |
+| **CORS**               | ✅ Enabled       | All endpoints |
+| **Documentation**      | ✅ Complete      | This document |
 
 ---
 
@@ -645,4 +689,3 @@ stats = requests.get(f'{API_URL}/api/stats').json()
 **Generated:** 2025-10-07  
 **Maintainer:** Betting-Brain Team  
 **API Version:** 3.0.0
-

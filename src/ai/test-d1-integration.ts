@@ -15,13 +15,17 @@ export async function testD1SharpAnalysis(env: Env): Promise<void> {
 
   // 1. Query customer data from D1
   const customerId = 'CUST_TEST_001';
-  
-  const customer = await env.ANALYTICS.prepare(`
+
+  const customer = await env.ANALYTICS.prepare(
+    `
     SELECT cid, clv, wr, ao, nb, upd
     FROM sharp_indicators
     WHERE cid = ?
     LIMIT 1
-  `).bind(customerId).first<CustomerData>();
+  `
+  )
+    .bind(customerId)
+    .first<CustomerData>();
 
   if (!customer) {
     console.log('⚠️  No customer data found in D1, using mock data');
@@ -33,7 +37,7 @@ export async function testD1SharpAnalysis(env: Env): Promise<void> {
       ao: 189,
       nb: 8950,
     };
-    
+
     await analyzeCustomer(mockCustomer, env);
     return;
   }
@@ -47,7 +51,7 @@ export async function testD1SharpAnalysis(env: Env): Promise<void> {
 async function analyzeCustomer(customer: CustomerData, env: Env): Promise<void> {
   // 2. Initialize AI analyzer
   const apiKey = env.KIMI_API_KEY || process.env.KIMI_API_KEY || '';
-  
+
   if (!apiKey || apiKey === 'sk-placeholder-use-dotenv-or-secrets') {
     console.error('❌ KIMI_API_KEY not configured');
     console.error('   Set KIMI_API_KEY in .env or wrangler.toml');
@@ -79,13 +83,17 @@ export async function testD1SteamDetection(env: Env): Promise<void> {
   const eventId = 'NBA_TEST_EVENT';
   const marketType = 'SPREAD';
 
-  const lineMovement = await env.ANALYTICS.prepare(`
+  const lineMovement = await env.ANALYTICS.prepare(
+    `
     SELECT eid, mt, lb, la, vb, va, ts
     FROM line_movements
     WHERE eid = ? AND mt = ?
     ORDER BY ts DESC
     LIMIT 1
-  `).bind(eventId, marketType).first<LineMovementData>();
+  `
+  )
+    .bind(eventId, marketType)
+    .first<LineMovementData>();
 
   if (!lineMovement) {
     console.log('⚠️  No line movement data found in D1, using mock data');
@@ -98,7 +106,7 @@ export async function testD1SteamDetection(env: Env): Promise<void> {
       va: 320000,
       ts: new Date().toISOString(),
     };
-    
+
     await analyzeLineMovement(mockLineMovement, env);
     return;
   }
@@ -112,7 +120,7 @@ export async function testD1SteamDetection(env: Env): Promise<void> {
 
 async function analyzeLineMovement(lineMovement: LineMovementData, env: Env): Promise<void> {
   const apiKey = env.KIMI_API_KEY || process.env.KIMI_API_KEY || '';
-  
+
   if (!apiKey || apiKey === 'sk-placeholder-use-dotenv-or-secrets') {
     console.error('❌ KIMI_API_KEY not configured');
     return;
@@ -140,11 +148,15 @@ export async function testD1RiskReport(env: Env): Promise<void> {
   // 1. Query exposure data from D1
   const eventId = 'NBA_TEST_EVENT';
 
-  const exposureData = await env.ANALYTICS.prepare(`
+  const exposureData = await env.ANALYTICS.prepare(
+    `
     SELECT eid, side, risk, net, ts
     FROM exposure_tracking
     WHERE eid = ?
-  `).bind(eventId).all<ExposureData>();
+  `
+  )
+    .bind(eventId)
+    .all<ExposureData>();
 
   if (!exposureData.results || exposureData.results.length === 0) {
     console.log('⚠️  No exposure data found in D1, using mock data');
@@ -164,7 +176,7 @@ export async function testD1RiskReport(env: Env): Promise<void> {
         ts: new Date().toISOString(),
       },
     ];
-    
+
     await analyzeRisk(mockExposure, env);
     return;
   }
@@ -179,7 +191,7 @@ export async function testD1RiskReport(env: Env): Promise<void> {
 
 async function analyzeRisk(exposureData: ExposureData[], env: Env): Promise<void> {
   const apiKey = env.KIMI_API_KEY || process.env.KIMI_API_KEY || '';
-  
+
   if (!apiKey || apiKey === 'sk-placeholder-use-dotenv-or-secrets') {
     console.error('❌ KIMI_API_KEY not configured');
     return;
@@ -196,7 +208,7 @@ async function analyzeRisk(exposureData: ExposureData[], env: Env): Promise<void
   console.log(`   Net Exposure: $${(result.netExposure / 100).toFixed(2)}`);
   console.log(`\n   Recommendations:`);
   result.recommendations.forEach(rec => console.log(`   - ${rec}`));
-  
+
   if (result.hedgeStrategy) {
     console.log(`\n   Hedge Strategy:`);
     console.log(`   - ${result.hedgeStrategy.action}`);
@@ -213,7 +225,7 @@ export async function runD1IntegrationTests(env: Env): Promise<void> {
 
   // Check API key
   const apiKey = env.KIMI_API_KEY || process.env.KIMI_API_KEY || '';
-  
+
   if (!apiKey || apiKey === 'sk-placeholder-use-dotenv-or-secrets') {
     console.error('\n❌ Error: KIMI_API_KEY not configured');
     console.error('   Please set KIMI_API_KEY in .env or wrangler.toml\n');

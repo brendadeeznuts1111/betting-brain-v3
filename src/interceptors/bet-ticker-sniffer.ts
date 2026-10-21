@@ -1,6 +1,6 @@
 /**
  * 🎯 Bet Ticker Sniffer - Transparent API Interceptor
- * 
+ *
  * Intercepts calls to fantasy402.com/cloud/api/Manager/getBetTicker
  * Stores raw JSON responses in KV for analysis while returning original response
  * Zero impact on client - fully transparent proxy
@@ -70,35 +70,33 @@ export async function handleBetTickerInterception(
     // 2. Call the real origin with timeout
     console.log(`[${requestId}] 📡 Calling origin: ${TARGET_ORIGIN}${TARGET_PATH}`);
     const startTime = Date.now();
-    
+
     const originRes = await Promise.race([
       fetchOrigin(request, requestId),
-      new Promise<Response>((_, reject) =>
-        setTimeout(() => reject(new Error('Origin timeout after 30s')), 30000)
-      )
+      new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('Origin timeout after 30s')), 30000)),
     ]);
-    
+
     const fetchDuration = Date.now() - startTime;
-    
+
     console.log(`[${requestId}] 📥 Origin responded:`, {
       status: originRes.status,
       statusText: originRes.statusText,
       contentType: originRes.headers.get('content-type'),
       duration: `${fetchDuration}ms`,
       hasCookies: !!forwardedCookies,
-      cookieCount: forwardedCookies ? forwardedCookies.split(';').length : 0
+      cookieCount: forwardedCookies ? forwardedCookies.split(';').length : 0,
     });
 
     // 3. Check if origin returned error
     if (!originRes.ok) {
       console.error(`[${requestId}] ❌ Origin returned error: ${originRes.status}`);
-      
+
       // For 4xx errors, still try to return the response (might be useful error info)
       if (originRes.status >= 400 && originRes.status < 500) {
         console.log(`[${requestId}] 📤 Returning client error response`);
         return originRes;
       }
-      
+
       // For 5xx errors, return with CORS headers
       const errorBody = await originRes.text().catch(() => 'Unknown error');
       return new Response(errorBody, {
@@ -106,7 +104,7 @@ export async function handleBetTickerInterception(
         headers: {
           'Content-Type': originRes.headers.get('content-type') || 'text/html',
           'Access-Control-Allow-Origin': '*',
-        }
+        },
       });
     }
 
@@ -115,14 +113,14 @@ export async function handleBetTickerInterception(
     if (!contentType?.includes('application/json')) {
       console.error(`[${requestId}] ❌ Origin returned non-JSON: ${contentType}`);
       console.log(`[${requestId}] 📤 Returning anyway (might be error page)`);
-      
+
       // Return with CORS headers so client can see the error
       return new Response(originRes.body, {
         status: originRes.status,
         headers: {
           'Content-Type': contentType || 'text/html',
           'Access-Control-Allow-Origin': '*',
-        }
+        },
       });
     }
 
@@ -145,41 +143,35 @@ export async function handleBetTickerInterception(
     // 8. Store in KV asynchronously (don't block response)
     if (env.BET_TICKER_RAW) {
       console.log(`[${requestId}] 💾 Queuing KV storage (async)...`);
-      const storePromise = storeRawResponse(
-        env, 
-        request, 
-        rawBody, 
-        originRes.status, 
-        requestId,
-        fetchDuration
-      ).catch(err => {
-        console.error(`[${requestId}] ❌ KV storage error:`, err);
-      });
+      const storePromise = storeRawResponse(env, request, rawBody, originRes.status, requestId, fetchDuration).catch(
+        err => {
+          console.error(`[${requestId}] ❌ KV storage error:`, err);
+        }
+      );
       ctx.waitUntil(storePromise);
     } else {
       console.warn(`[${requestId}] ⚠️  BET_TICKER_RAW not configured - skipping storage`);
     }
 
     console.log(`[${requestId}] ✅ Returning response to client (${fetchDuration}ms total)`);
-    
+
     // 9. Return original response with CORS headers
     const headers = new Headers(originRes.headers);
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('X-Worker-Request-Id', requestId);
     headers.set('X-Worker-Duration', `${fetchDuration}ms`);
-    
+
     return new Response(originRes.body, {
       status: originRes.status,
-      headers
+      headers,
     });
-    
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : 'No stack';
-    
+
     console.error(`[${requestId}] ❌ BetTicker interception error:`, errorMsg);
     console.error(`[${requestId}] Error stack:`, errorStack);
-    
+
     // Return JSON error with CORS headers so client can read it
     return new Response(
       JSON.stringify({
@@ -190,7 +182,7 @@ export async function handleBetTickerInterception(
       }),
       {
         status: 502, // Bad Gateway - indicates proxy error
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
         },
@@ -209,30 +201,31 @@ async function fetchOrigin(request: Request, requestId: string): Promise<Respons
 
   // Extract forwarded cookies from custom header
   const forwardedCookies = request.headers.get('X-Original-Cookies');
-  
+
   // Build headers for origin request
   const originHeaders = new Headers(request.headers);
-  
+
   // Remove worker-specific headers
   originHeaders.delete('X-Original-Cookies');
   originHeaders.delete('X-Original-Host');
   originHeaders.delete('X-Interceptor-Version');
   originHeaders.delete('X-Intercept-ID');
   originHeaders.delete('Host');
-  
+
   // Set proper Host header for origin
   originHeaders.set('Host', 'fantasy402.com');
-  
+
   // Add forwarded cookies as Cookie header
   if (forwardedCookies) {
     originHeaders.set('Cookie', forwardedCookies);
-    const cookiePreview = forwardedCookies.length > 100 
-      ? forwardedCookies.substring(0, 100) + '...'
-      : forwardedCookies;
+    const cookiePreview = forwardedCookies.length > 100 ? forwardedCookies.substring(0, 100) + '...' : forwardedCookies;
     console.log(`[${requestId}] 🍪 Forwarding cookies to origin (${forwardedCookies.length} chars):`, cookiePreview);
-    
+
     // Debug: Show cookie names for troubleshooting
-    const cookieNames = forwardedCookies.split(';').map(c => c.trim().split('=')[0]).join(', ');
+    const cookieNames = forwardedCookies
+      .split(';')
+      .map(c => c.trim().split('=')[0])
+      .join(', ');
     console.log(`[${requestId}] 🍪 Cookie names:`, cookieNames);
   } else {
     console.warn(`[${requestId}] ⚠️  No cookies forwarded from extension`);
@@ -263,7 +256,7 @@ async function storeRawResponse(
   fetchDuration?: number
 ): Promise<void> {
   const storeStartTime = Date.now();
-  
+
   try {
     // Generate key with timestamp
     const timestamp = Date.now();
@@ -326,13 +319,13 @@ export async function getBetTickerHistory(
 ): Promise<{ key: string; metadata: BetTickerMetadata }[]> {
   const requestId = Date.now().toString(36);
   const limit = options?.limit ?? 100;
-  
+
   console.log(`[${requestId}] 📜 getBetTickerHistory called:`, {
     limit,
     startTime: options?.startTime,
     endTime: options?.endTime,
   });
-  
+
   const results: { key: string; metadata: BetTickerMetadata }[] = [];
 
   // List all keys with prefix
@@ -343,14 +336,14 @@ export async function getBetTickerHistory(
     limit,
   });
   const listDuration = Date.now() - listStartTime;
-  
+
   console.log(`[${requestId}] 📋 Found ${list.keys.length} keys (${listDuration}ms)`);
 
   for (const key of list.keys) {
     if (key.metadata) {
       try {
         const metadata = BetTickerMetadata.parse(key.metadata);
-        
+
         // Filter by time range if provided
         const keyTime = parseInt(key.name.split(':')[2] || '0');
         if (options?.startTime && keyTime < options.startTime) {
@@ -387,13 +380,13 @@ export async function getBetTickerResponse(
 ): Promise<{ body: string; metadata: BetTickerMetadata } | null> {
   try {
     const value = await env.BET_TICKER_RAW.getWithMetadata(key);
-    
+
     if (!value.value || !value.metadata) {
       return null;
     }
 
     const metadata = BetTickerMetadata.parse(value.metadata);
-    
+
     return {
       body: value.value,
       metadata,
@@ -403,4 +396,3 @@ export async function getBetTickerResponse(
     return null;
   }
 }
-

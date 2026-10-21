@@ -152,7 +152,7 @@ describe('ProcessManager - spawn wrapper', () => {
 
   test('should spawn with options', async () => {
     const proc = manager.spawn(['pwd'], {
-      cwd: '/'
+      cwd: '/',
     });
 
     const exitCode = await proc.exited;
@@ -170,4 +170,3 @@ describe('ProcessManager - spawn wrapper', () => {
     expect(manager.count()).toBe(0);
   });
 });
-

@@ -1,34 +1,41 @@
 # 🎯 Fantasy402.com Data Integration Guide
 
-Complete guide for ingesting real-time data from Fantasy402.com into Betting-Brain v3.
+Complete guide for ingesting real-time data from Fantasy402.com into
+Betting-Brain v3.
 
 ---
 
 ## 📊 What Gets Captured
 
-The browser extension intercepts and forwards all Fantasy402.com API calls to your Cloudflare Worker:
+The browser extension intercepts and forwards all Fantasy402.com API calls to
+your Cloudflare Worker:
 
 ### Authentication
+
 - **Endpoint**: `/cloud/api/System/authenticateCustomer`
 - **Captures**: Customer ID, JWT tokens, login timestamps
 - **Storage**: Tokens → `TOKEN_STORE` KV namespace
 
 ### Account Info
+
 - **Endpoint**: `/cloud/api/Manager/getAccountInfoOwner`
 - **Captures**: Agent ID, account details, balances
 - **Storage**: D1 → `fantasy402_raw_feed` table
 
 ### Weekly Figures
+
 - **Endpoint**: `/cloud/api/Manager/getWeeklyFigureByAgentLite`
 - **Captures**: Win/loss data, betting volumes, by-day breakdowns
 - **Storage**: D1 → `fantasy402_raw_feed` table
 
 ### Agent Lists
+
 - **Endpoint**: `/cloud/api/Manager/getListAgenstByAgent`
 - **Captures**: Agent hierarchies, downstream agents
 - **Storage**: D1 → `fantasy402_raw_feed` table
 
 ### More Endpoints
+
 - Config/reports
 - Sports types
 - Authorizations
@@ -42,10 +49,12 @@ The browser extension intercepts and forwards all Fantasy402.com API calls to yo
 ### Step 1: Deploy Worker (Already Done ✅)
 
 Your worker is already deployed:
+
 - **URL**: `https://betting-brain-v3.nolarose1968-806.workers.dev`
 - **Ingestion Endpoint**: `/api/fantasy402/ingest`
 
 Test the ingestion endpoint:
+
 ```bash
 curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 # Should return: { "status": "healthy", "version": "3.0.0" }
@@ -58,6 +67,7 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 #### Load Extension in Chrome
 
 1. **Open Chrome Extensions:**
+
    ```
    chrome://extensions/
    ```
@@ -79,6 +89,7 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 ### Step 3: Test Data Capture
 
 1. **Open Fantasy402.com:**
+
    ```
    https://fantasy402.com/
    ```
@@ -166,7 +177,7 @@ CREATE INDEX idx_fantasy402_agent ON fantasy402_raw_feed(agent_id);
 ### Get Recent Authentication Attempts
 
 ```sql
-SELECT 
+SELECT
   timestamp,
   customer_id,
   response_status,
@@ -180,7 +191,7 @@ LIMIT 10;
 ### Get Weekly Figures by Agent
 
 ```sql
-SELECT 
+SELECT
   agent_id,
   response_body,
   timestamp
@@ -194,7 +205,7 @@ LIMIT 1;
 ### Get All Endpoints Hit Today
 
 ```sql
-SELECT 
+SELECT
   endpoint,
   COUNT(*) as hit_count,
   AVG(duration_ms) as avg_duration_ms
@@ -244,6 +255,7 @@ wrangler d1 execute fantasy42-raw-feed --remote \
 ### Issue: Extension Not Intercepting
 
 **Solution:**
+
 1. Check extension is loaded:
    ```
    chrome://extensions/
@@ -260,12 +272,15 @@ wrangler d1 execute fantasy42-raw-feed --remote \
 ### Issue: Data Not Reaching Worker
 
 **Solution:**
+
 1. Check worker is accessible:
+
    ```bash
    curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
    ```
 
 2. Check CORS (should be open for `*`):
+
    ```bash
    curl -I -X OPTIONS \
      https://betting-brain-v3.nolarose1968-806.workers.dev/api/fantasy402/ingest
@@ -279,6 +294,7 @@ wrangler d1 execute fantasy42-raw-feed --remote \
 ### Issue: D1 Table Doesn't Exist
 
 **Solution:**
+
 ```bash
 # Create table manually
 wrangler d1 execute fantasy42-raw-feed --remote --command="
@@ -325,5 +341,5 @@ Once data is flowing:
 
 **Status:** ✅ **READY FOR DATA INGESTION**
 
-Your worker is deployed and the browser extension is configured. Just load the extension and navigate to fantasy402.com to start capturing data!
-
+Your worker is deployed and the browser extension is configured. Just load the
+extension and navigate to fantasy402.com to start capturing data!

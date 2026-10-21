@@ -10,9 +10,13 @@ export async function getDatabaseMetrics(request: Request, env: Env): Promise<Re
 
   try {
     const [lineMovements, sharpIndicators, exposureTracking] = await Promise.all([
-      env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM line_movements WHERE ts > ?').bind(new Date(Date.now() - 86400000).toISOString()).first(),
+      env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM line_movements WHERE ts > ?')
+        .bind(new Date(Date.now() - 86400000).toISOString())
+        .first(),
       env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM sharp_indicators').first(),
-      env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM exposure_tracking WHERE upd > ?').bind(new Date(Date.now() - 3600000).toISOString()).first()
+      env.ANALYTICS.prepare('SELECT COUNT(*) as count FROM exposure_tracking WHERE upd > ?')
+        .bind(new Date(Date.now() - 3600000).toISOString())
+        .first(),
     ]);
 
     return createJSONResponse({
@@ -26,10 +30,13 @@ export async function getDatabaseMetrics(request: Request, env: Env): Promise<Re
         cacheHitRate: 0.98,
         avgQueryTime: 12,
         connections: 1,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
   } catch (error) {
-    return createJSONResponse({ success: false, error: error instanceof Error ? error.message : 'Failed to fetch database metrics' }, 500);
+    return createJSONResponse(
+      { success: false, error: error instanceof Error ? error.message : 'Failed to fetch database metrics' },
+      500
+    );
   }
 }

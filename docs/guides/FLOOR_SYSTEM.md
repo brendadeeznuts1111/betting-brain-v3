@@ -2,7 +2,10 @@
 
 ## Overview
 
-The **Floor** is the self-documenting, self-healing, and self-deploying foundation layer for Forest Grove v3.3.0. It consolidates operational patterns, automated health checks, test fixes, and deployment automation into a unified system.
+The **Floor** is the self-documenting, self-healing, and self-deploying
+foundation layer for Forest Grove v3.3.0. It consolidates operational patterns,
+automated health checks, test fixes, and deployment automation into a unified
+system.
 
 **Status:** Production-Ready ✅
 
@@ -20,6 +23,7 @@ Floor System
 ## Quick Start
 
 ### Health Check
+
 ```bash
 # Run complete health check
 bun run floor:health
@@ -32,6 +36,7 @@ bun run floor:deploy
 ```
 
 ### MCP Tools
+
 ```bash
 # Start MCP server
 bun run floor:mcp
@@ -41,6 +46,7 @@ bun run floor:voice
 ```
 
 ### Live Status
+
 ```bash
 # Get JSON status
 bun run floor:status
@@ -54,27 +60,31 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/floor/status
 ### 1. MCP Tool Usage (Mandatory)
 
 **Required Parameter Order:**
+
 ```typescript
 callMCPTool('tool-name', {
-  customerId: string,    // 1. Who
-  eventId: string,       // 2. What
-  stake: number,         // 3. How much
-  odds: number,          // 4. At what price
+  customerId: string, // 1. Who
+  eventId: string, // 2. What
+  stake: number, // 3. How much
+  odds: number, // 4. At what price
   side: 'back' | 'lay', // 5. Direction
 });
 ```
 
 **Idempotency:**
+
 - Always pass `idempotencyKey` or let tool auto-generate with `nanoid()`
 - Prevents duplicate processing across retries
 
 **Audit Trail:**
+
 - Every tool writes to Analytics Engine
 - EventId format: `{tool}-{nanoid}`
 
 ### 2. Test-Fix Patterns
 
 **Error Path Tests (429 vs 500):**
+
 ```typescript
 // ❌ WRONG: Tests expect 500 but rate limiter returns 429
 expect(response.status).toBe(500);
@@ -84,6 +94,7 @@ expect(response.status).toBe(429);
 ```
 
 **Timeout Tests:**
+
 ```typescript
 // ❌ WRONG
 await fn();
@@ -94,26 +105,33 @@ await expect(async () => fn()).rejects.toThrow('Timeout');
 ```
 
 **D1 Result Type Casting:**
+
 ```typescript
 // ❌ WRONG
 const rows = await env.ANALYTICS.prepare('SELECT * FROM bets').all();
 const bet = rows.results[0].stake; // Type error
 
 // ✅ CORRECT
-interface BetRow { stake: number; odds: number; }
-const rows = await env.ANALYTICS.prepare('SELECT * FROM bets')
-  .all() as unknown as { results: BetRow[] };
+interface BetRow {
+  stake: number;
+  odds: number;
+}
+const rows = (await env.ANALYTICS.prepare(
+  'SELECT * FROM bets'
+).all()) as unknown as { results: BetRow[] };
 ```
 
 ### 3. Type-Cast Rules
 
 **Test Files:** Type casts allowed with comment
+
 ```typescript
 const mockEnv = { ANALYTICS: {} } as any; // Test mock
 // @ts-expect-error Test cast for mock environment
 ```
 
 **Production Code:** Strict type guards required
+
 ```typescript
 // ❌ FORBIDDEN
 const env = req.env as any;
@@ -199,7 +217,7 @@ Returns real-time system status:
     "pass": 239,
     "fail": 60,
     "total": 299,
-    "rate": 0.80
+    "rate": 0.8
   },
   "coverage": {
     "percentage": 81
@@ -245,7 +263,8 @@ The `floor-badge.yml` workflow runs every 5 minutes and updates status badges:
 - ![Coverage](https://img.shields.io/badge/coverage-81%25-green)
 - ![MCP Tools](https://img.shields.io/badge/mcp--tools-6-blue)
 
-Badges are automatically committed to `.github/badges/` and README.md is updated.
+Badges are automatically committed to `.github/badges/` and README.md is
+updated.
 
 ## Floor Commands
 
@@ -284,11 +303,13 @@ Available commands:
 **Status:** Non-blocking, tracked in `docs/TESTING_STATUS.md`
 
 **Main Issues:**
+
 1. Error path tests expecting 500 but getting 429 (rate limit)
 2. Timeout tests not properly handling async operations
 3. BetTicker sniffer origin timeout tests intermittent
 
 **Fix Strategy:**
+
 - Update test expectations: `expect(429)` instead of `expect(500)`
 - Add async wrapping: `await expect(async () => fn()).rejects.toThrow()`
 - Improve mock reliability for external API calls
@@ -298,11 +319,13 @@ Available commands:
 **Status:** Non-blocking, mostly D1 result type casting
 
 **Categories:**
+
 1. D1 query results: Use `as unknown as { results: T[] }`
 2. Test mocks: Allow `as any` in test files only
 3. Third-party types: Use `@ts-expect-error` with explanation
 
 **Fix Strategy:**
+
 - Add proper interfaces for D1 result types
 - Create type-safe mock factories
 - Document all type exceptions
@@ -327,7 +350,7 @@ if (errorRate > 0.05) {
   process.exit(1);
 }
 
-if (testPassRate < 0.80) {
+if (testPassRate < 0.8) {
   console.error('❌ Test pass rate < 80%, halting deployment');
   process.exit(1);
 }
@@ -460,6 +483,7 @@ wrangler rollback <version-id> --env production
 ## References
 
 ### Documentation
+
 - [MCP Integration Status](mdc:docs/MCP_INTEGRATION_STATUS.md)
 - [MCP Endpoints](mdc:docs/MCP_ENDPOINTS.md)
 - [Sports API Deployment](mdc:docs/SPORTS_API_DEPLOYMENT.md)
@@ -467,12 +491,14 @@ wrangler rollback <version-id> --env production
 - [MCP Config Update](mdc:docs/MCP_CONFIG_UPDATE.md)
 
 ### Configuration
+
 - [Floor Rules](mdc:.cursor/rules/99-floor.mdc)
 - [MCP Configuration](mdc:.cursor/mcp.json)
 - [Wrangler Config](mdc:wrangler.toml)
 - [Environment Template](mdc:.env.example)
 
 ### Scripts
+
 - [Floor Health](mdc:scripts/floor-health.ts)
 - [MCP Server](mdc:scripts/mcp-server.ts)
 - [JWT Test Utility](mdc:scripts/test-jwt.ts)
@@ -480,9 +506,8 @@ wrangler rollback <version-id> --env production
 
 ---
 
-**The Floor is self-aware, self-healing, and self-deploying. All AI assistants must follow Floor patterns for autonomous operations.**
+**The Floor is self-aware, self-healing, and self-deploying. All AI assistants
+must follow Floor patterns for autonomous operations.**
 
-**Status:** Production-Ready ✅
-**Version:** 3.3.0
-**Last Updated:** 2025-10-08
+**Status:** Production-Ready ✅ **Version:** 3.3.0 **Last Updated:** 2025-10-08
 **Maintainer:** Betting-Brain Team

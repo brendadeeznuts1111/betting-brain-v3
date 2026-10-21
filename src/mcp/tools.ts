@@ -43,7 +43,8 @@ function getIntelligenceTools(): MCPTool[] {
   return [
     {
       name: 'getBettingExposure',
-      description: 'Get real-time betting exposure metrics for events - tracks risk, net position, and hedge requirements',
+      description:
+        'Get real-time betting exposure metrics for events - tracks risk, net position, and hedge requirements',
       inputSchema: {
         type: 'object',
         properties: {
@@ -91,7 +92,8 @@ function getIntelligenceTools(): MCPTool[] {
     },
     {
       name: 'getSharpScore',
-      description: 'Get sharp customer scoring - identifies professional bettors using CLV, win rate, and action patterns',
+      description:
+        'Get sharp customer scoring - identifies professional bettors using CLV, win rate, and action patterns',
       inputSchema: {
         type: 'object',
         properties: {
@@ -114,7 +116,8 @@ function getLiveBettingTools(): MCPTool[] {
   return [
     {
       name: 'getLiveBettingTicker',
-      description: 'Get real-time betting ticker with active wagers - returns Fantasy402 live betting feed with caching (sub-20ms)',
+      description:
+        'Get real-time betting ticker with active wagers - returns Fantasy402 live betting feed with caching (sub-20ms)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -226,7 +229,8 @@ function getAnalyticsTools(): MCPTool[] {
     },
     {
       name: 'getEnhancedSharpScore',
-      description: 'Multi-dimensional customer profiling with ML-like feature engineering (CLV, timing, sizing, diversity)',
+      description:
+        'Multi-dimensional customer profiling with ML-like feature engineering (CLV, timing, sizing, diversity)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -239,7 +243,8 @@ function getAnalyticsTools(): MCPTool[] {
     },
     {
       name: 'getHoldForecast',
-      description: 'Predictive analytics for hold percentage with linear regression forecasting and confidence intervals',
+      description:
+        'Predictive analytics for hold percentage with linear regression forecasting and confidence intervals',
       inputSchema: {
         type: 'object',
         properties: {
@@ -291,7 +296,8 @@ function getAnalyticsTools(): MCPTool[] {
     },
     {
       name: 'getTimeSeriesAnalytics',
-      description: 'Flexible time-series analysis with anomaly detection for volume, hold, bets, customers, or exposure',
+      description:
+        'Flexible time-series analysis with anomaly detection for volume, hold, bets, customers, or exposure',
       inputSchema: {
         type: 'object',
         properties: {
@@ -449,7 +455,8 @@ function getAITools(): MCPTool[] {
   return [
     {
       name: 'aiSharpAnalysis',
-      description: 'AI-powered customer profiling and sharp detection using Kimi K2 - analyzes CLV, win rate, and betting patterns',
+      description:
+        'AI-powered customer profiling and sharp detection using Kimi K2 - analyzes CLV, win rate, and betting patterns',
       inputSchema: {
         type: 'object',
         properties: {
@@ -466,7 +473,12 @@ function getAITools(): MCPTool[] {
         type: 'object',
         properties: {
           eventId: { type: 'string', description: 'Event ID to analyze' },
-          marketType: { type: 'string', enum: ['SPREAD', 'MONEYLINE', 'TOTAL', 'PROP'], default: 'SPREAD', description: 'Market type' },
+          marketType: {
+            type: 'string',
+            enum: ['SPREAD', 'MONEYLINE', 'TOTAL', 'PROP'],
+            default: 'SPREAD',
+            description: 'Market type',
+          },
           agentID: { type: 'string', description: 'Agent ID to scope to (optional)', default: 'DEMO' },
         },
         required: ['eventId'],
@@ -474,7 +486,8 @@ function getAITools(): MCPTool[] {
     },
     {
       name: 'aiRiskReport',
-      description: 'AI-powered risk assessment and hedge recommendations using Kimi K2 - generates actionable risk management strategies',
+      description:
+        'AI-powered risk assessment and hedge recommendations using Kimi K2 - generates actionable risk management strategies',
       inputSchema: {
         type: 'object',
         properties: {

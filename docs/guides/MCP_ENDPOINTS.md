@@ -4,12 +4,14 @@
 **Status:** ✅ **13/15 Tools Active**
 
 **Metadata:**
+
 - **Version:** 3.0.0
 - **Total Endpoints:** 13 active tools
 - **Protocol:** JSON-RPC 2.0
 - **Topics:** #mcp #api #documentation
 - **Audience:** Developers, Architects
-- **Related Docs:** [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md), [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)
+- **Related Docs:** [MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md),
+  [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)
 
 ---
 
@@ -20,7 +22,8 @@ POST /mcp
 Content-Type: application/json
 ```
 
-**Location:** [src/index.ts](../src/index.ts) → [src/mcp/server.ts](../src/mcp/server.ts)
+**Location:** [src/index.ts](../src/index.ts) →
+[src/mcp/server.ts](../src/mcp/server.ts)
 
 ---
 
@@ -41,7 +44,7 @@ All requests follow JSON-RPC 2.0 format:
   "jsonrpc": "2.0",
   "id": 1,
   "method": "method_name",
-  "params": { }
+  "params": {}
 }
 ```
 
@@ -50,10 +53,12 @@ All requests follow JSON-RPC 2.0 format:
 ## 🛠️ Available Methods
 
 ### 1. Initialize
+
 **Method:** `initialize`  
 **Purpose:** Get server capabilities
 
 **Request:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -63,6 +68,7 @@ All requests follow JSON-RPC 2.0 format:
 ```
 
 **Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -83,10 +89,12 @@ All requests follow JSON-RPC 2.0 format:
 ---
 
 ### 2. List Tools
+
 **Method:** `tools/list`  
 **Purpose:** Get all available tools
 
 **Request:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -96,6 +104,7 @@ All requests follow JSON-RPC 2.0 format:
 ```
 
 **Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -105,8 +114,8 @@ All requests follow JSON-RPC 2.0 format:
       {
         "name": "getBettingExposure",
         "description": "Get current betting exposure...",
-        "inputSchema": { }
-      },
+        "inputSchema": {}
+      }
       // ... 12 more tools
     ]
   }
@@ -116,10 +125,12 @@ All requests follow JSON-RPC 2.0 format:
 ---
 
 ### 3. Call Tool
+
 **Method:** `tools/call`  
 **Purpose:** Execute a specific tool
 
 **Request:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -137,6 +148,7 @@ All requests follow JSON-RPC 2.0 format:
 ```
 
 **Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -159,10 +171,12 @@ All requests follow JSON-RPC 2.0 format:
 ### Intelligence Tools (4/4) ✅
 
 #### 1. getBettingExposure
+
 **Purpose:** Get current betting exposure by event/market  
 **Handler:** [src/tools/intelligence/getBettingExposure.ts](../src/tools/intelligence/getBettingExposure.ts)
 
 **Parameters:**
+
 ```typescript
 {
   eid: string;        // Event ID
@@ -171,6 +185,7 @@ All requests follow JSON-RPC 2.0 format:
 ```
 
 **Example:**
+
 ```bash
 curl -X POST http://localhost:8787/mcp \
   -H "Content-Type: application/json" \
@@ -188,10 +203,12 @@ curl -X POST http://localhost:8787/mcp \
 ---
 
 #### 2. getCLV
+
 **Purpose:** Calculate Customer Lifetime Value  
 **Handler:** [src/tools/intelligence/getCLV.ts](../src/tools/intelligence/getCLV.ts)
 
 **Parameters:**
+
 ```typescript
 {
   cid: string;        // Customer ID
@@ -202,10 +219,12 @@ curl -X POST http://localhost:8787/mcp \
 ---
 
 #### 3. getHoldPercentage
+
 **Purpose:** Calculate hold percentage  
 **Handler:** [src/tools/intelligence/getHoldPercentage.ts](../src/tools/intelligence/getHoldPercentage.ts)
 
 **Parameters:**
+
 ```typescript
 {
   eid: string;        // Event ID
@@ -216,13 +235,15 @@ curl -X POST http://localhost:8787/mcp \
 ---
 
 #### 4. getSharpScore
+
 **Purpose:** Calculate sharp customer score  
 **Handler:** [src/tools/intelligence/getSharpScore.ts](../src/tools/intelligence/getSharpScore.ts)
 
 **Parameters:**
+
 ```typescript
 {
-  cid: string;        // Customer ID
+  cid: string; // Customer ID
 }
 ```
 
@@ -231,10 +252,12 @@ curl -X POST http://localhost:8787/mcp \
 ### Live Betting Tools (3/5) ✅
 
 #### 5. getSteamMoves
+
 **Purpose:** Detect 3-sigma line movements  
 **Handler:** [src/mcp/handlers/steamMoves.ts](../src/mcp/handlers/steamMoves.ts)
 
 **Parameters:**
+
 ```typescript
 {
   agentID?: string;           // Agent filter
@@ -245,6 +268,7 @@ curl -X POST http://localhost:8787/mcp \
 ```
 
 **Algorithm:**
+
 ```
 CRITICAL: Δline ≥ 2.0 AND Δvolume > 1000
 HIGH:     Δline ≥ 1.0 AND Δvolume > 500
@@ -255,10 +279,12 @@ LOW:      Any other significant movement
 ---
 
 #### 6. getRiskConcentration
+
 **Purpose:** Analyze risk clustering  
 **Handler:** [src/mcp/handlers/riskConcentration.ts](../src/mcp/handlers/riskConcentration.ts)
 
 **Parameters:**
+
 ```typescript
 {
   groupBy: "event" | "customer" | "market";
@@ -270,10 +296,12 @@ LOW:      Any other significant movement
 ---
 
 #### 7. getSharpActivity
+
 **Purpose:** Track sharp customer activity  
 **Handler:** [src/mcp/handlers/sharpActivity.ts](../src/mcp/handlers/sharpActivity.ts)
 
 **Parameters:**
+
 ```typescript
 {
   agentID?: string;
@@ -285,12 +313,14 @@ LOW:      Any other significant movement
 ---
 
 #### 8. getLiveBettingTicker (Placeholder)
+
 **Status:** 🔲 Not yet implemented  
 **Planned:** Phase 5
 
 ---
 
 #### 9. getClosingLineValue (Placeholder)
+
 **Status:** 🔲 Not yet implemented  
 **Planned:** Phase 5
 
@@ -299,10 +329,12 @@ LOW:      Any other significant movement
 ### Analytics Tools (6/6) ✅
 
 #### 10. getTimeSeriesCLV
+
 **Purpose:** CLV trend analysis with rolling metrics  
 **Handler:** [src/mcp/handlers/timeSeriesCLV.ts](../src/mcp/handlers/timeSeriesCLV.ts)
 
 **Parameters:**
+
 ```typescript
 {
   cid: string;                // Customer ID
@@ -315,10 +347,12 @@ LOW:      Any other significant movement
 ---
 
 #### 11. getEnhancedSharpScore
+
 **Purpose:** ML-like 7-feature customer profiling  
 **Handler:** [src/mcp/handlers/enhancedSharpScore.ts](../src/mcp/handlers/enhancedSharpScore.ts)
 
 **Parameters:**
+
 ```typescript
 {
   cid: string;                // Customer ID
@@ -328,6 +362,7 @@ LOW:      Any other significant movement
 ```
 
 **Scoring Algorithm:**
+
 ```
 Core Features (40 points):
   - CLV: 0-20
@@ -351,10 +386,12 @@ Classifications:
 ---
 
 #### 12. getHoldForecast
+
 **Purpose:** Predictive hold % with linear regression  
 **Handler:** [src/mcp/handlers/holdForecast.ts](../src/mcp/handlers/holdForecast.ts)
 
 **Parameters:**
+
 ```typescript
 {
   eid?: string;               // Event ID (optional)
@@ -364,6 +401,7 @@ Classifications:
 ```
 
 **Features:**
+
 - Linear regression forecasting
 - 95% confidence intervals (±1.96σ)
 - Anomaly detection (2σ threshold)
@@ -371,10 +409,12 @@ Classifications:
 ---
 
 #### 13. getHandleAndHold
+
 **Purpose:** Revenue analytics with trend detection  
 **Handler:** [src/mcp/handlers/handleAndHold.ts](../src/mcp/handlers/handleAndHold.ts)
 
 **Parameters:**
+
 ```typescript
 {
   agentID?: string;
@@ -387,10 +427,12 @@ Classifications:
 ---
 
 #### 14. getCustomerVolume
+
 **Purpose:** Customer segmentation by volume  
 **Handler:** [src/mcp/handlers/customerVolume.ts](../src/mcp/handlers/customerVolume.ts)
 
 **Parameters:**
+
 ```typescript
 {
   agentID?: string;
@@ -400,6 +442,7 @@ Classifications:
 ```
 
 **Segments:**
+
 - WHALE: Top 1% (>90th percentile)
 - HIGH_ROLLER: 75-90th percentile
 - REGULAR: 25-75th percentile
@@ -409,10 +452,12 @@ Classifications:
 ---
 
 #### 15. getTimeSeriesAnalytics
+
 **Purpose:** Flexible time-series analysis  
 **Handler:** [src/mcp/handlers/timeSeriesAnalytics.ts](../src/mcp/handlers/timeSeriesAnalytics.ts)
 
 **Parameters:**
+
 ```typescript
 {
   metric: "clv" | "hold" | "volume" | "exposure";
@@ -424,6 +469,7 @@ Classifications:
 ```
 
 **Features:**
+
 - Anomaly detection (2σ threshold)
 - Trend analysis
 - Statistical summaries
@@ -433,11 +479,13 @@ Classifications:
 ## 🧪 Testing MCP Endpoints
 
 ### Option 1: Direct Handler Testing (Fastest)
+
 ```bash
 bun scripts/test-handlers-direct.ts
 ```
 
 **Pros:**
+
 - No server startup needed
 - Faster iteration
 - Direct function testing
@@ -445,6 +493,7 @@ bun scripts/test-handlers-direct.ts
 ---
 
 ### Option 2: Local Development Server
+
 ```bash
 # Terminal 1: Start server
 bun run dev
@@ -462,6 +511,7 @@ curl -X POST http://localhost:8787/mcp \
 ---
 
 ### Option 3: Production Testing
+
 ```bash
 # Deploy
 wrangler deploy
@@ -480,21 +530,21 @@ curl -X POST https://YOUR-WORKER.workers.dev/mcp \
 
 ## 📊 Performance Expectations
 
-| Tool | Complexity | Expected Time | Database Hits |
-|------|-----------|---------------|---------------|
-| getBettingExposure | Low | 50-150ms | 1-2 |
-| getCLV | Low | 50-150ms | 1 |
-| getHoldPercentage | Low | 50-150ms | 1 |
-| getSharpScore | Low | 50-150ms | 1 |
-| getSteamMoves | Medium | 150-300ms | 1-2 |
-| getRiskConcentration | Medium | 200-400ms | 1-2 |
-| getSharpActivity | Medium | 150-300ms | 2-3 |
-| getTimeSeriesCLV | High | 400-800ms | 2-5 |
-| getEnhancedSharpScore | High | 500-1000ms | 3-5 |
-| getHoldForecast | High | 400-800ms | 2-4 |
-| getHandleAndHold | Medium | 300-600ms | 2-3 |
-| getCustomerVolume | High | 500-1000ms | 2-4 |
-| getTimeSeriesAnalytics | High | 400-900ms | 2-5 |
+| Tool                   | Complexity | Expected Time | Database Hits |
+| ---------------------- | ---------- | ------------- | ------------- |
+| getBettingExposure     | Low        | 50-150ms      | 1-2           |
+| getCLV                 | Low        | 50-150ms      | 1             |
+| getHoldPercentage      | Low        | 50-150ms      | 1             |
+| getSharpScore          | Low        | 50-150ms      | 1             |
+| getSteamMoves          | Medium     | 150-300ms     | 1-2           |
+| getRiskConcentration   | Medium     | 200-400ms     | 1-2           |
+| getSharpActivity       | Medium     | 150-300ms     | 2-3           |
+| getTimeSeriesCLV       | High       | 400-800ms     | 2-5           |
+| getEnhancedSharpScore  | High       | 500-1000ms    | 3-5           |
+| getHoldForecast        | High       | 400-800ms     | 2-4           |
+| getHandleAndHold       | Medium     | 300-600ms     | 2-3           |
+| getCustomerVolume      | High       | 500-1000ms    | 2-4           |
+| getTimeSeriesAnalytics | High       | 400-900ms     | 2-5           |
 
 **Note:** Times assume D1 free tier with typical data volumes.
 
@@ -521,6 +571,7 @@ All tools return standardized error format:
 ```
 
 Common errors:
+
 - Missing required parameters
 - Invalid parameter values
 - Database connection issues
@@ -569,15 +620,19 @@ Route by method:
 ## 🔍 Troubleshooting
 
 ### Issue: "Tool not found"
+
 **Solution:** Check tool name matches exactly (case-sensitive)
 
 ### Issue: "Database not available"
+
 **Solution:** Verify D1 binding in `wrangler.toml` and database is created
 
 ### Issue: "CPU time limit exceeded"
+
 **Solution:** Optimize queries or increase limit in `wrangler.toml`
 
 ### Issue: "No data returned"
+
 **Solution:** Check migrations applied and test data loaded
 
 ---
@@ -601,6 +656,7 @@ hold_tracking
 ```
 
 **Apply migrations:**
+
 ```bash
 wrangler d1 migrations apply betting-analytics --local
 ```
@@ -643,5 +699,4 @@ curl -X POST http://localhost:8787/mcp \
 
 ---
 
-*For implementation details, see [src/mcp/](../src/mcp/) directory.*
-
+_For implementation details, see [src/mcp/](../src/mcp/) directory._

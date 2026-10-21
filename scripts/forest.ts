@@ -87,8 +87,8 @@ async function checkFreshness(): Promise<{
 
     // Check for outdated packages
     const outdatedOutput = await $`bun outdated 2>&1`.text();
-    const outdatedLines = outdatedOutput.split('\n').filter((line) => line.includes('→'));
-    const outdated = outdatedLines.map((line) => line.split(/\s+/)[0]).filter(Boolean);
+    const outdatedLines = outdatedOutput.split('\n').filter(line => line.includes('→'));
+    const outdated = outdatedLines.map(line => line.split(/\s+/)[0]).filter(Boolean);
 
     return {
       current,
@@ -193,12 +193,13 @@ async function checkMCP(): Promise<{
     });
 
     // Send initialize request
-    const initRequest = JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'initialize',
-      params: {},
-    }) + '\n';
+    const initRequest =
+      JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'initialize',
+        params: {},
+      }) + '\n';
 
     proc.stdin.write(initRequest);
 
@@ -229,12 +230,13 @@ async function checkMCP(): Promise<{
         stderr: 'pipe',
       });
 
-      const listRequest = JSON.stringify({
-        jsonrpc: '2.0',
-        id: 2,
-        method: 'tools/list',
-        params: {},
-      }) + '\n';
+      const listRequest =
+        JSON.stringify({
+          jsonrpc: '2.0',
+          id: 2,
+          method: 'tools/list',
+          params: {},
+        }) + '\n';
 
       proc2.stdin.write(listRequest);
 
@@ -304,7 +306,7 @@ async function displayFreshness() {
 
   if (fresh.behind > 0) {
     console.log(`\nOutdated:`);
-    fresh.outdated.slice(0, 5).forEach((pkg) => {
+    fresh.outdated.slice(0, 5).forEach(pkg => {
       console.log(`  • ${c.gray(pkg)}`);
     });
     if (fresh.outdated.length > 5) {
@@ -348,7 +350,9 @@ async function displayAnalytics() {
 
   console.log(`Test files: ${c.blue(String(analytics.testFiles))}`);
   console.log(`Stub available: ${analytics.stubUsage ? c.green('✅') : c.red('❌')}`);
-  console.log(`Coverage: ${analytics.coveragePercent > 0 ? c.green(`${analytics.coveragePercent.toFixed(2)}%`) : c.gray('Run tests for coverage')}`);
+  console.log(
+    `Coverage: ${analytics.coveragePercent > 0 ? c.green(`${analytics.coveragePercent.toFixed(2)}%`) : c.gray('Run tests for coverage')}`
+  );
 
   if (!analytics.stubUsage) {
     console.log(`\n${c.yellow('⚠️')}  Analytics stub not found at tests/utils/analytics-engine-stub.ts`);
@@ -481,7 +485,7 @@ async function main() {
 
 // Run if executed directly
 if (import.meta.main) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error(c.red('\n❌ Forest check failed:'), error);
     console.error('');
     process.exit(1);

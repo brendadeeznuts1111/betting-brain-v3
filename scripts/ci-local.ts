@@ -2,7 +2,7 @@
 /**
  * Local CI Script - One-Click Testing
  * Runs full CI pipeline locally with zombie process protection
- * 
+ *
  * Usage:
  *   bun run ci:local           # Full CI
  *   bun run ci:local --quick   # Quick CI (skip slow checks)
@@ -38,11 +38,7 @@ class LocalCI {
 
   private isAIEnvironment(): boolean {
     // Detect AI coding assistant environments
-    return !!(
-      process.env.CLAUDECODE ||
-      process.env.REPL_ID ||
-      process.env.AGENT
-    );
+    return !!(process.env.CLAUDECODE || process.env.REPL_ID || process.env.AGENT);
   }
 
   async run(): Promise<boolean> {
@@ -67,14 +63,14 @@ class LocalCI {
         emoji: '🔒',
         command: ['sg', 'scan', 'src/'],
         timeout: 30000,
-        required: true
+        required: true,
       },
       {
         name: 'SQL Migration Validation',
         emoji: '🗄️',
         command: ['bun', 'run', 'scripts/validate-migrations.ts'],
         timeout: 10000,
-        required: true
+        required: true,
       },
       {
         name: 'Lint Code',
@@ -82,7 +78,7 @@ class LocalCI {
         command: ['bun', 'run', 'lint'],
         timeout: 30000,
         required: false,
-        skip: this.quickMode
+        skip: this.quickMode,
       },
       {
         name: 'Type Check',
@@ -90,21 +86,21 @@ class LocalCI {
         command: ['bun', 'x', 'tsc', '--noEmit'],
         timeout: 60000,
         required: false,
-        skip: this.quickMode
+        skip: this.quickMode,
       },
       {
         name: 'Unit Tests',
         emoji: '🧪',
         command: ['bun', 'run', 'test:unit'],
         timeout: 120000,
-        required: true
+        required: true,
       },
       {
         name: 'Integration Tests',
         emoji: '🔗',
         command: ['bun', 'run', 'test:integration'],
         timeout: 180000,
-        required: true
+        required: true,
       },
       {
         name: 'Test Coverage',
@@ -112,14 +108,14 @@ class LocalCI {
         command: ['bun', 'run', 'test:coverage'],
         timeout: 120000,
         required: false,
-        skip: this.quickMode
+        skip: this.quickMode,
       },
       {
         name: 'Build Worker',
         emoji: '🏗️',
         command: ['bun', 'run', 'build:worker'],
         timeout: 60000,
-        required: true
+        required: true,
       },
       {
         name: 'Link Check',
@@ -127,8 +123,8 @@ class LocalCI {
         command: ['bun', 'scripts/link-check.js'],
         timeout: 30000,
         required: false,
-        skip: this.quickMode
-      }
+        skip: this.quickMode,
+      },
     ];
 
     let allPassed = true;
@@ -140,7 +136,7 @@ class LocalCI {
           this.results.push({
             step: step.name,
             status: 'skip',
-            duration: 0
+            duration: 0,
           });
           continue;
         }
@@ -157,7 +153,6 @@ class LocalCI {
 
       // Check for zombie processes
       await this.checkZombieProcesses();
-
     } catch (error) {
       console.error('\n❌ CI pipeline error:', error);
       allPassed = false;
@@ -181,7 +176,7 @@ class LocalCI {
       // Spawn and track process
       proc = processManager.spawn(step.command, {
         cwd: process.cwd(),
-        stdio: ['ignore', 'pipe', 'pipe']
+        stdio: ['ignore', 'pipe', 'pipe'],
       });
 
       // Capture output
@@ -207,9 +202,7 @@ class LocalCI {
       // Wait for exit with timeout
       const exitCode = await Promise.race([
         proc.exited,
-        new Promise<number>((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout after ${timeout}ms`)), timeout)
-        )
+        new Promise<number>((_, reject) => setTimeout(() => reject(new Error(`Timeout after ${timeout}ms`)), timeout)),
       ]);
 
       const duration = Date.now() - startTime;
@@ -219,7 +212,7 @@ class LocalCI {
         return {
           step: step.name,
           status: 'pass',
-          duration
+          duration,
         };
       } else {
         console.log(`❌ ${step.name}: FAIL (exit ${exitCode}, ${duration}ms)`);
@@ -227,10 +220,9 @@ class LocalCI {
           step: step.name,
           status: 'fail',
           duration,
-          error: `Exit code ${exitCode}`
+          error: `Exit code ${exitCode}`,
         };
       }
-
     } catch (error) {
       // Kill process on timeout/error
       if (proc) {
@@ -246,7 +238,7 @@ class LocalCI {
         step: step.name,
         status: 'fail',
         duration,
-        error: errorMsg
+        error: errorMsg,
       };
     }
   }
@@ -335,4 +327,3 @@ if (import.meta.main) {
 }
 
 export { LocalCI };
-

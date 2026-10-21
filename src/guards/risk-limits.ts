@@ -38,11 +38,7 @@ export class RiskLimitGuard {
     private env: Env
   ) {}
 
-  async checkBet(
-    amount: number,
-    odds: number,
-    eventId: string
-  ): Promise<RiskCheckResult> {
+  async checkBet(amount: number, odds: number, eventId: string): Promise<RiskCheckResult> {
     // Check 1: Bet size
     if (amount > this.limits.maxBetSize) {
       return {
@@ -128,9 +124,6 @@ export class RiskLimitGuard {
   }
 }
 
-export function createRiskLimitGuard(
-  env: Env,
-  limits: Partial<RiskLimits> = {}
-): RiskLimitGuard {
+export function createRiskLimitGuard(env: Env, limits: Partial<RiskLimits> = {}): RiskLimitGuard {
   return new RiskLimitGuard({ ...DEFAULT_RISK_LIMITS, ...limits }, env);
 }

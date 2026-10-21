@@ -11,7 +11,7 @@ import { cleanString } from './helpers';
 export function parseSportTypes(response: any): string[] {
   try {
     const sports = response?.SportTypes || response?.sportTypes || [];
-    
+
     if (!Array.isArray(sports)) {
       return [];
     }

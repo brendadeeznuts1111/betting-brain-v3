@@ -7,11 +7,7 @@ import type { Env } from '../../../types/api';
 import { CORS_HEADERS } from '../../../utils/request';
 import { PERCENTAGE_MULTIPLIER, PERCENTAGE_PRECISION, HTTP_STATUS_SERVER_ERROR } from './constants';
 
-export async function getCacheMetrics(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getCacheMetrics(request: Request, env: Env, requestId: string): Promise<Response> {
   console.log(`[${requestId}] 📊 GET /api/f402/cache/metrics`);
 
   try {
@@ -32,7 +28,7 @@ export async function getCacheMetrics(
     ];
 
     const metricValues = await Promise.all(
-      metricKeys.map(async (key) => {
+      metricKeys.map(async key => {
         const value = await env.FANTASY_CACHE!.get(`fantasy402:metrics:${key}`);
         return { key, value: value ? parseInt(value) : 0 };
       })
@@ -51,9 +47,10 @@ export async function getCacheMetrics(
     const totalD1Executed = metrics.agent_list_d1_writes_executed || 0;
 
     const cacheHitRate = totalRequests > 0 ? (totalHits / totalRequests) * PERCENTAGE_MULTIPLIER : 0;
-    const d1WriteReduction = (totalD1Skipped + totalD1Executed) > 0
-      ? (totalD1Skipped / (totalD1Skipped + totalD1Executed)) * PERCENTAGE_MULTIPLIER
-      : 0;
+    const d1WriteReduction =
+      totalD1Skipped + totalD1Executed > 0
+        ? (totalD1Skipped / (totalD1Skipped + totalD1Executed)) * PERCENTAGE_MULTIPLIER
+        : 0;
 
     let cacheHitRateFixed = Number(cacheHitRate.toFixed(PERCENTAGE_PRECISION));
     if (isNaN(cacheHitRateFixed)) {
@@ -82,23 +79,20 @@ export async function getCacheMetrics(
         cacheHits: metrics.agent_detail_cache_hits || 0,
         cacheMisses: metrics.agent_detail_cache_misses || 0,
         hitRate:
-          (metrics.agent_detail_cache_hits || 0) +
-            (metrics.agent_detail_cache_misses || 0) >
-            0
+          (metrics.agent_detail_cache_hits || 0) + (metrics.agent_detail_cache_misses || 0) > 0
             ? (() => {
-              let hitRateVal = Number(
-                ((metrics.agent_detail_cache_hits || 0) /
-                  ((metrics.agent_detail_cache_hits || 0) +
-                    (metrics.agent_detail_cache_misses || 0))) *
-                PERCENTAGE_MULTIPLIER
-              ).toFixed(PERCENTAGE_PRECISION);
-              let parsedHitRate = Number(hitRateVal);
-              if (isNaN(parsedHitRate)) {
-                console.warn(`[CacheMetrics] Invalid agentDetail hitRate. Defaulting to 0.`);
-                parsedHitRate = 0;
-              }
-              return parsedHitRate;
-            })()
+                let hitRateVal = Number(
+                  ((metrics.agent_detail_cache_hits || 0) /
+                    ((metrics.agent_detail_cache_hits || 0) + (metrics.agent_detail_cache_misses || 0))) *
+                    PERCENTAGE_MULTIPLIER
+                ).toFixed(PERCENTAGE_PRECISION);
+                let parsedHitRate = Number(hitRateVal);
+                if (isNaN(parsedHitRate)) {
+                  console.warn(`[CacheMetrics] Invalid agentDetail hitRate. Defaulting to 0.`);
+                  parsedHitRate = 0;
+                }
+                return parsedHitRate;
+              })()
             : 0,
       },
       requestId,

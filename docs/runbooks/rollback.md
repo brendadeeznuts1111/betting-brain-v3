@@ -172,11 +172,11 @@ wrangler d1 execute RAW_FEED_DB --command "SELECT COUNT(*) FROM fantasy402_raw_f
 ```markdown
 ## Rollback Post-Mortem
 
-**Date:** 2025-10-08 14:30 UTC
-**Duration:** 5 minutes
-**Impact:** 5% error rate, 500 affected requests
+**Date:** 2025-10-08 14:30 UTC **Duration:** 5 minutes **Impact:** 5% error
+rate, 500 affected requests
 
 ### Timeline
+
 - 14:25: Deploy v3.0.1
 - 14:26: Error rate spikes to 5%
 - 14:28: Alert fired
@@ -184,14 +184,17 @@ wrangler d1 execute RAW_FEED_DB --command "SELECT COUNT(*) FROM fantasy402_raw_f
 - 14:31: Service restored
 
 ### Root Cause
+
 - Bug in fantasy402-config.ts line 45
 - Missing null check for env.FANTASY_CACHE
 
 ### Fix
+
 - Add null check: `if (!env.FANTASY_CACHE) return fallback;`
 - Add test: `test('handles missing FANTASY_CACHE')`
 
 ### Prevention
+
 - Add integration test for missing bindings
 - Gradual rollout (10% → 50% → 100%)
 ```
@@ -254,4 +257,3 @@ If rollback doesn't resolve the issue:
 **Last Updated:** 2025-10-08  
 **Owner:** DevOps Team  
 **Severity:** Critical
-

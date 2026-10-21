@@ -19,15 +19,15 @@ async function testSharpAnalysis() {
   // Test data: Sharp customer
   const sharpCustomer: CustomerData = {
     cid: 'CUST_12345',
-    clv: 15.5,      // Positive CLV (beating closing lines)
-    wr: 58.3,       // 58.3% win rate (above sharp threshold)
-    ao: 247,        // 247 bets (consistent action)
-    nb: 12450,      // $124.50 net profit
+    clv: 15.5, // Positive CLV (beating closing lines)
+    wr: 58.3, // 58.3% win rate (above sharp threshold)
+    ao: 247, // 247 bets (consistent action)
+    nb: 12450, // $124.50 net profit
   };
 
   try {
     const result = await analyzer.analyzeSharpBehavior(sharpCustomer);
-    
+
     console.log('✅ Sharp Analysis Result:');
     console.log(`   Customer: ${result.customerId}`);
     console.log(`   Sharp Score: ${result.sharpScore}/100`);
@@ -36,7 +36,7 @@ async function testSharpAnalysis() {
     console.log(`\n   Insights:`);
     result.insights.forEach(insight => console.log(`   - ${insight}`));
     console.log(`\n   Reasoning: ${result.reasoning}`);
-    
+
     return result;
   } catch (error) {
     console.error('❌ Sharp analysis failed:', error);
@@ -58,16 +58,16 @@ async function testSteamMoveDetection() {
   const lineMovement: LineMovementData = {
     eid: 'NBA_LAL_BOS_20251009',
     mt: 'SPREAD',
-    lb: -5.5,       // Line before
-    la: -7.0,       // Line after (moved 1.5 points)
-    vb: 125000,     // Volume before ($1,250)
-    va: 285000,     // Volume after ($2,850) - 128% increase
+    lb: -5.5, // Line before
+    la: -7.0, // Line after (moved 1.5 points)
+    vb: 125000, // Volume before ($1,250)
+    va: 285000, // Volume after ($2,850) - 128% increase
     ts: new Date().toISOString(),
   };
 
   try {
     const result = await analyzer.analyzeSteamMove(lineMovement);
-    
+
     console.log('✅ Steam Move Analysis Result:');
     console.log(`   Event: ${result.eventId}`);
     console.log(`   Market: ${result.marketType}`);
@@ -81,11 +81,13 @@ async function testSteamMoveDetection() {
     console.log(`\n   Volume Movement:`);
     console.log(`   - Before: $${(result.volumeMovement.before / 100).toFixed(2)}`);
     console.log(`   - After: $${(result.volumeMovement.after / 100).toFixed(2)}`);
-    console.log(`   - Change: $${(result.volumeMovement.change / 100).toFixed(2)} (${result.volumeMovement.changePercent.toFixed(2)}%)`);
+    console.log(
+      `   - Change: $${(result.volumeMovement.change / 100).toFixed(2)} (${result.volumeMovement.changePercent.toFixed(2)}%)`
+    );
     console.log(`\n   Insights:`);
     result.insights.forEach(insight => console.log(`   - ${insight}`));
     console.log(`\n   Reasoning: ${result.reasoning}`);
-    
+
     return result;
   } catch (error) {
     console.error('❌ Steam move detection failed:', error);
@@ -108,22 +110,22 @@ async function testRiskReport() {
     {
       eid: 'NBA_LAL_BOS_20251009',
       side: 'HOME',
-      risk: 850000,   // $8,500 risk
-      net: -450000,   // $4,500 net exposure (negative = liability)
+      risk: 850000, // $8,500 risk
+      net: -450000, // $4,500 net exposure (negative = liability)
       ts: new Date().toISOString(),
     },
     {
       eid: 'NBA_LAL_BOS_20251009',
       side: 'AWAY',
-      risk: 620000,   // $6,200 risk
-      net: 280000,    // $2,800 net exposure (positive = profit)
+      risk: 620000, // $6,200 risk
+      net: 280000, // $2,800 net exposure (positive = profit)
       ts: new Date().toISOString(),
     },
   ];
 
   try {
     const result = await analyzer.generateRiskReport(exposureData);
-    
+
     console.log('✅ Risk Report Result:');
     console.log(`   Event: ${result.eventId}`);
     console.log(`   Total Risk: $${(result.totalRisk / 100).toFixed(2)}`);
@@ -131,22 +133,24 @@ async function testRiskReport() {
     console.log(`   Risk Level: ${result.riskLevel}`);
     console.log(`\n   Exposure Breakdown:`);
     result.exposureBreakdown.forEach(exp => {
-      console.log(`   - ${exp.side}: Risk $${(exp.risk / 100).toFixed(2)}, Net $${(exp.net / 100).toFixed(2)} (${exp.percentage.toFixed(1)}%)`);
+      console.log(
+        `   - ${exp.side}: Risk $${(exp.risk / 100).toFixed(2)}, Net $${(exp.net / 100).toFixed(2)} (${exp.percentage.toFixed(1)}%)`
+      );
     });
     console.log(`\n   Recommendations:`);
     result.recommendations.forEach(rec => console.log(`   - ${rec}`));
-    
+
     if (result.hedgeStrategy) {
       console.log(`\n   Hedge Strategy:`);
       console.log(`   - Action: ${result.hedgeStrategy.action}`);
       console.log(`   - Amount: $${(result.hedgeStrategy.amount / 100).toFixed(2)}`);
       console.log(`   - Reasoning: ${result.hedgeStrategy.reasoning}`);
     }
-    
+
     console.log(`\n   Insights:`);
     result.insights.forEach(insight => console.log(`   - ${insight}`));
     console.log(`\n   Reasoning: ${result.reasoning}`);
-    
+
     return result;
   } catch (error) {
     console.error('❌ Risk report generation failed:', error);
@@ -173,7 +177,7 @@ async function testAIChat() {
 
   try {
     const result = await analyzer.chatAboutBettingData(messages);
-    
+
     console.log('✅ AI Chat Result:');
     console.log(`\n${result.response}\n`);
     console.log(`   Token Usage:`);
@@ -184,7 +188,7 @@ async function testAIChat() {
     console.log(`   - Input: $${result.cost.inputCost.toFixed(6)}`);
     console.log(`   - Output: $${result.cost.outputCost.toFixed(6)}`);
     console.log(`   - Total: $${result.cost.totalCost.toFixed(6)}`);
-    
+
     return result;
   } catch (error) {
     console.error('❌ AI chat failed:', error);
@@ -223,14 +227,8 @@ async function runAllTests() {
 }
 
 // Run tests if executed directly
-if (typeof Bun !== "undefined" && import.meta.path === Bun.main) {
+if (typeof Bun !== 'undefined' && import.meta.path === Bun.main) {
   runAllTests();
 }
 
-export {
-  testSharpAnalysis,
-  testSteamMoveDetection,
-  testRiskReport,
-  testAIChat,
-  runAllTests,
-};
+export { testSharpAnalysis, testSteamMoveDetection, testRiskReport, testAIChat, runAllTests };

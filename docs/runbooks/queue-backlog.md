@@ -102,12 +102,12 @@ await env.DB.batch(statements);  // All at once!
 // In src/queues/fantasy402-logger.ts
 
 export async function processFantasy402Logs(batch, env) {
-    // Add random delay to spread load
-    const jitter = Math.random() * 1000; // 0-1 second
-    await new Promise(resolve => setTimeout(resolve, jitter));
-    
-    // Process batch
-    await processBatch(batch, env);
+  // Add random delay to spread load
+  const jitter = Math.random() * 1000; // 0-1 second
+  await new Promise(resolve => setTimeout(resolve, jitter));
+
+  // Process batch
+  await processBatch(batch, env);
 }
 ```
 
@@ -143,16 +143,16 @@ script_name = "fantasy402-logger-2"  # Different worker
 const QUEUE_DEPTH_LIMIT = 10000;
 
 async function sendToQueue(data, env) {
-    const currentDepth = await getQueueDepth(env);
-    
-    if (currentDepth > QUEUE_DEPTH_LIMIT) {
-        // Circuit breaker: Don't queue, log directly
-        console.warn('Queue overloaded, logging directly');
-        await logToFallbackStorage(data, env);
-        return;
-    }
-    
-    await env.FANTASY402_QUEUE.send(data);
+  const currentDepth = await getQueueDepth(env);
+
+  if (currentDepth > QUEUE_DEPTH_LIMIT) {
+    // Circuit breaker: Don't queue, log directly
+    console.warn('Queue overloaded, logging directly');
+    await logToFallbackStorage(data, env);
+    return;
+  }
+
+  await env.FANTASY402_QUEUE.send(data);
 }
 ```
 
@@ -215,4 +215,3 @@ wrangler tail --format pretty | grep fantasy402
 **Last Updated:** 2025-10-08  
 **Owner:** DevOps Team  
 **Severity:** High
-

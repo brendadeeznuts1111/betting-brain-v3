@@ -3,14 +3,14 @@
  * Tests the actual implementation of scheduled jobs
  */
 
-import { describe, test, expect, vi, beforeEach } from "bun:test";
+import { describe, test, expect, vi, beforeEach } from 'bun:test';
 import type { Env } from '../../src/types/api';
 
 // Mock the cost cap guard
 vi.mock('../../src/guards/costCap', () => ({
   costCapGuard: {
-    checkRequest: vi.fn()
-  }
+    checkRequest: vi.fn(),
+  },
 }));
 
 // Mock the database and analytics engine
@@ -23,22 +23,22 @@ const mockEnv: Env = {
       bind: vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
-      })
+        all: vi.fn().mockResolvedValue({ results: [] }),
+      }),
     }),
-    exec: vi.fn().mockResolvedValue({ success: true })
+    exec: vi.fn().mockResolvedValue({ success: true }),
   } as any,
   QUEUE_PRODUCER: {
-    send: vi.fn().mockResolvedValue({ success: true })
+    send: vi.fn().mockResolvedValue({ success: true }),
   } as any,
   ANALYTICS_ENGINE: {
-    writeDataPoint: vi.fn().mockResolvedValue(undefined)
-  } as any
+    writeDataPoint: vi.fn().mockResolvedValue(undefined),
+  } as any,
 };
 
 const mockCtx: ExecutionContext = {
   waitUntil: vi.fn(),
-  passThroughOnException: vi.fn()
+  passThroughOnException: vi.fn(),
 } as any;
 
 describe('Schedule Implementation Tests', () => {
@@ -52,7 +52,7 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock customer data
@@ -64,8 +64,8 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
@@ -85,7 +85,7 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: false,
-        reason: 'Cost limit exceeded'
+        reason: 'Cost limit exceeded',
       });
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
@@ -105,7 +105,7 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock database error
@@ -116,8 +116,8 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
@@ -137,7 +137,7 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock 250 customers to test batching
@@ -149,8 +149,8 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
@@ -168,13 +168,13 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock exposure data
       const mockExposureData = [
         { event_id: 'nba_123', market: 'SPREAD', exposure: 5000 },
-        { event_id: 'nba_456', market: 'TOTAL', exposure: 3000 }
+        { event_id: 'nba_456', market: 'TOTAL', exposure: 3000 },
       ];
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -184,8 +184,8 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
@@ -205,14 +205,14 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock 75 exposure records
       const mockExposureData = Array.from({ length: 75 }, (_, i) => ({
         event_id: `nba_${i}`,
         market: 'SPREAD',
-        exposure: 1000 + i
+        exposure: 1000 + i,
       }));
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -222,8 +222,8 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
@@ -239,7 +239,7 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock empty data
@@ -250,8 +250,8 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
@@ -269,7 +269,7 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock minimal data
@@ -280,8 +280,8 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const startTime = Date.now();
@@ -301,7 +301,7 @@ describe('Schedule Implementation Tests', () => {
       const { costCapGuard } = await import('../../src/guards/costCap');
       (costCapGuard.checkRequest as any).mockResolvedValue({
         allowed: true,
-        reason: 'OK'
+        reason: 'OK',
       });
 
       // Mock data for both jobs
@@ -312,18 +312,15 @@ describe('Schedule Implementation Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const { handleSharpCalculation } = await import('../../src/schedules/sharpCalc');
       const { handleExposureCalculation } = await import('../../src/schedules/exposureCalc');
 
       // Execute both jobs concurrently
-      const promises = [
-        handleSharpCalculation(mockEnv, mockCtx),
-        handleExposureCalculation(mockEnv, mockCtx)
-      ];
+      const promises = [handleSharpCalculation(mockEnv, mockCtx), handleExposureCalculation(mockEnv, mockCtx)];
 
       await Promise.all(promises);
 

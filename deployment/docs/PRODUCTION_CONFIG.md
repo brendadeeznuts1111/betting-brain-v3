@@ -1,14 +1,15 @@
 # Production Configuration Guide - v1.0
 
-**Version:** 1.0-cache-optimization
-**Target Environment:** Cloudflare Workers
+**Version:** 1.0-cache-optimization **Target Environment:** Cloudflare Workers
 **Last Updated:** 2025-10-08
 
 ---
 
 ## Overview
 
-This guide covers production configuration for Betting-Brain v1.0 with Fantasy402 cache optimization achieving:
+This guide covers production configuration for Betting-Brain v1.0 with
+Fantasy402 cache optimization achieving:
+
 - **90%+ cache hit rate**
 - **93.3% D1 write reduction**
 - **Secure ingest endpoint** with secret-based authentication
@@ -33,6 +34,7 @@ wrangler login
 ### 2. Environment Access
 
 Ensure you have:
+
 - ✅ Cloudflare account access
 - ✅ Workers & Pages permissions
 - ✅ D1 database access
@@ -51,13 +53,15 @@ git describe --tags --exact-match
 ### 4. Cloudflare Service Bindings
 
 This deployment uses **50 Cloudflare integrations**:
+
 - 46 service bindings (23 per environment)
 - 4 cron triggers
 
-For complete integration details, see:
-📄 **[CLOUDFLARE_INTEGRATION.md](./CLOUDFLARE_INTEGRATION.md)**
+For complete integration details, see: 📄
+**[CLOUDFLARE_INTEGRATION.md](./CLOUDFLARE_INTEGRATION.md)**
 
 Quick summary:
+
 - 4 D1 databases (2 dev + 2 prod)
 - 20 KV namespaces (10 dev + 10 prod)
 - 20 Queues (10 dev + 10 prod)
@@ -70,7 +74,8 @@ Quick summary:
 
 ### Step 5: Set EXTENSION_SECRET
 
-**⚠️ CRITICAL:** This secret protects the Fantasy402 ingest endpoint from unauthorized access.
+**⚠️ CRITICAL:** This secret protects the Fantasy402 ingest endpoint from
+unauthorized access.
 
 #### Generate Strong Secret
 
@@ -136,11 +141,13 @@ curl -X POST https://betting-brain-v3.workers.dev/api/fantasy402/ingest \
 #### Update Extension Secret
 
 1. **Open extension code:**
+
    ```bash
    cd browser-extension
    ```
 
 2. **Edit `background.js`:**
+
    ```javascript
    // Find this line:
    const EXTENSION_SECRET = 'default-dev-secret-change-me';
@@ -150,6 +157,7 @@ curl -X POST https://betting-brain-v3.workers.dev/api/fantasy402/ingest \
    ```
 
 3. **Update worker URL (if using custom domain):**
+
    ```javascript
    // Find this line:
    const WORKER_URL = 'http://localhost:8787';
@@ -179,8 +187,8 @@ curl -X POST https://betting-brain-v3.workers.dev/api/fantasy402/ingest \
 
 ### Step 7: Tune KV TTLs
 
-**Default (Development):** 1 hour (`expirationTtl: 3600`)
-**Recommended (Production):** 24 hours (`expirationTtl: 86400`)
+**Default (Development):** 1 hour (`expirationTtl: 3600`) **Recommended
+(Production):** 24 hours (`expirationTtl: 86400`)
 
 #### Files to Update
 
@@ -189,12 +197,12 @@ curl -X POST https://betting-brain-v3.workers.dev/api/fantasy402/ingest \
 ```typescript
 // Current (development):
 await env.FANTASY_CACHE!.put(key, JSON.stringify(cacheData), {
-  expirationTtl: 3600 // 1 hour
+  expirationTtl: 3600, // 1 hour
 });
 
 // Production (after 48h stable):
 await env.FANTASY_CACHE!.put(key, JSON.stringify(cacheData), {
-  expirationTtl: 86400 // 24 hours
+  expirationTtl: 86400, // 24 hours
 });
 ```
 
@@ -203,26 +211,27 @@ await env.FANTASY_CACHE!.put(key, JSON.stringify(cacheData), {
 ```typescript
 // Current (development):
 await env.FANTASY_CACHE.put(key, JSON.stringify(cacheData), {
-  expirationTtl: 3600
+  expirationTtl: 3600,
 });
 
 // Production (after 48h stable):
 await env.FANTASY_CACHE.put(key, JSON.stringify(cacheData), {
-  expirationTtl: 86400
+  expirationTtl: 86400,
 });
 ```
 
 #### TTL Tuning Strategy
 
-| Phase | TTL | Duration | Goal |
-|-------|-----|----------|------|
-| **Initial Deployment** | 1 hour | 0-48 hours | Validate cache correctness |
-| **Stable Production** | 24 hours | 48h+ | Maximize performance |
-| **Hot Fix/Schema Change** | 5 minutes | During migration | Fast iteration |
+| Phase                     | TTL       | Duration         | Goal                       |
+| ------------------------- | --------- | ---------------- | -------------------------- |
+| **Initial Deployment**    | 1 hour    | 0-48 hours       | Validate cache correctness |
+| **Stable Production**     | 24 hours  | 48h+             | Maximize performance       |
+| **Hot Fix/Schema Change** | 5 minutes | During migration | Fast iteration             |
 
 #### When to Keep 1-Hour TTL
 
 Keep `expirationTtl: 3600` if:
+
 - Agent hierarchies change frequently (new agents added daily)
 - Data accuracy is more important than performance
 - Debugging cache issues
@@ -246,6 +255,7 @@ wrangler d1 execute betting-analytics --remote \
 ```
 
 Expected migrations:
+
 - `0001_initial_schema.sql` - Core tables
 - `0002_add_ttl.sql` - TTL columns
 - `0003_mcp_tables.sql` - MCP-specific tables
@@ -317,6 +327,7 @@ chmod +x deployment/scripts/deploy-v1.0.sh
 ```
 
 The script performs:
+
 1. ✅ Pre-flight checks (wrangler, git, bun, curl, jq installed)
 2. ✅ Git tag verification
 3. ✅ EXTENSION_SECRET validation
@@ -349,10 +360,11 @@ curl -s https://betting-brain-v3.workers.dev/api/f402/cache/metrics | jq '.summa
 
 ### Immediate Checks (0-5 minutes)
 
-Follow the checklist in:
-📄 **[deployment/checklists/post-deployment.md](../checklists/post-deployment.md)**
+Follow the checklist in: 📄
+**[deployment/checklists/post-deployment.md](../checklists/post-deployment.md)**
 
 Key checks:
+
 - [ ] `/health` returns 200 OK with version 3.0.0
 - [ ] `/api/f402/cache/metrics` shows initial metrics
 - [ ] Cache warming completes in <1 second
@@ -391,11 +403,13 @@ Key checks:
 ### Dashboard Access
 
 **Floor Control Dashboard:**
+
 ```
 http://localhost:8080/floor-control.html
 ```
 
 Update worker URL in dashboard header to production URL:
+
 ```javascript
 // Find this line in floor-control.html:
 const WORKER_URL = 'http://localhost:8787';
@@ -420,6 +434,7 @@ wrangler tail --format json | jq '.logs[]'
 ### Analytics Engine
 
 View metrics in Cloudflare dashboard:
+
 1. Go to **Workers & Pages** → **betting-brain-v3**
 2. Click **Analytics** tab
 3. View:
@@ -435,6 +450,7 @@ View metrics in Cloudflare dashboard:
 ### Automatic Rollback Triggers
 
 Rollback immediately if:
+
 - Cache hit rate drops below 50%
 - D1 write errors exceed 1%
 - Worker crashes more than once
@@ -464,6 +480,7 @@ curl -s https://betting-brain-v3.workers.dev/health | jq '.version'
 ### Post-Rollback Investigation
 
 1. **Review logs:**
+
    ```bash
    wrangler tail --format json > rollback-logs.json
    ```
@@ -485,12 +502,14 @@ curl -s https://betting-brain-v3.workers.dev/health | jq '.version'
 ### Secrets Management
 
 **✅ DO:**
+
 - Use strong, random secrets (32+ bytes)
 - Rotate secrets every 90 days
 - Store secrets in Wrangler (encrypted at rest)
 - Use different secrets for dev/staging/production
 
 **❌ DON'T:**
+
 - Commit secrets to git
 - Share secrets via chat/email
 - Use predictable secrets
@@ -499,6 +518,7 @@ curl -s https://betting-brain-v3.workers.dev/health | jq '.version'
 ### CORS Configuration
 
 Production CORS headers (already configured):
+
 ```typescript
 'Access-Control-Allow-Origin': '*',
 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -506,6 +526,7 @@ Production CORS headers (already configured):
 ```
 
 For stricter security, update to specific origin:
+
 ```typescript
 'Access-Control-Allow-Origin': 'https://fantasy402.com',
 ```
@@ -515,6 +536,7 @@ For stricter security, update to specific origin:
 Current rate limit: **10 req/s per IP** (in-memory, per-instance)
 
 For production-grade rate limiting:
+
 1. Implement Durable Objects-based rate limiter
 2. Or use Cloudflare Rate Limiting Rules
 
@@ -527,12 +549,15 @@ For production-grade rate limiting:
 **Target:** 90%+ sustained hit rate
 
 **Strategies:**
+
 1. **Warm cache on deployment:**
+
    ```bash
    curl -X POST https://betting-brain-v3.workers.dev/api/f402/cache/warm
    ```
 
 2. **Monitor cache misses:**
+
    ```bash
    curl -s https://betting-brain-v3.workers.dev/api/f402/cache/metrics | \
      jq '.summary.cacheMisses'
@@ -549,11 +574,13 @@ For production-grade rate limiting:
 **Target:** 90%+ write reduction
 
 **Achieved via:**
+
 - Hash-based change detection
 - Skip D1 writes when data unchanged
 - Only write when hash changes
 
 **Monitor:**
+
 ```bash
 curl -s https://betting-brain-v3.workers.dev/api/f402/cache/metrics | \
   jq '.summary.d1WriteReduction'
@@ -562,16 +589,19 @@ curl -s https://betting-brain-v3.workers.dev/api/f402/cache/metrics | \
 ### KV Storage Optimization
 
 **Current usage:**
+
 - Multi-key caching: 3 keys per agent hierarchy
 - Individual agent indexing: 1 key per agent
 - Metrics: 5 counters (7-day retention)
 
 **Estimate for 1000 agents:**
+
 - Agent lists: ~60 KB × 3 keys = 180 KB
 - Individual agents: ~0.3 KB × 1000 = 300 KB
 - Total: ~500 KB
 
 **KV Quotas (Workers Paid plan):**
+
 - Storage: 1 GB
 - Read operations: 10M/day
 - Write operations: 1M/day
@@ -583,11 +613,13 @@ curl -s https://betting-brain-v3.workers.dev/api/f402/cache/metrics | \
 ### Issue: Cache Hit Rate < 50%
 
 **Possible causes:**
+
 1. Cache not warmed after deployment
 2. TTL too short (1 hour in high-traffic scenario)
 3. Agent data changing frequently
 
 **Solutions:**
+
 ```bash
 # 1. Warm cache manually
 curl -X POST https://betting-brain-v3.workers.dev/api/f402/cache/warm
@@ -603,11 +635,13 @@ curl -s https://betting-brain-v3.workers.dev/api/f402/cache/metrics | \
 ### Issue: Extension Auth Fails (401 errors)
 
 **Possible causes:**
+
 1. EXTENSION_SECRET not set in Wrangler
 2. Extension using wrong secret
 3. Typo in secret value
 
 **Solutions:**
+
 ```bash
 # 1. Verify secret is set
 wrangler secret list
@@ -624,11 +658,13 @@ curl -X POST https://betting-brain-v3.workers.dev/api/fantasy402/ingest \
 ### Issue: Dashboard Shows Zeros
 
 **Possible causes:**
+
 1. No data intercepted yet (extension not active)
 2. KV cache empty (cold start)
 3. Worker URL misconfigured in dashboard
 
 **Solutions:**
+
 ```bash
 # 1. Verify extension is intercepting
 # Check browser console (F12) on fantasy402.com
@@ -645,6 +681,7 @@ curl -X POST https://betting-brain-v3.workers.dev/api/f402/cache/warm
 ## Success Criteria
 
 All of the following must be true:
+
 - ✅ Cache hit rate: 90%+
 - ✅ D1 write reduction: 90%+
 - ✅ No security vulnerabilities
@@ -660,22 +697,25 @@ All of the following must be true:
 ## Support & Resources
 
 ### Documentation
+
 - **[RELEASE_v1.0.md](../../RELEASE_v1.0.md)** - Release notes and benchmarks
 - **[CACHE_ARCHITECTURE.md](./CACHE_ARCHITECTURE.md)** - Architecture diagram
-- **[post-deployment.md](../checklists/post-deployment.md)** - Verification checklist
+- **[post-deployment.md](../checklists/post-deployment.md)** - Verification
+  checklist
 
 ### Monitoring
+
 - **Cloudflare Dashboard:** Workers & Pages → betting-brain-v3 → Analytics
 - **Floor Control Dashboard:** Local or hosted HTML dashboard
 - **Wrangler Tail:** `wrangler tail` for live logs
 
 ### Emergency Contacts
+
 - **Team:** [Your team contact info]
 - **On-Call:** [On-call rotation]
 - **Escalation:** [Escalation path]
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-10-08
-**Maintained By:** Betting-Brain Team
+**Document Version:** 1.0 **Last Updated:** 2025-10-08 **Maintained By:**
+Betting-Brain Team

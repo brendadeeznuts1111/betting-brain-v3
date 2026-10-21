@@ -1,7 +1,7 @@
 /**
  * Process Cleanup Utility
  * Tracks and cleans up all spawned child processes to prevent zombies
- * 
+ *
  * Features:
  * - Automatic cleanup on process exit
  * - Signal handling (SIGINT, SIGTERM, SIGHUP)
@@ -25,13 +25,15 @@ class ProcessManager {
    */
   track(process: Subprocess): Subprocess {
     this.processes.add(process);
-    
+
     // Auto-remove when process exits
-    process.exited.then(() => {
-      this.processes.delete(process);
-    }).catch(() => {
-      this.processes.delete(process);
-    });
+    process.exited
+      .then(() => {
+        this.processes.delete(process);
+      })
+      .catch(() => {
+        this.processes.delete(process);
+      });
 
     return process;
   }
@@ -51,10 +53,10 @@ class ProcessManager {
     try {
       // Try SIGTERM first
       process.kill(signal);
-      
+
       // Wait for process to exit
       const exitPromise = process.exited;
-      const timeoutPromise = new Promise<never>((_, reject) => 
+      const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Kill timeout')), timeoutMs)
       );
 
@@ -65,7 +67,7 @@ class ProcessManager {
         process.kill(9);
         await Promise.race([
           process.exited,
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Force kill timeout')), 1000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Force kill timeout')), 1000)),
         ]);
       } catch {
         // Process may already be dead, ignore
@@ -91,9 +93,7 @@ class ProcessManager {
     console.log(`🧹 Cleaning up ${processes.length} child process(es)...`);
 
     // Kill all processes in parallel
-    await Promise.allSettled(
-      processes.map(proc => this.kill(proc, 15, timeoutMs))
-    );
+    await Promise.allSettled(processes.map(proc => this.kill(proc, 15, timeoutMs)));
 
     this.processes.clear();
     this.cleanupInProgress = false;
@@ -115,13 +115,15 @@ class ProcessManager {
     for (const signal of signals) {
       const handler = () => {
         console.log(`\n⚠️  Received ${signal}, cleaning up...`);
-        this.killAll(3000).then(() => {
-          console.log('✅ Cleanup complete');
-          process.exit(0);
-        }).catch((error) => {
-          console.error('❌ Cleanup failed:', error);
-          process.exit(1);
-        });
+        this.killAll(3000)
+          .then(() => {
+            console.log('✅ Cleanup complete');
+            process.exit(0);
+          })
+          .catch(error => {
+            console.error('❌ Cleanup failed:', error);
+            process.exit(1);
+          });
       };
 
       this.signalHandlers.set(signal, handler);
@@ -153,4 +155,3 @@ const processManager = new ProcessManager();
 
 export { processManager, ProcessManager };
 export default processManager;
-

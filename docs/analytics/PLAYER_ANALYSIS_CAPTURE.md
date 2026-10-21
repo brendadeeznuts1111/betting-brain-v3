@@ -1,27 +1,28 @@
 # Player Analysis Report Capture - Added ✅
 
-**Date:** 2025-10-08
-**Endpoint:** `POST /cloud/api/Manager/getReportPlayerAnalysis`
-**Status:** Ingest handler updated, extension already supports
-**TTL:** 1 hour (3600 seconds)
+**Date:** 2025-10-08 **Endpoint:**
+`POST /cloud/api/Manager/getReportPlayerAnalysis` **Status:** Ingest handler
+updated, extension already supports **TTL:** 1 hour (3600 seconds)
 
 ---
 
 ## 🎯 Implementation
 
 ### User Provided API Call
+
 ```javascript
-fetch("https://fantasy402.com/cloud/api/Manager/getReportPlayerAnalysis", {
-  "headers": {
-    "authorization": "Bearer eyJhbGci...",
-    "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+fetch('https://fantasy402.com/cloud/api/Manager/getReportPlayerAnalysis', {
+  headers: {
+    authorization: 'Bearer eyJhbGci...',
+    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
   },
-  "body": "agentID=BILLY666&agentOwner=BILLY666&customerID=&reportType=1&startDate=2025-09-24&endDate=2025-10-08&lineType=1&token=eyJhbGci...&operation=getReportPlayerAnalysis&RRO=1&agentSite=1",
-  "method": "POST"
+  body: 'agentID=BILLY666&agentOwner=BILLY666&customerID=&reportType=1&startDate=2025-09-24&endDate=2025-10-08&lineType=1&token=eyJhbGci...&operation=getReportPlayerAnalysis&RRO=1&agentSite=1',
+  method: 'POST',
 });
 ```
 
 ### Parameters
+
 - **agentID:** Agent identifier (e.g., "BILLY666")
 - **agentOwner:** Owner agent (e.g., "BILLY666")
 - **customerID:** Customer filter (empty = all)
@@ -37,9 +38,11 @@ fetch("https://fantasy402.com/cloud/api/Manager/getReportPlayerAnalysis", {
 ## 📊 Data Storage
 
 ### KV Namespace: `FANTASY_CACHE`
+
 **Key:** `playerAnalysis:latest`
 
 **Value Structure:**
+
 ```typescript
 {
   raw: any,                      // Complete Fantasy402 response
@@ -57,6 +60,7 @@ fetch("https://fantasy402.com/cloud/api/Manager/getReportPlayerAnalysis", {
 ```
 
 **TTL:** 3600 seconds (1 hour)
+
 - Longer than scores (5 min) because analysis reports change less frequently
 - Shorter than auth tokens to ensure fresh data
 
@@ -65,6 +69,7 @@ fetch("https://fantasy402.com/cloud/api/Manager/getReportPlayerAnalysis", {
 ## 🔄 Data Flow
 
 ### Capture Flow
+
 ```
 1. User navigates to Fantasy402 Manager page
    ↓
@@ -86,6 +91,7 @@ fetch("https://fantasy402.com/cloud/api/Manager/getReportPlayerAnalysis", {
 ```
 
 ### Retrieval Flow (Future)
+
 ```
 Dashboard/API requests player analysis:
 GET /api/player-analysis?agentID=BILLY666&startDate=2025-09-24&endDate=2025-10-08
@@ -101,41 +107,48 @@ Check FANTASY_CACHE for 'playerAnalysis:latest'
 ## 📝 Code Changes
 
 ### Updated: `src/api/fantasy402-ingest.ts` (lines 91-117)
+
 ```typescript
 // If this is a Player Analysis report, store in FANTASY_CACHE for analytics
-if (packet.operation === 'getReportPlayerAnalysis' && packet.response?.body && env.FANTASY_CACHE) {
-    try {
-        // Store raw player analysis data
-        await env.FANTASY_CACHE.put(
-            'playerAnalysis:latest',
-            JSON.stringify({
-                raw: packet.response.body,
-                timestamp: packet.timestamp,
-                capturedAt: new Date().toISOString(),
-                metadata: {
-                    reportType: packet.request?.body?.reportType,
-                    startDate: packet.request?.body?.startDate,
-                    endDate: packet.request?.body?.endDate,
-                    lineType: packet.request?.body?.lineType,
-                    agentID: packet.request?.body?.agentID,
-                    customerID: packet.request?.body?.customerID,
-                }
-            }),
-            { expirationTtl: 3600 } // 1 hour
-        );
+if (
+  packet.operation === 'getReportPlayerAnalysis' &&
+  packet.response?.body &&
+  env.FANTASY_CACHE
+) {
+  try {
+    // Store raw player analysis data
+    await env.FANTASY_CACHE.put(
+      'playerAnalysis:latest',
+      JSON.stringify({
+        raw: packet.response.body,
+        timestamp: packet.timestamp,
+        capturedAt: new Date().toISOString(),
+        metadata: {
+          reportType: packet.request?.body?.reportType,
+          startDate: packet.request?.body?.startDate,
+          endDate: packet.request?.body?.endDate,
+          lineType: packet.request?.body?.lineType,
+          agentID: packet.request?.body?.agentID,
+          customerID: packet.request?.body?.customerID,
+        },
+      }),
+      { expirationTtl: 3600 } // 1 hour
+    );
 
-        console.log(`[${requestId}] 📊 Stored player analysis in FANTASY_CACHE`);
-    } catch (error) {
-        console.warn(`[${requestId}] ⚠️ Failed to store player analysis:`, error);
-    }
+    console.log(`[${requestId}] 📊 Stored player analysis in FANTASY_CACHE`);
+  } catch (error) {
+    console.warn(`[${requestId}] ⚠️ Failed to store player analysis:`, error);
+  }
 }
 ```
 
 ### No Extension Changes Needed ✅
+
 Extension already intercepts ALL `/cloud/api/` endpoints via pattern matching:
+
 ```javascript
 const INTERCEPT_PATTERNS = [
-  '/cloud/api/' // Captures everything under /cloud/api/*
+  '/cloud/api/', // Captures everything under /cloud/api/*
 ];
 ```
 
@@ -144,17 +157,20 @@ const INTERCEPT_PATTERNS = [
 ## 🧪 Testing
 
 ### Manual Test (Once Worker Restarts)
+
 1. Visit fantasy402.com/manager.html
 2. Navigate to Player Analysis report
 3. Submit report request (dates, filters, etc.)
 4. Check worker logs for: `📊 Stored player analysis in FANTASY_CACHE`
 5. Verify KV storage:
+
 ```bash
 curl -s http://localhost:8787/api/player-analysis
 # Should return cached report data
 ```
 
 ### Test with Sample Data (Simulated)
+
 ```typescript
 // In scripts/test-player-analysis-ingest.ts
 const sampleRequest = {
@@ -170,7 +186,7 @@ const sampleRequest = {
       startDate: '2025-09-24',
       endDate: '2025-10-08',
       lineType: 1,
-    }
+    },
   },
   response: {
     status: 200,
@@ -184,22 +200,22 @@ const sampleRequest = {
           netIncome: -800,
           wagerCount: 45,
           avgBetSize: 111.11,
-          winRate: 0.48
-        }
+          winRate: 0.48,
+        },
       ],
       summary: {
         totalPlayers: 1,
         totalRisk: 5000,
         totalWin: 4200,
-        totalNet: -800
-      }
-    }
+        totalNet: -800,
+      },
+    },
   },
   metadata: {
     duration: 150,
     agentID: 'BILLY666',
-    agentOwner: 'BILLY666'
-  }
+    agentOwner: 'BILLY666',
+  },
 };
 ```
 
@@ -223,7 +239,9 @@ const sampleRequest = {
 ## 🎯 Next Steps (Optional)
 
 ### 1. Create API Endpoint
+
 **File:** `src/routes/api/player-analysis.ts`
+
 ```typescript
 export async function getPlayerAnalysis(
   request: Request,
@@ -238,11 +256,14 @@ export async function getPlayerAnalysis(
 
     // Use cache if less than 1 hour old
     if (cacheAge < 3600000) {
-      return new Response(JSON.stringify({
-        ...data,
-        cached: true,
-        cacheAge: Math.round(cacheAge / 1000)
-      }), {headers: corsHeaders});
+      return new Response(
+        JSON.stringify({
+          ...data,
+          cached: true,
+          cacheAge: Math.round(cacheAge / 1000),
+        }),
+        { headers: corsHeaders }
+      );
     }
   }
 
@@ -252,7 +273,9 @@ export async function getPlayerAnalysis(
 ```
 
 ### 2. Register Route
+
 **File:** `src/api/routes.ts`
+
 ```typescript
 case '/player-analysis':
   const { getPlayerAnalysis } = await import('../routes/api/player-analysis');
@@ -260,7 +283,9 @@ case '/player-analysis':
 ```
 
 ### 3. Add Dashboard Card
+
 **File:** `dashboards/floor-control.html`
+
 ```html
 <div class="card">
   <div class="card-header">
@@ -336,6 +361,7 @@ Based on typical player analysis reports:
 ## 🎉 Summary
 
 **Status:** ✅ COMPLETE (ingest handler)
+
 - Added `getReportPlayerAnalysis` detection to ingest handler
 - Stores complete raw response in FANTASY_CACHE with 1-hour TTL
 - Captures report metadata (dates, reportType, agentID, etc.)
@@ -343,17 +369,18 @@ Based on typical player analysis reports:
 - Ready for API endpoint and dashboard integration
 
 **User Action Required:**
+
 1. Visit fantasy402.com/manager.html
 2. Generate a Player Analysis report
 3. Extension will automatically capture and store the data
 
 **Future Enhancements:**
+
 - Create `/api/player-analysis` endpoint to retrieve cached data
 - Add dashboard card to visualize player analysis
 - Store historical analysis in D1 for trend tracking
 
 ---
 
-*Last Updated: 2025-10-08 14:10*
-*Added to complete Fantasy402 data capture suite*
-*Part of: Live Scores, BetTicker, and now Player Analysis capture*
+_Last Updated: 2025-10-08 14:10_ _Added to complete Fantasy402 data capture
+suite_ _Part of: Live Scores, BetTicker, and now Player Analysis capture_

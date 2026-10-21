@@ -43,8 +43,8 @@ export function createKimiModel(apiKey: string, modelId: string = KIMI_K2_MODEL)
  * Kimi K2 Pricing (per 1M tokens)
  */
 export const KIMI_PRICING = {
-  input: 0.60,   // $0.60 per 1M input tokens
-  output: 2.50,  // $2.50 per 1M output tokens
+  input: 0.6, // $0.60 per 1M input tokens
+  output: 2.5, // $2.50 per 1M output tokens
 } as const;
 
 /**

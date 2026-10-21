@@ -31,7 +31,7 @@ export function validateInput(data: any, rules: ValidationRule[]): ValidationRes
 
   for (const rule of rules) {
     const value = data[rule.field];
-    
+
     // Check required
     if (rule.required && (value === undefined || value === null || value === '')) {
       errors.push(`${rule.field} is required`);
@@ -95,7 +95,7 @@ export function validateInput(data: any, rules: ValidationRule[]): ValidationRes
   return {
     valid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? sanitized : undefined
+    sanitized: errors.length === 0 ? sanitized : undefined,
   };
 }
 
@@ -164,7 +164,7 @@ export const Validators = {
     type: 'string',
     minLength: 1,
     maxLength: 100,
-    pattern: /^[a-zA-Z0-9_-]+$/
+    pattern: /^[a-zA-Z0-9_-]+$/,
   }),
 
   customerID: (required = false): ValidationRule => ({
@@ -172,7 +172,7 @@ export const Validators = {
     required,
     type: 'string',
     minLength: 1,
-    maxLength: 100
+    maxLength: 100,
   }),
 
   eventID: (required = false): ValidationRule => ({
@@ -180,21 +180,21 @@ export const Validators = {
     required,
     type: 'string',
     minLength: 1,
-    maxLength: 100
+    maxLength: 100,
   }),
 
   marketType: (required = false): ValidationRule => ({
     field: 'marketType',
     required,
     type: 'string',
-    enum: ['MONEYLINE', 'SPREAD', 'TOTAL', 'PROP', 'FUTURE', 'PARLAY']
+    enum: ['MONEYLINE', 'SPREAD', 'TOTAL', 'PROP', 'FUTURE', 'PARLAY'],
   }),
 
   sport: (required = false): ValidationRule => ({
     field: 'sport',
     required,
     type: 'string',
-    enum: ['NFL', 'NBA', 'MLB', 'NHL', 'NCAAF', 'NCAAB', 'SOCCER', 'MMA', 'BOXING', 'TENNIS', 'GOLF']
+    enum: ['NFL', 'NBA', 'MLB', 'NHL', 'NCAAF', 'NCAAB', 'SOCCER', 'MMA', 'BOXING', 'TENNIS', 'GOLF'],
   }),
 
   date: (field: string, required = false): ValidationRule => ({
@@ -202,13 +202,13 @@ export const Validators = {
     required,
     type: 'string',
     pattern: /^\d{4}-\d{2}-\d{2}$/,
-    custom: (value) => {
+    custom: value => {
       const date = new Date(value);
       if (isNaN(date.getTime())) {
         return `${field} must be a valid date (YYYY-MM-DD)`;
       }
       return null;
-    }
+    },
   }),
 
   limit: (max = 1000): ValidationRule => ({
@@ -216,14 +216,14 @@ export const Validators = {
     required: false,
     type: 'number',
     min: 1,
-    max
+    max,
   }),
 
   offset: (): ValidationRule => ({
     field: 'offset',
     required: false,
     type: 'number',
-    min: 0
+    min: 0,
   }),
 
   threshold: (min: number, max: number): ValidationRule => ({
@@ -231,22 +231,22 @@ export const Validators = {
     required: false,
     type: 'number',
     min,
-    max
+    max,
   }),
 
   exposureLevel: (): ValidationRule => ({
     field: 'exposureLevel',
     required: false,
     type: 'string',
-    enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+    enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
   }),
 
   groupBy: (): ValidationRule => ({
     field: 'groupBy',
     required: false,
     type: 'string',
-    enum: ['event', 'market', 'customer', 'sport']
-  })
+    enum: ['event', 'market', 'customer', 'sport'],
+  }),
 };
 
 /**
@@ -254,10 +254,10 @@ export const Validators = {
  */
 export function validateQueryParams(url: URL, rules: ValidationRule[]): ValidationResult {
   const data: any = {};
-  
+
   for (const rule of rules) {
     const value = url.searchParams.get(rule.field);
-    
+
     if (value !== null) {
       // Convert to appropriate type
       if (rule.type === 'number') {
@@ -278,12 +278,12 @@ export function validateQueryParams(url: URL, rules: ValidationRule[]): Validati
  */
 export async function validateJSONBody(request: Request, rules: ValidationRule[]): Promise<ValidationResult> {
   try {
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     return validateInput(body, rules);
   } catch (error) {
     return {
       valid: false,
-      errors: ['Invalid JSON body']
+      errors: ['Invalid JSON body'],
     };
   }
 }
@@ -292,18 +292,21 @@ export async function validateJSONBody(request: Request, rules: ValidationRule[]
  * Create validation error response
  */
 export function validationErrorResponse(errors: string[], requestId?: string): Response {
-  return new Response(JSON.stringify({
-    error: 'Validation Error',
-    errors,
-    requestId,
-    timestamp: new Date().toISOString()
-  }), {
-    status: 400,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
+  return new Response(
+    JSON.stringify({
+      error: 'Validation Error',
+      errors,
+      requestId,
+      timestamp: new Date().toISOString(),
+    }),
+    {
+      status: 400,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
     }
-  });
+  );
 }
 
 /**
@@ -311,8 +314,14 @@ export function validationErrorResponse(errors: string[], requestId?: string): R
  */
 import { z } from 'zod';
 
-export const EventIdSchema = z.string().min(1, 'Event ID is required').regex(/^[a-zA-Z0-9_-]+$/, 'Event ID contains invalid characters');
-export const CustomerIdSchema = z.string().min(1, 'Customer ID is required').regex(/^[a-zA-Z0-9_-]+$/, 'Customer ID contains invalid characters');
+export const EventIdSchema = z
+  .string()
+  .min(1, 'Event ID is required')
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Event ID contains invalid characters');
+export const CustomerIdSchema = z
+  .string()
+  .min(1, 'Customer ID is required')
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Customer ID contains invalid characters');
 export const MarketTypeSchema = z.enum(['MONEYLINE', 'SPREAD', 'TOTAL', 'PROP', 'FUTURE', 'PARLAY']);
 
 /**
@@ -324,12 +333,13 @@ export function validateRequest(schema: z.ZodSchema, data: any): { success: bool
     if (hasCircularReference(data)) {
       return { success: false, error: 'Circular reference detected' };
     }
-    
+
     // Check for very large objects
-    if (JSON.stringify(data).length > 1000000) { // 1MB limit
+    if (JSON.stringify(data).length > 1000000) {
+      // 1MB limit
       return { success: false, error: 'Object too large' };
     }
-    
+
     const result = schema.safeParse(data);
     if (result.success) {
       return { success: true, data: result.data };
@@ -350,25 +360,25 @@ function hasCircularReference(obj: any, seen = new WeakSet()): boolean {
   if (obj === null || typeof obj !== 'object') {
     return false;
   }
-  
+
   if (seen.has(obj)) {
     return true;
   }
-  
+
   seen.add(obj);
-  
+
   for (const key in obj) {
     if (hasCircularReference(obj[key], seen)) {
       return true;
     }
   }
-  
+
   seen.delete(obj);
   return false;
 }
 
 // Re-export schemas from api.ts for backward compatibility
-export { 
+export {
   GetBettingExposureRequest as GetBettingExposureRequestSchema,
   BettingExposureResponse as BettingExposureResponseSchema,
   GetSharpScoreRequest as GetSharpScoreRequestSchema,
@@ -377,5 +387,5 @@ export {
   HoldPercentageResponse as HoldPercentageResponseSchema,
   GetCLVRequest as GetCLVRequestSchema,
   CLVResponse as CLVResponseSchema,
-  ErrorResponse as ErrorResponseSchema
+  ErrorResponse as ErrorResponseSchema,
 } from '../types/api';

@@ -36,7 +36,7 @@ class ExtensionTestRunner {
 
   async runAllTests(): Promise<TestResult[]> {
     console.log('🚀 Starting Automated Extension Testing Suite');
-    console.log('=' .repeat(60));
+    console.log('='.repeat(60));
 
     try {
       // Start log monitor
@@ -68,17 +68,10 @@ class ExtensionTestRunner {
     try {
       console.log(`\n📁 Testing ${test}...`);
 
-      const requiredFiles = [
-        'manifest.json',
-        'background.js',
-        'content.js',
-        'popup.html',
-        'popup.js',
-        'icon.svg'
-      ];
+      const requiredFiles = ['manifest.json', 'background.js', 'content.js', 'popup.html', 'popup.js', 'icon.svg'];
 
       const missingFiles: string[] = [];
-      
+
       for (const file of requiredFiles) {
         const filePath = join(this.config.extensionPath, file);
         if (!existsSync(filePath)) {
@@ -105,7 +98,6 @@ class ExtensionTestRunner {
 
       this.addResult(test, 'pass', Date.now() - startTime);
       console.log(`✅ ${test}: PASS`);
-
     } catch (error) {
       this.addResult(test, 'fail', Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
       console.log(`❌ ${test}: FAIL - ${error}`);
@@ -133,9 +125,7 @@ class ExtensionTestRunner {
 
       // Check host permissions include fantasy402.com
       const hostPermissions = manifest.host_permissions || [];
-      const hasFantasy402 = hostPermissions.some((permission: string) => 
-        permission.includes('fantasy402.com')
-      );
+      const hasFantasy402 = hostPermissions.some((permission: string) => permission.includes('fantasy402.com'));
 
       if (!hasFantasy402) {
         throw new Error('Missing fantasy402.com host permission');
@@ -149,7 +139,6 @@ class ExtensionTestRunner {
 
       this.addResult(test, 'pass', Date.now() - startTime);
       console.log(`✅ ${test}: PASS`);
-
     } catch (error) {
       this.addResult(test, 'fail', Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
       console.log(`❌ ${test}: FAIL - ${error}`);
@@ -171,16 +160,9 @@ class ExtensionTestRunner {
       const contentScriptContent = await Bun.file(contentScriptPath).text();
 
       // Check for required functions
-      const requiredFunctions = [
-        'window.fetch',
-        'originalFetch',
-        'WORKER_URL',
-        'TARGET_PATH'
-      ];
+      const requiredFunctions = ['window.fetch', 'originalFetch', 'WORKER_URL', 'TARGET_PATH'];
 
-      const missingFunctions = requiredFunctions.filter(func => 
-        !contentScriptContent.includes(func)
-      );
+      const missingFunctions = requiredFunctions.filter(func => !contentScriptContent.includes(func));
 
       if (missingFunctions.length > 0) {
         throw new Error(`Missing required functions: ${missingFunctions.join(', ')}`);
@@ -193,7 +175,6 @@ class ExtensionTestRunner {
 
       this.addResult(test, 'pass', Date.now() - startTime);
       console.log(`✅ ${test}: PASS`);
-
     } catch (error) {
       this.addResult(test, 'fail', Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
       console.log(`❌ ${test}: FAIL - ${error}`);
@@ -215,16 +196,9 @@ class ExtensionTestRunner {
       const logForwarderContent = await Bun.file(logForwarderPath).text();
 
       // Check for required components
-      const requiredComponents = [
-        'LogForwarder',
-        'forwardLogs',
-        'captureConsole',
-        'endpoint'
-      ];
+      const requiredComponents = ['LogForwarder', 'forwardLogs', 'captureConsole', 'endpoint'];
 
-      const missingComponents = requiredComponents.filter(component => 
-        !logForwarderContent.includes(component)
-      );
+      const missingComponents = requiredComponents.filter(component => !logForwarderContent.includes(component));
 
       if (missingComponents.length > 0) {
         throw new Error(`Missing required components: ${missingComponents.join(', ')}`);
@@ -237,7 +211,6 @@ class ExtensionTestRunner {
 
       this.addResult(test, 'pass', Date.now() - startTime);
       console.log(`✅ ${test}: PASS`);
-
     } catch (error) {
       this.addResult(test, 'fail', Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
       console.log(`❌ ${test}: FAIL - ${error}`);
@@ -255,8 +228,8 @@ class ExtensionTestRunner {
       const response = await fetch(healthUrl, {
         method: 'GET',
         headers: {
-          'User-Agent': 'ExtensionTestRunner/1.0'
-        }
+          'User-Agent': 'ExtensionTestRunner/1.0',
+        },
       });
 
       if (!response.ok) {
@@ -275,17 +248,19 @@ class ExtensionTestRunner {
         headers: {
           'Content-Type': 'application/json',
           'X-Session-ID': 'test-session',
-          'X-Extension-ID': 'test-extension'
+          'X-Extension-ID': 'test-extension',
         },
         body: JSON.stringify({
-          logs: [{
-            timestamp: new Date().toISOString(),
-            level: 'info',
-            message: 'Test log from automated test',
-            url: 'test://automation',
-            extensionId: 'test-extension'
-          }]
-        })
+          logs: [
+            {
+              timestamp: new Date().toISOString(),
+              level: 'info',
+              message: 'Test log from automated test',
+              url: 'test://automation',
+              extensionId: 'test-extension',
+            },
+          ],
+        }),
       });
 
       if (!logsResponse.ok) {
@@ -294,7 +269,6 @@ class ExtensionTestRunner {
 
       this.addResult(test, 'pass', Date.now() - startTime);
       console.log(`✅ ${test}: PASS`);
-
     } catch (error) {
       this.addResult(test, 'fail', Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
       console.log(`❌ ${test}: FAIL - ${error}`);
@@ -315,11 +289,11 @@ class ExtensionTestRunner {
         headers: {
           'Content-Type': 'application/json',
           'X-Original-Host': 'fantasy402.com',
-          'X-Test-Request': 'true'
+          'X-Test-Request': 'true',
         },
         body: JSON.stringify({
-          test: 'data'
-        })
+          test: 'data',
+        }),
       });
 
       // We expect 401 without proper cookies, which is correct behavior
@@ -334,7 +308,6 @@ class ExtensionTestRunner {
       } else {
         throw new Error(`Unexpected response: ${response.status} ${response.statusText}`);
       }
-
     } catch (error) {
       this.addResult(test, 'fail', Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
       console.log(`❌ ${test}: FAIL - ${error}`);
@@ -343,15 +316,12 @@ class ExtensionTestRunner {
 
   private async startLogMonitor(): Promise<void> {
     console.log('\n📊 Starting log monitor...');
-    
+
     try {
-      this.logMonitor = processManager.spawn(
-        ['bun', 'run', 'tools/logging/log-monitor.js'],
-        {
-          cwd: process.cwd(),
-          stdio: ['ignore', 'pipe', 'pipe']
-        }
-      );
+      this.logMonitor = processManager.spawn(['bun', 'run', 'tools/logging/log-monitor.js'], {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
 
       // Give it a moment to start
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -379,14 +349,14 @@ class ExtensionTestRunner {
       test,
       status,
       duration,
-      error
+      error,
     });
   }
 
   private generateReport(): void {
-    console.log('\n' + '=' .repeat(60));
+    console.log('\n' + '='.repeat(60));
     console.log('📊 TEST RESULTS SUMMARY');
-    console.log('=' .repeat(60));
+    console.log('='.repeat(60));
 
     const passed = this.results.filter(r => r.status === 'pass').length;
     const failed = this.results.filter(r => r.status === 'fail').length;
@@ -416,11 +386,18 @@ class ExtensionTestRunner {
 
     // Save results to file
     const reportPath = join(process.cwd(), 'test-results.json');
-    Bun.write(reportPath, JSON.stringify({
-      timestamp: new Date().toISOString(),
-      summary: { passed, failed, skipped, total },
-      results: this.results
-    }, null, 2));
+    Bun.write(
+      reportPath,
+      JSON.stringify(
+        {
+          timestamp: new Date().toISOString(),
+          summary: { passed, failed, skipped, total },
+          results: this.results,
+        },
+        null,
+        2
+      )
+    );
 
     console.log(`\n💾 Detailed report saved to: ${reportPath}`);
   }
@@ -430,13 +407,10 @@ class ExtensionTestRunner {
 async function main() {
   const config: TestConfig = {
     extensionPath: join(process.cwd(), 'browser-extension'),
-    testPages: [
-      'https://fantasy402.com',
-      'file://' + join(process.cwd(), 'test-injection.html')
-    ],
+    testPages: ['https://fantasy402.com', 'file://' + join(process.cwd(), 'test-injection.html')],
     workerUrl: 'https://betting-brain-v3.nolarose1968-806.workers.dev',
     timeout: 30000,
-    retries: 3
+    retries: 3,
   };
 
   const runner = new ExtensionTestRunner(config);

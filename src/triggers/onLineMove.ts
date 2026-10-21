@@ -41,8 +41,8 @@ export async function onLineMove(env: Env, newRow: LineMovement): Promise<void> 
             lineChange: metrics.lineChange,
             volumeChange: metrics.volumeChange,
             changePercentage: metrics.changePercentage,
-            isSignificant: metrics.isSignificant
-          }
+            isSignificant: metrics.isSignificant,
+          },
         });
       } catch (error) {
         console.error(`[${requestId}] Error sending to steam webhook:`, error);
@@ -79,8 +79,8 @@ interface LineMovementMetrics {
 }
 
 function calculateLineMovementMetrics(row: LineMovement): LineMovementMetrics {
-  const lineChange = (row.lb !== null && row.la !== null) ? row.la - row.lb : 0;
-  const volumeChange = (row.vb !== null && row.va !== null) ? row.va - row.vb : 0;
+  const lineChange = row.lb !== null && row.la !== null ? row.la - row.lb : 0;
+  const volumeChange = row.vb !== null && row.va !== null ? row.va - row.vb : 0;
 
   // Calculate change percentage
   let changePercentage = 0;
@@ -92,23 +92,18 @@ function calculateLineMovementMetrics(row: LineMovement): LineMovementMetrics {
   const isSignificant =
     Math.abs(lineChange) >= 2 || // 2+ point line change
     Math.abs(changePercentage) >= 10 || // 10%+ change
-    (row.vb !== null && row.va !== null && row.vb > 0 &&
-      Math.abs(volumeChange) / row.vb >= 0.5); // 50%+ volume change
+    (row.vb !== null && row.va !== null && row.vb > 0 && Math.abs(volumeChange) / row.vb >= 0.5); // 50%+ volume change
 
   return {
     isSignificant,
     lineChange,
     volumeChange,
     changePercentage,
-    timestamp: row.ts
+    timestamp: row.ts,
   };
 }
 
-async function triggerAdditionalProcessing(
-  row: LineMovement,
-  metrics: LineMovementMetrics,
-  env: Env
-): Promise<void> {
+async function triggerAdditionalProcessing(row: LineMovement, metrics: LineMovementMetrics, env: Env): Promise<void> {
   // Additional processing for significant movements
   // Could include alerts, notifications, etc.
 
@@ -132,7 +127,7 @@ async function updateRealTimeMetrics(row: LineMovement, env: Env): Promise<void>
     await env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [row.eid, row.mt, 'line_movement'],
       doubles: [metrics.lineChange, metrics.volumeChange, metrics.changePercentage],
-      indexes: ['line_movement_trigger']
+      indexes: ['line_movement_trigger'],
     });
   } catch (error) {
     console.error(`[analytics] Error writing data point:`, error);
@@ -164,5 +159,5 @@ async function updateHoldPercentage(eventId: string, marketType: string, env: En
 export const lineMovementTrigger = {
   table: 'line_movements',
   operation: 'INSERT',
-  handler: onLineMove
+  handler: onLineMove,
 };

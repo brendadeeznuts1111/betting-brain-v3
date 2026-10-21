@@ -11,14 +11,15 @@
 
 **Immediate Split Candidates:**
 
-| File | Lines | Status | Recommendation |
-|------|-------|--------|----------------|
-| `fantasy402/processors.ts` | 1,297 | ✅ Already split | Consider further modularization by data type |
-| `utils/fantasy402-parser.ts` | 886 | 🔴 **ACTION** | Split into domain-specific parsers |
-| `api/fantasy402-ingest.ts` | 841 | ✅ Already split | Monitor for growth |
-| `routes/api/f402-agents.ts` | 806 | 🔴 **ACTION** | Extract agent analytics logic |
+| File                         | Lines | Status           | Recommendation                               |
+| ---------------------------- | ----- | ---------------- | -------------------------------------------- |
+| `fantasy402/processors.ts`   | 1,297 | ✅ Already split | Consider further modularization by data type |
+| `utils/fantasy402-parser.ts` | 886   | 🔴 **ACTION**    | Split into domain-specific parsers           |
+| `api/fantasy402-ingest.ts`   | 841   | ✅ Already split | Monitor for growth                           |
+| `routes/api/f402-agents.ts`  | 806   | 🔴 **ACTION**    | Extract agent analytics logic                |
 
 **Secondary Candidates (600-800 lines):**
+
 - `api/routes.ts` (630 lines) - Consider route grouping
 - `mcp/tools.ts` (455 lines) - Tool definitions are acceptable
 - `alerts/alert-manager.ts` (417 lines) - Monitor complexity
@@ -29,17 +30,18 @@
 
 **Files with Most `any` Types:**
 
-| File | Count | Impact | Action |
-|------|-------|--------|--------|
-| `utils/fantasy402-parser.ts` | 26 | 🔴 High | Add proper type definitions |
-| `api/fantasy402/processors.ts` | 17 | 🟡 Medium | Type packet structures |
-| `utils/validation.ts` | 10 | 🟡 Medium | Create validation schemas |
-| `mcp/handlers/handleAndHold.ts` | 9 | 🟡 Medium | Type MCP responses |
-| `api/sports-processor.ts` | 9 | 🟡 Medium | Type sports data |
+| File                            | Count | Impact    | Action                      |
+| ------------------------------- | ----- | --------- | --------------------------- |
+| `utils/fantasy402-parser.ts`    | 26    | 🔴 High   | Add proper type definitions |
+| `api/fantasy402/processors.ts`  | 17    | 🟡 Medium | Type packet structures      |
+| `utils/validation.ts`           | 10    | 🟡 Medium | Create validation schemas   |
+| `mcp/handlers/handleAndHold.ts` | 9     | 🟡 Medium | Type MCP responses          |
+| `api/sports-processor.ts`       | 9     | 🟡 Medium | Type sports data            |
 
 **Total `any` usage:** ~150+ occurrences across codebase
 
 **Recommendation:** Create typed interfaces for:
+
 1. Fantasy402 API responses (currently `any`)
 2. Packet structures (mixed `any` usage)
 3. MCP handler arguments (some use `any`)
@@ -50,12 +52,12 @@
 
 **Files with Heavy Logging (>30 console statements):**
 
-| File | Count | Type | Action |
-|------|-------|------|--------|
-| `api/fantasy402/processors.ts` | 91 | Debug/Info | ✅ Appropriate for data processing |
-| `interceptors/bet-ticker-sniffer.ts` | 39 | Debug | Consider log levels |
-| `index.ts` | 32 | Info/Error | ✅ Acceptable for main entry |
-| `api/fantasy402-ingest.ts` | 31 | Info | ✅ Appropriate |
+| File                                 | Count | Type       | Action                             |
+| ------------------------------------ | ----- | ---------- | ---------------------------------- |
+| `api/fantasy402/processors.ts`       | 91    | Debug/Info | ✅ Appropriate for data processing |
+| `interceptors/bet-ticker-sniffer.ts` | 39    | Debug      | Consider log levels                |
+| `index.ts`                           | 32    | Info/Error | ✅ Acceptable for main entry       |
+| `api/fantasy402-ingest.ts`           | 31    | Info       | ✅ Appropriate                     |
 
 **Pattern Found:** Most logging is appropriate for debugging/monitoring  
 **Recommendation:** Consider adding log levels (DEBUG, INFO, WARN, ERROR)
@@ -65,6 +67,7 @@
 ## 4. Error Handling Patterns
 
 **Consistent Pattern Found:**
+
 ```typescript
 catch (error) {
   console.error('[context] Error message:', error);
@@ -75,6 +78,7 @@ catch (error) {
 **Pattern Consistency:** ✅ 95% use standardized format
 
 **Improvement Opportunities:**
+
 1. Add error type guards (instanceof Error)
 2. Include requestId in all error logs
 3. Consider error aggregation/reporting
@@ -86,15 +90,19 @@ catch (error) {
 **Found 4 markers:**
 
 1. **`src/routes/api/live-scores.ts:137`**
+
    ```typescript
    customerID: 'BILLY666', // TODO: Get from session
    ```
+
    **Action:** Implement session-based customer ID
 
 2. **`src/routes/api/trading-stream.ts:107`**
+
    ```typescript
    // TODO: Implement Analytics Engine query
    ```
+
    **Action:** Add Analytics Engine integration
 
 3. **DEBUG markers in index.ts** - Not actual TODOs (false positives)
@@ -106,9 +114,11 @@ catch (error) {
 **Long Imports Found (>100 chars):**
 
 1. Intelligence tools (3 files) - Type renaming pattern:
+
    ```typescript
    import { Env, GetSharpScoreRequest as GetSharpScoreRequestSchema, ... }
    ```
+
    **Action:** ✅ Acceptable pattern for type aliasing
 
 2. Routes aggregation:
@@ -125,12 +135,12 @@ catch (error) {
 
 **Files with Most Type Definitions:**
 
-| File | Count | Purpose |
-|------|-------|---------|
-| `types/api.ts` | 23 | ✅ Central API types |
-| `types/database.ts` | 13 | ✅ Database schemas |
-| `shared/constants.ts` | 12 | ✅ Constants & enums |
-| `mcp/types.ts` | 10 | ✅ MCP protocol types |
+| File                  | Count | Purpose               |
+| --------------------- | ----- | --------------------- |
+| `types/api.ts`        | 23    | ✅ Central API types  |
+| `types/database.ts`   | 13    | ✅ Database schemas   |
+| `shared/constants.ts` | 12    | ✅ Constants & enums  |
+| `mcp/types.ts`        | 10    | ✅ MCP protocol types |
 
 **Pattern:** ✅ Well-organized type system with central type files
 
@@ -140,12 +150,12 @@ catch (error) {
 
 **Well-Documented Files (>30 comment lines):**
 
-| File | Comments | Ratio |
-|------|----------|-------|
-| `utils/fantasy402-parser.ts` | 67 | 7.6% |
-| `api/fantasy402/processors.ts` | 63 | 4.9% |
-| `api/fantasy402-ingest.ts` | 52 | 6.2% |
-| `index.ts` | 41 | 11.1% |
+| File                           | Comments | Ratio |
+| ------------------------------ | -------- | ----- |
+| `utils/fantasy402-parser.ts`   | 67       | 7.6%  |
+| `api/fantasy402/processors.ts` | 63       | 4.9%  |
+| `api/fantasy402-ingest.ts`     | 52       | 6.2%  |
+| `index.ts`                     | 41       | 11.1% |
 
 **Average Comment Ratio:** ~6% (industry standard: 10-20%)  
 **Recommendation:** Add JSDoc to public functions
@@ -155,6 +165,7 @@ catch (error) {
 ## 9. Environment Guard Patterns
 
 **Consistent Pattern (20+ occurrences):**
+
 ```typescript
 if (!env.ANALYTICS) {
   return new Response(JSON.stringify({ error: 'Database not configured' }), ...);
@@ -162,8 +173,9 @@ if (!env.ANALYTICS) {
 ```
 
 **Pattern Distribution:**
+
 - `!env.FANTASY_CACHE`: 8 files
-- `!env.ANALYTICS`: 7 files  
+- `!env.ANALYTICS`: 7 files
 - `!env.ANALYTICS_ENGINE`: 5 files
 - `!env.RAW_FEED_DB`: 2 files
 
@@ -175,11 +187,11 @@ if (!env.ANALYTICS) {
 
 **Exported Constants (top files):**
 
-| File | Exports | Type |
-|------|---------|------|
-| `shared/constants.ts` | 12 | Enums, constants |
-| `types/api.ts` | 9 | Type exports |
-| `shared/config.ts` | 6 | Config values |
+| File                  | Exports | Type             |
+| --------------------- | ------- | ---------------- |
+| `shared/constants.ts` | 12      | Enums, constants |
+| `types/api.ts`        | 9       | Type exports     |
+| `shared/config.ts`    | 6       | Config values    |
 
 **Pattern:** ✅ Centralized constant management
 
@@ -236,17 +248,17 @@ if (!env.ANALYTICS) {
 
 ## Summary Statistics
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Total Files** | 106 | - |
-| **Total Lines** | 25,738 | - |
-| **Files >800 lines** | 4 | 🔴 Needs attention |
-| **Files >600 lines** | 7 | 🟡 Monitor |
-| **`any` type usage** | ~150 | 🟡 Reduce gradually |
-| **TODO markers** | 2 actionable | 🟢 Low count |
-| **Import depth** | Max 2 levels | ✅ Good |
-| **Type centralization** | ✅ Well-organized | ✅ Good |
-| **Error handling** | 95% consistent | ✅ Good |
+| Metric                  | Value             | Status              |
+| ----------------------- | ----------------- | ------------------- |
+| **Total Files**         | 106               | -                   |
+| **Total Lines**         | 25,738            | -                   |
+| **Files >800 lines**    | 4                 | 🔴 Needs attention  |
+| **Files >600 lines**    | 7                 | 🟡 Monitor          |
+| **`any` type usage**    | ~150              | 🟡 Reduce gradually |
+| **TODO markers**        | 2 actionable      | 🟢 Low count        |
+| **Import depth**        | Max 2 levels      | ✅ Good             |
+| **Type centralization** | ✅ Well-organized | ✅ Good             |
+| **Error handling**      | 95% consistent    | ✅ Good             |
 
 ---
 
@@ -258,6 +270,7 @@ if (!env.ANALYTICS) {
 4. Create Phase 10: Documentation enhancement
 
 **Estimated Impact:**
+
 - Lines reduction: ~400 lines (from splitting)
 - Type safety: +50 interfaces, -150 `any` types
 - Maintainability: 📈 Significant improvement

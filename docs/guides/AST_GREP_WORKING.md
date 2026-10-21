@@ -9,18 +9,21 @@
 ## 🎯 What's Working
 
 ### ✅ Pattern Search
+
 ```bash
 sg -p 'PATTERN' PATH
 ast-grep --pattern 'PATTERN' PATH
 ```
 
 **Example:**
+
 ```bash
 $ sg -p 'console.log' src/index.ts
 ✅ Found 17 console.log calls
 ```
 
 ### ✅ Rule Scanning
+
 ```bash
 sg scan                         # Run all rules
 sg scan --filter "RULE_ID"      # Filter by rule ID
@@ -28,6 +31,7 @@ sg scan --filter "RULE_ID" PATH # Filter by rule ID + specific path
 ```
 
 **Example Output:**
+
 ```
 warning[unstructured-log]: Unstructured log without requestId
     ┌─ src/guards/costCap.ts:190:7
@@ -60,6 +64,7 @@ rules/
 ```
 
 **Key Requirements:**
+
 - ✅ Filename MUST match the `id:` inside the file
 - ✅ Must use `.yaml` extension (not `.yml`)
 - ✅ Must be directly under `rules/` directory
@@ -69,17 +74,18 @@ rules/
 ## 🔧 Configuration
 
 ### sgconfig.yml
+
 ```yaml
 ruleDirs:
   - rules
 
 languageGlobs:
   ts:
-    - "**/*.ts"
-    - "**/*.tsx"
+    - '**/*.ts'
+    - '**/*.tsx'
   js:
-    - "**/*.js"
-    - "**/*.jsx"
+    - '**/*.js'
+    - '**/*.jsx'
 
 ignore:
   - node_modules
@@ -93,6 +99,7 @@ ignore:
 ## 🚀 Quick Start
 
 ### 1. Pattern Search
+
 ```bash
 # Find all async functions
 sg -p 'async function' src/
@@ -105,6 +112,7 @@ sg -p 'const WORKER_URL' dashboards/
 ```
 
 ### 2. Rule Scanning
+
 ```bash
 # Scan all rules
 sg scan
@@ -124,6 +132,7 @@ sg scan --filter "worker-url-definition" dashboards/
 ## 📊 Real Results
 
 ### Pattern Search Results
+
 ```bash
 $ sg -p 'async function' src/index.ts
 ✅ Found 340+ async functions
@@ -133,6 +142,7 @@ $ sg -p 'console.log' src/
 ```
 
 ### Rule Scan Results
+
 ```bash
 $ sg scan
 ✅ Detected 325 issues across codebase:
@@ -191,6 +201,7 @@ When adding a new rule:
 ## 🔍 Debugging Tips
 
 ### Rule Not Found?
+
 ```bash
 # Check filename matches ID
 cat rules/YOUR-RULE.yaml | grep "^id:"
@@ -203,6 +214,7 @@ cat sgconfig.yml | grep -A 2 "ruleDirs"
 ```
 
 ### Pattern Not Matching?
+
 ```bash
 # Test in playground first
 open https://ast-grep.github.io/playground.html
@@ -219,7 +231,8 @@ sg -p 'function $NAME' src/
 ## 📚 Resources
 
 - **Quick Start:** [docs/AST_GREP_QUICKSTART.md](QUICKSTART.md)
-- **Cursor Rule:** [.cursor/rules/code-searchability.mdc](../.cursor/rules/code-searchability.mdc)
+- **Cursor Rule:**
+  [.cursor/rules/code-searchability.mdc](../.cursor/rules/code-searchability.mdc)
 - **Configuration:** [sgconfig.yml](../sgconfig.yml)
 - **Official Docs:** https://ast-grep.github.io/
 
@@ -233,10 +246,10 @@ sg -p 'function $NAME' src/
 **Documentation:** ✅ Complete
 
 **Quick Test:**
+
 ```bash
 sg -p 'async function' src/index.ts
 sg scan
 ```
 
 Both should produce results! 🚀
-

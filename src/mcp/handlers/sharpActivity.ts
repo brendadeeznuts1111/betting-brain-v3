@@ -8,11 +8,7 @@ import { MCPToolResult } from '../types';
 
 export async function getSharpActivity(args: Record<string, any>, env: Env): Promise<MCPToolResult> {
   try {
-    const {
-      agentID = 'DEMO',
-      lookbackHours = 24,
-      minSharpScore = 60,
-    } = args;
+    const { agentID = 'DEMO', lookbackHours = 24, minSharpScore = 60 } = args;
 
     if (!env.ANALYTICS) {
       throw new Error('ANALYTICS database not available');
@@ -37,14 +33,18 @@ export async function getSharpActivity(args: Record<string, any>, env: Env): Pro
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              message: 'No sharp customers found',
-              criteria: {
-                minSharpScore,
-                lookbackHours,
+            text: JSON.stringify(
+              {
+                message: 'No sharp customers found',
+                criteria: {
+                  minSharpScore,
+                  lookbackHours,
+                },
+                agentID,
               },
-              agentID,
-            }, null, 2),
+              null,
+              2
+            ),
           },
         ],
         isError: false,
@@ -76,7 +76,7 @@ export async function getSharpActivity(args: Record<string, any>, env: Env): Pro
         clv: c.clv,
         win_rate: c.wr,
         action_count: c.ao,
-        sharp_score: Math.min(100, (c.clv / 1000 * 50) + ((c.wr - 50) * 30 / 100) + (c.ao / 10 * 20)),
+        sharp_score: Math.min(100, (c.clv / 1000) * 50 + ((c.wr - 50) * 30) / 100 + (c.ao / 10) * 20),
       })),
       recent_activity: (recentActivity.results || []).map((a: any) => ({
         event_id: a.eid,

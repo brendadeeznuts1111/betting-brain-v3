@@ -3,7 +3,7 @@
  * Tests transparent interception, KV storage, and retrieval
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import {
   handleBetTickerInterception,
   getBetTickerHistory,
@@ -35,9 +35,7 @@ describe('BetTicker Sniffer', () => {
         }),
         getWithMetadata: vi.fn(async (key: string) => {
           const entry = kvStore.get(key);
-          return entry
-            ? { value: entry.value, metadata: entry.metadata }
-            : { value: null, metadata: null };
+          return entry ? { value: entry.value, metadata: entry.metadata } : { value: null, metadata: null };
         }),
         put: vi.fn(async (key: string, value: string, options?: any) => {
           kvStore.set(key, {
@@ -50,9 +48,9 @@ describe('BetTicker Sniffer', () => {
           const prefix = options?.prefix || '';
           const limit = options?.limit || 1000;
           const keys = Array.from(kvStore.keys())
-            .filter((k) => k.startsWith(prefix))
+            .filter(k => k.startsWith(prefix))
             .slice(0, limit)
-            .map((name) => ({
+            .map(name => ({
               name,
               metadata: kvStore.get(name)?.metadata || {},
             }));
@@ -82,41 +80,32 @@ describe('BetTicker Sniffer', () => {
       };
 
       // Mock fetch to origin
-      global.fetch = vi.fn(async () =>
-        new Response(JSON.stringify(mockResponse), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        })
+      global.fetch = vi.fn(
+        async () =>
+          new Response(JSON.stringify(mockResponse), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          })
       ) as any;
 
-      const request = new Request(
-        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'user-agent': 'test-agent',
-            'cf-connecting-ip': '127.0.0.1',
-          },
-          body: JSON.stringify({ test: 'data' }),
-        }
-      );
+      const request = new Request('https://fantasy402.com/cloud/api/Manager/getBetTicker', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-agent': 'test-agent',
+          'cf-connecting-ip': '127.0.0.1',
+        },
+        body: JSON.stringify({ test: 'data' }),
+      });
 
-      const response = await handleBetTickerInterception(
-        request,
-        mockEnv,
-        mockContext
-      );
+      const response = await handleBetTickerInterception(request, mockEnv, mockContext);
 
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(data).toEqual(mockResponse);
 
       // Verify fetch was called
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('fantasy402.com'),
-        expect.any(Object)
-      );
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('fantasy402.com'), expect.any(Object));
 
       // Wait for all waitUntil promises to complete
       await Promise.all(waitUntilPromises);
@@ -128,19 +117,13 @@ describe('BetTicker Sniffer', () => {
     });
 
     test('should pass through non-getBetTicker requests', async () => {
-      global.fetch = vi.fn(async () =>
-        new Response('OK', { status: 200 })
-      ) as any;
+      global.fetch = vi.fn(async () => new Response('OK', { status: 200 })) as any;
 
       const request = new Request('https://fantasy402.com/other/endpoint', {
         method: 'GET',
       });
 
-      const response = await handleBetTickerInterception(
-        request,
-        mockEnv,
-        mockContext
-      );
+      const response = await handleBetTickerInterception(request, mockEnv, mockContext);
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
@@ -150,20 +133,11 @@ describe('BetTicker Sniffer', () => {
     });
 
     test('should pass through non-POST requests', async () => {
-      global.fetch = vi.fn(async () =>
-        new Response('OK', { status: 200 })
-      ) as any;
+      global.fetch = vi.fn(async () => new Response('OK', { status: 200 })) as any;
 
-      const request = new Request(
-        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
-        { method: 'GET' }
-      );
+      const request = new Request('https://fantasy402.com/cloud/api/Manager/getBetTicker', { method: 'GET' });
 
-      const response = await handleBetTickerInterception(
-        request,
-        mockEnv,
-        mockContext
-      );
+      const response = await handleBetTickerInterception(request, mockEnv, mockContext);
 
       expect(response.status).toBe(200);
       expect(kvStore.size).toBe(0);
@@ -171,23 +145,21 @@ describe('BetTicker Sniffer', () => {
 
     test('should store metadata with response', async () => {
       const mockResponse = { success: true };
-      global.fetch = vi.fn(async () =>
-        new Response(JSON.stringify(mockResponse), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        })
+      global.fetch = vi.fn(
+        async () =>
+          new Response(JSON.stringify(mockResponse), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          })
       ) as any;
 
-      const request = new Request(
-        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
-        {
-          method: 'POST',
-          headers: {
-            'user-agent': 'Mozilla/5.0',
-            'cf-connecting-ip': '192.168.1.1',
-          },
-        }
-      );
+      const request = new Request('https://fantasy402.com/cloud/api/Manager/getBetTicker', {
+        method: 'POST',
+        headers: {
+          'user-agent': 'Mozilla/5.0',
+          'cf-connecting-ip': '192.168.1.1',
+        },
+      });
 
       await handleBetTickerInterception(request, mockEnv, mockContext);
 
@@ -212,16 +184,9 @@ describe('BetTicker Sniffer', () => {
         throw new Error('Network error');
       }) as any;
 
-      const request = new Request(
-        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
-        { method: 'POST' }
-      );
+      const request = new Request('https://fantasy402.com/cloud/api/Manager/getBetTicker', { method: 'POST' });
 
-      const response = await handleBetTickerInterception(
-        request,
-        mockEnv,
-        mockContext
-      );
+      const response = await handleBetTickerInterception(request, mockEnv, mockContext);
 
       expect(response.status).toBe(502); // Bad Gateway for proxy errors
       const data = await response.json();
@@ -236,20 +201,16 @@ describe('BetTicker Sniffer', () => {
       const now = Date.now();
       for (let i = 0; i < 5; i++) {
         const key = `raw:getBetTicker:${now - i * 1000}`;
-        await mockEnv.BET_TICKER_RAW.put(
-          key,
-          JSON.stringify({ test: `data-${i}` }),
-          {
-            metadata: {
-              userAgent: 'test-agent',
-              ip: '127.0.0.1',
-              status: 200,
-              timestamp: new Date(now - i * 1000).toISOString(),
-              contentType: 'application/json',
-              contentLength: 20,
-            },
-          }
-        );
+        await mockEnv.BET_TICKER_RAW.put(key, JSON.stringify({ test: `data-${i}` }), {
+          metadata: {
+            userAgent: 'test-agent',
+            ip: '127.0.0.1',
+            status: 200,
+            timestamp: new Date(now - i * 1000).toISOString(),
+            contentType: 'application/json',
+            contentLength: 20,
+          },
+        });
       }
     });
 
@@ -283,7 +244,7 @@ describe('BetTicker Sniffer', () => {
 
       // Should exclude first and last entries
       expect(history.length).toBeLessThan(5);
-      history.forEach((entry) => {
+      history.forEach(entry => {
         const keyTime = parseInt(entry.key.split(':')[2]);
         expect(keyTime).toBeGreaterThanOrEqual(startTime);
         expect(keyTime).toBeLessThanOrEqual(endTime);
@@ -328,10 +289,7 @@ describe('BetTicker Sniffer', () => {
     });
 
     test('should return null for non-existent key', async () => {
-      const response = await getBetTickerResponse(
-        mockEnv,
-        'raw:getBetTicker:999999999'
-      );
+      const response = await getBetTickerResponse(mockEnv, 'raw:getBetTicker:999999999');
 
       expect(response).toBeNull();
     });
@@ -352,42 +310,27 @@ describe('BetTicker Sniffer', () => {
 
   describe('Edge Cases', () => {
     test('should handle empty response body', async () => {
-      global.fetch = vi.fn(async () =>
-        new Response('', { status: 204 })
-      ) as any;
+      global.fetch = vi.fn(async () => new Response('', { status: 204 })) as any;
 
-      const request = new Request(
-        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
-        { method: 'POST' }
-      );
+      const request = new Request('https://fantasy402.com/cloud/api/Manager/getBetTicker', { method: 'POST' });
 
-      const response = await handleBetTickerInterception(
-        request,
-        mockEnv,
-        mockContext
-      );
+      const response = await handleBetTickerInterception(request, mockEnv, mockContext);
 
       expect(response.status).toBe(204);
     });
 
     test('should handle missing headers gracefully', async () => {
-      global.fetch = vi.fn(async () =>
-        new Response(JSON.stringify({ ok: true }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        })
+      global.fetch = vi.fn(
+        async () =>
+          new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          })
       ) as any;
 
-      const request = new Request(
-        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
-        { method: 'POST' }
-      );
+      const request = new Request('https://fantasy402.com/cloud/api/Manager/getBetTicker', { method: 'POST' });
 
-      const response = await handleBetTickerInterception(
-        request,
-        mockEnv,
-        mockContext
-      );
+      const response = await handleBetTickerInterception(request, mockEnv, mockContext);
 
       expect(response.status).toBe(200);
 
@@ -402,20 +345,11 @@ describe('BetTicker Sniffer', () => {
 
     test('should handle large response bodies', async () => {
       const largeData = { data: 'x'.repeat(10000) };
-      global.fetch = vi.fn(async () =>
-        new Response(JSON.stringify(largeData), { status: 200 })
-      ) as any;
+      global.fetch = vi.fn(async () => new Response(JSON.stringify(largeData), { status: 200 })) as any;
 
-      const request = new Request(
-        'https://fantasy402.com/cloud/api/Manager/getBetTicker',
-        { method: 'POST' }
-      );
+      const request = new Request('https://fantasy402.com/cloud/api/Manager/getBetTicker', { method: 'POST' });
 
-      const response = await handleBetTickerInterception(
-        request,
-        mockEnv,
-        mockContext
-      );
+      const response = await handleBetTickerInterception(request, mockEnv, mockContext);
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -423,4 +357,3 @@ describe('BetTicker Sniffer', () => {
     });
   });
 });
-
