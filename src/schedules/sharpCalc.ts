@@ -19,13 +19,6 @@ import { SharpScoreMetrics } from '../types/metrics';
 import { Env } from '../types/api';
 import { runSafe, chunk, isCostCapReached } from '../lib/scheduleUtils';
 
-interface BetHistoryRow {
-  stake: number;
-  payout: number;
-  result: string | null;
-  ts: string;
-}
-
 export async function handleSharpCalculation(env: Env, ctx: ExecutionContext): Promise<void> {
   return runSafe('sharp_calc', env, ctx, async () => {
     console.log('Starting hourly sharp calculation...');
@@ -95,9 +88,12 @@ async function processBatchSharpCalculation(customerIds: string[], env: Env): Pr
   await updateSharpScores(sharpScores, env);
 }
 
-async function calculateSharpScore(customerId: string, env: Env): Promise<SharpScoreMetrics> {
-  // Get customer's real betting history from bet_history
-  const bettingHistory = await getCustomerBettingHistory(customerId, env);
+export async function calculateSharpScore(customerId: string, env: Env): Promise<SharpScoreMetrics> {
+  // Lifetime aggregates over ALL of the customer's bet_history rows,
+  // computed in SQL. (A previous revision summed the newest 200 rows in JS,
+  // so any customer with >200 bets had clv / nb / wr / ao silently computed
+  // over a moving window while being stored and exposed as lifetime values.)
+  const stats = await getCustomerLifetimeStats(customerId, env);
 
   const empty: SharpScoreMetrics = {
     customerId,
@@ -109,21 +105,11 @@ async function calculateSharpScore(customerId: string, env: Env): Promise<SharpS
     lastUpdated: new Date().toISOString(),
     alertThreshold: 60
   };
-  if (bettingHistory.length === 0) {
+  if (stats.actionCount === 0) {
     return empty;
   }
 
-  // Net P&L in dollars (customer lifetime value)
-  const clv = calculateCLV(bettingHistory);
-
-  // Win rate over settled bets only
-  const winRate = calculateWinRate(bettingHistory);
-
-  // Action count + net bet volume
-  const actionCount = bettingHistory.length;
-  const netBet = calculateNetBet(bettingHistory);
-
-  // Calculate sharp score
+  const { clv, winRate, actionCount, netBet } = stats;
   const sharpScore = calculateSharpScoreAlgorithm(clv, winRate, actionCount);
 
   return {
@@ -136,46 +122,46 @@ async function calculateSharpScore(customerId: string, env: Env): Promise<SharpS
   };
 }
 
+export interface LifetimeStats {
+  /** All bets, PENDING included (sharp_indicators.ao). */
+  actionCount: number;
+  /** Net P&L in dollars over settled bets: Σ(payout − stake), PENDING excluded. */
+  clv: number;
+  /** Σ stake in dollars over settled bets (sharp_indicators.nb). */
+  netBet: number;
+  /** WIN / (WIN + LOSS) × 100; PUSH and PENDING excluded. */
+  winRate: number;
+}
+
 /**
- * Real betting history from the bet_history table (migration 0003).
- * Last 200 bets, newest first — enough for a stable score without a
- * full-table scan per customer.
+ * Lifetime metrics from bet_history (migration 0003) as a single SQL
+ * aggregate — no row limit, no rows shipped to the Worker. Uses the
+ * (cid, ts) index for the cid filter.
+ * payout is 0 on losses and includes returned stake on wins.
  */
-async function getCustomerBettingHistory(customerId: string, env: Env): Promise<BetHistoryRow[]> {
-  const result = await env.ANALYTICS.prepare(`
-    SELECT stake, payout, result, ts
+export async function getCustomerLifetimeStats(customerId: string, env: Env): Promise<LifetimeStats> {
+  const row = await env.ANALYTICS.prepare(`
+    SELECT
+      COUNT(*) AS action_count,
+      COALESCE(SUM(CASE WHEN result IS NOT NULL AND result != 'PENDING' THEN payout - stake END), 0) AS clv,
+      COALESCE(SUM(CASE WHEN result IS NOT NULL AND result != 'PENDING' THEN stake END), 0) AS net_bet,
+      COALESCE(SUM(CASE WHEN result = 'WIN' THEN 1 ELSE 0 END), 0) AS wins,
+      COALESCE(SUM(CASE WHEN result IN ('WIN', 'LOSS') THEN 1 ELSE 0 END), 0) AS decided
     FROM bet_history
     WHERE cid = ?
-    ORDER BY ts DESC
-    LIMIT 200
-  `).bind(customerId).all();
+  `).bind(customerId).first() as Record<string, unknown> | null;
 
-  return (result.results ?? []) as unknown as BetHistoryRow[];
-}
-
-/**
- * Customer lifetime value: net P&L in dollars.
- * payout is 0 on losses and includes returned stake on wins, so
- * net = Σ(payout − stake) over settled bets. PENDING rows are excluded.
- */
-function calculateCLV(bettingHistory: BetHistoryRow[]): number {
-  return bettingHistory
-    .filter(bet => bet.result && bet.result !== 'PENDING')
-    .reduce((total, bet) => total + (bet.payout - bet.stake), 0);
-}
-
-/** Total stake in dollars over the window (goes to sharp_indicators.nb). */
-function calculateNetBet(bettingHistory: BetHistoryRow[]): number {
-  return bettingHistory
-    .filter(bet => bet.result && bet.result !== 'PENDING')
-    .reduce((total, bet) => total + bet.stake, 0);
-}
-
-function calculateWinRate(bettingHistory: BetHistoryRow[]): number {
-  const settled = bettingHistory.filter(bet => bet.result === 'WIN' || bet.result === 'LOSS');
-  if (settled.length === 0) return 0;
-  const wins = settled.filter(bet => bet.result === 'WIN').length;
-  return (wins / settled.length) * 100;
+  const num = (v: unknown) => {
+    const n = Number(v ?? 0);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const decided = num(row?.decided);
+  return {
+    actionCount: num(row?.action_count),
+    clv: num(row?.clv),
+    netBet: num(row?.net_bet),
+    winRate: decided > 0 ? (num(row?.wins) / decided) * 100 : 0,
+  };
 }
 
 function calculateSharpScoreAlgorithm(clv: number, winRate: number, actionCount: number): number {
@@ -193,7 +179,7 @@ async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Pr
   const now = new Date().toISOString();
 
   for (const score of sharpScores) {
-    // nb = net bet volume (Σ stake over settled window); previously this
+    // nb = lifetime net bet volume (Σ stake over settled bets); previously this
     // column received a second copy of clv, making it meaningless.
     await env.ANALYTICS.prepare(`
       INSERT OR REPLACE INTO sharp_indicators (cid, clv, wr, ao, nb, upd)
