@@ -185,6 +185,7 @@ max_retries = 5  # Retry up to 5 times if processing fails
 [triggers]
 crons = [
   "0 * * * *",  # hourly sharp calculation
+  "*/5 * * * *",  # every 5 minutes - bet-history ingest poller (src/schedules/betHistoryIngest.ts)
   "* * * * *",  # every minute exposure calculation (closest to 30s possible)
   "*/1 * * * *",  # every minute - MCP cache warming
   "0 3 * * *"  # daily at 3 AM UTC - MCP cleanup old data and agent graph population
