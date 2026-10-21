@@ -4,7 +4,7 @@
  * Validates all internal markdown links in the repository
  */
 
-import { glob } from 'glob';
+import { Glob } from 'bun';
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -15,15 +15,13 @@ const __root = resolve(__dirname, '..');
 console.log('🔍 Checking all markdown links...\n');
 
 async function main() {
-  const mdFiles = await glob('**/*.md', {
-    cwd: __root,
-    ignore: [
-      'node_modules/**',
-      'dist/**',
-      '.wrangler/**',
-      'docs/archive/**'  // Ignore archived content (historical snapshots)
-    ]
-  });
+  const ignore = [
+    'node_modules/**',
+    'dist/**',
+    '.wrangler/**',
+    'docs/archive/**'  // Ignore archived content (historical snapshots)
+  ].map(p => new Glob(p));
+  const mdFiles = (await Array.fromAsync(new Glob('**/*.md').scan(__root))).filter(f => !ignore.some(g => g.match(f)));
 
   console.log(`📄 Found ${mdFiles.length} markdown files\n`);
 

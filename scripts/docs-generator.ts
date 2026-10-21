@@ -2,7 +2,7 @@
 // Documentation Generator - Embeds live code snippets into markdown
 // Uses markdown-magic to inject TypeScript signatures + examples
 
-import { globSync } from 'glob';
+import { Glob } from 'bun';
 import { readFileSync, writeFileSync } from 'fs';
 import { execSync } from 'child_process';
 
@@ -151,9 +151,8 @@ function processMarkdownFile(mdFile: string): boolean {
 
 // Generate API reference from all source files
 function generateAPIReference(): void {
-  const files = globSync('src/**/*.ts', {
-    ignore: ['**/*.test.ts', 'node_modules/**', 'dist/**'],
-  });
+  const ignore = ['**/*.test.ts', 'node_modules/**', 'dist/**'].map(p => new Glob(p));
+  const files = Array.from(new Glob('src/**/*.ts').scanSync('.')).filter(f => !ignore.some(g => g.match(f)));
 
   let apiMd = '# API Reference\n\n';
   apiMd += '*Auto-generated from TypeScript source files*\n\n';
@@ -179,9 +178,8 @@ console.log('📚 Generating documentation...\n');
 const startTime = Date.now();
 
 // Process markdown files with AUTO-GENERATED sections
-const mdFiles = globSync('docs/**/*.md', {
-  ignore: ['node_modules/**', 'docs/api/AUTO_GENERATED_API.md'],
-});
+const mdIgnore = ['node_modules/**', 'docs/api/AUTO_GENERATED_API.md'].map(p => new Glob(p));
+const mdFiles = Array.from(new Glob('docs/**/*.md').scanSync('.')).filter(f => !mdIgnore.some(g => g.match(f)));
 
 let modified = 0;
 mdFiles.forEach(file => {
