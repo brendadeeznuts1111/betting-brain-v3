@@ -2,7 +2,7 @@
 // Organize Imports - Groups and sorts imports
 // external → internal → relative, alphabetically
 
-import { globSync } from 'glob';
+import { Glob } from 'bun';
 import { readFileSync, writeFileSync } from 'fs';
 
 interface Import {
@@ -110,7 +110,8 @@ function processFile(filePath: string): boolean {
 // Main
 console.log('📦 Organizing imports...');
 
-const files = globSync('src/**/*.ts', { ignore: ['node_modules/**', 'dist/**'] });
+const ignore = ['node_modules/**', 'dist/**'].map(p => new Glob(p));
+const files = Array.from(new Glob('src/**/*.ts').scanSync('.')).filter(f => !ignore.some(g => g.match(f)));
 let modified = 0;
 
 files.forEach(file => {

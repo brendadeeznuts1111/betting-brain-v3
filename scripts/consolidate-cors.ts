@@ -8,7 +8,7 @@
  */
 
 import { readFile, writeFile } from 'fs/promises';
-import { glob } from 'glob';
+import { Glob } from 'bun';
 
 interface FixResult {
   file: string;
@@ -18,7 +18,7 @@ interface FixResult {
 
 const results: FixResult[] = [];
 
-const files = await glob('src/routes/**/*.ts');
+const files = await Array.fromAsync(new Glob('src/routes/**/*.ts').scan('.'));
 
 for (const file of files) {
   const content = await readFile(file, 'utf-8');

@@ -2,7 +2,7 @@
 // Data Flow Visualizer - AST + import graph → Mermaid diagram
 // Usage: bun scripts/dataflow.ts
 
-import { globSync } from 'glob';
+import { Glob } from 'bun';
 import { readFileSync, writeFileSync } from 'fs';
 
 interface ImportEdge {
@@ -62,9 +62,8 @@ function simplifyPath(path: string): string {
 
 // Parse import graph
 function parseImportGraph(): Map<string, ModuleNode> {
-  const files = globSync('src/**/*.ts', {
-    ignore: ['node_modules/**', 'dist/**', '**/*.test.ts'],
-  });
+  const ignore = ['node_modules/**', 'dist/**', '**/*.test.ts'].map(p => new Glob(p));
+  const files = Array.from(new Glob('src/**/*.ts').scanSync('.')).filter(f => !ignore.some(g => g.match(f)));
 
   const nodes = new Map<string, ModuleNode>();
 
