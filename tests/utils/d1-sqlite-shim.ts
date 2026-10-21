@@ -9,10 +9,11 @@ import { join } from 'path';
 
 const MIGRATIONS_DIR = join(import.meta.dir, '..', '..', 'migrations');
 
-export function createMigratedSqlite(): Database {
+/** @param skip migration file names to leave out (e.g. the 0004 test-data seed). */
+export function createMigratedSqlite(skip: string[] = []): Database {
   const db = new Database(':memory:');
   for (const f of readdirSync(MIGRATIONS_DIR)
-    .filter(f => f.endsWith('.sql'))
+    .filter(f => f.endsWith('.sql') && !skip.includes(f))
     .sort()) {
     db.exec(readFileSync(join(MIGRATIONS_DIR, f), 'utf8'));
   }

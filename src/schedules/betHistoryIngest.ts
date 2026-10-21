@@ -64,12 +64,24 @@ export async function handleBetHistoryIngest(
   return runSafe('bet_history_ingest', env, ctx, async () => {
     const client = clientOverride ?? createFantasy402Client(env as never);
 
-    // Roster: customers seen in recent bet_history OR already tracked.
-    // (Distinct customer set known to us; fantasy402 does not offer a global
-    // "all customers" cursor, so the roster grows as activity is observed.)
+    // Roster: customers already tracked, seen in recent bet_history, or known
+    // from the captured fantasy402 player feed (see getRoster).
     const roster = await getRoster(env);
     if (roster.length === 0) {
-      console.log('bet-history ingest: empty roster, nothing to do');
+      // Not a silent no-op: on a fresh deploy this means no customer source
+      // is populated yet, so nothing can ever be polled. Say so loudly.
+      console.error(
+        'bet-history ingest: empty roster — no bet_history_cursors, no recent bet_history, ' +
+        'no active fantasy402_players in RAW_FEED_DB, and BET_HISTORY_SEED_CIDS unset. ' +
+        'Capture player info (getInfoPlayer) or set BET_HISTORY_SEED_CIDS to seed the poller.'
+      );
+      try {
+        env.ANALYTICS_ENGINE?.writeDataPoint({
+          blobs: ['bet_history_ingest', 'empty_roster'],
+          doubles: [0],
+          indexes: ['ingest_health'],
+        });
+      } catch { /* analytics is best-effort */ }
       await reportHealth(env);
       return;
     }
@@ -136,14 +148,52 @@ async function getOldestPendingTs(env: Env, cid: string): Promise<string | null>
   return row?.oldest ?? null;
 }
 
-async function getRoster(env: Env): Promise<string[]> {
+/**
+ * Roster = customers already tracked (cursors) ∪ seen in the last 7 days of
+ * bet_history ∪ active customers from the captured fantasy402 player feed
+ * (RAW_FEED_DB.fantasy402_players, written by processPlayerInfo).
+ *
+ * The first two sources are both written by this poller, so on a fresh
+ * deploy they are empty and the poller could never discover its first
+ * customer. fantasy402_players is independent of this job and is the
+ * bootstrap source; once a customer has been polled it has a cursor and
+ * stays on the roster regardless. BET_HISTORY_SEED_CIDS (optional,
+ * comma-separated, non-secret var) is an explicit operator seed for when the
+ * player feed has not been captured yet.
+ */
+export async function getRoster(env: Env): Promise<string[]> {
   const result = await env.ANALYTICS.prepare(`
     SELECT cid FROM bet_history_cursors
     UNION
     SELECT DISTINCT cid FROM bet_history WHERE ts > datetime('now', '-7 days')
     LIMIT 1000
   `).all();
-  return ((result.results ?? []) as unknown as Array<{ cid: string }>).map(r => r.cid);
+  const cids = new Set(((result.results ?? []) as unknown as Array<{ cid: string }>).map(r => r.cid));
+
+  if (env.RAW_FEED_DB && cids.size < 1000) {
+    try {
+      const players = await env.RAW_FEED_DB.prepare(`
+        SELECT DISTINCT customer_id AS cid FROM fantasy402_players
+        WHERE customer_id IS NOT NULL AND customer_id != '' AND COALESCE(active, 1) = 1
+        LIMIT 1000
+      `).all();
+      for (const r of (players.results ?? []) as unknown as Array<{ cid: string }>) {
+        if (cids.size >= 1000) break;
+        cids.add(String(r.cid));
+      }
+    } catch (e) {
+      // Table missing (migration 0007 not applied to RAW_FEED_DB) — keep going
+      // with what we have; the empty-roster branch reports if that is nothing.
+      console.warn('bet-history ingest: fantasy402_players roster source unavailable:',
+        e instanceof Error ? e.message : e);
+    }
+  }
+  const seed = (env as unknown as { BET_HISTORY_SEED_CIDS?: string }).BET_HISTORY_SEED_CIDS;
+  for (const cid of (seed ?? '').split(',').map(c => c.trim()).filter(Boolean)) {
+    if (cids.size >= 1000) break;
+    cids.add(cid);
+  }
+  return [...cids];
 }
 
 async function getCursors(env: Env, cids: string[]): Promise<Map<string, CursorRow>> {
