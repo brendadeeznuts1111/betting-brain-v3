@@ -49,6 +49,7 @@ max_batch_timeout = 5
 [env.production.triggers]
 crons = [
   "0 * * * *",  # hourly sharp calculation
+  "*/5 * * * *",  # every 5 minutes - bet-history ingest poller (src/schedules/betHistoryIngest.ts)
   "*/30 * * * * *"  # 30-second exposure calculation
 ]
 
