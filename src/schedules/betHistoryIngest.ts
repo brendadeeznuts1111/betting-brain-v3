@@ -426,11 +426,15 @@ async function reportHealth(env: Env): Promise<void> {
     : Infinity;
   const healthy = lagMinutes < HEALTH_LAG_MINUTES;
 
-  await env.ANALYTICS_ENGINE?.writeDataPoint({
-    blobs: ['bet_history_ingest', healthy ? 'healthy' : 'stale'],
-    doubles: [Number.isFinite(lagMinutes) ? lagMinutes : -1, healthy ? 1 : 0],
-    indexes: ['ingest_health'],
-  }).catch(() => {});
+  // writeDataPoint is synchronous and returns void — chaining .catch() on it
+  // threw a TypeError that aborted reportHealth before the stale alert.
+  try {
+    env.ANALYTICS_ENGINE?.writeDataPoint({
+      blobs: ['bet_history_ingest', healthy ? 'healthy' : 'stale'],
+      doubles: [Number.isFinite(lagMinutes) ? lagMinutes : -1, healthy ? 1 : 0],
+      indexes: ['ingest_health'],
+    });
+  } catch { /* analytics is best-effort */ }
 
   if (!healthy) {
     const webhook = (env as unknown as { ALERT_WEBHOOK_URL?: string }).ALERT_WEBHOOK_URL;

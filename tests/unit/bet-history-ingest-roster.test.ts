@@ -99,3 +99,19 @@ describe('bet-history ingest roster bootstrap', () => {
     expect(points.some(p => p.blobs?.[1] === 'empty_roster')).toBe(true);
   });
 });
+
+describe('bet-history ingest health check', () => {
+  test('stale bet_history fires the alert webhook even with Analytics Engine bound', async () => {
+    const { env } = freshDeploy({ ALERT_WEBHOOK_URL: 'https://alerts.invalid/hook' });
+    const posted: string[] = [];
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation((async (url: string) => {
+      posted.push(String(url));
+      return new Response('ok');
+    }) as any);
+    const err = spyOn(console, 'error').mockImplementation(() => {});
+    await handleBetHistoryIngest(env, ctx, { makeRequest: async () => [] } as any);
+    err.mockRestore();
+    fetchSpy.mockRestore();
+    expect(posted).toEqual(['https://alerts.invalid/hook']);
+  });
+});
