@@ -37,10 +37,14 @@ export async function getTimeSeriesCLV(args: Record<string, any>, env: Env): Pro
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              error: 'Customer not found',
-              cid,
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                error: 'Customer not found',
+                cid,
+              },
+              null,
+              2
+            ),
           },
         ],
         isError: true,
@@ -112,8 +116,8 @@ export async function getTimeSeriesCLV(args: Record<string, any>, env: Env): Pro
     const olderCLV = olderPeriods.reduce((sum, p) => sum + p.period_clv, 0);
     const olderAvgCLV = olderPeriods.length > 0 ? olderCLV / olderPeriods.length : 0;
 
-    const trendDirection = recentAvgCLV > olderAvgCLV ? 'IMPROVING' :
-                          recentAvgCLV < olderAvgCLV ? 'DECLINING' : 'STABLE';
+    const trendDirection =
+      recentAvgCLV > olderAvgCLV ? 'IMPROVING' : recentAvgCLV < olderAvgCLV ? 'DECLINING' : 'STABLE';
 
     const response = {
       customer_id: cid,

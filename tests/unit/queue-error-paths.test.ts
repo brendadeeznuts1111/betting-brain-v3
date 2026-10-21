@@ -3,7 +3,7 @@
  * Tests error handling in lineIngress and steamWebhook queue consumers
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import { handleLineIngress } from '../../src/queues/lineIngress';
 import { handleSteamWebhook } from '../../src/queues/steamWebhook';
 import type { Env } from '../../src/types/api';
@@ -211,7 +211,7 @@ describe('Queue Consumer Error Paths', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({
             size: 10000000000, // 10GB - exceeds default limit
-            rows: 10000000
+            rows: 10000000,
           }),
           run: vi.fn().mockResolvedValue({ success: true }),
         }),
@@ -311,9 +311,7 @@ describe('Queue Consumer Error Paths', () => {
     });
 
     test('should handle ANALYTICS_ENGINE write failures', async () => {
-      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(
-        new Error('Analytics write failed')
-      );
+      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(new Error('Analytics write failed'));
 
       const message = {
         body: JSON.stringify({
@@ -570,9 +568,7 @@ describe('Queue Consumer Error Paths', () => {
         return {
           bind: vi.fn().mockReturnValue({
             all: vi.fn().mockResolvedValue({
-              results: [
-                { lb: Infinity, la: -Infinity, ts: new Date().toISOString() },
-              ],
+              results: [{ lb: Infinity, la: -Infinity, ts: new Date().toISOString() }],
             }),
           }),
         };
@@ -618,9 +614,7 @@ describe('Queue Consumer Error Paths', () => {
         };
       });
 
-      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(
-        new Error('Analytics write failed')
-      );
+      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(new Error('Analytics write failed'));
 
       const message = {
         body: JSON.stringify({
@@ -697,9 +691,7 @@ describe('Queue Consumer Error Paths', () => {
         }),
       });
 
-      const results = await Promise.allSettled(
-        messages.map(msg => handleSteamWebhook(msg, mockEnv, mockContext))
-      );
+      const results = await Promise.allSettled(messages.map(msg => handleSteamWebhook(msg, mockEnv, mockContext)));
 
       expect(results).toHaveLength(5);
       results.forEach(result => {
@@ -739,9 +731,7 @@ describe('Queue Consumer Error Paths', () => {
         timestamp: Date.now(),
       })) as Message[];
 
-      const results = await Promise.allSettled(
-        messages.map(msg => handleLineIngress(msg, mockEnv, mockContext))
-      );
+      const results = await Promise.allSettled(messages.map(msg => handleLineIngress(msg, mockEnv, mockContext)));
 
       // Second message should fail, others succeed
       expect(results[0].status).toBe('fulfilled');

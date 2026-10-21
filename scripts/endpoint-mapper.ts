@@ -24,7 +24,9 @@ function parseEndpoints(): Endpoint[] {
     const line = lines[i];
 
     // Match: if (url.pathname === '/path' && request.method === 'METHOD')
-    const pathAndMethodMatch = line.match(/if\s+\(url\.pathname\s*===\s*['"]([^'"]+)['"]\s*&&\s*request\.method\s*===\s*['"]([^'"]+)['"]\)/);
+    const pathAndMethodMatch = line.match(
+      /if\s+\(url\.pathname\s*===\s*['"]([^'"]+)['"]\s*&&\s*request\.method\s*===\s*['"]([^'"]+)['"]\)/
+    );
     if (pathAndMethodMatch) {
       const [, path, method] = pathAndMethodMatch;
       const handler = findHandler(lines, i);
@@ -37,7 +39,7 @@ function parseEndpoints(): Endpoint[] {
         line: i + 1,
         description,
         authRequired: checkAuthRequired(lines, i),
-        rateLimit: findRateLimit(lines, i)
+        rateLimit: findRateLimit(lines, i),
       });
       continue;
     }
@@ -57,7 +59,7 @@ function parseEndpoints(): Endpoint[] {
         line: i + 1,
         description,
         authRequired: checkAuthRequired(lines, i),
-        rateLimit: findRateLimit(lines, i)
+        rateLimit: findRateLimit(lines, i),
       });
       continue;
     }
@@ -77,7 +79,7 @@ function parseEndpoints(): Endpoint[] {
         line: i + 1,
         description,
         authRequired: checkAuthRequired(lines, i),
-        rateLimit: findRateLimit(lines, i)
+        rateLimit: findRateLimit(lines, i),
       });
     }
   }

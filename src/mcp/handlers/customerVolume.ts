@@ -48,12 +48,16 @@ export async function getCustomerVolume(args: Record<string, any>, env: Env): Pr
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              message: 'No customer volume data found',
-              lookbackDays,
-              minBets,
-              agentID,
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                message: 'No customer volume data found',
+                lookbackDays,
+                minBets,
+                agentID,
+              },
+              null,
+              2
+            ),
           },
         ],
         isError: false,
@@ -64,7 +68,7 @@ export async function getCustomerVolume(args: Record<string, any>, env: Env): Pr
     const volumes = volumeData.results.map((row: any) => row.total_volume).sort((a: number, b: number) => a - b);
     const p90 = volumes[Math.floor(volumes.length * 0.9)];
     const p75 = volumes[Math.floor(volumes.length * 0.75)];
-    const p50 = volumes[Math.floor(volumes.length * 0.50)];
+    const p50 = volumes[Math.floor(volumes.length * 0.5)];
     const p25 = volumes[Math.floor(volumes.length * 0.25)];
 
     // Segment customers
@@ -115,7 +119,7 @@ export async function getCustomerVolume(args: Record<string, any>, env: Env): Pr
       OCCASIONAL: { count: 0, total_volume: 0, avg_bet_size: 0 },
     };
 
-    customers.forEach((customer) => {
+    customers.forEach(customer => {
       const segment = customer.segment as keyof typeof segmentStats;
       segmentStats[segment].count++;
       segmentStats[segment].total_volume += customer.total_volume;
@@ -123,12 +127,11 @@ export async function getCustomerVolume(args: Record<string, any>, env: Env): Pr
     });
 
     // Calculate averages
-    Object.keys(segmentStats).forEach((segment) => {
+    Object.keys(segmentStats).forEach(segment => {
       const key = segment as keyof typeof segmentStats;
       if (segmentStats[key].count > 0) {
-        segmentStats[key].avg_bet_size = Math.round(
-          (segmentStats[key].avg_bet_size / segmentStats[key].count) * 100
-        ) / 100;
+        segmentStats[key].avg_bet_size =
+          Math.round((segmentStats[key].avg_bet_size / segmentStats[key].count) * 100) / 100;
         segmentStats[key].total_volume = Math.round(segmentStats[key].total_volume * 100) / 100;
       }
     });
@@ -163,19 +166,19 @@ export async function getCustomerVolume(args: Record<string, any>, env: Env): Pr
         segments: segmentStats,
       },
       top_customers: {
-        by_volume: topByVolume.map((c) => ({
+        by_volume: topByVolume.map(c => ({
           customer_id: c.customer_id,
           segment: c.segment,
           total_volume: c.total_volume,
           bet_count: c.bet_count,
         })),
-        by_frequency: topByFrequency.map((c) => ({
+        by_frequency: topByFrequency.map(c => ({
           customer_id: c.customer_id,
           segment: c.segment,
           bet_frequency: c.bet_frequency,
           bet_count: c.bet_count,
         })),
-        by_roi: topByROI.map((c) => ({
+        by_roi: topByROI.map(c => ({
           customer_id: c.customer_id,
           segment: c.segment,
           roi: c.roi,

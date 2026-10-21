@@ -1,4 +1,5 @@
 # 🧪 Test Failure & Error Analysis
+
 **Generated:** October 7, 2025  
 **Status:** 249 tests passing ✅ | 89 TypeScript errors 🚨
 
@@ -6,13 +7,13 @@
 
 ## 📊 Executive Summary
 
-| Category | Status | Count | Severity |
-|----------|--------|-------|----------|
-| **Unit Tests** | ✅ PASSING | 121/121 | 🟢 OK |
-| **Integration Tests** | ✅ PASSING | 128/128 | 🟠 SLOW |
-| **E2E Tests** | ⚪ MISSING | 0/0 | ⚠️ TODO |
-| **TypeScript Errors** | 🚨 FAILING | 89 errors | 🔴 CRITICAL |
-| **Performance** | ⚠️ DEGRADED | 3 slow files | 🟠 WARNING |
+| Category              | Status      | Count        | Severity    |
+| --------------------- | ----------- | ------------ | ----------- |
+| **Unit Tests**        | ✅ PASSING  | 121/121      | 🟢 OK       |
+| **Integration Tests** | ✅ PASSING  | 128/128      | 🟠 SLOW     |
+| **E2E Tests**         | ⚪ MISSING  | 0/0          | ⚠️ TODO     |
+| **TypeScript Errors** | 🚨 FAILING  | 89 errors    | 🔴 CRITICAL |
+| **Performance**       | ⚠️ DEGRADED | 3 slow files | 🟠 WARNING  |
 
 ---
 
@@ -20,45 +21,51 @@
 
 ### 1. TypeScript Errors: 89 Total Errors
 
-**Impact:** Tests pass at runtime but fail type checking. Production builds may fail or have runtime type errors.
+**Impact:** Tests pass at runtime but fail type checking. Production builds may
+fail or have runtime type errors.
 
 #### **1.1 Missing Type Exports (5 errors)** 🔴 HIGH
+
 **Files:** `tests/mocks/data.ts`
 
 ```typescript
 // ❌ ERROR: Module '"../../src/types/database"' has no exported member 'SteamMoveMetrics'
-import type { 
-  LineMovement, 
-  SteamMoveMetrics,  // ❌ Not exported from database.ts
-  CLVMetrics,        // ❌ Not exported from database.ts
-  HoldMetrics,       // ❌ Not exported from database.ts
-  ExposureMetrics,   // ❌ Not exported from database.ts
-  SharpScoreMetrics  // ❌ Not exported from database.ts
+import type {
+  LineMovement,
+  SteamMoveMetrics, // ❌ Not exported from database.ts
+  CLVMetrics, // ❌ Not exported from database.ts
+  HoldMetrics, // ❌ Not exported from database.ts
+  ExposureMetrics, // ❌ Not exported from database.ts
+  SharpScoreMetrics, // ❌ Not exported from database.ts
 } from '../../src/types/database';
 ```
 
-**Root Cause:** These types exist in `src/types/metrics.ts` but are being imported from wrong module.
+**Root Cause:** These types exist in `src/types/metrics.ts` but are being
+imported from wrong module.
 
 **Fix:**
+
 ```typescript
 // ✅ CORRECT:
 import type { LineMovement } from '../../src/types/database';
-import type { 
-  SteamMoveMetrics, 
-  CLVMetrics, 
-  HoldMetrics, 
-  ExposureMetrics, 
-  SharpScoreMetrics 
+import type {
+  SteamMoveMetrics,
+  CLVMetrics,
+  HoldMetrics,
+  ExposureMetrics,
+  SharpScoreMetrics,
 } from '../../src/types/metrics';
 ```
 
 **Files to Update:**
+
 - `tests/mocks/data.ts`
 - Any other test files importing these types from database.ts
 
 ---
 
 #### **1.2 Missing Vitest Types (50+ errors)** 🔴 HIGH
+
 **Files:** All test files
 
 ```typescript
@@ -68,18 +75,21 @@ import type {
 // ❌ ERROR: Cannot find name 'it'
 ```
 
-**Root Cause:** `tsconfig.json` doesn't include vitest types, even though `vitest.config.ts` sets `globals: true`.
+**Root Cause:** `tsconfig.json` doesn't include vitest types, even though
+`vitest.config.ts` sets `globals: true`.
 
 **Current tsconfig.json:**
+
 ```json
 {
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types"]  // ❌ Missing vitest
+    "types": ["@cloudflare/workers-types"] // ❌ Missing vitest
   }
 }
 ```
 
 **Fix:**
+
 ```json
 {
   "compilerOptions": {
@@ -93,6 +103,7 @@ import type {
 ---
 
 #### **1.3 Missing `ing` Field in Test Mocks (15+ errors)** 🟠 MEDIUM
+
 **Files:** `tests/mocks/data.ts`, all test files creating LineMovement objects
 
 ```typescript
@@ -104,14 +115,16 @@ export const mockLineMovement: LineMovement = {
   la: -108,
   vb: 10000,
   va: 15000,
-  ts: new Date().toISOString()
+  ts: new Date().toISOString(),
   // ❌ Missing: ing field
 };
 ```
 
-**Root Cause:** `LineMovement` interface requires `ing` (ingestion timestamp) field, but test data omits it.
+**Root Cause:** `LineMovement` interface requires `ing` (ingestion timestamp)
+field, but test data omits it.
 
 **Fix:**
+
 ```typescript
 export const mockLineMovement: LineMovement = {
   eid: 'nba_123',
@@ -121,11 +134,12 @@ export const mockLineMovement: LineMovement = {
   vb: 10000,
   va: 15000,
   ts: new Date().toISOString(),
-  ing: new Date().toISOString()  // ✅ Add ing field
+  ing: new Date().toISOString(), // ✅ Add ing field
 };
 ```
 
 **Files to Update:**
+
 - `tests/mocks/data.ts` (2 occurrences)
 - `tests/integration/triggers.test.ts` (4 occurrences)
 - `tests/integration/triggers-implementation.test.ts` (1 occurrence)
@@ -134,45 +148,45 @@ export const mockLineMovement: LineMovement = {
 ---
 
 #### **1.4 D1Result Type Casting Errors (6 errors)** 🟠 MEDIUM
-**Files:** `src/utils/database.ts`, `src/queues/steamWebhook.ts`, `src/schedules/*.ts`
+
+**Files:** `src/utils/database.ts`, `src/queues/steamWebhook.ts`,
+`src/schedules/*.ts`
 
 ```typescript
-// ❌ ERROR: Conversion of type 'D1Result<Record<string, unknown>>' 
+// ❌ ERROR: Conversion of type 'D1Result<Record<string, unknown>>'
 // to type 'T[]' may be a mistake
-return result as T[];  // Unsafe cast
+return result as T[]; // Unsafe cast
 ```
 
-**Root Cause:** D1 result types are not properly typed. Casting `D1Result` to array without extracting `.results` property.
+**Root Cause:** D1 result types are not properly typed. Casting `D1Result` to
+array without extracting `.results` property.
 
 **Current Code:**
+
 ```typescript
 // src/utils/database.ts:39
-const result = await Promise.race([
-  bound.all(),
-  timeoutPromise
-]);
-return result as T[];  // ❌ Wrong: result is D1Result, not T[]
+const result = await Promise.race([bound.all(), timeoutPromise]);
+return result as T[]; // ❌ Wrong: result is D1Result, not T[]
 ```
 
 **Fix:**
+
 ```typescript
-const result = await Promise.race([
-  bound.all(),
-  timeoutPromise
-]);
+const result = await Promise.race([bound.all(), timeoutPromise]);
 // ✅ Extract .results from D1Result
 return (result as D1Response & { results: T[] }).results || [];
 ```
 
 **Alternative Fix (Better):**
+
 ```typescript
 // Use proper D1 response type
 import type { D1Result } from '@cloudflare/workers-types';
 
-const result = await Promise.race([
+const result = (await Promise.race([
   bound.all(),
-  timeoutPromise
-]) as D1Result<T>;
+  timeoutPromise,
+])) as D1Result<T>;
 
 if (!result.success) {
   throw new Error('Query failed');
@@ -181,6 +195,7 @@ return result.results || [];
 ```
 
 **Files to Fix:**
+
 - `src/utils/database.ts` (line 39)
 - `src/queues/steamWebhook.ts` (line 170)
 - `src/schedules/exposureCalc.ts` (lines 45, 58)
@@ -189,11 +204,12 @@ return result.results || [];
 ---
 
 #### **1.5 Type Mismatch Errors (13 errors)** 🟡 LOW
+
 **Files:** Various test files
 
 ```typescript
 // ❌ ERROR: Type 'Date' is not assignable to type 'string'
-lastUpdated: new Date()  // Should be: new Date().toISOString()
+lastUpdated: new Date(); // Should be: new Date().toISOString()
 
 // ❌ ERROR: Property 'alertThreshold' is missing
 const metrics = {
@@ -203,16 +219,22 @@ const metrics = {
 ```
 
 **Examples:**
-1. `tests/unit/formatting.test.ts` - Date objects instead of ISO strings (lines 272, 293)
-2. `tests/unit/formatting.test.ts` - Missing `alertThreshold` properties (lines 231, 251, 314)
-3. `tests/unit/utils-error-paths.test.ts` - Type narrowing issues with discriminated unions (lines 62, 72, 82, 100, 118)
-4. `tests/integration/integration.test.ts` - `body` typed as `unknown` (lines 102-104, 112, 171)
+
+1. `tests/unit/formatting.test.ts` - Date objects instead of ISO strings (lines
+   272, 293)
+2. `tests/unit/formatting.test.ts` - Missing `alertThreshold` properties (lines
+   231, 251, 314)
+3. `tests/unit/utils-error-paths.test.ts` - Type narrowing issues with
+   discriminated unions (lines 62, 72, 82, 100, 118)
+4. `tests/integration/integration.test.ts` - `body` typed as `unknown` (lines
+   102-104, 112, 171)
 
 ---
 
 #### **1.6 Miscellaneous Errors (10 errors)** 🟡 LOW
 
 **Duplicate Property:**
+
 ```typescript
 // tests/integration/triggers.test.ts:21
 // ❌ ERROR: An object literal cannot have multiple properties with the same name
@@ -224,19 +246,23 @@ const mockEnv = {
 ```
 
 **Wrong Object Shape:**
+
 ```typescript
 // src/triggers/onLineMove.ts:120
 // ❌ ERROR: 'line_change' does not exist in type 'number[]'
 env.ANALYTICS_ENGINE.writeDataPoint({
   indexes: [eid, mt],
-  blobs: [JSON.stringify({
-    line_change: lineChange,  // ❌ Wrong property name
-    volume_change: volumeChange
-  })]
+  blobs: [
+    JSON.stringify({
+      line_change: lineChange, // ❌ Wrong property name
+      volume_change: volumeChange,
+    }),
+  ],
 });
 ```
 
 **Missing Properties in Test Mocks:**
+
 ```typescript
 // Multiple test files
 // ❌ ERROR: Property 'LINE_INGRESS' is missing in type 'Env'
@@ -249,13 +275,18 @@ const mockEnv: Env = {
 ```
 
 **Files to Fix:**
+
 - `tests/integration/triggers.test.ts` (duplicate bind property, line 21)
 - `src/triggers/onLineMove.ts` (wrong property name, line 120)
-- `tests/integration/trigger-implementation-detailed.test.ts` (missing LINE_INGRESS, line 17)
-- `tests/integration/triggers-implementation.test.ts` (missing LINE_INGRESS, line 11)
+- `tests/integration/trigger-implementation-detailed.test.ts` (missing
+  LINE_INGRESS, line 17)
+- `tests/integration/triggers-implementation.test.ts` (missing LINE_INGRESS,
+  line 11)
 - `tests/integration/triggers.test.ts` (missing LINE_INGRESS, line 10)
-- `tests/unit/guards-error-paths.test.ts` (QUEUE_PRODUCER doesn't exist, line 24)
-- `tests/integration/schedule-implementation-detailed.test.ts` (QUEUE_PRODUCER, lines 37, 581)
+- `tests/unit/guards-error-paths.test.ts` (QUEUE_PRODUCER doesn't exist,
+  line 24)
+- `tests/integration/schedule-implementation-detailed.test.ts` (QUEUE_PRODUCER,
+  lines 37, 581)
 - `tests/integration/scheduled.test.ts` (QUEUE_PRODUCER, line 31)
 - `tests/integration/schedules-implementation.test.ts` (QUEUE_PRODUCER, line 31)
 
@@ -266,6 +297,7 @@ const mockEnv: Env = {
 #### **2.1 Slow Integration Tests (99 seconds total)** 🟠 MEDIUM
 
 **Test Duration Breakdown:**
+
 ```
 ✅ Unit tests:               4.32s ✅ FAST
 ✅ Fast integration tests:   ~5s   ✅ FAST
@@ -273,7 +305,7 @@ const mockEnv: Env = {
 
 Breakdown of slow tests:
 - trigger-implementation-detailed.test.ts   45.5s  (21 tests = 2.16s/test)
-- triggers.test.ts                         28.1s  (15 tests = 1.87s/test)  
+- triggers.test.ts                         28.1s  (15 tests = 1.87s/test)
 - triggers-implementation.test.ts          26.0s  (14 tests = 1.86s/test)
                                            ─────
                                            99.6s total
@@ -282,27 +314,32 @@ Breakdown of slow tests:
 **Root Cause:** Dynamic module imports in EVERY test case
 
 **Problem Pattern Found:**
+
 ```typescript
 // ❌ BAD: Import in every test (repeated 21+ times!)
 it('should process line movement', async () => {
-  const { onLineMove } = await import('../../src/triggers/onLineMove');  // SLOW!
+  const { onLineMove } = await import('../../src/triggers/onLineMove'); // SLOW!
   await onLineMove(mockEnv, mockLineMovement);
   // ... assertions
 });
 
 it('should detect significant movements', async () => {
-  const { onLineMove } = await import('../../src/triggers/onLineMove');  // SLOW AGAIN!
+  const { onLineMove } = await import('../../src/triggers/onLineMove'); // SLOW AGAIN!
   await onLineMove(mockEnv, significantMovement);
   // ... assertions
 });
 ```
 
-**Impact:** 
-- **trigger-implementation-detailed.test.ts**: 21 dynamic imports × ~2s each = 42s wasted
+**Impact:**
+
+- **trigger-implementation-detailed.test.ts**: 21 dynamic imports × ~2s each =
+  42s wasted
 - **triggers.test.ts**: 15 dynamic imports × ~2s each = 30s wasted
-- **triggers-implementation.test.ts**: 14 dynamic imports × ~2s each = 28s wasted
+- **triggers-implementation.test.ts**: 14 dynamic imports × ~2s each = 28s
+  wasted
 
 **Fix:**
+
 ```typescript
 // ✅ GOOD: Import once at module level
 import { onLineMove } from '../../src/triggers/onLineMove';
@@ -311,26 +348,30 @@ import { handleExposureCalculation } from '../../src/schedules/exposureCalc';
 
 describe('Trigger Tests', () => {
   it('should process line movement', async () => {
-    await onLineMove(mockEnv, mockLineMovement);  // ✅ FAST!
+    await onLineMove(mockEnv, mockLineMovement); // ✅ FAST!
     // ... assertions
   });
-  
+
   it('should detect significant movements', async () => {
-    await onLineMove(mockEnv, significantMovement);  // ✅ FAST!
+    await onLineMove(mockEnv, significantMovement); // ✅ FAST!
     // ... assertions
   });
 });
 ```
 
 **Expected Performance Improvement:**
+
 - Current: 99.6 seconds
 - After fix: ~10-15 seconds (85% improvement) 🚀
 
 **Files to Optimize:**
-- `tests/integration/trigger-implementation-detailed.test.ts` (21 dynamic imports)
+
+- `tests/integration/trigger-implementation-detailed.test.ts` (21 dynamic
+  imports)
 - `tests/integration/triggers.test.ts` (15 dynamic imports)
 - `tests/integration/triggers-implementation.test.ts` (14 dynamic imports)
-- `tests/integration/schedule-implementation-detailed.test.ts` (18+ dynamic imports)
+- `tests/integration/schedule-implementation-detailed.test.ts` (18+ dynamic
+  imports)
 - `tests/integration/scheduled.test.ts` (14+ dynamic imports)
 
 ---
@@ -340,11 +381,13 @@ describe('Trigger Tests', () => {
 #### **3.1 Misleading Overall Coverage** 🟡 LOW
 
 **Reported Coverage:**
+
 ```
 All files: 3.54%  ❌ MISLEADING
 ```
 
 **Actual Source Coverage:**
+
 ```
 src/index.ts        100%    ✅ EXCELLENT
 src/guards/         86%     ✅ GOOD
@@ -355,9 +398,11 @@ src/triggers/       98.64%  ✅ EXCELLENT
 src/utils/          97.64%  ✅ EXCELLENT
 ```
 
-**Root Cause:** Coverage includes `node_modules` and type definition files in calculation, which have 0% coverage and drag down the average.
+**Root Cause:** Coverage includes `node_modules` and type definition files in
+calculation, which have 0% coverage and drag down the average.
 
 **Fix:** Update `vitest.config.ts` coverage exclusions:
+
 ```typescript
 coverage: {
   provider: 'v8',
@@ -395,6 +440,7 @@ coverage: {
 **Documented Plan:** See `docs/testing/TESTING_GUIDE.md` lines 103-110
 
 **TODO:**
+
 - API endpoint full request/response cycles
 - Queue workflow end-to-end testing
 - Scheduled job complete execution testing
@@ -418,10 +464,12 @@ coverage: {
 
 ### 🟠 **Phase 2: Performance Optimization**
 
-- [ ] **2.1** Replace dynamic imports with static imports in `trigger-implementation-detailed.test.ts`
+- [ ] **2.1** Replace dynamic imports with static imports in
+      `trigger-implementation-detailed.test.ts`
 - [ ] **2.2** Replace dynamic imports in `triggers.test.ts`
 - [ ] **2.3** Replace dynamic imports in `triggers-implementation.test.ts`
-- [ ] **2.4** Replace dynamic imports in `schedule-implementation-detailed.test.ts`
+- [ ] **2.4** Replace dynamic imports in
+      `schedule-implementation-detailed.test.ts`
 - [ ] **2.5** Replace dynamic imports in `scheduled.test.ts`
 
 **Expected Improvement:** 99s → 15s (84% faster) 🚀
@@ -457,12 +505,14 @@ coverage: {
 ## 🎯 Impact Analysis
 
 ### Current State
+
 - ✅ Tests: 249/249 passing (100%)
 - 🚨 Type Safety: 89 errors (0% passing)
 - ⚠️ Performance: 99s for integration tests (SLOW)
 - 📊 Coverage: 95%+ actual (3.54% reported)
 
 ### After Phase 1 (Critical Fixes)
+
 - ✅ Tests: 249/249 passing (100%)
 - ✅ Type Safety: 0 errors (100% passing) 🎉
 - ⚠️ Performance: 99s (unchanged)
@@ -471,6 +521,7 @@ coverage: {
 **Risk Reduction:** 🔴 HIGH → 🟢 LOW
 
 ### After Phase 2 (Performance)
+
 - ✅ Tests: 249/249 passing (100%)
 - ✅ Type Safety: 0 errors (100%)
 - ✅ Performance: ~15s (84% improvement) 🚀
@@ -479,6 +530,7 @@ coverage: {
 **Developer Experience:** Improved significantly
 
 ### After Phase 3 (Type Safety)
+
 - ✅ Tests: 249/249 passing (100%)
 - ✅ Type Safety: 0 errors, better patterns
 - ✅ Performance: ~15s
@@ -487,6 +539,7 @@ coverage: {
 **Code Quality:** 🟢 EXCELLENT
 
 ### After Phase 4 (Complete)
+
 - ✅ Tests: 249+ passing (includes E2E)
 - ✅ Type Safety: 100%
 - ✅ Performance: ~15s
@@ -499,11 +552,13 @@ coverage: {
 ## 🔧 Quick Fix Commands
 
 ### Run Type Check
+
 ```bash
 npm run lint  # Currently shows 89 errors
 ```
 
 ### Run Tests
+
 ```bash
 bun test:unit        # ✅ 121 tests, 4.3s
 bun test:integration # ✅ 128 tests, 99s (SLOW)
@@ -512,6 +567,7 @@ bun test:ci          # ✅ With coverage
 ```
 
 ### Check Coverage
+
 ```bash
 bun test:ci
 open coverage/index.html
@@ -532,11 +588,14 @@ open coverage/index.html
 
 1. **Type checking is not optional** - Tests passing ≠ type-safe code
 2. **Dynamic imports in tests are SLOW** - Use static imports at module level
-3. **Coverage metrics need proper configuration** - Exclude node_modules and .d.ts files
-4. **Test data must match types exactly** - Missing fields cause silent type errors
-5. **Vitest globals need TypeScript configuration** - Add to tsconfig types array
+3. **Coverage metrics need proper configuration** - Exclude node_modules and
+   .d.ts files
+4. **Test data must match types exactly** - Missing fields cause silent type
+   errors
+5. **Vitest globals need TypeScript configuration** - Add to tsconfig types
+   array
 
 ---
 
-**Next Steps:** Start with Phase 1 critical fixes to unblock production deployment.
-
+**Next Steps:** Start with Phase 1 critical fixes to unblock production
+deployment.

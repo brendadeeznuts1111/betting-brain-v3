@@ -9,6 +9,7 @@
 ## 📊 **Current Status**
 
 ✅ **What's Already Done:**
+
 - Wrangler configuration complete (`wrangler.toml`)
 - MCP integration implemented (13/15 tools operational)
 - All tests passing (272/272)
@@ -16,6 +17,7 @@
 - Account ID configured: `80693377f3abb78e00820aa69a415ce4`
 
 ⚠️ **What You Need To Do:**
+
 - Authenticate with Cloudflare
 - Deploy the worker
 - Test MCP endpoints
@@ -35,6 +37,7 @@ wrangler whoami
 ```
 
 **Expected Output:**
+
 ```
  ⛅️ wrangler 4.30.0
 ─────────────────────
@@ -52,6 +55,7 @@ Getting User settings...
 ### **Option B: API Token (Recommended for CI/CD)**
 
 1. **Create API Token:**
+
    ```
    1. Go to: https://dash.cloudflare.com/profile/api-tokens
    2. Click "Create Token"
@@ -65,13 +69,14 @@ Getting User settings...
    ```
 
 2. **Set Environment Variable:**
+
    ```bash
    # Add to your shell profile (~/.zshrc or ~/.bash_profile)
    export CLOUDFLARE_API_TOKEN="your-token-here"
-   
+
    # Or set for current session
    export CLOUDFLARE_API_TOKEN="your-token-here"
-   
+
    # Verify
    wrangler whoami
    ```
@@ -130,6 +135,7 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 ```
 
 **Expected Response:**
+
 ```json
 {
   "status": "healthy",
@@ -162,6 +168,7 @@ curl -X POST https://betting-brain-v3.nolarose1968-806.workers.dev/mcp \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -194,6 +201,7 @@ curl -X POST https://betting-brain-v3.nolarose1968-806.workers.dev/mcp \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -313,11 +321,13 @@ wrangler queues describe line-ingress
 ### **Issue 1: Authentication Error**
 
 **Error:**
+
 ```
 ✘ [ERROR] Unable to authenticate request [code: 10001]
 ```
 
 **Solution:**
+
 1. Check if logged in: `wrangler whoami`
 2. If not, login: `wrangler login`
 3. If using API token, verify: `echo $CLOUDFLARE_API_TOKEN`
@@ -327,11 +337,13 @@ wrangler queues describe line-ingress
 ### **Issue 2: Account ID Mismatch**
 
 **Error:**
+
 ```
 ✘ [ERROR] Account ID mismatch
 ```
 
 **Solution:**
+
 1. Check your account ID: `wrangler whoami`
 2. Update `wrangler.toml`:
    ```toml
@@ -343,11 +355,13 @@ wrangler queues describe line-ingress
 ### **Issue 3: Database Not Found**
 
 **Error:**
+
 ```
 ✘ [ERROR] Database not found
 ```
 
 **Solution:**
+
 ```bash
 # List D1 databases
 wrangler d1 list
@@ -363,11 +377,13 @@ wrangler d1 create betting-analytics
 ### **Issue 4: KV Namespace Not Found**
 
 **Error:**
+
 ```
 ✘ [ERROR] KV namespace not found
 ```
 
 **Solution:**
+
 ```bash
 # List KV namespaces
 wrangler kv namespace list
@@ -383,6 +399,7 @@ wrangler kv namespace create BET_TICKER_RAW
 ## 📚 **Useful Commands Reference**
 
 ### **Deployment**
+
 ```bash
 wrangler deploy                    # Deploy to default
 wrangler deploy --env production   # Deploy to production
@@ -391,6 +408,7 @@ wrangler rollback                  # Rollback to previous deployment
 ```
 
 ### **Development**
+
 ```bash
 wrangler dev                      # Start local development server
 wrangler dev --remote             # Start with remote bindings
@@ -398,6 +416,7 @@ wrangler tail                     # View live logs
 ```
 
 ### **Database**
+
 ```bash
 wrangler d1 list                                    # List databases
 wrangler d1 execute DB --remote --command "SQL"    # Execute query
@@ -406,6 +425,7 @@ wrangler d1 migrations apply DB --remote           # Apply migrations
 ```
 
 ### **KV**
+
 ```bash
 wrangler kv namespace list                         # List namespaces
 wrangler kv key list --binding BINDING_NAME       # List keys
@@ -414,6 +434,7 @@ wrangler kv key put --binding BINDING_NAME KEY VALUE  # Set value
 ```
 
 ### **Queues**
+
 ```bash
 wrangler queues list                    # List queues
 wrangler queues describe QUEUE_NAME     # View queue details
@@ -435,7 +456,8 @@ wrangler queues consumer add ...        # Add consumer
   - [ ] Test `/health` endpoint
 
 - [ ] **Database Setup**
-  - [ ] Apply migrations: `wrangler d1 migrations apply betting-analytics --remote`
+  - [ ] Apply migrations:
+        `wrangler d1 migrations apply betting-analytics --remote`
   - [ ] Verify tables created
 
 - [ ] **MCP Testing**
@@ -476,8 +498,10 @@ wrangler queues consumer add ...        # Add consumer
 
 ## 📖 **Related Documentation**
 
-- **[MCP_INTEGRATION_STATUS.md](../MCP_INTEGRATION_STATUS.md)** - MCP implementation details
-- **[FANTASY402_INTEGRATION.md](../FANTASY402_INTEGRATION.md)** - Fantasy402 setup
+- **[MCP_INTEGRATION_STATUS.md](../MCP_INTEGRATION_STATUS.md)** - MCP
+  implementation details
+- **[FANTASY402_INTEGRATION.md](../FANTASY402_INTEGRATION.md)** - Fantasy402
+  setup
 - **[DEPLOYMENT.md](../deployment/)** - Advanced deployment guides
 - **[TROUBLESHOOTING.md](../TROUBLESHOOTING.md)** - Common issues
 
@@ -486,4 +510,3 @@ wrangler queues consumer add ...        # Add consumer
 **Status:** Complete setup guide  
 **Last Updated:** 2025-10-08  
 **Maintainer:** Betting-Brain Team
-

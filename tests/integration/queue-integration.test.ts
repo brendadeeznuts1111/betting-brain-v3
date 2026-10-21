@@ -3,7 +3,7 @@
  * Tests the line ingress and steam webhook queue handlers with real-world scenarios
  */
 
-import { describe, test, expect, vi, beforeEach } from "bun:test";
+import { describe, test, expect, vi, beforeEach } from 'bun:test';
 import { handleLineIngress, handleBatchLineIngress } from '../../src/queues/lineIngress';
 import { handleSteamWebhook, handleBatchSteamWebhook } from '../../src/queues/steamWebhook';
 import type { Env } from '../../src/types/api';
@@ -29,25 +29,25 @@ describe('Queue Integration Tests', () => {
           bind: vi.fn().mockReturnValue({
             first: vi.fn().mockResolvedValue(null),
             run: vi.fn().mockResolvedValue({ success: true }),
-            all: vi.fn().mockResolvedValue({ results: [] })
-          })
+            all: vi.fn().mockResolvedValue({ results: [] }),
+          }),
         }),
-        exec: vi.fn().mockResolvedValue({ success: true })
+        exec: vi.fn().mockResolvedValue({ success: true }),
       } as any,
       LINE_INGRESS: {
-        send: vi.fn().mockResolvedValue({ success: true })
+        send: vi.fn().mockResolvedValue({ success: true }),
       } as any,
       ANALYTICS_ENGINE: {
-        writeDataPoint: vi.fn().mockResolvedValue(undefined)
+        writeDataPoint: vi.fn().mockResolvedValue(undefined),
       } as any,
       STEAM_WEBHOOK: {
-        send: vi.fn().mockResolvedValue({ success: true })
-      } as any
+        send: vi.fn().mockResolvedValue({ success: true }),
+      } as any,
     };
 
     mockCtx = {
       waitUntil: vi.fn(),
-      passThroughOnException: vi.fn()
+      passThroughOnException: vi.fn(),
     } as any;
   });
 
@@ -61,8 +61,8 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       await handleLineIngress(message, mockEnv, mockCtx);
@@ -81,8 +81,8 @@ describe('Queue Integration Tests', () => {
           la: -105, // 5 point move - significant
           vb: 10000,
           va: 20000, // 100% volume increase - significant
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       await handleLineIngress(message, mockEnv, mockCtx);
@@ -91,7 +91,7 @@ describe('Queue Integration Tests', () => {
         expect.objectContaining({
           eid: 'nba_123',
           mt: 'SPREAD',
-          trigger: 'line_movement'
+          trigger: 'line_movement',
         })
       );
       expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
@@ -106,8 +106,8 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: -1000, // Invalid negative volume
           va: 15000,
-          ts: 'invalid-date' // Invalid timestamp
-        })
+          ts: 'invalid-date', // Invalid timestamp
+        }),
       } as any;
 
       // Should not throw for validation errors (non-retryable)
@@ -120,7 +120,7 @@ describe('Queue Integration Tests', () => {
 
     test('should handle malformed JSON in message body without retry', async () => {
       const message = {
-        body: 'invalid-json'
+        body: 'invalid-json',
       } as any;
 
       // Should not throw for parsing errors (non-retryable)
@@ -140,8 +140,8 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       // Mock database error
@@ -152,8 +152,8 @@ describe('Queue Integration Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
           run: vi.fn().mockRejectedValue(new Error('Database connection timeout')),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       // Should throw for retryable errors
@@ -168,8 +168,8 @@ describe('Queue Integration Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
           run: vi.fn().mockRejectedValue(new Error('Database error')),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const message = {
@@ -180,8 +180,8 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       await expect(handleLineIngress(message, mockEnv, mockCtx)).rejects.toThrow('Database error');
@@ -198,10 +198,10 @@ describe('Queue Integration Tests', () => {
             la: -108,
             vb: 10000,
             va: 15000,
-            ts: new Date().toISOString()
+            ts: new Date().toISOString(),
           }),
           ack: vi.fn(),
-          retry: vi.fn()
+          retry: vi.fn(),
         },
         {
           body: JSON.stringify({
@@ -211,11 +211,11 @@ describe('Queue Integration Tests', () => {
             la: 221.0,
             vb: 8000,
             va: 12000,
-            ts: new Date().toISOString()
+            ts: new Date().toISOString(),
           }),
           ack: vi.fn(),
-          retry: vi.fn()
-        }
+          retry: vi.fn(),
+        },
       ] as any[];
 
       await handleBatchLineIngress(messages, mockEnv, mockCtx);
@@ -234,16 +234,16 @@ describe('Queue Integration Tests', () => {
             la: -108,
             vb: 10000,
             va: 15000,
-            ts: new Date().toISOString()
+            ts: new Date().toISOString(),
           }),
           ack: vi.fn(),
-          retry: vi.fn()
+          retry: vi.fn(),
         },
         {
           body: 'invalid-json',
           ack: vi.fn(),
-          retry: vi.fn()
-        }
+          retry: vi.fn(),
+        },
       ] as any[];
 
       await handleBatchLineIngress(messages, mockEnv, mockCtx);
@@ -261,8 +261,8 @@ describe('Queue Integration Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const message = {
@@ -273,8 +273,8 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       await handleLineIngress(message, mockEnv, mockCtx);
@@ -295,8 +295,8 @@ describe('Queue Integration Tests', () => {
           vb: 10000,
           va: 25000,
           ts: new Date().toISOString(),
-          trigger: 'line_movement'
-        })
+          trigger: 'line_movement',
+        }),
       } as any;
 
       // Mock recent line movements for sigma calculation
@@ -306,7 +306,7 @@ describe('Queue Integration Tests', () => {
         all: vi.fn().mockResolvedValue([
           { lb: -110, la: -108, ts: new Date(Date.now() - 300000).toISOString() },
           { lb: -108, la: -107, ts: new Date(Date.now() - 60000).toISOString() },
-          { lb: -107, la: -105, ts: new Date().toISOString() }
+          { lb: -107, la: -105, ts: new Date().toISOString() },
         ]),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
@@ -314,9 +314,9 @@ describe('Queue Integration Tests', () => {
           all: vi.fn().mockResolvedValue([
             { lb: -110, la: -108, ts: new Date(Date.now() - 300000).toISOString() },
             { lb: -108, la: -107, ts: new Date(Date.now() - 60000).toISOString() },
-            { lb: -107, la: -105, ts: new Date().toISOString() }
-          ])
-        })
+            { lb: -107, la: -105, ts: new Date().toISOString() },
+          ]),
+        }),
       } as any);
 
       await handleSteamWebhook(message, mockEnv, mockCtx);
@@ -335,8 +335,8 @@ describe('Queue Integration Tests', () => {
           la: -100, // 10 point move
           vb: 10000,
           va: 25000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       // Mock recent line movements with small variance (low sigma)
@@ -346,7 +346,7 @@ describe('Queue Integration Tests', () => {
         all: vi.fn().mockResolvedValue([
           { lb: -110, la: -109.5, ts: new Date(Date.now() - 300000).toISOString() },
           { lb: -109.5, la: -109, ts: new Date(Date.now() - 60000).toISOString() },
-          { lb: -109, la: -108.5, ts: new Date().toISOString() }
+          { lb: -109, la: -108.5, ts: new Date().toISOString() },
         ]),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
@@ -354,9 +354,9 @@ describe('Queue Integration Tests', () => {
           all: vi.fn().mockResolvedValue([
             { lb: -110, la: -109.5, ts: new Date(Date.now() - 300000).toISOString() },
             { lb: -109.5, la: -109, ts: new Date(Date.now() - 60000).toISOString() },
-            { lb: -109, la: -108.5, ts: new Date().toISOString() }
-          ])
-        })
+            { lb: -109, la: -108.5, ts: new Date().toISOString() },
+          ]),
+        }),
       } as any);
 
       await handleSteamWebhook(message, mockEnv, mockCtx);
@@ -366,7 +366,7 @@ describe('Queue Integration Tests', () => {
         expect.objectContaining({
           blobs: ['nba_123', 'SPREAD'],
           doubles: expect.arrayContaining([expect.any(Number)]),
-          indexes: ['steam_move']
+          indexes: ['steam_move'],
         })
       );
     });
@@ -380,8 +380,8 @@ describe('Queue Integration Tests', () => {
           la: -105,
           vb: 10000,
           va: 25000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       // Mock existing dedupe record
@@ -392,8 +392,8 @@ describe('Queue Integration Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ eid: 'nba_123', mt: 'SPREAD' }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       await handleSteamWebhook(message, mockEnv, mockCtx);
@@ -411,8 +411,8 @@ describe('Queue Integration Tests', () => {
           la: -105,
           vb: 10000,
           va: 25000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       // Mock insufficient historical data
@@ -423,8 +423,8 @@ describe('Queue Integration Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       await handleSteamWebhook(message, mockEnv, mockCtx);
@@ -443,10 +443,10 @@ describe('Queue Integration Tests', () => {
             la: -105,
             vb: 10000,
             va: 25000,
-            ts: new Date().toISOString()
+            ts: new Date().toISOString(),
           }),
           ack: vi.fn(),
-          retry: vi.fn()
+          retry: vi.fn(),
         },
         {
           body: JSON.stringify({
@@ -456,11 +456,11 @@ describe('Queue Integration Tests', () => {
             la: 221.0,
             vb: 8000,
             va: 12000,
-            ts: new Date().toISOString()
+            ts: new Date().toISOString(),
           }),
           ack: vi.fn(),
-          retry: vi.fn()
-        }
+          retry: vi.fn(),
+        },
       ] as any[];
 
       await handleBatchSteamWebhook(messages, mockEnv, mockCtx);
@@ -477,8 +477,8 @@ describe('Queue Integration Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Database error')),
           run: vi.fn().mockRejectedValue(new Error('Database error')),
-          all: vi.fn().mockRejectedValue(new Error('Database error'))
-        })
+          all: vi.fn().mockRejectedValue(new Error('Database error')),
+        }),
       } as any);
 
       const message = {
@@ -489,8 +489,8 @@ describe('Queue Integration Tests', () => {
           la: -105,
           vb: 10000,
           va: 25000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       await expect(handleSteamWebhook(message, mockEnv, mockCtx)).rejects.toThrow('Database error');
@@ -508,8 +508,8 @@ describe('Queue Integration Tests', () => {
           la: -100, // Large move to trigger steam detection
           vb: 10000,
           va: 25000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       // Mock recent line movements for sigma calculation
@@ -519,7 +519,7 @@ describe('Queue Integration Tests', () => {
         all: vi.fn().mockResolvedValue([
           { lb: -110, la: -109.5, ts: new Date(Date.now() - 300000).toISOString() },
           { lb: -109.5, la: -109, ts: new Date(Date.now() - 60000).toISOString() },
-          { lb: -109, la: -108.5, ts: new Date().toISOString() }
+          { lb: -109, la: -108.5, ts: new Date().toISOString() },
         ]),
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(null),
@@ -527,9 +527,9 @@ describe('Queue Integration Tests', () => {
           all: vi.fn().mockResolvedValue([
             { lb: -110, la: -109.5, ts: new Date(Date.now() - 300000).toISOString() },
             { lb: -109.5, la: -109, ts: new Date(Date.now() - 60000).toISOString() },
-            { lb: -109, la: -108.5, ts: new Date().toISOString() }
-          ])
-        })
+            { lb: -109, la: -108.5, ts: new Date().toISOString() },
+          ]),
+        }),
       } as any);
 
       await expect(handleSteamWebhook(message, mockEnv, mockCtx)).rejects.toThrow('Analytics error');
@@ -547,8 +547,8 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       const startTime = Date.now();
@@ -568,10 +568,10 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
+          ts: new Date().toISOString(),
         }),
         ack: vi.fn(),
-        retry: vi.fn()
+        retry: vi.fn(),
       })) as any[];
 
       const startTime = Date.now();
@@ -593,8 +593,8 @@ describe('Queue Integration Tests', () => {
           la: -108,
           vb: 10000,
           va: 15000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       const message2 = {
@@ -605,15 +605,12 @@ describe('Queue Integration Tests', () => {
           la: -105,
           vb: 10000,
           va: 25000,
-          ts: new Date().toISOString()
-        })
+          ts: new Date().toISOString(),
+        }),
       } as any;
 
       // Process both messages concurrently
-      const promises = [
-        handleLineIngress(message1, mockEnv, mockCtx),
-        handleSteamWebhook(message2, mockEnv, mockCtx)
-      ];
+      const promises = [handleLineIngress(message1, mockEnv, mockCtx), handleSteamWebhook(message2, mockEnv, mockCtx)];
 
       await Promise.all(promises);
 

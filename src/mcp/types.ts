@@ -65,13 +65,7 @@ export interface MCPToolResult {
 
 // MCP Method Names
 export type MCPMethod =
-  | 'initialize'
-  | 'tools/list'
-  | 'tools/call'
-  | 'resources/list'
-  | 'resources/read'
-  | 'prompts/list'
-  | 'prompts/get';
+  'initialize' | 'tools/list' | 'tools/call' | 'resources/list' | 'resources/read' | 'prompts/list' | 'prompts/get';
 
 // MCP Error Codes (JSON-RPC 2.0 Standard)
 export enum MCPErrorCode {

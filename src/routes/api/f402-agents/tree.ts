@@ -10,14 +10,10 @@ import {
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_NOT_FOUND,
   HTTP_STATUS_SERVICE_UNAVAILABLE,
-  HTTP_STATUS_SERVER_ERROR
+  HTTP_STATUS_SERVER_ERROR,
 } from './constants';
 
-export async function getAgentTree(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getAgentTree(request: Request, env: Env, requestId: string): Promise<Response> {
   const url = new URL(request.url);
   const owner = url.searchParams.get('owner');
 
@@ -30,8 +26,8 @@ export async function getAgentTree(
 
     // Try cache keys in priority order (latest sync → owner-specific → D1)
     const cacheKeys = [
-      'fantasy402:agents:tree:latest',                          // From sync script
-      owner ? `fantasy402:agents:by-owner:${owner}` : null,     // From interceptor
+      'fantasy402:agents:tree:latest', // From sync script
+      owner ? `fantasy402:agents:by-owner:${owner}` : null, // From interceptor
     ].filter(Boolean) as string[];
 
     let agents: any[] = [];
@@ -169,13 +165,15 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
   // Recursive function to build children
   function buildChildren(parentId: string): any[] {
     const childIds = byParent.get(parentId) || [];
-    return childIds.map((childId) => {
-      const child = agentMap.get(childId);
-      if (!child) return null;
+    return childIds
+      .map(childId => {
+        const child = agentMap.get(childId);
+        if (!child) return null;
 
-      child.children = buildChildren(childId);
-      return child;
-    }).filter(Boolean);
+        child.children = buildChildren(childId);
+        return child;
+      })
+      .filter(Boolean);
   }
 
   // If we have a root owner, build from there
@@ -212,32 +210,28 @@ function buildAgentTree(agents: any[], rootOwner: string | null): any {
  * POST /api/f402/agents/sync
  * Bulk upsert agents from Fantasy402 sync
  */
-export async function syncAgents(
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext
-): Promise<Response> {
+export async function syncAgents(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const requestId = Date.now().toString(36);
   // Using CORS_HEADERS directly
 
   try {
-    const body = await request.json() as { agents: any[]; source?: string; timestamp?: string };
+    const body = (await request.json()) as { agents: any[]; source?: string; timestamp?: string };
     const agents = body.agents || [];
 
     if (!Array.isArray(agents) || agents.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid request: agents array required' }),
-        { status: HTTP_STATUS_BAD_REQUEST, headers: CORS_HEADERS }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid request: agents array required' }), {
+        status: HTTP_STATUS_BAD_REQUEST,
+        headers: CORS_HEADERS,
+      });
     }
 
     console.log(`[${requestId}] 🔄 Syncing ${agents.length} agents from ${body.source || 'unknown'}`);
 
     if (!env.RAW_FEED_DB) {
-      return new Response(
-        JSON.stringify({ error: 'Database not available' }),
-        { status: HTTP_STATUS_SERVICE_UNAVAILABLE, headers: CORS_HEADERS }
-      );
+      return new Response(JSON.stringify({ error: 'Database not available' }), {
+        status: HTTP_STATUS_SERVICE_UNAVAILABLE,
+        headers: CORS_HEADERS,
+      });
     }
 
     let inserted = 0;
@@ -247,13 +241,15 @@ export async function syncAgents(
     // Batch upsert agents
     for (const agent of agents) {
       try {
-        const stmt = env.RAW_FEED_DB.prepare(`
+        const stmt = env.RAW_FEED_DB.prepare(
+          `
           INSERT OR REPLACE INTO fantasy402_agents (
             agent_id, parent_id, agent_type, agent_owner, agent_name,
             level, path, credit_limit, outstanding_balance, hold_percentage,
             active, site_id, synced_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(
+        `
+        ).bind(
           agent.agent_id,
           agent.parent_id || null,
           agent.agent_type,
@@ -284,7 +280,7 @@ export async function syncAgents(
     ctx.waitUntil(
       Promise.all([
         env.LIVEBETS_STORE.delete('fantasy402:agents:tree:all'),
-        env.LIVEBETS_STORE.delete(`fantasy402:agents:tree:${agents[0]?.agent_owner}`)
+        env.LIVEBETS_STORE.delete(`fantasy402:agents:tree:${agents[0]?.agent_owner}`),
       ])
     );
 
@@ -295,18 +291,17 @@ export async function syncAgents(
         upserted: inserted,
         errors,
         requestId,
-        timestamp: new Date(Date.now()).toISOString()
+        timestamp: new Date(Date.now()).toISOString(),
       }),
       { headers: CORS_HEADERS }
     );
-
   } catch (error) {
     console.error(`[${requestId}] ❌ Sync error:`, error);
     return new Response(
       JSON.stringify({
         error: 'Sync failed',
         message: error instanceof Error ? error.message : 'Unknown error',
-        requestId
+        requestId,
       }),
       { status: HTTP_STATUS_SERVER_ERROR, headers: CORS_HEADERS }
     );

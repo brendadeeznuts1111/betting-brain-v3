@@ -216,11 +216,7 @@ export class AutoTrader {
       }
 
       // Check risk limits
-      const riskCheck = await this.riskLimitGuard.checkBet(
-        signal.hedge_amount,
-        signal.hedge_odds,
-        event.eventId
-      );
+      const riskCheck = await this.riskLimitGuard.checkBet(signal.hedge_amount, signal.hedge_odds, event.eventId);
 
       if (!riskCheck.allowed) {
         console.log('[AutoTrader] Risk limit check failed:', riskCheck.reason);
@@ -268,17 +264,9 @@ export class AutoTrader {
 
       const modelInfo = this.predictor.getModelInfo();
       if (modelInfo) {
-        await this.logger.logModelTraining(
-          modelInfo.r_squared,
-          modelInfo.std_error,
-          modelInfo.training_samples
-        );
+        await this.logger.logModelTraining(modelInfo.r_squared, modelInfo.std_error, modelInfo.training_samples);
 
-        await this.alertManager.sendModelUpdate(
-          modelInfo.r_squared,
-          modelInfo.std_error,
-          modelInfo.training_samples
-        );
+        await this.alertManager.sendModelUpdate(modelInfo.r_squared, modelInfo.std_error, modelInfo.training_samples);
       }
 
       console.log('[AutoTrader] Model training complete');
@@ -364,10 +352,7 @@ export class AutoTrader {
 /**
  * Factory function to create auto-trader
  */
-export function createAutoTrader(
-  env: Env & MCPEnv,
-  config: Partial<AutoTraderConfig> = {}
-): AutoTrader {
+export function createAutoTrader(env: Env & MCPEnv, config: Partial<AutoTraderConfig> = {}): AutoTrader {
   const fullConfig: AutoTraderConfig = {
     enableTrading: env.TRADING_ENABLED === 'true',
     dryRun: false,

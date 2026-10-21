@@ -67,22 +67,22 @@ async function getActiveCustomers(env: Env): Promise<string[]> {
   // (Previously read DISTINCT cid FROM sharp_indicators — circular: the table
   // this job writes was also its input roster, so new customers never got
   // scored until something else inserted them first.)
-  const result = await env.ANALYTICS.prepare(`
+  const result = await env.ANALYTICS.prepare(
+    `
     SELECT DISTINCT cid
     FROM bet_history
     WHERE ts > datetime('now', '-24 hours')
     ORDER BY ts DESC
     LIMIT 1000
-  `).all();
+  `
+  ).all();
 
   const customers = result.results as unknown as Array<{ cid: string }>;
   return customers.map(row => row.cid);
 }
 
 async function processBatchSharpCalculation(customerIds: string[], env: Env): Promise<void> {
-  const sharpScores = await Promise.all(
-    customerIds.map(customerId => calculateSharpScore(customerId, env))
-  );
+  const sharpScores = await Promise.all(customerIds.map(customerId => calculateSharpScore(customerId, env)));
 
   // Update database with new sharp scores
   await updateSharpScores(sharpScores, env);
@@ -103,7 +103,7 @@ export async function calculateSharpScore(customerId: string, env: Env): Promise
     actionCount: 0,
     netBet: 0,
     lastUpdated: new Date().toISOString(),
-    alertThreshold: 60
+    alertThreshold: 60,
   };
   if (stats.actionCount === 0) {
     return empty;
@@ -118,7 +118,7 @@ export async function calculateSharpScore(customerId: string, env: Env): Promise
     clv,
     winRate,
     actionCount,
-    netBet
+    netBet,
   };
 }
 
@@ -140,7 +140,8 @@ export interface LifetimeStats {
  * payout is 0 on losses and includes returned stake on wins.
  */
 export async function getCustomerLifetimeStats(customerId: string, env: Env): Promise<LifetimeStats> {
-  const row = await env.ANALYTICS.prepare(`
+  const row = (await env.ANALYTICS.prepare(
+    `
     SELECT
       COUNT(*) AS action_count,
       COALESCE(SUM(CASE WHEN result IS NOT NULL AND result != 'PENDING' THEN payout - stake END), 0) AS clv,
@@ -149,7 +150,10 @@ export async function getCustomerLifetimeStats(customerId: string, env: Env): Pr
       COALESCE(SUM(CASE WHEN result IN ('WIN', 'LOSS') THEN 1 ELSE 0 END), 0) AS decided
     FROM bet_history
     WHERE cid = ?
-  `).bind(customerId).first() as Record<string, unknown> | null;
+  `
+  )
+    .bind(customerId)
+    .first()) as Record<string, unknown> | null;
 
   const num = (v: unknown) => {
     const n = Number(v ?? 0);
@@ -181,33 +185,32 @@ async function updateSharpScores(sharpScores: SharpScoreMetrics[], env: Env): Pr
   for (const score of sharpScores) {
     // nb = lifetime net bet volume (Σ stake over settled bets); previously this
     // column received a second copy of clv, making it meaningless.
-    await env.ANALYTICS.prepare(`
+    await env.ANALYTICS.prepare(
+      `
       INSERT OR REPLACE INTO sharp_indicators (cid, clv, wr, ao, nb, upd)
       VALUES (?, ?, ?, ?, ?, ?)
-    `).bind(
-      score.customerId,
-      score.clv,
-      score.winRate,
-      score.actionCount,
-      score.netBet,
-      now
-    ).run();
+    `
+    )
+      .bind(score.customerId, score.clv, score.winRate, score.actionCount, score.netBet, now)
+      .run();
 
     // Write to analytics engine
     await env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [score.customerId, 'sharp_score'],
       doubles: [score.sharpScore, score.clv, score.winRate, score.actionCount],
-      indexes: ['sharp_calculation']
+      indexes: ['sharp_calculation'],
     });
   }
 }
 
 async function cleanupOldSharpData(env: Env): Promise<void> {
   // Clean up sharp indicators older than 30 days
-  await env.ANALYTICS.prepare(`
+  await env.ANALYTICS.prepare(
+    `
     DELETE FROM sharp_indicators 
     WHERE upd < datetime('now', '-30 days')
-  `).run();
+  `
+  ).run();
 
   console.log('Cleaned up old sharp data');
 }
@@ -215,5 +218,5 @@ async function cleanupOldSharpData(env: Env): Promise<void> {
 // Export for use in scheduled trigger
 export const sharpCalculationSchedule = {
   cron: '0 * * * *', // Every hour
-  handler: handleSharpCalculation
+  handler: handleSharpCalculation,
 };

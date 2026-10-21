@@ -28,7 +28,7 @@ export function fingerprintNumber(
 
   return {
     value: rounded,
-    fingerprint: fingerprint.substring(0, 8) // 8-char hex
+    fingerprint: fingerprint.substring(0, 8), // 8-char hex
   };
 }
 
@@ -53,10 +53,7 @@ export interface FingerprintedAnalytics {
   timestamp: number;
 }
 
-export function fingerprintAnalytics(
-  agentId: string,
-  metrics: Record<string, number>
-): FingerprintedAnalytics {
+export function fingerprintAnalytics(agentId: string, metrics: Record<string, number>): FingerprintedAnalytics {
   const fingerprinted: Record<string, { value: number; fingerprint: string }> = {};
 
   Object.entries(metrics).forEach(([key, value]) => {
@@ -66,7 +63,7 @@ export function fingerprintAnalytics(
   return {
     agentId,
     metrics: fingerprinted,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 }
 
@@ -112,7 +109,7 @@ export async function checkAnalyticsRateLimit(
 
   await env.FANTASY_CACHE.put(key, newCount.toString(), {
     expirationTtl: 1, // 1 second
-    metadata: { resetAt }
+    metadata: { resetAt },
   });
 
   return { allowed: true, remaining: limit - newCount, resetAt };
@@ -121,14 +118,11 @@ export async function checkAnalyticsRateLimit(
 /**
  * Rate limit response headers
  */
-export function rateLimitHeaders(
-  remaining: number,
-  resetAt: number
-): Record<string, string> {
+export function rateLimitHeaders(remaining: number, resetAt: number): Record<string, string> {
   return {
     'X-RateLimit-Limit': '10',
     'X-RateLimit-Remaining': remaining.toString(),
-    'X-RateLimit-Reset': Math.floor(resetAt / 1000).toString()
+    'X-RateLimit-Reset': Math.floor(resetAt / 1000).toString(),
   };
 }
 
@@ -141,11 +135,7 @@ export function rateLimitHeaders(
  * Cron: 0 2 * * * (2am UTC daily)
  * Scope: Analytics Engine customer keys only (aggregates remain)
  */
-export async function gdprPurgeJob(
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext
-): Promise<Response> {
+export async function gdprPurgeJob(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const requestId = Date.now().toString(36);
   console.log(`[${requestId}] 🔒 GDPR purge job started`);
 
@@ -161,30 +151,32 @@ export async function gdprPurgeJob(
 
     console.log(`[${requestId}] ✅ GDPR purge complete: ${kvPurged} KV keys, ${d1Purged} D1 rows`);
 
-    return new Response(JSON.stringify({
-      success: true,
-      kvPurged,
-      d1Purged,
-      cutoffDate: new Date(ninetyDaysAgo).toISOString(),
-      timestamp: now
-    }), { headers: { 'Content-Type': 'application/json' } });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        kvPurged,
+        d1Purged,
+        cutoffDate: new Date(ninetyDaysAgo).toISOString(),
+        timestamp: now,
+      }),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error(`[${requestId}] ❌ GDPR purge failed:`, error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
 
 /**
  * Purge KV customer recency keys older than 90 days
  */
-async function purgeKVCustomerData(
-  env: Env,
-  ctx: ExecutionContext,
-  cutoff: number
-): Promise<number> {
+async function purgeKVCustomerData(env: Env, ctx: ExecutionContext, cutoff: number): Promise<number> {
   if (!env.FANTASY_CACHE) return 0;
 
   // List all customer recency keys
@@ -213,11 +205,7 @@ async function purgeKVCustomerData(
  * Purge D1 customer data (zero sensitive fields)
  * Keeps aggregates for analytics but removes PII
  */
-async function purgeD1CustomerData(
-  env: Env,
-  ctx: ExecutionContext,
-  cutoff: number
-): Promise<number> {
+async function purgeD1CustomerData(env: Env, ctx: ExecutionContext, cutoff: number): Promise<number> {
   // Zero out customer IDs in sharp_indicators older than 90 days
   const query = `
     UPDATE sharp_indicators
@@ -227,9 +215,7 @@ async function purgeD1CustomerData(
       AND customer_id != 'REDACTED'
   `;
 
-  const result = await env.ANALYTICS.prepare(query)
-    .bind(cutoff)
-    .run();
+  const result = await env.ANALYTICS.prepare(query).bind(cutoff).run();
 
   return result.meta.changes || 0;
 }
@@ -237,10 +223,7 @@ async function purgeD1CustomerData(
 /**
  * Check if data is GDPR-eligible for purge
  */
-export function isGdprPurgeEligible(
-  lastActivity: number,
-  retentionDays = 90
-): boolean {
+export function isGdprPurgeEligible(lastActivity: number, retentionDays = 90): boolean {
   const cutoff = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
   return lastActivity < cutoff;
 }
@@ -260,18 +243,14 @@ export interface SecurityEvent {
 /**
  * Log security events to Analytics Engine
  */
-export async function logSecurityEvent(
-  env: Env,
-  ctx: ExecutionContext,
-  event: SecurityEvent
-): Promise<void> {
+export async function logSecurityEvent(env: Env, ctx: ExecutionContext, event: SecurityEvent): Promise<void> {
   if (!env.ANALYTICS_ENGINE) return;
 
   ctx.waitUntil(
     env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [event.type, event.ip || 'unknown', event.agentId || 'unknown'],
       doubles: [event.timestamp],
-      indexes: [event.timestamp.toString()]
+      indexes: [event.timestamp.toString()],
     })
   );
 

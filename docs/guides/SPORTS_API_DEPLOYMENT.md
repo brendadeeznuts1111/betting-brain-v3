@@ -5,6 +5,7 @@ This guide covers deploying the Sports API integration (v3.3.0) to production.
 ## Overview
 
 The Sports API integration adds:
+
 - Multi-bookmaker odds aggregation (Pinnacle + Bet365)
 - Live scores from SportsData.io
 - JWT-secured data ingestion
@@ -23,6 +24,7 @@ The Sports API integration adds:
 KV namespaces have been created:
 
 ### Development
+
 ```toml
 [[kv_namespaces]]
 binding = "RATE_LIMITER"
@@ -34,6 +36,7 @@ id = "4b0ce52be11041299d35f4c741666afa"
 ```
 
 ### Production
+
 ```toml
 [[env.production.kv_namespaces]]
 binding = "RATE_LIMITER"
@@ -49,12 +52,14 @@ id = "eb56dd8a866041219232c98c88b59e52"
 ### Required Secrets
 
 1. **JWT Secret** (for /ingest authentication)
+
 ```bash
 wrangler secret put JWT_SECRET --env production
 # Enter a secure random string (minimum 32 characters)
 ```
 
 Generate JWT secret:
+
 ```bash
 # Option 1: Using openssl
 openssl rand -base64 48
@@ -84,11 +89,13 @@ wrangler secret put SPORTSDATA_KEY_2 --env production
 wrangler secret put SPORTSDATA_KEY_3 --env production
 ```
 
-**Key Rotation Logic**: The system automatically cycles through KEY_1 → KEY_2 → KEY_3 based on day of year modulo 3 + 1.
+**Key Rotation Logic**: The system automatically cycles through KEY_1 → KEY_2 →
+KEY_3 based on day of year modulo 3 + 1.
 
 ### Optional Secrets
 
 For single-key setups (no rotation):
+
 ```bash
 wrangler secret put PINNACLE_KEY --env production
 wrangler secret put BET365_KEY --env production
@@ -126,6 +133,7 @@ bun run scripts/mcp-server.ts
 ### Testing JWT Authentication
 
 Generate a test JWT:
+
 ```typescript
 // Test JWT generation (run with: bun run scripts/test-jwt.ts)
 import { createJWT } from './src/utils/jwt';
@@ -137,6 +145,7 @@ console.log('JWT:', token);
 ```
 
 Test /ingest endpoint:
+
 ```bash
 # Replace YOUR_JWT with the token from above
 curl -X POST http://localhost:8787/ingest \
@@ -175,11 +184,13 @@ curl https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health
 ## Step 5: Test Production Endpoints
 
 ### Health Check
+
 ```bash
 curl https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health
 ```
 
 ### Live Odds API
+
 ```bash
 # NBA moneyline
 curl https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/live-odds?sport=nba&market=moneyline
@@ -192,6 +203,7 @@ curl -I https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/live-odds
 ```
 
 ### Data Ingestion
+
 ```bash
 curl -X POST https://betting-brain-v3-prod.nolarose1968-806.workers.dev/ingest \
   -H "Content-Type: application/json" \
@@ -217,7 +229,8 @@ curl -X POST https://betting-brain-v3-prod.nolarose1968-806.workers.dev/ingest \
 
 ### Claude Desktop Configuration
 
-Add to `~/.config/claude/config.json` (Linux/Mac) or `%APPDATA%\Claude\config.json` (Windows):
+Add to `~/.config/claude/config.json` (Linux/Mac) or
+`%APPDATA%\Claude\config.json` (Windows):
 
 ```json
 {
@@ -284,6 +297,7 @@ https://betting-brain-v3-prod.nolarose1968-806.workers.dev/dashboards/sports.htm
 ```
 
 Features:
+
 - Auto-refresh every 30 seconds
 - Sport selector (NBA, NFL, MLB, NHL)
 - Market selector (moneyline, spread, total)
@@ -295,6 +309,7 @@ Features:
 ### Rate Limiting
 
 Monitor rate limit hits:
+
 ```bash
 # Check RATE_LIMITER KV namespace
 wrangler kv:key list --binding RATE_LIMITER --env production
@@ -305,6 +320,7 @@ Rate limit: 100 requests per minute per IP on `/ingest`
 ### Cache Performance
 
 Monitor cache hits:
+
 ```bash
 # Check SPORTS_CACHE KV namespace
 wrangler kv:key list --binding SPORTS_CACHE --env production
@@ -315,10 +331,12 @@ Cache TTL: 30 seconds
 ### Analytics
 
 View analytics in Cloudflare dashboard:
+
 - Workers > betting-brain-v3-prod > Analytics
 - Analytics Engine > betting-metrics-prod
 
 Key metrics:
+
 - `/api/live-odds` request rate
 - `/ingest` request rate and errors
 - Cache hit ratio
@@ -328,24 +346,24 @@ Key metrics:
 
 ### 401 Unauthorized on /ingest
 
-**Problem**: JWT validation failing
-**Solutions**:
+**Problem**: JWT validation failing **Solutions**:
+
 1. Verify JWT_SECRET matches between token generation and worker
 2. Check JWT expiry (exp claim must be future timestamp)
 3. Verify Bearer token format: `Authorization: Bearer <token>`
 
 ### 429 Too Many Requests
 
-**Problem**: Rate limit exceeded (100 req/min per IP)
-**Solutions**:
+**Problem**: Rate limit exceeded (100 req/min per IP) **Solutions**:
+
 1. Implement client-side rate limiting
 2. Use exponential backoff
 3. Cache responses on client side
 
 ### External API errors
 
-**Problem**: Pinnacle/Bet365/SportsData.io API failures
-**Solutions**:
+**Problem**: Pinnacle/Bet365/SportsData.io API failures **Solutions**:
+
 1. Check API key rotation is working
 2. Verify API keys are valid and have quota
 3. Check API provider status pages
@@ -353,8 +371,8 @@ Key metrics:
 
 ### Cache misses
 
-**Problem**: Low cache hit ratio
-**Solutions**:
+**Problem**: Low cache hit ratio **Solutions**:
+
 1. Verify SPORTS_CACHE KV namespace is accessible
 2. Check 30s TTL is appropriate for use case
 3. Monitor cache key patterns
@@ -383,6 +401,7 @@ wrangler rollback <version-id> --env production
 ```
 
 Or rollback to tagged release:
+
 ```bash
 git checkout v3.2.0
 wrangler deploy --env production
@@ -391,12 +410,11 @@ wrangler deploy --env production
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: https://github.com/nolarose1968/ffffff/issues
 - Worker Logs: `wrangler tail --env production`
 - Cloudflare Support: https://support.cloudflare.com/
 
 ---
 
-**Version**: 3.3.0
-**Last Updated**: 2025-10-08
-**Status**: Production-Ready ✅
+**Version**: 3.3.0 **Last Updated**: 2025-10-08 **Status**: Production-Ready ✅

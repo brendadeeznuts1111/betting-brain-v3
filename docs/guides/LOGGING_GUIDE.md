@@ -7,6 +7,7 @@
 ## 🎯 What's Logged
 
 ### Every Request Gets:
+
 - **Request ID** - Unique identifier for tracing
 - **Method & URL** - What was requested
 - **User Agent** - Client information
@@ -14,6 +15,7 @@
 - **Duration** - Response time in ms
 
 ### BetTicker Interception Logs:
+
 ```
 [requestId] 🎯 BetTicker intercept request
 [requestId] ✅ Target endpoint matched
@@ -25,6 +27,7 @@
 ```
 
 ### KV Storage Logs:
+
 ```
 [requestId] 💾 Starting KV storage: {key, bodySize, status}
 [requestId] 📊 Metadata: {userAgent, ip, status, timestamp, contentType, contentLength}
@@ -34,6 +37,7 @@
 ```
 
 ### History API Logs:
+
 ```
 [requestId] 📜 getBetTickerHistory called: {limit, startTime, endTime}
 [requestId] 🔍 Listing KV keys
@@ -46,6 +50,7 @@
 ## 📺 View Logs in Real-Time
 
 ### Live Tail (Recommended)
+
 ```bash
 # Watch all logs
 wrangler tail --env-file=/dev/null
@@ -62,6 +67,7 @@ wrangler tail --env-file=/dev/null --method POST
 ```
 
 ### Production Logs
+
 ```bash
 # Tail production worker
 wrangler tail --env=production --env-file=/dev/null
@@ -75,24 +81,28 @@ wrangler tail --env=staging --env-file=/dev/null
 ## 🔍 Log Analysis Examples
 
 ### Find Specific Request
+
 ```bash
 # Look for request ID in logs
 wrangler tail --env-file=/dev/null | grep "mgglhjt1"
 ```
 
 ### Monitor Performance
+
 ```bash
 # Watch for slow responses (>100ms)
 wrangler tail --env-file=/dev/null --format pretty | grep "duration"
 ```
 
 ### Track Errors
+
 ```bash
 # Only show errors
 wrangler tail --env-file=/dev/null --status error
 ```
 
 ### Debug Storage Issues
+
 ```bash
 # Watch KV operations
 wrangler tail --env-file=/dev/null | grep "💾\|✅ Stored"
@@ -103,16 +113,19 @@ wrangler tail --env-file=/dev/null | grep "💾\|✅ Stored"
 ## 📊 Log Levels
 
 ### ℹ️ Info (console.log)
+
 - Regular operation
 - Request routing
 - Success messages
 
 ### ⚠️ Warning (console.warn)
+
 - Missing metadata
 - Unexpected conditions
 - Non-critical issues
 
 ### ❌ Error (console.error)
+
 - Failed operations
 - Storage errors
 - Exception stack traces
@@ -121,22 +134,22 @@ wrangler tail --env-file=/dev/null | grep "💾\|✅ Stored"
 
 ## 🎨 Log Emoji Guide
 
-| Emoji | Meaning |
-|-------|---------|
-| 📥 | Incoming request |
-| 🎯 | BetTicker endpoint detected |
-| 📡 | Calling external API |
-| 📄 | Response body info |
-| 💾 | KV storage operation |
-| 📊 | Metadata/stats |
-| ✅ | Success |
-| ❌ | Error |
-| ⚠️  | Warning |
-| 💚 | Health check |
-| 📜 | History API |
-| 🔍 | Searching/listing |
-| ⏰ | TTL/expiration info |
-| ⏭️  | Skipped/passed through |
+| Emoji | Meaning                     |
+| ----- | --------------------------- |
+| 📥    | Incoming request            |
+| 🎯    | BetTicker endpoint detected |
+| 📡    | Calling external API        |
+| 📄    | Response body info          |
+| 💾    | KV storage operation        |
+| 📊    | Metadata/stats              |
+| ✅    | Success                     |
+| ❌    | Error                       |
+| ⚠️    | Warning                     |
+| 💚    | Health check                |
+| 📜    | History API                 |
+| 🔍    | Searching/listing           |
+| ⏰    | TTL/expiration info         |
+| ⏭️    | Skipped/passed through      |
 
 ---
 
@@ -145,20 +158,24 @@ wrangler tail --env-file=/dev/null | grep "💾\|✅ Stored"
 ### Scenario 1: Request Not Being Intercepted
 
 **What to check:**
+
 ```bash
 wrangler tail --env-file=/dev/null | grep "BetTicker"
 ```
 
 **Expected logs:**
+
 ```
 [xxx] 🎯 BetTicker endpoint detected
 [xxx] ✅ Target endpoint matched
 ```
 
 **If you see:**
+
 ```
 [xxx] ⏭️  Pass-through (not target endpoint)
 ```
+
 → URL or method doesn't match
 
 ---
@@ -166,20 +183,24 @@ wrangler tail --env-file=/dev/null | grep "BetTicker"
 ### Scenario 2: KV Storage Failing
 
 **What to check:**
+
 ```bash
 wrangler tail --env-file=/dev/null | grep "💾\|Storage"
 ```
 
 **Expected logs:**
+
 ```
 [xxx] 💾 Starting KV storage
 [xxx] ✅ Stored in KV
 ```
 
 **If you see:**
+
 ```
 [xxx] ❌ Storage error
 ```
+
 → Check error details in logs
 
 ---
@@ -187,11 +208,13 @@ wrangler tail --env-file=/dev/null | grep "💾\|Storage"
 ### Scenario 3: Slow Performance
 
 **What to check:**
+
 ```bash
 wrangler tail --env-file=/dev/null --format pretty | grep "duration\|Duration"
 ```
 
 **Look for:**
+
 - Origin response time (should be <100ms)
 - KV write time (should be <50ms)
 - Total request time
@@ -201,6 +224,7 @@ wrangler tail --env-file=/dev/null --format pretty | grep "duration\|Duration"
 ### Scenario 4: Missing Responses in Dashboard
 
 **What to check:**
+
 ```bash
 # 1. Check if requests are being intercepted
 wrangler tail --env-file=/dev/null | grep "Stored in KV"
@@ -229,6 +253,7 @@ The worker now includes **request IDs** in responses for easy correlation:
 ```
 
 Use this ID to find logs:
+
 ```bash
 wrangler tail --env-file=/dev/null | grep "mgglhjt1"
 ```
@@ -238,17 +263,20 @@ wrangler tail --env-file=/dev/null | grep "mgglhjt1"
 ## 🎯 Pro Tips
 
 ### 1. Save Logs to File
+
 ```bash
 wrangler tail --env-file=/dev/null --format pretty > logs.txt
 ```
 
 ### 2. Monitor in Background
+
 ```bash
 wrangler tail --env-file=/dev/null --format pretty &
 # Stop with: kill %1
 ```
 
 ### 3. Filter Specific Endpoints
+
 ```bash
 # Only interceptor API
 wrangler tail --env-file=/dev/null | grep "Interceptor API"
@@ -258,12 +286,14 @@ wrangler tail --env-file=/dev/null | grep "BetTicker"
 ```
 
 ### 4. Count Requests
+
 ```bash
 # Count intercepted requests
 wrangler tail --env-file=/dev/null | grep "Stored in KV" | wc -l
 ```
 
 ### 5. Track Errors Over Time
+
 ```bash
 wrangler tail --env-file=/dev/null --status error | tee -a errors.log
 ```
@@ -296,6 +326,7 @@ wrangler kv:key get "raw:getBetTicker:1759842887136" --binding BET_TICKER_RAW --
 Set up monitoring for these patterns:
 
 ### Critical
+
 ```bash
 # Storage failures
 "❌ Storage error"
@@ -308,6 +339,7 @@ Set up monitoring for these patterns:
 ```
 
 ### Warning
+
 ```bash
 # Slow performance
 duration: > 100ms
@@ -317,6 +349,7 @@ status >= 500
 ```
 
 ### Info
+
 ```bash
 # High traffic
 "BetTicker endpoint detected" > 100/min
@@ -331,6 +364,7 @@ status >= 500
 - **Analytics Engine**: Configure for longer retention
 
 To store logs permanently:
+
 ```bash
 # Stream to external service
 wrangler tail --format json | your-log-aggregator
@@ -353,6 +387,7 @@ curl -X POST https://betting-brain-v3.nolarose1968-806.workers.dev/cloud/api/Man
 ```
 
 You should see:
+
 ```
 [xxx] 📥 Incoming request
 [xxx] 🎯 BetTicker endpoint detected
@@ -369,4 +404,3 @@ You should see:
 ---
 
 **📜 Happy logging!**
-

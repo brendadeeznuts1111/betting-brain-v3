@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Floor Smoke Test is a comprehensive 60-second validation script that proves the entire Forest Floor system is wired end-to-end and operational.
+The Floor Smoke Test is a comprehensive 60-second validation script that proves
+the entire Forest Floor system is wired end-to-end and operational.
 
 ## Quick Start
 
@@ -21,18 +22,21 @@ bun run floor:test:quick
 ## What It Tests
 
 ### 1. Prerequisites (4 checks)
+
 - ✅ Bun installed (>= 1.1.0)
 - ✅ Git repository exists
 - ✅ Package.json present
 - ✅ Environment file (.env or .env.local)
 
 ### 2. Floor Health Check (3 checks)
+
 - ✅ Floor health script exists
 - ✅ Floor rules exist (99-floor.mdc)
 - ✅ Floor status endpoint exists
 - 🔄 Full health check (optional, not in quick mode)
 
 ### 3. MCP Server (3 checks)
+
 - ✅ MCP server script exists
 - ✅ MCP tools defined
 - ✅ MCP tool registry exists
@@ -41,23 +45,27 @@ bun run floor:test:quick
 - 🎯 Verify 6 tools available
 
 ### 4. Worker Endpoints (3+ checks)
+
 - 🌐 Worker availability check
 - ✅ GET /health endpoint
 - ✅ GET /floor/status endpoint (v3.3.0)
 - ✅ GET /api/live-odds (optional, not in quick mode)
 
 ### 5. MCP Configuration (3 checks)
+
 - ✅ .cursor/mcp.json exists
 - ✅ forest-grove server configured
 - ✅ 6 tools registered
 
 ### 6. Documentation (4 checks)
+
 - ✅ Floor system docs exist
 - ✅ MCP config update docs
 - ✅ Sports API deployment docs
 - ✅ Documentation index updated
 
 ### 7. Cursor Rules (5 checks)
+
 - ✅ Floor rules (99-floor.mdc)
 - ✅ MCP integration rules
 - ✅ API patterns rules
@@ -65,6 +73,7 @@ bun run floor:test:quick
 - ✅ Floor rules have test fixes
 
 ### 8. Package Scripts (5 checks)
+
 - ✅ floor:health script
 - ✅ floor:mcp script
 - ✅ floor:voice script
@@ -72,12 +81,14 @@ bun run floor:test:quick
 - ✅ floor:status script
 
 ### 9. Git Status
+
 - 📊 Untracked files count
 - 📊 Modified files count
 - 📊 Staged files count
 - ⚠️ Warn if uncommitted changes
 
 ### 10. Advanced Checks (optional, not in quick mode)
+
 - 🔐 JWT generation test
 - 📨 POST /ingest with JWT authentication
 
@@ -193,11 +204,13 @@ Run with --quick to skip optional checks
 ## Modes
 
 ### Full Mode (Default)
+
 ```bash
 bun run floor:test
 ```
 
 Tests everything including:
+
 - Full health check
 - Sports API endpoints
 - JWT authentication
@@ -206,11 +219,13 @@ Tests everything including:
 **Duration:** ~60 seconds
 
 ### Quick Mode
+
 ```bash
 bun run floor:test:quick
 ```
 
 Skips optional checks:
+
 - Full health check (uses fast existence checks only)
 - Sports API endpoint tests
 - JWT authentication tests
@@ -225,12 +240,14 @@ Skips optional checks:
 ## Requirements
 
 ### Minimum
+
 - Bun >= 1.1.0
 - Git repository
 - package.json
 - .env or .env.local file
 
 ### For Full Testing
+
 - Local worker running (`wrangler dev --local`)
 - Environment variables configured:
   - `WORKER_URL` (default: http://localhost:8787)
@@ -240,19 +257,24 @@ Skips optional checks:
 ## Troubleshooting
 
 ### "Worker is DOWN"
+
 Start the local worker:
+
 ```bash
 wrangler dev --local
 ```
 
 Or set `WORKER_URL` to point to production:
+
 ```bash
 export WORKER_URL=https://betting-brain-v3-prod.workers.dev
 bun run floor:test
 ```
 
 ### "MCP server failed to start"
+
 Check for port conflicts:
+
 ```bash
 # Kill existing MCP server processes
 pkill -f mcp-server.ts
@@ -262,19 +284,24 @@ bun run floor:test
 ```
 
 ### "Environment file not found"
+
 Create from template:
+
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
 ```
 
 ### "JWT generation failed"
+
 Install dependencies:
+
 ```bash
 bun install
 ```
 
 Verify JWT_SECRET is set:
+
 ```bash
 grep JWT_SECRET .env
 ```
@@ -345,7 +372,8 @@ When you run the smoke test, you prove that:
 6. **Cursor Rules** are in place for AI assistants
 7. **Package Scripts** are wired correctly
 
-The entire Forest Floor is an **AI-native, fully-documented, self-healing system** ready for autonomous operations.
+The entire Forest Floor is an **AI-native, fully-documented, self-healing
+system** ready for autonomous operations.
 
 ## References
 
@@ -357,7 +385,5 @@ The entire Forest Floor is an **AI-native, fully-documented, self-healing system
 
 ---
 
-**Status:** Production-Ready ✅
-**Version:** 3.3.0
-**Last Updated:** 2025-10-08
+**Status:** Production-Ready ✅ **Version:** 3.3.0 **Last Updated:** 2025-10-08
 **Maintainer:** Betting-Brain Team

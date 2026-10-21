@@ -7,10 +7,7 @@
 
 import type { Env } from '../../types/api';
 
-export async function handleTradingStream(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleTradingStream(request: Request, env: Env): Promise<Response> {
   const requestId = Date.now().toString(36);
   console.log(`[${requestId}] SSE trading stream connected`);
 
@@ -75,7 +72,7 @@ export async function handleTradingStream(
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
     },
   });
@@ -83,7 +80,7 @@ export async function handleTradingStream(
 
 async function getTradingStatus(env: Env): Promise<any> {
   // Fetch circuit breaker state
-  const cbState = await env.SESSION_STORE?.get('circuit_breaker_state') || 'closed';
+  const cbState = (await env.SESSION_STORE?.get('circuit_breaker_state')) || 'closed';
   const cbDetails = await env.SESSION_STORE?.get('circuit_breaker_details');
 
   // Fetch daily totals
@@ -119,7 +116,9 @@ async function getRecentBets(env: Env): Promise<any[]> {
 
   const result = await env.ANALYTICS.prepare(
     'SELECT * FROM bet_history WHERE timestamp > ? ORDER BY timestamp DESC LIMIT 10'
-  ).bind(Date.now() - 3600000).all();
+  )
+    .bind(Date.now() - 3600000)
+    .all();
 
   return result.results || [];
 }

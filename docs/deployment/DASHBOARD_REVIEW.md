@@ -9,7 +9,11 @@
 
 ## 🎯 Executive Summary
 
-The Grafana dashboard has been comprehensively reviewed, enhanced, and deployed with **17 production-ready panels**, complete documentation, and automated deployment tooling. The dashboard provides real-time monitoring of betting intelligence, cost cap compliance, performance metrics, and business intelligence.
+The Grafana dashboard has been comprehensively reviewed, enhanced, and deployed
+with **17 production-ready panels**, complete documentation, and automated
+deployment tooling. The dashboard provides real-time monitoring of betting
+intelligence, cost cap compliance, performance metrics, and business
+intelligence.
 
 ---
 
@@ -18,12 +22,14 @@ The Grafana dashboard has been comprehensively reviewed, enhanced, and deployed 
 ### 1. Enhanced Dashboard Configuration (`grafana/dashboard.json`)
 
 **Before:**
+
 - 12 basic panels
 - Limited cost monitoring
 - Basic queries
 - No annotations or alerts
 
 **After:**
+
 - **17 comprehensive panels**
 - **4 cost cap gauges** (D1 reads/writes, queues, analytics)
 - **Performance tracking** (request rate, latency p50/p95/p99, error rate)
@@ -38,45 +44,45 @@ The Grafana dashboard has been comprehensively reviewed, enhanced, and deployed 
 
 ### Alert Status (4 Panels)
 
-| Panel | Metric | Threshold | Purpose |
-|-------|--------|-----------|---------|
-| **1. CLV Alerts** | Customer Lifetime Value | < -5% or > +5% | Detect CLV anomalies |
-| **2. Hold % Alerts** | Hold Percentage | < 3% or > 15% | Monitor profitability |
-| **3. Exposure Alerts** | Risk Exposure | $50k or 60% | Track risk thresholds |
-| **4. Sharp Score Alerts** | Sharp Customers | > 60 points | Identify sharp players |
+| Panel                     | Metric                  | Threshold      | Purpose                |
+| ------------------------- | ----------------------- | -------------- | ---------------------- |
+| **1. CLV Alerts**         | Customer Lifetime Value | < -5% or > +5% | Detect CLV anomalies   |
+| **2. Hold % Alerts**      | Hold Percentage         | < 3% or > 15%  | Monitor profitability  |
+| **3. Exposure Alerts**    | Risk Exposure           | $50k or 60%    | Track risk thresholds  |
+| **4. Sharp Score Alerts** | Sharp Customers         | > 60 points    | Identify sharp players |
 
 ### Business Intelligence (4 Panels)
 
-| Panel | Type | Description |
-|-------|------|-------------|
-| **5. Total Exposure by Event** | Time series graph | Top 10 events by total risk (last hour) |
-| **6. Steam Moves** | Table | 50 recent steam moves with line changes, volume, sigma |
-| **7. Top 10 Sharp Customers** | Table | Sharp scores, CLV, win rates with color coding |
-| **8. Hold % by Market Type** | Time series graph | Average hold % per market (last 6 hours) |
+| Panel                          | Type              | Description                                            |
+| ------------------------------ | ----------------- | ------------------------------------------------------ |
+| **5. Total Exposure by Event** | Time series graph | Top 10 events by total risk (last hour)                |
+| **6. Steam Moves**             | Table             | 50 recent steam moves with line changes, volume, sigma |
+| **7. Top 10 Sharp Customers**  | Table             | Sharp scores, CLV, win rates with color coding         |
+| **8. Hold % by Market Type**   | Time series graph | Average hold % per market (last 6 hours)               |
 
 ### Cost Cap Monitoring (4 Panels)
 
-| Panel | Resource | Daily Limit | Color Coding |
-|-------|----------|-------------|--------------|
-| **9. D1 Reads** | Database reads | 100,000 | Red: 0-20% / Orange: 20-50% / Green: 50-100% |
-| **10. D1 Writes** | Database writes | 50,000 | Same as above |
-| **11. Queue Messages** | Queue volume | 1,000,000 | Same as above |
-| **12. Analytics Events** | Analytics writes | 10,000,000 | Same as above |
+| Panel                    | Resource         | Daily Limit | Color Coding                                 |
+| ------------------------ | ---------------- | ----------- | -------------------------------------------- |
+| **9. D1 Reads**          | Database reads   | 100,000     | Red: 0-20% / Orange: 20-50% / Green: 50-100% |
+| **10. D1 Writes**        | Database writes  | 50,000      | Same as above                                |
+| **11. Queue Messages**   | Queue volume     | 1,000,000   | Same as above                                |
+| **12. Analytics Events** | Analytics writes | 10,000,000  | Same as above                                |
 
 ### Performance Monitoring (3 Panels)
 
-| Panel | Metric | Purpose |
-|-------|--------|---------|
-| **13. Worker Request Rate** | Requests per second | Monitor traffic volume |
-| **14. Worker Response Time** | p50, p95, p99 latency | Track performance percentiles |
-| **15. Error Rate** | Error percentage with alert | Monitor reliability (alerts if > 1%) |
+| Panel                        | Metric                      | Purpose                              |
+| ---------------------------- | --------------------------- | ------------------------------------ |
+| **13. Worker Request Rate**  | Requests per second         | Monitor traffic volume               |
+| **14. Worker Response Time** | p50, p95, p99 latency       | Track performance percentiles        |
+| **15. Error Rate**           | Error percentage with alert | Monitor reliability (alerts if > 1%) |
 
 ### Queue Monitoring (2 Panels)
 
-| Panel | Queue | Purpose |
-|-------|-------|---------|
-| **16. line-ingress Queue Depth** | Line movement ingestion | Monitor ingestion backlog |
-| **17. steam-webhook Queue Depth** | Steam detection | Monitor detection queue |
+| Panel                             | Queue                   | Purpose                   |
+| --------------------------------- | ----------------------- | ------------------------- |
+| **16. line-ingress Queue Depth**  | Line movement ingestion | Monitor ingestion backlog |
+| **17. steam-webhook Queue Depth** | Steam detection         | Monitor detection queue   |
 
 ---
 
@@ -87,6 +93,7 @@ The Grafana dashboard has been comprehensively reviewed, enhanced, and deployed 
 Comprehensive documentation including:
 
 #### Installation Instructions
+
 - **4 installation methods:**
   1. Grafana UI (recommended)
   2. Grafana API (automated)
@@ -94,40 +101,47 @@ Comprehensive documentation including:
   4. Provisioning (auto-load on startup)
 
 #### Data Source Configuration
+
 - Cloudflare Analytics Engine setup
 - Prometheus configuration
 - Template variable mapping
 
 #### Panel Descriptions
+
 - Detailed description of each panel
 - Query explanations
 - Threshold configurations
 - Customization options
 
 #### Analytics Engine Data Structure
+
 - Index format documentation
 - Blob and double field mapping
 - Metric type definitions
 
 #### Dashboard Features
+
 - Auto-refresh configuration
 - Time range selection
 - Annotations (steam moves, exposure alerts)
 - Built-in alerts
 
 #### Use Cases
+
 - Real-time monitoring
 - Cost management
 - Performance optimization
 - Business intelligence
 
 #### Troubleshooting
+
 - No data appearing
 - Slow dashboard performance
 - Alert not triggering
 - Debug queries
 
 #### Best Practices
+
 - Data source configuration
 - Query optimization
 - Alert configuration
@@ -142,26 +156,31 @@ Comprehensive documentation including:
 Automated dashboard deployment script featuring:
 
 ✅ **Interactive Setup:**
+
 - Prompts for Grafana URL
 - Secure API key input
 - Optional folder ID configuration
 
 ✅ **Automatic Deployment:**
+
 - Uploads dashboard.json via API
 - Configures template variables
 - Sets folder and overwrite options
 
 ✅ **Success Reporting:**
+
 - Displays dashboard ID and slug
 - Shows dashboard URL
 - Auto-opens in browser (macOS/Linux)
 
 ✅ **Error Handling:**
+
 - Validates dashboard.json exists
 - Checks HTTP response codes
 - Pretty-prints error messages
 
 ✅ **Next Steps Guide:**
+
 - Data source configuration
 - Template variable mapping
 - Data verification
@@ -174,12 +193,14 @@ Automated dashboard deployment script featuring:
 ### 1. Cloudflare Analytics Engine
 
 **Used For:**
+
 - CLV, Hold, Exposure, Sharp alerts
 - Steam move detection
 - Business intelligence metrics
 - Customer analytics
 
 **Configuration:**
+
 ```yaml
 Name: Cloudflare Analytics Engine
 Type: cloudflare-analytics-engine
@@ -189,11 +210,13 @@ Dataset: betting_brain_analytics
 ### 2. Prometheus (Cloudflare Workers)
 
 **Used For:**
+
 - Cost cap monitoring (D1, Queues, Analytics)
 - Worker performance (request rate, latency, errors)
 - Queue depth monitoring
 
 **Configuration:**
+
 ```yaml
 Name: Prometheus
 Type: prometheus
@@ -205,22 +228,28 @@ URL: <cloudflare-prometheus-endpoint>
 ## 📈 Dashboard Features
 
 ### Auto-Refresh
+
 - **Default:** 30 seconds
 - **Options:** 10s, 30s, 1m, 5m, 15m
 - **Configurable** in top-right corner
 
 ### Time Range Selection
+
 - **Default:** Last 6 hours
 - **Quick Options:** 5m, 15m, 1h, 6h, 12h, 24h, 7d
 - **Custom Range:** Available via date picker
 
 ### Annotations
+
 Automatic event markers for:
+
 - 🔥 **Steam Moves** (red markers)
 - 💰 **Exposure Alerts** (orange markers)
 
 ### Alerts
+
 Built-in alert on Panel 15 (Error Rate):
+
 - **Condition:** Error rate > 1%
 - **Duration:** 5 minutes
 - **Action:** Trigger Grafana alert
@@ -276,13 +305,14 @@ Updated `docs/INDEX.md` with:
 
 ```markdown
 ### Dashboards
-| Dashboard | Path | Description |
-|-----------|------|-------------|
-| **Grafana Config** | [../grafana/dashboard.json](../grafana/dashboard.json) | 17-panel monitoring |
-| **Dashboard Docs** | [../grafana/README.md](../../README.md) | Installation & setup guide |
-| **Import Script** | [../grafana/import.sh](../grafana/import.sh) | Automated dashboard deployment |
-| **Cost Metrics** | _Embedded in dashboard_ | 4 cost cap gauges |
-| **Performance** | _Embedded in dashboard_ | Request latency & error tracking |
+
+| Dashboard          | Path                                                   | Description                      |
+| ------------------ | ------------------------------------------------------ | -------------------------------- |
+| **Grafana Config** | [../grafana/dashboard.json](../grafana/dashboard.json) | 17-panel monitoring              |
+| **Dashboard Docs** | [../grafana/README.md](../../README.md)                | Installation & setup guide       |
+| **Import Script**  | [../grafana/import.sh](../grafana/import.sh)           | Automated dashboard deployment   |
+| **Cost Metrics**   | _Embedded in dashboard_                                | 4 cost cap gauges                |
+| **Performance**    | _Embedded in dashboard_                                | Request latency & error tracking |
 ```
 
 ---
@@ -290,20 +320,25 @@ Updated `docs/INDEX.md` with:
 ## ✅ Quality Checks
 
 ### Link Verification
+
 ```bash
 scripts/link-check-simple.sh
 ```
+
 **Result:** ✅ All internal links valid (0 broken links in project files)
 
 ### Git Integration
+
 ```bash
 git add grafana/ docs/INDEX.md
 git commit -m "feat(dashboards): Enhanced Grafana dashboard..."
 git push origin main
 ```
+
 **Result:** ✅ Successfully pushed to `main` branch
 
 ### Files Modified/Created
+
 - ✅ `grafana/dashboard.json` (enhanced, 231 lines)
 - ✅ `grafana/README.md` (new, 500+ lines)
 - ✅ `grafana/import.sh` (new, 100+ lines, executable)
@@ -335,6 +370,7 @@ export GRAFANA_API_KEY="your-api-key-here"
 ```
 
 **Script will:**
+
 - Upload dashboard.json
 - Create/update dashboard
 - Open in browser automatically
@@ -345,8 +381,9 @@ export GRAFANA_API_KEY="your-api-key-here"
 ## 📊 Sample Dashboard Queries
 
 ### Steam Move Detection
+
 ```sql
-SELECT 
+SELECT
   timestamp,
   blob1 as event_id,
   blob2 as market_type,
@@ -361,11 +398,13 @@ LIMIT 50
 ```
 
 ### Cost Cap Monitoring (D1 Reads)
+
 ```promql
 (1 - (cloudflare_d1_reads_today / 100000)) * 100
 ```
 
 ### Worker Performance (Latency)
+
 ```promql
 histogram_quantile(0.95, cloudflare_worker_duration_seconds_bucket)
 ```
@@ -380,7 +419,7 @@ histogram_quantile(0.95, cloudflare_worker_duration_seconds_bucket)
 2. **Click "Add Panel"**
 3. **Configure Query:**
    ```sql
-   SELECT 
+   SELECT
      timestamp,
      blob1 as dimension,
      double1 as value
@@ -396,6 +435,7 @@ histogram_quantile(0.95, cloudflare_worker_duration_seconds_bucket)
 ### Modifying Thresholds
 
 Navigate to Panel → Edit → Field → Thresholds:
+
 ```json
 {
   "mode": "absolute",
@@ -424,14 +464,16 @@ Navigate to Panel → Edit → Field → Thresholds:
 ### No Data Appearing
 
 **Check:**
+
 1. ✅ Data source configuration is correct
 2. ✅ Analytics Engine dataset name matches (`betting_brain_analytics`)
 3. ✅ Time range includes data
 4. ✅ Worker is writing to Analytics Engine
 
 **Debug Query:**
+
 ```sql
-SELECT count(*) 
+SELECT count(*)
 FROM betting_brain_analytics
 WHERE timestamp > now() - INTERVAL '1' HOUR
 ```
@@ -439,6 +481,7 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 ### Slow Dashboard Performance
 
 **Solutions:**
+
 1. Reduce time range (from 24h to 6h)
 2. Add `LIMIT` to queries
 3. Increase refresh interval (from 30s to 1m)
@@ -447,6 +490,7 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 ### Alert Not Triggering
 
 **Verify:**
+
 1. ✅ Alert rule is enabled
 2. ✅ Notification channel is configured
 3. ✅ Condition threshold is correct
@@ -458,26 +502,31 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 ## 📈 Next Steps
 
 ### 1. Deploy Dashboard
+
 ```bash
 ./grafana/import.sh
 ```
 
 ### 2. Configure Data Sources
+
 - Set up Cloudflare Analytics Engine connection
 - Configure Prometheus for Workers metrics
 - Map template variables
 
 ### 3. Verify Data Flow
+
 - Check that panels show data
 - Verify cost cap gauges update
 - Test alert triggers
 
 ### 4. Customize for Your Needs
+
 - Adjust thresholds based on your SLAs
 - Add custom panels for specific metrics
 - Configure notification channels
 
 ### 5. Set Up Alerting
+
 - Configure Slack/PagerDuty/Email notifications
 - Set up on-call schedules
 - Test alert delivery
@@ -487,6 +536,7 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 ## 🎉 Production Readiness Checklist
 
 ✅ **Dashboard Configuration**
+
 - [x] 17 comprehensive panels
 - [x] Cost cap monitoring (4 gauges)
 - [x] Performance tracking (3 panels)
@@ -497,6 +547,7 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 - [x] Alerts configured
 
 ✅ **Documentation**
+
 - [x] Comprehensive README.md
 - [x] Installation instructions (4 methods)
 - [x] Panel descriptions
@@ -506,6 +557,7 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 - [x] Customization guide
 
 ✅ **Automation**
+
 - [x] Import script created
 - [x] Interactive prompts
 - [x] Error handling
@@ -513,12 +565,14 @@ WHERE timestamp > now() - INTERVAL '1' HOUR
 - [x] Auto-browser opening
 
 ✅ **Integration**
+
 - [x] Updated docs/INDEX.md
 - [x] All links verified
 - [x] Git committed
 - [x] Pushed to remote
 
 ✅ **Quality Assurance**
+
 - [x] Link check passing
 - [x] All queries validated
 - [x] Template variables configured
@@ -557,23 +611,27 @@ Deletions: 39
 ## 🌟 Key Achievements
 
 ### 📊 Monitoring Coverage: 100%
+
 - ✅ All critical metrics monitored
 - ✅ Cost cap compliance tracked
 - ✅ Performance metrics visible
 - ✅ Business intelligence displayed
 
 ### 📄 Documentation: Complete
+
 - ✅ 500+ lines of comprehensive docs
 - ✅ Installation guides for 4 methods
 - ✅ Troubleshooting section
 - ✅ Customization instructions
 
 ### 🛠️ Automation: Production-Ready
+
 - ✅ One-command dashboard deployment
 - ✅ Interactive and automated modes
 - ✅ Error handling and success reporting
 
 ### 🔗 Integration: Seamless
+
 - ✅ All documentation indexed
 - ✅ Links verified (0 broken)
 - ✅ Git workflow complete
@@ -595,13 +653,12 @@ Deletions: 39
 **Review Status:** ✅ **COMPLETE**  
 **Implementation Status:** ✅ **DEPLOYED**  
 **Quality Score:** **95/100** ⭐⭐⭐⭐⭐  
-**Production Readiness:** ✅ **APPROVED**  
+**Production Readiness:** ✅ **APPROVED**
 
 🚀 **The dashboard is fully production-ready and deployed!** 🚀
 
 ---
 
-*Last Updated: October 7, 2025*  
-*Reviewer: Betting-Brain Team*  
-*Version: 3.1.0*
-
+_Last Updated: October 7, 2025_  
+_Reviewer: Betting-Brain Team_  
+_Version: 3.1.0_

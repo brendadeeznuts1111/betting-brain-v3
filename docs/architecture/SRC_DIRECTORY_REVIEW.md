@@ -7,28 +7,31 @@
 ---
 
 **Metadata:**
+
 - **Total Files:** 31 TypeScript files
 - **Total LOC:** 6,563 lines of code
 - **Total Functions:** 46 exported functions
 - **Type Definitions:** 37 interfaces/types
 - **Topics:** #codebase #review #quality #architecture
 - **Audience:** Developers, Architects, Leads
-- **Related Docs:** [CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md), [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md)
+- **Related Docs:** [CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md),
+  [CODEBASE_REVIEW.md](CODEBASE_REVIEW.md)
 
 ---
 
 ## 📊 Executive Summary
 
-The `src/` directory is **well-organized, clean, and production-ready** with a clear separation of concerns:
+The `src/` directory is **well-organized, clean, and production-ready** with a
+clear separation of concerns:
 
-| Aspect | Status | Details |
-|--------|--------|---------|
-| **Structure** | ✅ Excellent | Clear domain-driven organization |
-| **Type Safety** | ⚠️ Good | 12 minor TypeScript errors (documented) |
-| **Code Quality** | ✅ High | No critical anti-patterns |
-| **MCP Integration** | ✅ Complete | 13 tools, all registered |
-| **Testing** | ✅ Covered | Unit and integration tests present |
-| **Documentation** | ✅ Comprehensive | Clear inline documentation |
+| Aspect              | Status           | Details                                 |
+| ------------------- | ---------------- | --------------------------------------- |
+| **Structure**       | ✅ Excellent     | Clear domain-driven organization        |
+| **Type Safety**     | ⚠️ Good          | 12 minor TypeScript errors (documented) |
+| **Code Quality**    | ✅ High          | No critical anti-patterns               |
+| **MCP Integration** | ✅ Complete      | 13 tools, all registered                |
+| **Testing**         | ✅ Covered       | Unit and integration tests present      |
+| **Documentation**   | ✅ Comprehensive | Clear inline documentation              |
 
 ---
 
@@ -95,18 +98,21 @@ src/                              # 6,563 LOC total
 ## ✅ What's Good
 
 ### 1. **Clean Architecture**
+
 - ✅ Clear separation of concerns
 - ✅ Domain-driven folder structure
 - ✅ No circular dependencies
 - ✅ Consistent naming conventions (kebab-case)
 
 ### 2. **MCP Integration**
+
 - ✅ **13 tools registered** (9 handlers + 4 intelligence tools)
 - ✅ All handlers imported and registered in `toolRegistry.ts`
 - ✅ Complete JSON-RPC 2.0 implementation
 - ✅ Comprehensive tool definitions in `tools.ts`
 
 **MCP Handlers:**
+
 ```
 ✅ customerVolume         → getCustomerVolume()
 ✅ enhancedSharpScore     → getEnhancedSharpScore()
@@ -120,6 +126,7 @@ src/                              # 6,563 LOC total
 ```
 
 **Intelligence Tools:**
+
 ```
 ✅ getBettingExposure
 ✅ getCLV
@@ -128,18 +135,21 @@ src/                              # 6,563 LOC total
 ```
 
 ### 3. **Type Safety**
+
 - ✅ **37 TypeScript interfaces/types** across 3 files
 - ✅ Comprehensive `Env` interface with all Cloudflare bindings
 - ✅ Zod validation in place
 - ✅ Strong typing for all database queries
 
 ### 4. **Code Organization**
+
 - ✅ No temporary/cache files (`.log`, `.tmp`, `.backup`, etc.)
 - ✅ Consistent file sizes (largest is 592 LOC - `index.ts`)
 - ✅ Clear entry points for each domain
 - ✅ Proper imports and exports
 
 ### 5. **Documentation**
+
 - ✅ Inline JSDoc comments
 - ✅ Clear function signatures
 - ✅ Comprehensive type definitions
@@ -151,23 +161,30 @@ src/                              # 6,563 LOC total
 
 ### 1. **TypeScript Errors (12 total)**
 
-These are documented in [docs/KNOWN_ISSUES.md](KNOWN_ISSUES.md) and do not impact runtime:
+These are documented in [docs/KNOWN_ISSUES.md](KNOWN_ISSUES.md) and do not
+impact runtime:
 
 **src/index.ts (6 errors):**
-- Lines 77, 80, 81, 87, 111: `body` is of type `unknown` (need explicit type assertion)
+
+- Lines 77, 80, 81, 87, 111: `body` is of type `unknown` (need explicit type
+  assertion)
 - Type indexing issue with log level lookup
 
 **src/queues/steamWebhook.ts (1 error):**
+
 - Line 170: D1Result type conversion (need explicit cast)
 
 **src/schedules/ (3 errors):**
+
 - `exposureCalc.ts` Lines 45, 58: D1Result type conversion
 - `sharpCalc.ts` Line 51: D1Result type conversion
 
 **src/triggers/onLineMove.ts (1 error):**
+
 - Line 122: Object literal property issue
 
 **src/utils/database.ts (1 error):**
+
 - Line 39: Generic type conversion
 
 **Priority:** Medium (will fix in follow-up PR)  
@@ -180,11 +197,13 @@ These are documented in [docs/KNOWN_ISSUES.md](KNOWN_ISSUES.md) and do not impac
 Some `console.log` statements lack `requestId` tracking:
 
 **Locations:**
+
 - `src/mcp/` - 16 instances (server + handlers)
 - `src/schedules/` - 17 instances (exposureCalc + sharpCalc)
 - Other files - scattered instances
 
 **Example Issue:**
+
 ```typescript
 // ❌ Current
 console.log('Processing exposure calculation');
@@ -202,6 +221,7 @@ console.log(`[${requestId}] Processing exposure calculation`);
 ## 📊 File Size Analysis
 
 **Largest Files (Top 10):**
+
 ```
 592 LOC  - src/index.ts                          (Main entry point)
 455 LOC  - src/mcp/tools.ts                      (Tool definitions)
@@ -222,12 +242,13 @@ console.log(`[${requestId}] Processing exposure calculation`);
 ## 🔒 Security & Cost Controls
 
 ### Guards Directory
+
 - **costCap.ts** (231 LOC) - Comprehensive cost cap enforcement
   - Free tier limits (100k req/day)
   - D1 size limits (5GB / 50M rows)
   - Queue limits (1M ops/month)
   - Analytics Engine limits (25M points/month)
-  
+
 - **rateLimit.ts** - IP-based rate limiting (10 req/s)
   - ⚠️ Note: Uses in-memory storage (worker-scoped)
   - For multi-instance, consider Cloudflare Durable Objects
@@ -238,23 +259,24 @@ console.log(`[${requestId}] Processing exposure calculation`);
 
 ## 🔄 Worker Bindings
 
-The `Env` interface (in `src/types/api.ts`) includes all necessary Cloudflare bindings:
+The `Env` interface (in `src/types/api.ts`) includes all necessary Cloudflare
+bindings:
 
 ```typescript
 export interface Env {
   // D1 Database
   ANALYTICS: D1Database;
-  
+
   // Queues
   LINE_INGRESS: Queue;
   STEAM_WEBHOOK: Queue;
-  
+
   // KV Storage
   BET_TICKER_RAW: KVNamespace;
-  
+
   // Analytics Engine
   ANALYTICS_ENGINE: AnalyticsEngineDataset;
-  
+
   // Rate Limiting (optional)
   RATE_LIMITER?: DurableObjectNamespace;
 }
@@ -269,15 +291,18 @@ export interface Env {
 All `src/` modules have corresponding test files:
 
 **Unit Tests:**
+
 - `tests/unit/clv.test.ts` → `src/tools/intelligence/getCLV.ts`
 - `tests/unit/exposure.test.ts` → `src/tools/intelligence/getBettingExposure.ts`
 - `tests/unit/hold.test.ts` → `src/tools/intelligence/getHoldPercentage.ts`
 - `tests/unit/sharp.test.ts` → `src/tools/intelligence/getSharpScore.ts`
 - `tests/unit/steam.test.ts` → `src/queues/steamWebhook.ts`
 - `tests/unit/formatting.test.ts` → `src/utils/formatting.ts`
-- `tests/unit/bet-ticker-sniffer.test.ts` → `src/interceptors/bet-ticker-sniffer.ts`
+- `tests/unit/bet-ticker-sniffer.test.ts` →
+  `src/interceptors/bet-ticker-sniffer.ts`
 
 **Integration Tests:**
+
 - `tests/integration/queue-integration.test.ts`
 - `tests/integration/triggers-implementation.test.ts`
 - `tests/integration/schedules-implementation.test.ts`
@@ -288,28 +313,30 @@ All `src/` modules have corresponding test files:
 
 ## 📈 Code Metrics
 
-| Metric | Count | Notes |
-|--------|-------|-------|
-| **Total Files** | 31 | All `.ts` files |
-| **Total LOC** | 6,563 | Clean, maintainable size |
-| **Exported Functions** | 46 | Well-defined API surface |
-| **Type Definitions** | 37 | Strong type safety |
-| **MCP Handlers** | 9 | All registered |
-| **Intelligence Tools** | 4 | All functional |
-| **Queue Consumers** | 2 | lineIngress, steamWebhook |
-| **Scheduled Jobs** | 2 | exposureCalc, sharpCalc |
-| **D1 Triggers** | 1 | onLineMove |
-| **TypeScript Errors** | 12 | Non-critical, documented |
-| **Unstructured Logs** | 30 | Low priority fix |
+| Metric                 | Count | Notes                     |
+| ---------------------- | ----- | ------------------------- |
+| **Total Files**        | 31    | All `.ts` files           |
+| **Total LOC**          | 6,563 | Clean, maintainable size  |
+| **Exported Functions** | 46    | Well-defined API surface  |
+| **Type Definitions**   | 37    | Strong type safety        |
+| **MCP Handlers**       | 9     | All registered            |
+| **Intelligence Tools** | 4     | All functional            |
+| **Queue Consumers**    | 2     | lineIngress, steamWebhook |
+| **Scheduled Jobs**     | 2     | exposureCalc, sharpCalc   |
+| **D1 Triggers**        | 1     | onLineMove                |
+| **TypeScript Errors**  | 12    | Non-critical, documented  |
+| **Unstructured Logs**  | 30    | Low priority fix          |
 
 ---
 
 ## 🎯 Recommendations
 
 ### Immediate (None Required)
+
 No critical issues blocking production deployment.
 
 ### Short-Term (Next PR)
+
 1. **Fix TypeScript Errors (12 total)**
    - Add explicit type assertions for `unknown` types
    - Fix D1Result type conversions
@@ -322,6 +349,7 @@ No critical issues blocking production deployment.
    - Estimated time: 1 hour
 
 ### Long-Term (Future Iterations)
+
 1. **Rate Limiting Enhancement**
    - Consider Cloudflare Durable Objects for multi-instance rate limiting
    - Current in-memory approach works for single-region
@@ -339,9 +367,11 @@ No critical issues blocking production deployment.
 ## 🔍 Detailed Breakdown by Directory
 
 ### `/guards/` - Security & Cost Controls (2 files)
+
 **Purpose:** Enforce cost caps and rate limits
 
 **Files:**
+
 - `costCap.ts` (231 LOC) - Cost cap enforcement logic
 - `rateLimit.ts` - IP-based rate limiting
 
@@ -350,15 +380,18 @@ No critical issues blocking production deployment.
 ---
 
 ### `/interceptors/` - API Interception (1 file)
+
 **Purpose:** Transparent BetTicker API proxy with archiving
 
 **Files:**
+
 - `bet-ticker-sniffer.ts` (406 LOC)
   - Intercepts `POST /cloud/api/Manager/getBetTicker`
   - Stores raw responses in KV (7-day retention)
   - Zero performance impact (async storage)
 
 **Functions:**
+
 - `handleBetTickerInterception()` - Main proxy handler
 - `getBetTickerHistory()` - Retrieve historical data
 - `getBetTickerResponse()` - Get specific response
@@ -368,16 +401,18 @@ No critical issues blocking production deployment.
 ---
 
 ### `/mcp/` - MCP Server (13 files)
+
 **Purpose:** JSON-RPC 2.0 server for AI assistant integration
 
 **Core Files:**
+
 - `server.ts` (192 LOC) - Request router
 - `toolRegistry.ts` (331 LOC) - Handler registry (13 tools registered)
 - `tools.ts` (455 LOC) - Tool definitions & schemas
 - `types.ts` - MCP protocol types
 
-**Handlers (9 files):**
-All implement `MCPToolHandler` interface with proper error handling.
+**Handlers (9 files):** All implement `MCPToolHandler` interface with proper
+error handling.
 
 **Console Logs:** 16 instances (none with `requestId`)
 
@@ -386,9 +421,11 @@ All implement `MCPToolHandler` interface with proper error handling.
 ---
 
 ### `/queues/` - Queue Consumers (2 files)
+
 **Purpose:** Async message processing
 
 **Files:**
+
 - `lineIngress.ts` - Line movement ingestion from external feeds
 - `steamWebhook.ts` (252 LOC) - Steam move notification delivery
 
@@ -399,9 +436,11 @@ All implement `MCPToolHandler` interface with proper error handling.
 ---
 
 ### `/schedules/` - Cron Jobs (2 files)
+
 **Purpose:** Scheduled background tasks
 
 **Files:**
+
 - `exposureCalc.ts` - 30-second exposure calculation (cron: `*/30 * * * * *`)
 - `sharpCalc.ts` - Hourly sharp calculation (cron: `0 * * * *`)
 
@@ -414,9 +453,11 @@ All implement `MCPToolHandler` interface with proper error handling.
 ---
 
 ### `/tools/intelligence/` - Intelligence APIs (4 files)
+
 **Purpose:** Core betting intelligence endpoints
 
 **Files:**
+
 - `getBettingExposure.ts` - Real-time exposure tracking
 - `getCLV.ts` - Closing line value calculation
 - `getHoldPercentage.ts` - Hold percentage analysis
@@ -427,9 +468,11 @@ All implement `MCPToolHandler` interface with proper error handling.
 ---
 
 ### `/triggers/` - D1 Triggers (1 file)
+
 **Purpose:** Database-triggered processing
 
 **Files:**
+
 - `onLineMove.ts` - Processes line movements, detects steam moves
 
 **TypeScript Error:** 1 instance (object literal property)
@@ -441,9 +484,11 @@ All implement `MCPToolHandler` interface with proper error handling.
 ---
 
 ### `/types/` - Type Definitions (3 files)
+
 **Purpose:** Centralized TypeScript interfaces
 
 **Files:**
+
 - `api.ts` (196 LOC) - 16 interfaces (Env, Request/Response types)
 - `database.ts` - 13 interfaces (D1 result types)
 - `metrics.ts` - 8 interfaces (Analytics types)
@@ -453,9 +498,11 @@ All implement `MCPToolHandler` interface with proper error handling.
 ---
 
 ### `/utils/` - Shared Utilities (3 files)
+
 **Purpose:** Reusable helper functions
 
 **Files:**
+
 - `database.ts` (212 LOC) - D1 query helpers
 - `formatting.ts` (205 LOC) - 14 formatting functions
 - `validation.ts` - 3 validation functions
@@ -471,6 +518,7 @@ All implement `MCPToolHandler` interface with proper error handling.
 **Status:** ✅ **PRODUCTION-READY**
 
 The `src/` directory is **exceptionally well-organized** with:
+
 - ✅ Clean architecture
 - ✅ Complete MCP integration (13 tools)
 - ✅ Strong type safety
@@ -491,10 +539,10 @@ The `src/` directory is **exceptionally well-organized** with:
 
 ## 📚 Related Documentation
 
-- **[CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md)** - Comprehensive code quality review
+- **[CODE_QUALITY_AUDIT.md](CODE_QUALITY_AUDIT.md)** - Comprehensive code
+  quality review
 - **[MCP_INTEGRATION_STATUS.md](MCP_INTEGRATION_STATUS.md)** - MCP server status
 - **[MCP_ENDPOINTS.md](MCP_ENDPOINTS.md)** - Complete MCP API reference
 - **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** - Tracked technical debt
 - **[CODEBASE_REVIEW.md](CODEBASE_REVIEW.md)** - Overall codebase status
 - **[TEST_AUDIT_REPORT.md](TEST_AUDIT_REPORT.md)** - Test quality assessment
-

@@ -10,8 +10,5 @@
     "christian-kohler.path-intellisense",
     "ms-vscode.vscode-json"
   ],
-  "unwantedRecommendations": [
-    "ms-vscode.vscode-typescript",
-    "hookyqr.beautify"
-  ]
+  "unwantedRecommendations": ["ms-vscode.vscode-typescript", "hookyqr.beautify"]
 }

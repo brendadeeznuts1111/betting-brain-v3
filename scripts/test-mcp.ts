@@ -98,7 +98,7 @@ async function testToolCall(toolName: string, args: Record<string, any>) {
 async function main() {
   console.log('🧪 MCP Server Test Suite');
   console.log(`📍 Target: ${MCP_URL}`);
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   try {
     // Test 1: List tools
@@ -140,7 +140,6 @@ async function main() {
     console.log('   1. Start dev server: bun run dev');
     console.log('   2. Run this test: bun scripts/test-mcp.ts');
     console.log('   3. See docs/MCP_TESTING_GUIDE.md for more examples');
-
   } catch (error) {
     console.error('\n❌ Test failed:', error);
     console.error('\n💡 Make sure the dev server is running:');

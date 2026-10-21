@@ -3,14 +3,14 @@
  * Alert threshold: < -2%
  */
 
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect, beforeEach } from 'bun:test';
 import { getCLV } from '../../src/tools/intelligence/getCLV';
 import {
   createMockEnv,
   createMockRequest,
   readResponseBody,
   setupCostCapMock,
-  resetAllMocks
+  resetAllMocks,
 } from '../utils/test-helpers';
 
 describe('CLV Calculations', () => {
@@ -35,7 +35,7 @@ describe('CLV Calculations', () => {
           first: async () => ({ size: 1000000, rows: 1000 }),
           bind: () => ({ first: async () => ({ size: 1000000, rows: 1000 }) }),
           run: async () => ({ success: true }),
-          all: async () => []
+          all: async () => [],
         };
       }
 
@@ -47,12 +47,12 @@ describe('CLV Calculations', () => {
             clv: 1500,
             wr: 55,
             ao: 100,
-            nb: 1500
-          })
+            nb: 1500,
+          }),
         }),
         first: async () => null,
         run: async () => ({ success: true }),
-        all: async () => []
+        all: async () => [],
       };
     };
 
@@ -85,7 +85,7 @@ describe('CLV Calculations', () => {
           first: async () => ({ size: 1000000, rows: 1000 }),
           bind: () => ({ first: async () => ({ size: 1000000, rows: 1000 }) }),
           run: async () => ({ success: true }),
-          all: async () => []
+          all: async () => [],
         };
       }
 
@@ -97,12 +97,12 @@ describe('CLV Calculations', () => {
             clv: -250,
             wr: 45,
             ao: 50,
-            nb: -250
-          })
+            nb: -250,
+          }),
         }),
         first: async () => null,
         run: async () => ({ success: true }),
-        all: async () => []
+        all: async () => [],
       };
     };
 
@@ -130,18 +130,18 @@ describe('CLV Calculations', () => {
           first: async () => ({ size: 1000000, rows: 1000 }),
           bind: () => ({ first: async () => ({ size: 1000000, rows: 1000 }) }),
           run: async () => ({ success: true }),
-          all: async () => []
+          all: async () => [],
         };
       }
 
       // Handle regular queries with no data
       return {
         bind: (...params: any[]) => ({
-          first: async () => null
+          first: async () => null,
         }),
         first: async () => null,
         run: async () => ({ success: true }),
-        all: async () => []
+        all: async () => [],
       };
     };
 

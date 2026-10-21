@@ -23,10 +23,7 @@ export async function lagAnalysis(
   const cutoff = Date.now() - lookbackDays * 24 * 60 * 60 * 1000;
 
   // Filter to steam bets within lookback
-  const steamBets = bets.filter(b =>
-    steamEvents.has(b.EventID) &&
-    new Date(b.InsertDateTime).getTime() >= cutoff
-  );
+  const steamBets = bets.filter(b => steamEvents.has(b.EventID) && new Date(b.InsertDateTime).getTime() >= cutoff);
 
   // Group by event and agent
   const eventAgentBets = new Map<string, Map<string, any[]>>();
@@ -97,7 +94,7 @@ export async function lagAnalysis(
         childId,
         avgLagMs: Math.round(avgLagMs),
         eventCount: data.lags.length,
-        lastSharedSteam: data.lastShared
+        lastSharedSteam: data.lastShared,
       });
     });
 
@@ -147,13 +144,15 @@ export async function getSteamPropagation(
   env: Env,
   minLagMs = 0,
   limit = 100
-): Promise<Array<{
-  parentId: string;
-  childId: string;
-  avgLagMs: number;
-  steamCorrelation: number;
-  lastSharedSteam: number;
-}>> {
+): Promise<
+  Array<{
+    parentId: string;
+    childId: string;
+    avgLagMs: number;
+    steamCorrelation: number;
+    lastSharedSteam: number;
+  }>
+> {
   const query = `
     SELECT
       parent_id,
@@ -169,16 +168,14 @@ export async function getSteamPropagation(
     LIMIT ?
   `;
 
-  const result = await env.ANALYTICS.prepare(query)
-    .bind(minLagMs, limit)
-    .all();
+  const result = await env.ANALYTICS.prepare(query).bind(minLagMs, limit).all();
 
   return result.results.map((row: any) => ({
     parentId: row.parent_id,
     childId: row.child_id,
     avgLagMs: row.avg_lag_ms,
     steamCorrelation: row.steam_correlation,
-    lastSharedSteam: row.last_steamed_same_game
+    lastSharedSteam: row.last_steamed_same_game,
   }));
 }
 
@@ -189,13 +186,15 @@ export async function getRingFenceAgents(
   env: Env,
   overlapThreshold = 0.8,
   minLagMs = 5000
-): Promise<Array<{
-  parentId: string;
-  childId: string;
-  customerOverlap: number;
-  avgLagMs: number;
-  creditRisk: number;
-}>> {
+): Promise<
+  Array<{
+    parentId: string;
+    childId: string;
+    customerOverlap: number;
+    avgLagMs: number;
+    creditRisk: number;
+  }>
+> {
   const query = `
     SELECT
       parent_id,
@@ -210,15 +209,13 @@ export async function getRingFenceAgents(
     LIMIT 50
   `;
 
-  const result = await env.ANALYTICS.prepare(query)
-    .bind(overlapThreshold, minLagMs)
-    .all();
+  const result = await env.ANALYTICS.prepare(query).bind(overlapThreshold, minLagMs).all();
 
   return result.results.map((row: any) => ({
     parentId: row.parent_id,
     childId: row.child_id,
     customerOverlap: row.customer_overlap,
     avgLagMs: row.avg_lag_ms,
-    creditRisk: row.credit_risk_score
+    creditRisk: row.credit_risk_score,
   }));
 }

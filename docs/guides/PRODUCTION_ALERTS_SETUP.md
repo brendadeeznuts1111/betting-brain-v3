@@ -86,11 +86,13 @@ Alert Configuration:
 ```
 
 **Webhook URL:**
+
 ```
 https://api.telegram.org/bot<BOT_TOKEN>/sendMessage
 ```
 
 **Body Template:**
+
 ```json
 {
   "chat_id": "<CHAT_ID>",
@@ -124,6 +126,7 @@ Alert Configuration:
 ```
 
 **Body Template:**
+
 ```json
 {
   "chat_id": "<CHAT_ID>",
@@ -157,6 +160,7 @@ Alert Configuration:
 ```
 
 **Body Template:**
+
 ```json
 {
   "chat_id": "<CHAT_ID>",
@@ -252,47 +256,54 @@ done
 import { createLogger, logMetric } from './utils/logger';
 
 export default {
-    async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-        // Create logger with trace ID
-        const logger = createLogger(request);
-        const startTime = Date.now();
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
+    // Create logger with trace ID
+    const logger = createLogger(request);
+    const startTime = Date.now();
 
-        try {
-            logger.info('request_started', {
-                method: request.method,
-                path: new URL(request.url).pathname
-            });
+    try {
+      logger.info('request_started', {
+        method: request.method,
+        path: new URL(request.url).pathname,
+      });
 
-            // Your request handling...
-            const response = await handleRequest(request, env, ctx);
+      // Your request handling...
+      const response = await handleRequest(request, env, ctx);
 
-            // Log success
-            const latencyMs = Date.now() - startTime;
-            logger.info('request_completed', {
-                status: response.status,
-                latencyMs
-            });
+      // Log success
+      const latencyMs = Date.now() - startTime;
+      logger.info('request_completed', {
+        status: response.status,
+        latencyMs,
+      });
 
-            // Send to Analytics Engine
-            logMetric(env, 'api_request', {
-                endpoint: new URL(request.url).pathname,
-                status: response.status,
-                latencyMs
-            });
+      // Send to Analytics Engine
+      logMetric(env, 'api_request', {
+        endpoint: new URL(request.url).pathname,
+        status: response.status,
+        latencyMs,
+      });
 
-            return response;
+      return response;
+    } catch (error) {
+      // Log error with full context
+      const latencyMs = Date.now() - startTime;
+      logger.error(
+        'request_failed',
+        {
+          latencyMs,
+          errorType: error.constructor.name,
+        },
+        error
+      );
 
-        } catch (error) {
-            // Log error with full context
-            const latencyMs = Date.now() - startTime;
-            logger.error('request_failed', {
-                latencyMs,
-                errorType: error.constructor.name
-            }, error);
-
-            throw error;
-        }
+      throw error;
     }
+  },
 };
 ```
 
@@ -302,7 +313,7 @@ export default {
 -- In Cloudflare Dashboard → Analytics → Logs
 
 -- Find slow requests
-SELECT 
+SELECT
     message,
     context.path,
     context.latencyMs,
@@ -315,7 +326,7 @@ ORDER BY timestamp DESC
 LIMIT 100
 
 -- Find errors by type
-SELECT 
+SELECT
     context.errorType,
     COUNT(*) as count
 FROM logs
@@ -335,27 +346,24 @@ ORDER BY count DESC
 // In src/utils/logger.ts, add custom metrics
 
 export function logBusinessMetric(
-    env: { ANALYTICS_ENGINE?: any },
-    metric: string,
-    value: number,
-    metadata?: Record<string, string>
+  env: { ANALYTICS_ENGINE?: any },
+  metric: string,
+  value: number,
+  metadata?: Record<string, string>
 ): void {
-    if (!env.ANALYTICS_ENGINE) return;
+  if (!env.ANALYTICS_ENGINE) return;
 
-    env.ANALYTICS_ENGINE.writeDataPoint({
-        blobs: [metric],
-        doubles: [value, Date.now()],
-        indexes: [
-            metadata?.agentId || 'unknown',
-            metadata?.sport || 'unknown'
-        ]
-    });
+  env.ANALYTICS_ENGINE.writeDataPoint({
+    blobs: [metric],
+    doubles: [value, Date.now()],
+    indexes: [metadata?.agentId || 'unknown', metadata?.sport || 'unknown'],
+  });
 }
 
 // Usage
 logBusinessMetric(env, 'bet_placed', amount, {
-    agentId: 'BILLY666',
-    sport: 'NFL'
+  agentId: 'BILLY666',
+  sport: 'NFL',
 });
 ```
 
@@ -395,12 +403,12 @@ datasources:
 
 When you receive an alert:
 
-| Alert | Runbook | Response Time |
-|-------|---------|---------------|
-| **Worker Error Rate** | [High Error Rate](runbooks/high-error-rate.md) | < 5 min |
-| **Queue Back-Pressure** | [Queue Backlog](runbooks/queue-backlog.md) | < 15 min |
-| **D1 Latency** | [D1 SQLITE_BUSY](runbooks/d1-busy.md) | < 10 min |
-| **Any Critical Issue** | [Rollback Now](runbooks/rollback.md) | < 5 min |
+| Alert                   | Runbook                                        | Response Time |
+| ----------------------- | ---------------------------------------------- | ------------- |
+| **Worker Error Rate**   | [High Error Rate](runbooks/high-error-rate.md) | < 5 min       |
+| **Queue Back-Pressure** | [Queue Backlog](runbooks/queue-backlog.md)     | < 15 min      |
+| **D1 Latency**          | [D1 SQLITE_BUSY](runbooks/d1-busy.md)          | < 10 min      |
+| **Any Critical Issue**  | [Rollback Now](runbooks/rollback.md)           | < 5 min       |
 
 ---
 
@@ -408,19 +416,19 @@ When you receive an alert:
 
 ### Conservative (Recommended for Start)
 
-| Metric | Threshold | Duration | Rationale |
-|--------|-----------|----------|-----------|
-| Error Rate | ≥ 1% | 2 min | Catches issues early |
-| Queue Depth | ≥ 1,000 | 5 min | Prevents backlog |
-| D1 Latency | ≥ 400ms | 5 min | Before user impact |
+| Metric      | Threshold | Duration | Rationale            |
+| ----------- | --------- | -------- | -------------------- |
+| Error Rate  | ≥ 1%      | 2 min    | Catches issues early |
+| Queue Depth | ≥ 1,000   | 5 min    | Prevents backlog     |
+| D1 Latency  | ≥ 400ms   | 5 min    | Before user impact   |
 
 ### Aggressive (After Stable Period)
 
-| Metric | Threshold | Duration | Rationale |
-|--------|-----------|----------|-----------|
-| Error Rate | ≥ 0.5% | 1 min | Faster detection |
-| Queue Depth | ≥ 500 | 3 min | Earlier warning |
-| D1 Latency | ≥ 200ms | 3 min | Proactive |
+| Metric      | Threshold | Duration | Rationale        |
+| ----------- | --------- | -------- | ---------------- |
+| Error Rate  | ≥ 0.5%    | 1 min    | Faster detection |
+| Queue Depth | ≥ 500     | 3 min    | Earlier warning  |
+| D1 Latency  | ≥ 200ms   | 3 min    | Proactive        |
 
 ---
 
@@ -435,4 +443,3 @@ When you receive an alert:
 **Status:** ✅ Production-Ready  
 **Last Updated:** 2025-10-08  
 **Owner:** DevOps Team
-

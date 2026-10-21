@@ -2,7 +2,8 @@
 
 **AI-Friendly Testing with Smart Test Organization**
 
-This guide covers the new quiet testing system designed for AI environments and organized test execution.
+This guide covers the new quiet testing system designed for AI environments and
+organized test execution.
 
 ## 🎯 Quick Start
 
@@ -44,7 +45,7 @@ bun run test:cache:clear
 The testing system automatically detects AI environments and enables quiet mode:
 
 - **Claude Code**: `CLAUDECODE=1` environment variable
-- **Replit AI**: `REPL_ID=1` environment variable  
+- **Replit AI**: `REPL_ID=1` environment variable
 - **Generic AI**: `AGENT=1` environment variable
 - **Manual**: `QUIET=1` environment variable
 
@@ -62,13 +63,13 @@ The testing system automatically detects AI environments and enables quiet mode:
 
 Tests are organized into logical categories:
 
-| Category | Pattern | Timeout | Parallel | Description |
-|----------|---------|---------|----------|-------------|
-| **unit** | `tests/unit/**/*.test.ts` | 5s | ✅ | Fast, isolated tests |
-| **integration** | `tests/integration/**/*.test.ts` | 15s | ✅ | Integration tests |
-| **e2e** | `tests/e2e/**/*.test.ts` | 30s | ❌ | End-to-end tests |
-| **performance** | `tests/benchmark/**/*.test.ts` | 60s | ❌ | Performance tests |
-| **snapshot** | `tests/snapshot/**/*.test.ts` | 10s | ✅ | Snapshot tests |
+| Category        | Pattern                          | Timeout | Parallel | Description          |
+| --------------- | -------------------------------- | ------- | -------- | -------------------- |
+| **unit**        | `tests/unit/**/*.test.ts`        | 5s      | ✅       | Fast, isolated tests |
+| **integration** | `tests/integration/**/*.test.ts` | 15s     | ✅       | Integration tests    |
+| **e2e**         | `tests/e2e/**/*.test.ts`         | 30s     | ❌       | End-to-end tests     |
+| **performance** | `tests/benchmark/**/*.test.ts`   | 60s     | ❌       | Performance tests    |
+| **snapshot**    | `tests/snapshot/**/*.test.ts`    | 10s     | ✅       | Snapshot tests       |
 
 ### Test Discovery
 
@@ -113,15 +114,15 @@ bun run scripts/test-runner.ts --serial
 
 ### Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--category <name>` | Run specific test category | all |
-| `--quiet` | Quiet output for AI environments | auto-detect |
-| `--verbose` | Verbose output | false |
-| `--no-skip` | Don't skip passing tests | false |
-| `--serial` | Run tests serially | false |
-| `--timeout <ms>` | Set test timeout | category default |
-| `--pattern <glob>` | Test file pattern | `**/*.test.ts` |
+| Option              | Description                      | Default          |
+| ------------------- | -------------------------------- | ---------------- |
+| `--category <name>` | Run specific test category       | all              |
+| `--quiet`           | Quiet output for AI environments | auto-detect      |
+| `--verbose`         | Verbose output                   | false            |
+| `--no-skip`         | Don't skip passing tests         | false            |
+| `--serial`          | Run tests serially               | false            |
+| `--timeout <ms>`    | Set test timeout                 | category default |
+| `--pattern <glob>`  | Test file pattern                | `**/*.test.ts`   |
 
 ## 💾 Test Caching
 
@@ -223,14 +224,14 @@ concurrent = true
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `QUIET` | Enable quiet mode | auto-detect |
-| `CLAUDECODE` | Claude Code environment | false |
-| `REPL_ID` | Replit AI environment | false |
-| `AGENT` | Generic AI environment | false |
-| `CI` | CI environment | false |
-| `FORCE_RUN_ALL` | Force run all tests | false |
+| Variable        | Description             | Default     |
+| --------------- | ----------------------- | ----------- |
+| `QUIET`         | Enable quiet mode       | auto-detect |
+| `CLAUDECODE`    | Claude Code environment | false       |
+| `REPL_ID`       | Replit AI environment   | false       |
+| `AGENT`         | Generic AI environment  | false       |
+| `CI`            | CI environment          | false       |
+| `FORCE_RUN_ALL` | Force run all tests     | false       |
 
 ## 🎯 Best Practices
 
@@ -263,6 +264,7 @@ concurrent = true
 ### Common Issues
 
 **Tests not running:**
+
 ```bash
 # Check test discovery
 bun run test:organize
@@ -275,6 +277,7 @@ bun run test:all
 ```
 
 **Quiet mode not working:**
+
 ```bash
 # Set environment variable
 export QUIET=1
@@ -284,6 +287,7 @@ export CLAUDECODE=1
 ```
 
 **Cache issues:**
+
 ```bash
 # Clear cache
 bun run test:cache:clear
@@ -309,7 +313,8 @@ DEBUG=1 bun run test
 
 - **[Testing Guide](TESTING_GUIDE.md)** - Complete testing documentation
 - **[AI-Friendly Testing](AI_FRIENDLY_TESTING.md)** - AI-optimized test patterns
-- **[Test Organization](TEST_ORGANIZATION.md)** - Test organization best practices
+- **[Test Organization](TEST_ORGANIZATION.md)** - Test organization best
+  practices
 - **[Performance Testing](PERFORMANCE_TESTING.md)** - Performance test patterns
 
 ---

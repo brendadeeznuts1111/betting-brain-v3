@@ -13,7 +13,7 @@ const mockBetTickerData = {
         agentId: 'agent-001',
         risk: 100,
         toWin: 110,
-        agentPnl: 5.50,
+        agentPnl: 5.5,
         type: 'straight',
         status: 'pending',
         placedAt: Date.now() - 60000, // 1 min ago
@@ -35,7 +35,7 @@ const mockBetTickerData = {
         agentId: 'agent-002',
         risk: 500,
         toWin: 550,
-        agentPnl: 25.00,
+        agentPnl: 25.0,
         type: 'straight',
         status: 'pending',
         placedAt: Date.now() - 180000, // 3 mins ago
@@ -46,7 +46,7 @@ const mockBetTickerData = {
         agentId: 'agent-003',
         risk: 150,
         toWin: 165,
-        agentPnl: 7.50,
+        agentPnl: 7.5,
         type: 'teaser',
         status: 'pending',
         placedAt: Date.now() - 240000, // 4 mins ago
@@ -57,7 +57,7 @@ const mockBetTickerData = {
         agentId: 'agent-001',
         risk: 300,
         toWin: 270,
-        agentPnl: 15.00,
+        agentPnl: 15.0,
         type: 'straight',
         status: 'settled',
         placedAt: Date.now() - 300000, // 5 mins ago
@@ -68,7 +68,7 @@ const mockBetTickerData = {
         customerId: 'cust-555',
         agentId: 'agent-002',
         risk: 75,
-        toWin: 82.50,
+        toWin: 82.5,
         agentPnl: 3.75,
         type: 'straight',
         status: 'pending',
@@ -80,7 +80,7 @@ const mockBetTickerData = {
         agentId: 'agent-003',
         risk: 1000,
         toWin: 900,
-        agentPnl: 50.00,
+        agentPnl: 50.0,
         type: 'parlay',
         status: 'pending',
         placedAt: Date.now() - 90000, // 1.5 mins ago
@@ -91,7 +91,7 @@ const mockBetTickerData = {
         agentId: 'agent-001',
         risk: 200,
         toWin: 180,
-        agentPnl: 10.00,
+        agentPnl: 10.0,
         type: 'straight',
         status: 'pending',
         placedAt: Date.now() - 150000, // 2.5 mins ago
@@ -100,8 +100,8 @@ const mockBetTickerData = {
     summary: {
       totalWagers: 8,
       totalRisk: 2575,
-      totalToWin: 2542.50,
-      totalAgentPnl: 129.50,
+      totalToWin: 2542.5,
+      totalAgentPnl: 129.5,
     },
   },
 };

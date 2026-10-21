@@ -2,13 +2,7 @@
   "dashboard": {
     "title": "Betting-Brain v3 - Real-Time Intelligence & Cost Monitoring",
     "description": "Production dashboard for edge-native betting intelligence with cost cap visualization",
-    "tags": [
-      "betting",
-      "intelligence",
-      "edge",
-      "cloudflare",
-      "cost-monitoring"
-    ],
+    "tags": ["betting", "intelligence", "edge", "cloudflare", "cost-monitoring"],
     "timezone": "browser",
     "refresh": "30s",
     "schemaVersion": 38,
@@ -55,9 +49,7 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": [
-              "lastNotNull"
-            ],
+            "calcs": ["lastNotNull"],
             "fields": ""
           },
           "orientation": "auto",
@@ -674,20 +666,14 @@
           "conditions": [
             {
               "evaluator": {
-                "params": [
-                  1
-                ],
+                "params": [1],
                 "type": "gt"
               },
               "operator": {
                 "type": "and"
               },
               "query": {
-                "params": [
-                  "A",
-                  "5m",
-                  "now"
-                ]
+                "params": ["A", "5m", "now"]
               },
               "reducer": {
                 "params": [],
@@ -982,22 +968,8 @@
       "to": "now"
     },
     "timepicker": {
-      "refresh_intervals": [
-        "10s",
-        "30s",
-        "1m",
-        "5m",
-        "15m"
-      ],
-      "time_options": [
-        "5m",
-        "15m",
-        "1h",
-        "6h",
-        "12h",
-        "24h",
-        "7d"
-      ]
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "7d"]
     },
     "annotations": {
       "list": [

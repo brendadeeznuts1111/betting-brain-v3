@@ -12,7 +12,7 @@ export enum ErrorCode {
   NOT_FOUND = 'NOT_FOUND',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   RATE_LIMIT = 'RATE_LIMIT',
-  
+
   // Server errors (5xx)
   INTERNAL_ERROR = 'INTERNAL_ERROR',
   DATABASE_ERROR = 'DATABASE_ERROR',
@@ -45,11 +45,7 @@ export class APIError extends Error {
 /**
  * Create standardized error response
  */
-export function createErrorResponse(
-  error: Error | APIError | unknown,
-  requestId?: string,
-  path?: string
-): Response {
+export function createErrorResponse(error: Error | APIError | unknown, requestId?: string, path?: string): Response {
   let statusCode = 500;
   let errorCode = ErrorCode.INTERNAL_ERROR;
   let message = 'An internal error occurred';
@@ -65,7 +61,7 @@ export function createErrorResponse(
   // Handle standard Error
   else if (error instanceof Error) {
     message = error.message;
-    
+
     // Map common errors to status codes
     if (error.message.includes('not found')) {
       statusCode = 404;
@@ -92,7 +88,7 @@ export function createErrorResponse(
     details,
     requestId,
     timestamp: new Date().toISOString(),
-    path
+    path,
   };
 
   // Log error for debugging
@@ -101,7 +97,7 @@ export function createErrorResponse(
     message,
     statusCode,
     path,
-    details: details || (error instanceof Error ? error.stack : undefined)
+    details: details || (error instanceof Error ? error.stack : undefined),
   });
 
   return new Response(JSON.stringify(errorResponse), {
@@ -110,8 +106,8 @@ export function createErrorResponse(
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   });
 }
 
@@ -119,44 +115,34 @@ export function createErrorResponse(
  * Common error creators
  */
 export const Errors = {
-  badRequest: (message: string, details?: any) =>
-    new APIError(ErrorCode.BAD_REQUEST, message, 400, details),
-  
-  unauthorized: (message: string = 'Unauthorized') =>
-    new APIError(ErrorCode.UNAUTHORIZED, message, 401),
-  
-  forbidden: (message: string = 'Forbidden') =>
-    new APIError(ErrorCode.FORBIDDEN, message, 403),
-  
-  notFound: (resource: string = 'Resource') =>
-    new APIError(ErrorCode.NOT_FOUND, `${resource} not found`, 404),
-  
-  validationError: (errors: string[]) =>
-    new APIError(ErrorCode.VALIDATION_ERROR, 'Validation failed', 400, { errors }),
-  
-  rateLimit: (message: string = 'Rate limit exceeded') =>
-    new APIError(ErrorCode.RATE_LIMIT, message, 429),
-  
-  databaseError: (message: string) =>
-    new APIError(ErrorCode.DATABASE_ERROR, `Database error: ${message}`, 500),
-  
+  badRequest: (message: string, details?: any) => new APIError(ErrorCode.BAD_REQUEST, message, 400, details),
+
+  unauthorized: (message: string = 'Unauthorized') => new APIError(ErrorCode.UNAUTHORIZED, message, 401),
+
+  forbidden: (message: string = 'Forbidden') => new APIError(ErrorCode.FORBIDDEN, message, 403),
+
+  notFound: (resource: string = 'Resource') => new APIError(ErrorCode.NOT_FOUND, `${resource} not found`, 404),
+
+  validationError: (errors: string[]) => new APIError(ErrorCode.VALIDATION_ERROR, 'Validation failed', 400, { errors }),
+
+  rateLimit: (message: string = 'Rate limit exceeded') => new APIError(ErrorCode.RATE_LIMIT, message, 429),
+
+  databaseError: (message: string) => new APIError(ErrorCode.DATABASE_ERROR, `Database error: ${message}`, 500),
+
   serviceUnavailable: (message: string = 'Service temporarily unavailable') =>
     new APIError(ErrorCode.SERVICE_UNAVAILABLE, message, 503),
-  
-  timeout: (message: string = 'Request timeout') =>
-    new APIError(ErrorCode.TIMEOUT, message, 504),
+
+  timeout: (message: string = 'Request timeout') => new APIError(ErrorCode.TIMEOUT, message, 504),
 };
 
 /**
  * Async error wrapper for route handlers
  */
-export function asyncHandler(
-  handler: (request: Request, env: any, ctx: ExecutionContext) => Promise<Response>
-) {
+export function asyncHandler(handler: (request: Request, env: any, ctx: ExecutionContext) => Promise<Response>) {
   return async (request: Request, env: any, ctx: ExecutionContext): Promise<Response> => {
     const requestId = Date.now().toString(36);
     const url = new URL(request.url);
-    
+
     try {
       return await handler(request, env, ctx);
     } catch (error) {
@@ -181,8 +167,8 @@ export function createSuccessResponse(data: any, schema?: any): Response {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
+      'Access-Control-Allow-Origin': '*',
+    },
   });
 }
 
@@ -191,14 +177,8 @@ export function createSuccessResponse(data: any, schema?: any): Response {
  */
 export function validateEnv(env: any, required: string[]): void {
   const missing = required.filter(key => !env[key]);
-  
+
   if (missing.length > 0) {
-    throw new APIError(
-      ErrorCode.SERVICE_UNAVAILABLE,
-      'Required services not configured',
-      503,
-      { missing }
-    );
+    throw new APIError(ErrorCode.SERVICE_UNAVAILABLE, 'Required services not configured', 503, { missing });
   }
 }
-

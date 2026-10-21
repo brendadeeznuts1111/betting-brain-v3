@@ -3,25 +3,15 @@
   "name": "BetTicker Debug Extension",
   "version": "1.0.1-debug",
   "description": "Debug version to test content script injection",
-  "permissions": [
-    "storage"
-  ],
-  "host_permissions": [
-    "https://fantasy402.com/*",
-    "http://localhost/*",
-    "http://127.0.0.1/*"
-  ],
+  "permissions": ["storage"],
+  "host_permissions": ["https://fantasy402.com/*", "http://localhost/*", "http://127.0.0.1/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://fantasy402.com/*",
-        "http://localhost/*",
-        "http://127.0.0.1/*"
-      ],
+      "matches": ["https://fantasy402.com/*", "http://localhost/*", "http://127.0.0.1/*"],
       "js": ["log-forwarder.js", "debug-content.js"],
       "run_at": "document_start"
     }

@@ -1,12 +1,14 @@
 # 🚀 Cursor Rules Release Guide
 
-**Step-by-step guide for staging, reviewing, and releasing cursor rules with proper SemVer versioning and git tags.**
+**Step-by-step guide for staging, reviewing, and releasing cursor rules with
+proper SemVer versioning and git tags.**
 
 ---
 
 ## 📋 Pre-Release Checklist
 
 ### 1. Review Staged Files
+
 ```bash
 # Check git status
 git status
@@ -21,6 +23,7 @@ git diff package.json
 ```
 
 ### 2. Verify Version Numbers
+
 ```bash
 # Check current version in .cursorrules
 grep '^version:' .cursorrules
@@ -33,6 +36,7 @@ grep '"version"' package.json
 ```
 
 ### 3. Run Local CI
+
 ```bash
 # Full Bun CI with all checks
 bun run ci:bun:full
@@ -49,13 +53,16 @@ bun run precheck:security
 ## 🎯 Determining Version Increment
 
 ### PATCH (x.y.z → x.y.z+1)
+
 **When to use:**
+
 - Fix typos or formatting
 - Add examples to existing rules
 - Improve documentation clarity
 - Fix broken links
 
 **Example:**
+
 ```bash
 # Current: 4.1.0
 # New: 4.1.1
@@ -63,13 +70,16 @@ bun run precheck:security
 ```
 
 ### MINOR (x.y.z → x.y+1.0)
+
 **When to use:**
+
 - Add new rule categories
 - Enhance existing rules
 - Add new best practices
 - Improve rule organization
 
 **Example:**
+
 ```bash
 # Current: 4.1.0
 # New: 4.2.0
@@ -77,13 +87,16 @@ bun run precheck:security
 ```
 
 ### MAJOR (x.y.z → x+1.0.0)
+
 **When to use:**
+
 - Remove or significantly change rules
 - Break backward compatibility
 - Restructure rule organization
 - Change rule syntax requirements
 
 **Example:**
+
 ```bash
 # Current: 4.1.0
 # New: 5.0.0
@@ -97,22 +110,45 @@ bun run precheck:security
 ### Step 1: Update .cursorrules Version
 
 **Current State:**
+
 ```yaml
 ---
 version: 4.0.0
-scope: ["typescript", "javascript", "markdown", "sql", "html", "json", "yaml", "toml"]
+scope:
+  [
+    'typescript',
+    'javascript',
+    'markdown',
+    'sql',
+    'html',
+    'json',
+    'yaml',
+    'toml',
+  ]
 ---
 ```
 
 **Recommended Update (for Bun CI integration):**
+
 ```yaml
 ---
 version: 4.1.0
-scope: ["typescript", "javascript", "markdown", "sql", "html", "json", "yaml", "toml"]
+scope:
+  [
+    'typescript',
+    'javascript',
+    'markdown',
+    'sql',
+    'html',
+    'json',
+    'yaml',
+    'toml',
+  ]
 ---
 ```
 
 **Command:**
+
 ```bash
 # Manual edit
 nano .cursorrules
@@ -124,10 +160,12 @@ sed -i '' 's/version: 4.0.0/version: 4.1.0/' .cursorrules
 ### Step 2: Update CHANGELOG.md
 
 **Add new version entry:**
+
 ```markdown
 ## [4.1.0] - 2025-10-08
 
 ### Added
+
 - Bun CI integration with cursor rules enforcement
 - VS Code settings for Bun-aware linting
 - GitHub Actions workflows (lint, release, rules validation)
@@ -137,18 +175,21 @@ sed -i '' 's/version: 4.0.0/version: 4.1.0/' .cursorrules
 - Slack release notifications
 
 ### Enhanced
+
 - Complete documentation ecosystem (12 files, ~5,500 lines)
 - Style guide with human-readable examples
 - Documentation index with clear hierarchy
 - Automation guides for team workflow
 
 ### Performance
+
 - 3x faster CI with Bun-native tools
 - Sub-second linting with bunx
 - Zero Node.js dependencies
 - 64% less memory usage
 
 ### Security
+
 - Automated security scanning with ast-grep
 - 6 security checks enforced in CI
 - SQL injection prevention
@@ -158,6 +199,7 @@ sed -i '' 's/version: 4.0.0/version: 4.1.0/' .cursorrules
 ### Step 3: Run Automated Version Bump
 
 **Using the bump-version.sh script:**
+
 ```bash
 # Make script executable (if not already)
 chmod +x scripts/bump-version.sh
@@ -173,6 +215,7 @@ chmod +x scripts/bump-version.sh
 ```
 
 **Expected Output:**
+
 ```
 Current version: 4.0.0
 New version:     4.1.0
@@ -207,6 +250,7 @@ git push origin main --tags
 ### Step 6: Create GitHub Release
 
 **Option A: Using GitHub CLI**
+
 ```bash
 # Create release notes file
 cat > release_notes.md << 'EOF'
@@ -278,6 +322,7 @@ rm release_notes.md
 ```
 
 **Option B: Using GitHub Web UI**
+
 1. Go to https://github.com/nolarose1968/ffffff/releases/new
 2. Select tag: `v4.1.0`
 3. Title: `🚀 Cursor Rules v4.1.0 - Bun CI Integration`
@@ -417,16 +462,19 @@ grep '^version:' .cursorrules | grep -E '^version: [0-9]+\.[0-9]+\.[0-9]+$'
 ### PR Template Sections
 
 **Style Guide Rules Update:**
+
 - [ ] Version incremented (4.0.0 → 4.1.0)
 - [ ] Change type documented (MINOR)
 - [ ] CHANGELOG.md updated
 
 **AI Development Standards:**
+
 - [ ] Followed .cursorrules
 - [ ] Bun CI integration tested
 - [ ] Documentation comprehensive
 
 **Testing & Validation:**
+
 - [ ] Local CI passes
 - [ ] Security scan passes
 - [ ] Version format validated
@@ -437,6 +485,7 @@ grep '^version:' .cursorrules | grep -E '^version: [0-9]+\.[0-9]+\.[0-9]+$'
 ## 🎯 Post-Release Tasks
 
 ### 1. Verify GitHub Release
+
 ```bash
 # Check release exists
 gh release view v4.1.0
@@ -446,11 +495,13 @@ gh release view v4.1.0 --json assets
 ```
 
 ### 2. Verify Slack Notification
+
 - Check configured Slack channel
 - Verify message format
 - Confirm links work
 
 ### 3. Update Documentation References
+
 ```bash
 # Update any version references in docs
 grep -r "4.0.0" docs/ --include="*.md"
@@ -460,31 +511,32 @@ sed -i '' 's/4.0.0/4.1.0/g' docs/SOME_FILE.md
 ```
 
 ### 4. Create Announcement
+
 ```markdown
 # Announcement Template
 
 🚀 **Cursor Rules v4.1.0 Released!**
 
-We're excited to announce the release of Cursor Rules v4.1.0 with complete Bun CI integration!
+We're excited to announce the release of Cursor Rules v4.1.0 with complete Bun
+CI integration!
 
 **Key Features:**
+
 - 3x faster CI with Bun-native tools
 - Zero Node.js dependencies
 - Automated cursor rules enforcement
 - Comprehensive documentation (12 guides)
 
-**Quick Start:**
-\`\`\`bash
-bun install
-bun run precheck
-\`\`\`
+**Quick Start:** \`\`\`bash bun install bun run precheck \`\`\`
 
 **Documentation:**
+
 - [Bun CI Integration](../BUN_CI_INTEGRATION.md)
 - [Style Guide](STYLE_GUIDE.md)
 - [Changelog](CHANGELOG.md)
 
 **Performance:**
+
 - CI: 12.5s → 4.2s (3x faster)
 - Memory: 180MB → 65MB (64% less)
 
@@ -498,11 +550,13 @@ Try it out and let us know what you think!
 ### Version Bump Script Issues
 
 **Problem:** Script not executable
+
 ```bash
 chmod +x scripts/bump-version.sh
 ```
 
 **Problem:** Version format invalid
+
 ```bash
 # Check current version
 grep '^version:' .cursorrules
@@ -512,6 +566,7 @@ grep '^version:' .cursorrules
 ```
 
 **Problem:** Git tag already exists
+
 ```bash
 # Delete local tag
 git tag -d v4.1.0
@@ -526,6 +581,7 @@ git push origin :refs/tags/v4.1.0
 ### CI Failures
 
 **Problem:** Linting fails
+
 ```bash
 # Run locally to see errors
 bunx eslint@latest src --max-warnings 0
@@ -535,6 +591,7 @@ bunx eslint@latest src --fix
 ```
 
 **Problem:** Security scan fails
+
 ```bash
 # Run locally
 bunx ast-grep@latest scan --filter "sql-injection-risk" --error
@@ -543,6 +600,7 @@ bunx ast-grep@latest scan --filter "sql-injection-risk" --error
 ```
 
 **Problem:** Version check fails
+
 ```bash
 # Verify version format
 grep '^version:' .cursorrules
@@ -567,4 +625,5 @@ grep '^version:' .cursorrules
 **Change Type:** New feature (Bun CI integration)  
 **Last Updated:** 2025-10-08
 
-Follow this guide to ensure a smooth, professional release of cursor rules with proper versioning and git tags!
+Follow this guide to ensure a smooth, professional release of cursor rules with
+proper versioning and git tags!

@@ -5,11 +5,13 @@ Quick guide to deploy dashboards to Cloudflare Pages.
 ## 🎯 Current Status
 
 **Local Development:**
+
 - ✅ Dashboards running locally via Bun server
 - ✅ Worker running on `http://localhost:8787`
 - ✅ Dashboards available at `http://localhost:8081`
 
 **Production:**
+
 - ⏳ Cloudflare Pages not yet configured
 - ⏳ Need to create Pages project first
 
@@ -76,26 +78,32 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dashboards --project-name=betting-brain-dashboards
+          command:
+            pages deploy dashboards --project-name=betting-brain-dashboards
 ```
 
 ## 🔧 Configuration
 
 ### ✅ Automatic Environment Detection
 
-**No configuration needed!** All dashboards automatically detect their environment and use the correct worker URL:
+**No configuration needed!** All dashboards automatically detect their
+environment and use the correct worker URL:
 
 - **Local Development**: Automatically uses `http://localhost:8787`
-- **Production (Pages)**: Automatically uses `https://betting-brain-v3-prod.nolarose1968-806.workers.dev`
+- **Production (Pages)**: Automatically uses
+  `https://betting-brain-v3-prod.nolarose1968-806.workers.dev`
 
 **Implementation** (already done in all dashboards):
+
 ```javascript
-const WORKER_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:8787'
-  : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
+const WORKER_URL =
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:8787'
+    : 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
 ```
 
-This means dashboards work seamlessly in both environments without any manual configuration.
+This means dashboards work seamlessly in both environments without any manual
+configuration.
 
 ### Enable CORS on Worker
 
@@ -169,6 +177,7 @@ https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/f402/bets/stream
 **Cause:** Pages project hasn't been created yet
 
 **Fix:**
+
 ```bash
 # Deploy dashboards to create the project
 wrangler pages deploy dashboards --project-name=betting-brain-dashboards
@@ -179,6 +188,7 @@ wrangler pages deploy dashboards --project-name=betting-brain-dashboards
 **Error:** `Access to fetch blocked by CORS policy`
 
 **Fix:** Update worker CORS headers to allow dashboard domain:
+
 ```typescript
 'Access-Control-Allow-Origin': 'https://betting-brain-dashboards.pages.dev'
 ```
@@ -188,13 +198,16 @@ wrangler pages deploy dashboards --project-name=betting-brain-dashboards
 **Error:** `EventSource failed` or connection timeout
 
 **Fix:**
+
 1. Check worker is running: `curl https://your-worker.workers.dev/health`
-2. Check SSE endpoint: `curl -N https://your-worker.workers.dev/api/health/stream`
+2. Check SSE endpoint:
+   `curl -N https://your-worker.workers.dev/api/health/stream`
 3. Verify CORS headers include `Content-Type: text/event-stream`
 
 ### Dashboard Shows No Data
 
 **Checklist:**
+
 1. ✅ Worker deployed and healthy?
 2. ✅ KV cache populated? (`bun scripts/sync-agent-tree.js`)
 3. ✅ Database migrations applied?
@@ -210,5 +223,5 @@ wrangler pages deploy dashboards --project-name=betting-brain-dashboards
 
 ---
 
-**Last Updated:** 2025-10-08
-**Status:** Local development ✅ | Production deployment ⏳
+**Last Updated:** 2025-10-08 **Status:** Local development ✅ | Production
+deployment ⏳

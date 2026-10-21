@@ -16,6 +16,7 @@ chmod +x scripts/bump-version.sh
 ## 📝 **Making Rule Changes**
 
 ### **Step 1: Edit Rules**
+
 ```bash
 # Edit the main rules file
 code .cursorrules
@@ -25,11 +26,13 @@ code .cursor/rules/api-patterns.mdc
 ```
 
 ### **Step 2: Determine Change Type**
+
 - **PATCH** (x.y.z+1): Small fixes, typos, documentation
 - **MINOR** (x.y+1.0): New features, enhancements (backward compatible)
 - **MAJOR** (x+1.0.0): Breaking changes, rule restructuring
 
 ### **Step 3: Run Version Bump Script**
+
 ```bash
 # Patch version (4.0.0 → 4.0.1)
 ./scripts/bump-version.sh patch "fix(rules): Corrected typo in regex"
@@ -42,6 +45,7 @@ code .cursor/rules/api-patterns.mdc
 ```
 
 ### **Step 4: Push and Create PR**
+
 ```bash
 # Push changes and tags
 git push origin <your-branch-name> --tags
@@ -55,6 +59,7 @@ git push origin <your-branch-name> --tags
 ## 🎯 **Quick Commands**
 
 ### **Version Bump Script**
+
 ```bash
 # Usage
 ./scripts/bump-version.sh <major|minor|patch> "Your commit message"
@@ -66,6 +71,7 @@ git push origin <your-branch-name> --tags
 ```
 
 ### **CI Validation**
+
 ```bash
 # Run local CI checks
 bun run ci
@@ -78,6 +84,7 @@ cursor --check
 ```
 
 ### **Git Operations**
+
 ```bash
 # Push changes and tags
 git push origin <branch-name> --tags
@@ -94,13 +101,16 @@ git show v4.1.0
 ## 📋 **PR Template Checklist**
 
 ### **Style Guide Rules Update**
+
 - [ ] No changes to `.cursorrules` are included in this PR.
-- [ ] This PR updates `.cursorrules`. I have incremented the version number accordingly.
+- [ ] This PR updates `.cursorrules`. I have incremented the version number
+      accordingly.
   - **Old Version**: `X.Y.Z`
   - **New Version**: `X.Y.Z`
   - **Change Type**: (MAJOR/MINOR/PATCH)
 
 ### **Testing**
+
 - [ ] All tests pass locally
 - [ ] Security scan passes (`sg scan src/`)
 - [ ] No TypeScript errors
@@ -110,6 +120,7 @@ git show v4.1.0
 ## 🔍 **Troubleshooting**
 
 ### **Script Errors**
+
 ```bash
 # Missing arguments
 ❌ Error: Missing arguments.
@@ -123,6 +134,7 @@ Usage: ./scripts/bump-version.sh <major|minor|patch> "Your commit message"
 ```
 
 ### **CI Errors**
+
 ```bash
 # Version not incremented
 ❌ Error: The version in .cursorrules was not incremented.
@@ -132,6 +144,7 @@ Usage: ./scripts/bump-version.sh <major|minor|patch> "Your commit message"
 ```
 
 ### **Git Errors**
+
 ```bash
 # Not in git repository
 git: 'add' is not a git command
@@ -144,14 +157,14 @@ fatal: tag 'v4.1.0' already exists
 
 ## 📚 **Related Files**
 
-| File | Purpose |
-|------|---------|
-| **`.cursorrules`** | Main rules file (canonical) |
-| **`scripts/bump-version.sh`** | Version bump automation |
-| **`.github/workflows/rules_version_check.yml`** | CI validation |
-| **`.github/pull_request_template.md`** | PR template with versioning |
-| **`CHANGELOG.md`** | Version history |
-| **`docs/CONTRIBUTING.md`** | Team workflow guide |
+| File                                            | Purpose                     |
+| ----------------------------------------------- | --------------------------- |
+| **`.cursorrules`**                              | Main rules file (canonical) |
+| **`scripts/bump-version.sh`**                   | Version bump automation     |
+| **`.github/workflows/rules_version_check.yml`** | CI validation               |
+| **`.github/pull_request_template.md`**          | PR template with versioning |
+| **`CHANGELOG.md`**                              | Version history             |
+| **`docs/CONTRIBUTING.md`**                      | Team workflow guide         |
 
 ---
 

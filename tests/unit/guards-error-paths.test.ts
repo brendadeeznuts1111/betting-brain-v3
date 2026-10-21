@@ -3,7 +3,7 @@
  * Tests error handling and edge cases in cost cap and rate limit guards
  */
 
-import { describe, test, expect, vi, beforeEach } from "bun:test";
+import { describe, test, expect, vi, beforeEach } from 'bun:test';
 import { CostCapGuard, defaultCostCapConfig } from '../../src/guards/costCap';
 import { RateLimitGuard, defaultRateLimitConfig } from '../../src/guards/rateLimit';
 import type { Env } from '../../src/types/api';
@@ -19,16 +19,16 @@ describe('Guards Error Path Tests', () => {
         prepare: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
+          all: vi.fn().mockResolvedValue({ results: [] }),
         }),
-        exec: vi.fn().mockResolvedValue({ success: true })
+        exec: vi.fn().mockResolvedValue({ success: true }),
       } as any,
       QUEUE_PRODUCER: {
-        send: vi.fn().mockResolvedValue({ success: true })
+        send: vi.fn().mockResolvedValue({ success: true }),
       } as any,
       ANALYTICS_ENGINE: {
-        writeDataPoint: vi.fn().mockResolvedValue(undefined)
-      } as any
+        writeDataPoint: vi.fn().mockResolvedValue(undefined),
+      } as any,
     };
   });
 
@@ -44,7 +44,7 @@ describe('Guards Error Path Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database connection failed')),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       } as any);
 
       const request = new Request('https://test.com');
@@ -60,7 +60,7 @@ describe('Guards Error Path Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue(null),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       } as any);
 
       const request = new Request('https://test.com');
@@ -76,7 +76,7 @@ describe('Guards Error Path Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue(undefined),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       } as any);
 
       const request = new Request('https://test.com');
@@ -92,7 +92,7 @@ describe('Guards Error Path Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 'invalid', rows: 'invalid' }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       } as any);
 
       const request = new Request('https://test.com');
@@ -108,7 +108,7 @@ describe('Guards Error Path Tests', () => {
       const mockPrepare = vi.fn().mockReturnValue({
         first: vi.fn().mockResolvedValue({ size: 0, rows: 0 }),
         run: vi.fn().mockRejectedValue(new Error('TTL cleanup failed')),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       });
 
       mockEnv.ANALYTICS.prepare = mockPrepare as any;
@@ -160,10 +160,10 @@ describe('Guards Error Path Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({
           size: defaultCostCapConfig.d1.maxSize * 0.95, // 95% of limit
-          rows: defaultCostCapConfig.d1.maxRows * 0.95
+          rows: defaultCostCapConfig.d1.maxRows * 0.95,
         }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       } as any);
 
       const request = new Request('https://test.com');
@@ -193,8 +193,8 @@ describe('Guards Error Path Tests', () => {
       const request = new Request('https://test.com', {
         headers: {
           'CF-Connecting-IP': 'invalid-ip-format',
-          'X-Forwarded-For': 'malformed,ip,list'
-        }
+          'X-Forwarded-For': 'malformed,ip,list',
+        },
       });
       const result = await rateLimitGuard.checkRateLimit(request);
 
@@ -244,9 +244,7 @@ describe('Guards Error Path Tests', () => {
       const request = new Request('https://test.com');
 
       // Simulate concurrent requests
-      const promises = Array.from({ length: 50 }, () =>
-        rateLimitGuard.checkRateLimit(request)
-      );
+      const promises = Array.from({ length: 50 }, () => rateLimitGuard.checkRateLimit(request));
 
       const results = await Promise.all(promises);
 
@@ -276,7 +274,7 @@ describe('Guards Error Path Tests', () => {
         ...defaultRateLimitConfig,
         keyGenerator: () => {
           throw new Error('Key generator failed');
-        }
+        },
       };
 
       const guard = new RateLimitGuard(config);
@@ -289,7 +287,7 @@ describe('Guards Error Path Tests', () => {
     test('should handle window size edge cases', async () => {
       const config = {
         ...defaultRateLimitConfig,
-        windowSize: 0 // Invalid window size
+        windowSize: 0, // Invalid window size
       };
 
       const guard = new RateLimitGuard(config);
@@ -322,14 +320,14 @@ describe('Guards Error Path Tests', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockRejectedValue(new Error('Database error')),
         run: vi.fn().mockRejectedValue(new Error('Database error')),
-        all: vi.fn().mockRejectedValue(new Error('Database error'))
+        all: vi.fn().mockRejectedValue(new Error('Database error')),
       } as any);
 
       const request = new Request('https://test.com');
 
       const [costResult, rateResult] = await Promise.all([
         costCapGuard.checkRequest(request, mockEnv),
-        rateLimitGuard.checkRateLimit(request)
+        rateLimitGuard.checkRateLimit(request),
       ]);
 
       // Both should handle errors gracefully
@@ -342,24 +340,21 @@ describe('Guards Error Path Tests', () => {
 
       // Mock slow database response that never resolves
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockImplementation(() =>
-          new Promise(() => {}) // Never resolves
+        first: vi.fn().mockImplementation(
+          () => new Promise(() => {}) // Never resolves
         ),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       } as any);
 
       const request = new Request('https://test.com');
 
       // Should not hang indefinitely
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout')), 1000)
-      );
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000));
 
-      await expect(Promise.race([
-        costCapGuard.checkRequest(request, mockEnv),
-        timeoutPromise
-      ])).rejects.toThrow('Timeout');
+      await expect(Promise.race([costCapGuard.checkRequest(request, mockEnv), timeoutPromise])).rejects.toThrow(
+        'Timeout'
+      );
     });
   });
 });

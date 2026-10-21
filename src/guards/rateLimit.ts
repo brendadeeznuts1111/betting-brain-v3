@@ -30,13 +30,13 @@ export class RateLimitGuard {
       return {
         allowed: true,
         remaining: 999,
-        resetTime: Date.now() + 60000
+        resetTime: Date.now() + 60000,
       };
     }
 
     const key = this.config.keyGenerator(request);
     const now = Date.now();
-    const windowStart = now - (this.config.windowSize * 1000);
+    const windowStart = now - this.config.windowSize * 1000;
 
     // Get or create rate limit data for this key
     let data = this.store.get(key);
@@ -44,7 +44,7 @@ export class RateLimitGuard {
       data = {
         requests: [],
         burstCount: 0,
-        lastReset: now
+        lastReset: now,
       };
       this.store.set(key, data);
     }
@@ -62,26 +62,26 @@ export class RateLimitGuard {
     // Check burst limit first
     if (data.burstCount >= this.config.burstLimit) {
       const oldestRequest = Math.min(...data.requests);
-      const retryAfter = Math.ceil((oldestRequest + (this.config.windowSize * 1000) - now) / 1000);
+      const retryAfter = Math.ceil((oldestRequest + this.config.windowSize * 1000 - now) / 1000);
 
       return {
         allowed: false,
         retryAfter,
         remaining: 0,
-        resetTime: oldestRequest + (this.config.windowSize * 1000)
+        resetTime: oldestRequest + this.config.windowSize * 1000,
       };
     }
 
     if (currentRate >= maxRate && !isBurst) {
       // Rate limit exceeded
       const oldestRequest = Math.min(...data.requests);
-      const retryAfter = Math.ceil((oldestRequest + (this.config.windowSize * 1000) - now) / 1000);
+      const retryAfter = Math.ceil((oldestRequest + this.config.windowSize * 1000 - now) / 1000);
 
       return {
         allowed: false,
         retryAfter,
         remaining: 0,
-        resetTime: oldestRequest + (this.config.windowSize * 1000)
+        resetTime: oldestRequest + this.config.windowSize * 1000,
       };
     }
 
@@ -99,12 +99,12 @@ export class RateLimitGuard {
     }
 
     const remaining = Math.max(0, Math.floor(maxRate * this.config.windowSize) - data.requests.length);
-    const resetTime = now + (this.config.windowSize * 1000);
+    const resetTime = now + this.config.windowSize * 1000;
 
     return {
       allowed: true,
       remaining,
-      resetTime
+      resetTime,
     };
   }
 
@@ -113,7 +113,7 @@ export class RateLimitGuard {
    */
   cleanup(): void {
     const now = Date.now();
-    const cutoff = now - (this.config.windowSize * 1000 * 2); // Keep 2 windows worth of data
+    const cutoff = now - this.config.windowSize * 1000 * 2; // Keep 2 windows worth of data
 
     for (const [key, data] of this.store.entries()) {
       if (data.lastReset < cutoff) {
@@ -132,7 +132,7 @@ export class RateLimitGuard {
     }
 
     const now = Date.now();
-    const windowStart = now - (this.config.windowSize * 1000);
+    const windowStart = now - this.config.windowSize * 1000;
     const currentRequests = data.requests.filter(timestamp => timestamp > windowStart);
     const currentRate = currentRequests.length / this.config.windowSize;
     const maxRate = this.config.requestsPerSecond;
@@ -140,7 +140,7 @@ export class RateLimitGuard {
     return {
       allowed: currentRate < maxRate,
       remaining: Math.max(0, Math.floor(maxRate * this.config.windowSize) - currentRequests.length),
-      resetTime: now + (this.config.windowSize * 1000)
+      resetTime: now + this.config.windowSize * 1000,
     };
   }
 }
@@ -162,7 +162,7 @@ export const defaultRateLimitConfig: RateLimitConfig = {
     const xForwardedFor = request.headers.get('X-Forwarded-For');
     const ip = cfConnectingIp || xForwardedFor?.split(',')[0] || 'unknown';
     return ip;
-  }
+  },
 };
 
 // Global instance

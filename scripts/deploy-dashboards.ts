@@ -61,9 +61,9 @@ async function buildDashboards(version: string): Promise<void> {
     html = html
       .replace(/<!--[\s\S]*?-->/g, '') // Remove HTML comments
       .replace(/\/\*[\s\S]*?\*\//g, '') // Remove CSS/JS block comments
-      .replace(/\/\/.*/g, '')           // Remove JS line comments
-      .replace(/\s+/g, ' ')             // Collapse whitespace
-      .replace(/>\s+</g, '><')          // Remove space between tags
+      .replace(/\/\/.*/g, '') // Remove JS line comments
+      .replace(/\s+/g, ' ') // Collapse whitespace
+      .replace(/>\s+</g, '><') // Remove space between tags
       .trim();
 
     await Bun.write(destPath, html);

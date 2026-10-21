@@ -8,9 +8,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](tsconfig.json)
 
-**Zero-downtime, zero-config, zero-cost** betting intelligence layer running entirely on Cloudflare Edge.
+**Zero-downtime, zero-config, zero-cost** betting intelligence layer running
+entirely on Cloudflare Edge.
 
-[🚀 Quick Start](#-quick-start-30-seconds) • [📊 Dashboards](#-dashboards--tools) • [🤖 MCP Tools](#-mcp-tools-available-24) • [📚 Documentation](#-documentation-index)
+[🚀 Quick Start](#-quick-start-30-seconds) •
+[📊 Dashboards](#-dashboards--tools) • [🤖 MCP Tools](#-mcp-tools-available-24)
+• [📚 Documentation](#-documentation-index)
 
 </div>
 
@@ -18,178 +21,192 @@
 
 <div align="center">
 
-**Live System Status:** [Floor Control Dashboard](dashboards/floor-control.html) | [Mission Control](dashboards/dashboard-enhanced.html)
+**Live System Status:** [Floor Control Dashboard](dashboards/floor-control.html)
+| [Mission Control](dashboards/dashboard-enhanced.html)
 
 </div>
 
 ### 🏥 **Current System Health**
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| **Worker** | ✅ UP | Operational and responding |
-| **Pages** | ❌ DOWN | Local development mode |
-| **Grafana** | ❌ DOWN | Local development mode |
-| **Forest Health** | ✅ UP | All core services operational |
-| **Dependencies** | ✅ FRESH | Bun 1.2.23, all packages current |
-| **Release** | ✅ CURRENT | v3.3.0 deployed |
+| Component         | Status     | Details                          |
+| ----------------- | ---------- | -------------------------------- |
+| **Worker**        | ✅ UP      | Operational and responding       |
+| **Pages**         | ❌ DOWN    | Local development mode           |
+| **Grafana**       | ❌ DOWN    | Local development mode           |
+| **Forest Health** | ✅ UP      | All core services operational    |
+| **Dependencies**  | ✅ FRESH   | Bun 1.2.23, all packages current |
+| **Release**       | ✅ CURRENT | v3.3.0 deployed                  |
 
 ### 🤖 **MCP Tools Available (24)**
 
 <div align="center">
 
-**Intelligence APIs** • **Live Betting** • **Fantasy402 Integration** • **System Management**
+**Intelligence APIs** • **Live Betting** • **Fantasy402 Integration** • **System
+Management**
 
 </div>
 
 #### 📊 **Core Analytics Tools (11)**
-| Tool | Description | Category |
-|------|-------------|----------|
-| `getBettingExposure` | Real-time betting exposure metrics | Risk Management |
-| `getCLV` | Closing Line Value analysis for customers | Customer Analytics |
-| `getHoldPercentage` | Hold percentage and volume metrics | Financial Analytics |
-| `getSharpScore` | Sharp customer scoring and identification | Customer Profiling |
-| `getClosingLineValue` | Closing line value analysis | Market Analysis |
-| `getTimeSeriesCLV` | CLV trends over time with rolling metrics | Time Series |
-| `getEnhancedSharpScore` | Multi-dimensional customer profiling | Advanced Analytics |
-| `getHoldForecast` | Predictive hold percentage analytics | Forecasting |
-| `getHandleAndHold` | Total betting handle and hold percentage | Volume Analytics |
-| `getCustomerVolume` | Customer volume analytics with segmentation | Customer Analytics |
-| `getTimeSeriesAnalytics` | Flexible time-series analysis with anomaly detection | Advanced Analytics |
+
+| Tool                     | Description                                          | Category            |
+| ------------------------ | ---------------------------------------------------- | ------------------- |
+| `getBettingExposure`     | Real-time betting exposure metrics                   | Risk Management     |
+| `getCLV`                 | Closing Line Value analysis for customers            | Customer Analytics  |
+| `getHoldPercentage`      | Hold percentage and volume metrics                   | Financial Analytics |
+| `getSharpScore`          | Sharp customer scoring and identification            | Customer Profiling  |
+| `getClosingLineValue`    | Closing line value analysis                          | Market Analysis     |
+| `getTimeSeriesCLV`       | CLV trends over time with rolling metrics            | Time Series         |
+| `getEnhancedSharpScore`  | Multi-dimensional customer profiling                 | Advanced Analytics  |
+| `getHoldForecast`        | Predictive hold percentage analytics                 | Forecasting         |
+| `getHandleAndHold`       | Total betting handle and hold percentage             | Volume Analytics    |
+| `getCustomerVolume`      | Customer volume analytics with segmentation          | Customer Analytics  |
+| `getTimeSeriesAnalytics` | Flexible time-series analysis with anomaly detection | Advanced Analytics  |
 
 #### ⚡ **Live Betting & Risk Tools (4)**
-| Tool | Description | Category |
-|------|-------------|----------|
-| `getLiveBettingTicker` | Real-time betting ticker with active wagers | Live Data |
-| `getSteamMoves` | 3-sigma steam move detection with severity classification | Risk Detection |
-| `getRiskConcentration` | Risk clustering analysis by event/customer/market | Risk Analysis |
-| `getSharpActivity` | Recent betting actions from identified sharp customers | Activity Monitoring |
+
+| Tool                   | Description                                               | Category            |
+| ---------------------- | --------------------------------------------------------- | ------------------- |
+| `getLiveBettingTicker` | Real-time betting ticker with active wagers               | Live Data           |
+| `getSteamMoves`        | 3-sigma steam move detection with severity classification | Risk Detection      |
+| `getRiskConcentration` | Risk clustering analysis by event/customer/market         | Risk Analysis       |
+| `getSharpActivity`     | Recent betting actions from identified sharp customers    | Activity Monitoring |
 
 #### 🎯 **Fantasy402 Integration Tools (8)**
-| Tool | Description | Category |
-|------|-------------|----------|
-| `getRawFeedSamples` | Fantasy402 raw feed samples for exploration | Data Exploration |
-| `getParsedBetData` | Parsed betting data with ShortDesc analysis | Data Processing |
-| `getRawFeedHealth` | Raw feed processing statistics and health metrics | System Health |
-| `searchRawFeeds` | Search raw Fantasy402 feeds by content patterns | Data Search |
-| `searchCustomers` | Search customers by name/email/phone/ID | Customer Search |
-| `getAgentProfile` | Detailed agent profile information | Agent Management |
-| `getCommunicationMessages` | Communication messages and logs | Communication |
-| `getAccountInfoOwner` | Account owner information | Account Management |
+
+| Tool                       | Description                                       | Category           |
+| -------------------------- | ------------------------------------------------- | ------------------ |
+| `getRawFeedSamples`        | Fantasy402 raw feed samples for exploration       | Data Exploration   |
+| `getParsedBetData`         | Parsed betting data with ShortDesc analysis       | Data Processing    |
+| `getRawFeedHealth`         | Raw feed processing statistics and health metrics | System Health      |
+| `searchRawFeeds`           | Search raw Fantasy402 feeds by content patterns   | Data Search        |
+| `searchCustomers`          | Search customers by name/email/phone/ID           | Customer Search    |
+| `getAgentProfile`          | Detailed agent profile information                | Agent Management   |
+| `getCommunicationMessages` | Communication messages and logs                   | Communication      |
+| `getAccountInfoOwner`      | Account owner information                         | Account Management |
 
 #### 🔧 **System Tools (3)**
-| Tool | Description | Category |
-|------|-------------|----------|
-| `forest-status` | Grove health monitoring | System Monitoring |
-| `deploy-dashboards` | Dashboard deployment | Deployment |
-| `release` | Version management | Release Management |
+
+| Tool                | Description             | Category           |
+| ------------------- | ----------------------- | ------------------ |
+| `forest-status`     | Grove health monitoring | System Monitoring  |
+| `deploy-dashboards` | Dashboard deployment    | Deployment         |
+| `release`           | Version management      | Release Management |
 
 ### 📊 **Test Health Status**
 
-| Metric | Status | Details |
-|--------|--------|---------|
-| **Test Files** | ✅ 25 total | Unit, integration, performance tests |
-| **Analytics Stub** | ✅ Available | Mock analytics engine for testing |
-| **Coverage** | ✅ 81%+ | Run `bun run test:coverage` for metrics |
-| **AI-Friendly Testing** | ✅ Enabled | `bun run test:ai` for quiet output |
-| **Performance Tests** | ✅ Passing | All performance benchmarks met |
-| **Forest Grove System** | ✅ Active | Smart caching and environment detection |
+| Metric                  | Status       | Details                                 |
+| ----------------------- | ------------ | --------------------------------------- |
+| **Test Files**          | ✅ 25 total  | Unit, integration, performance tests    |
+| **Analytics Stub**      | ✅ Available | Mock analytics engine for testing       |
+| **Coverage**            | ✅ 81%+      | Run `bun run test:coverage` for metrics |
+| **AI-Friendly Testing** | ✅ Enabled   | `bun run test:ai` for quiet output      |
+| **Performance Tests**   | ✅ Passing   | All performance benchmarks met          |
+| **Forest Grove System** | ✅ Active    | Smart caching and environment detection |
 
 ### 📚 **Documentation & Resources**
 
 <div align="center">
 
-[📚 Documentation Index](docs/INDEX.md) • [🚀 Quick Start](docs/QUICKSTART.md) • [🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) • [📋 Command Reference](docs/COMMAND_REFERENCE.md)
+[📚 Documentation Index](docs/INDEX.md) • [🚀 Quick Start](docs/QUICKSTART.md) •
+[🏗️ Architecture](docs/IMPLEMENTATION_SUMMARY.md) •
+[📋 Command Reference](docs/COMMAND_REFERENCE.md)
 
-[📊 Dashboards](dashboards/index.html) • [⚙️ Grafana Setup](monitoring/grafana/README.md) • [🤖 Cursor Rules](.cursorrules)
+[📊 Dashboards](dashboards/index.html) •
+[⚙️ Grafana Setup](monitoring/grafana/README.md) •
+[🤖 Cursor Rules](.cursorrules)
 
 </div>
 
-> 🚀 **Dashboards deploy automatically on release.**
-> Open [HTML dashboards](dashboards/index.html) locally or visit [Grafana setup guide](monitoring/grafana/README.md) to import the JSON.
+> 🚀 **Dashboards deploy automatically on release.** Open
+> [HTML dashboards](dashboards/index.html) locally or visit
+> [Grafana setup guide](monitoring/grafana/README.md) to import the JSON.
 
 ### 🎯 **Development Rules & Standards**
 
 <div align="center">
 
-**AI-Native Development** • **Quality Standards** • **Security Patterns** • **Testing Excellence**
+**AI-Native Development** • **Quality Standards** • **Security Patterns** •
+**Testing Excellence**
 
 </div>
 
-| Rule Category | Description | Key Rules |
-|---------------|-------------|-----------|
-| **🤖 AI Development** | [Cursor Rules](.cursorrules) - AI development standards | Bun runtime, MCP integration, testing patterns |
-| **📏 Quality Standards** | [Quality Standards](docs/QUALITY_STANDARDS.md) - Code quality enforcement | Type safety, constants, utilities, error handling |
-| **🔐 Security Patterns** | [Security Patterns](.cursor/rules/security-patterns.mdc) - Production security | Input validation, SQL injection prevention, rate limiting |
-| **🧪 Testing Excellence** | [Testing Patterns](.cursor/rules/testing-patterns.mdc) - Comprehensive testing | Forest Grove system, AI-friendly output, analytics stub |
-| **🏗️ Architecture** | [API Patterns](.cursor/rules/api-patterns.mdc) - System architecture | Endpoint routing, database patterns, Cloudflare Workers |
-| **📝 Documentation** | [Documentation](.cursor/rules/documentation.mdc) - Documentation standards | File naming, root organization, code searchability |
-
+| Rule Category             | Description                                                                    | Key Rules                                                 |
+| ------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| **🤖 AI Development**     | [Cursor Rules](.cursorrules) - AI development standards                        | Bun runtime, MCP integration, testing patterns            |
+| **📏 Quality Standards**  | [Quality Standards](docs/QUALITY_STANDARDS.md) - Code quality enforcement      | Type safety, constants, utilities, error handling         |
+| **🔐 Security Patterns**  | [Security Patterns](.cursor/rules/security-patterns.mdc) - Production security | Input validation, SQL injection prevention, rate limiting |
+| **🧪 Testing Excellence** | [Testing Patterns](.cursor/rules/testing-patterns.mdc) - Comprehensive testing | Forest Grove system, AI-friendly output, analytics stub   |
+| **🏗️ Architecture**       | [API Patterns](.cursor/rules/api-patterns.mdc) - System architecture           | Endpoint routing, database patterns, Cloudflare Workers   |
+| **📝 Documentation**      | [Documentation](.cursor/rules/documentation.mdc) - Documentation standards     | File naming, root organization, code searchability        |
 
 ## 🎯 **What Changed in v3.3.0**
 
 <div align="center">
 
-**Major Enhancements** • **AI-Native Development** • **Quality & Security** • **Developer Experience**
+**Major Enhancements** • **AI-Native Development** • **Quality & Security** •
+**Developer Experience**
 
 </div>
 
 ### 🌲 **Forest Grove System**
 
-| Feature | Description | Impact |
-|---------|-------------|--------|
-| **Integrated Testing** | Complete Forest Grove testing system with AI-friendly output | 90% reduction in test output verbosity |
-| **Smart Caching** | Test result caching to skip passing tests | Faster test execution, reduced CI time |
-| **Environment Detection** | Auto-detects AI environments (Claude Code, Replit, etc.) | Seamless AI development experience |
-| **Test Organization** | Categorized by type (unit, integration, performance, snapshot) | Better test management and discovery |
-| **Scope Management** | Environment-specific test scopes (dev, ci, ai, pre-commit) | Targeted testing for different contexts |
+| Feature                   | Description                                                    | Impact                                  |
+| ------------------------- | -------------------------------------------------------------- | --------------------------------------- |
+| **Integrated Testing**    | Complete Forest Grove testing system with AI-friendly output   | 90% reduction in test output verbosity  |
+| **Smart Caching**         | Test result caching to skip passing tests                      | Faster test execution, reduced CI time  |
+| **Environment Detection** | Auto-detects AI environments (Claude Code, Replit, etc.)       | Seamless AI development experience      |
+| **Test Organization**     | Categorized by type (unit, integration, performance, snapshot) | Better test management and discovery    |
+| **Scope Management**      | Environment-specific test scopes (dev, ci, ai, pre-commit)     | Targeted testing for different contexts |
 
 ### 🔍 **Code Searchability Enhancement**
 
-| Enhancement | Description | Benefits |
-|-------------|-------------|----------|
-| **ast-grep Integration** | 50+ search patterns across 10 enhanced rules | Instant code pattern detection |
-| **Pattern Discovery** | Anti-pattern identification and quality enforcement | Automated code quality checks |
-| **Quality Enforcement** | Automated code quality issue detection | Consistent code standards |
-| **Developer Productivity** | Enhanced code navigation and understanding | Faster development cycles |
+| Enhancement                | Description                                         | Benefits                       |
+| -------------------------- | --------------------------------------------------- | ------------------------------ |
+| **ast-grep Integration**   | 50+ search patterns across 10 enhanced rules        | Instant code pattern detection |
+| **Pattern Discovery**      | Anti-pattern identification and quality enforcement | Automated code quality checks  |
+| **Quality Enforcement**    | Automated code quality issue detection              | Consistent code standards      |
+| **Developer Productivity** | Enhanced code navigation and understanding          | Faster development cycles      |
 
 ### 📝 **Rule Versioning & Frontmatter**
 
-| Standard | Description | Coverage |
-|----------|-------------|----------|
-| **100% Standardized** | All 25 Cursor rules have standardized frontmatter | Complete rule consistency |
-| **Dependency Mapping** | Clear rule relationships and hierarchy | Better rule organization |
-| **Version Management** | Semantic versioning across all rules | Trackable rule evolution |
-| **Metadata Completeness** | Version, lastUpdated, dependencies for all rules | Full rule documentation |
+| Standard                  | Description                                       | Coverage                  |
+| ------------------------- | ------------------------------------------------- | ------------------------- |
+| **100% Standardized**     | All 25 Cursor rules have standardized frontmatter | Complete rule consistency |
+| **Dependency Mapping**    | Clear rule relationships and hierarchy            | Better rule organization  |
+| **Version Management**    | Semantic versioning across all rules              | Trackable rule evolution  |
+| **Metadata Completeness** | Version, lastUpdated, dependencies for all rules  | Full rule documentation   |
 
 ### 🏗️ **Core Architecture**
 
-| Component | Description | Benefits |
-|-----------|-------------|----------|
-| **Edge-Native** | Runs entirely on Cloudflare Edge (D1, Workers, Queues, Analytics Engine) | Global performance, zero cold starts |
-| **Typed** | Full TypeScript with Zod validation for all inputs/outputs | Type safety, runtime validation |
-| **Auto-Scaling** | Queues scale to zero when empty | Cost optimization, resource efficiency |
-| **Cost-Cap** | Hard-wired cost controls with graceful degradation | Budget protection, predictable costs |
-| **1-Command Roll-out** | Single command deployment with instant rollback | Simplified deployment, risk mitigation |
+| Component              | Description                                                              | Benefits                               |
+| ---------------------- | ------------------------------------------------------------------------ | -------------------------------------- |
+| **Edge-Native**        | Runs entirely on Cloudflare Edge (D1, Workers, Queues, Analytics Engine) | Global performance, zero cold starts   |
+| **Typed**              | Full TypeScript with Zod validation for all inputs/outputs               | Type safety, runtime validation        |
+| **Auto-Scaling**       | Queues scale to zero when empty                                          | Cost optimization, resource efficiency |
+| **Cost-Cap**           | Hard-wired cost controls with graceful degradation                       | Budget protection, predictable costs   |
+| **1-Command Roll-out** | Single command deployment with instant rollback                          | Simplified deployment, risk mitigation |
 
 ## 🚀 **Quick Start (30 seconds)**
 
 <div align="center">
 
-**Get up and running in under 30 seconds** • **Zero configuration required** • **Production-ready deployment**
+**Get up and running in under 30 seconds** • **Zero configuration required** •
+**Production-ready deployment**
 
 </div>
 
 ### 📋 **Prerequisites**
 
-| Requirement | Status | Notes |
-|-------------|--------|-------|
-| **Bun Runtime** | ✅ Required | [Install Bun](https://bun.sh/docs/installation) |
+| Requirement            | Status      | Notes                                                   |
+| ---------------------- | ----------- | ------------------------------------------------------- |
+| **Bun Runtime**        | ✅ Required | [Install Bun](https://bun.sh/docs/installation)         |
 | **Cloudflare Account** | ✅ Required | [Sign up for free](https://dash.cloudflare.com/sign-up) |
-| **Git** | ✅ Required | For cloning the repository |
+| **Git**                | ✅ Required | For cloning the repository                              |
 
 ### 🚀 **Deployment Steps**
 
 #### **Step 1: Clone & Install**
+
 ```bash
 # Clone the repository
 git clone https://github.com/brendadeeznuts1111/betting-brain-v3.git
@@ -203,12 +220,14 @@ wrangler login
 ```
 
 #### **Step 2: Deploy to Production**
+
 ```bash
 # Deploy to production (follows [Deployment Patterns](.cursor/rules/cloudflare-workers.mdc))
 bun run deploy:prod
 ```
 
 #### **Step 3: Verify Deployment**
+
 ```bash
 # Check system health (follows [Quality Standards](.cursor/rules/quality-standards.mdc))
 bun run forest h
@@ -218,21 +237,29 @@ bun run test:ai
 ```
 
 ### 📦 **v1.0 Cache Optimization Ready**
-✅ **Status:** Ready for deployment
-✅ **Performance:** 90%+ cache hit rate, 93.3% D1 write reduction
-✅ **Integration:** 50 Cloudflare services (46 bindings + 4 crons)
+
+✅ **Status:** Ready for deployment ✅ **Performance:** 90%+ cache hit rate,
+93.3% D1 write reduction ✅ **Integration:** 50 Cloudflare services (46
+bindings + 4 crons)
 
 **Quick Deploy:**
+
 ```bash
 ./deployment/scripts/deploy-v1.0.sh
 ```
 
 **Full Documentation:**
-- **[📋 Deployment Summary](DEPLOYMENT_SUMMARY.md)** - Complete deployment overview
-- **[🔧 Production Config](deployment/docs/PRODUCTION_CONFIG.md)** - Step-by-step setup
-- **[☁️ Cloudflare Integration](deployment/docs/CLOUDFLARE_INTEGRATION.md)** - All 50 services documented
-- **[✅ Pre-Deployment Checklist](deployment/checklists/pre-deployment.md)** - Ready check
-- **[✅ Post-Deployment Checklist](deployment/checklists/post-deployment.md)** - Verification steps
+
+- **[📋 Deployment Summary](DEPLOYMENT_SUMMARY.md)** - Complete deployment
+  overview
+- **[🔧 Production Config](deployment/docs/PRODUCTION_CONFIG.md)** -
+  Step-by-step setup
+- **[☁️ Cloudflare Integration](deployment/docs/CLOUDFLARE_INTEGRATION.md)** -
+  All 50 services documented
+- **[✅ Pre-Deployment Checklist](deployment/checklists/pre-deployment.md)** -
+  Ready check
+- **[✅ Post-Deployment Checklist](deployment/checklists/post-deployment.md)** -
+  Verification steps
 
 **Live in 60 seconds** with auto-generated Grafana dashboard!
 
@@ -240,86 +267,94 @@ bun run test:ai
 
 <div align="center">
 
-**Comprehensive testing pipeline** • **Zero zombie processes** • **AI-friendly output** • **Production-ready validation**
+**Comprehensive testing pipeline** • **Zero zombie processes** • **AI-friendly
+output** • **Production-ready validation**
 
 </div>
 
 ### 🚀 **CI Commands**
 
-| Command | Description | Use Case |
-|---------|-------------|----------|
-| `bun run ci` | Full CI pipeline (security, lint, type-check, tests, build) | Pre-commit validation |
-| `bun run ci:quick` | Quick CI (skip slow checks) | Fast development feedback |
-| `bun test` | Run all tests | Test-only validation |
-| `bun run test:ai` | AI-friendly test output | AI development environments |
+| Command            | Description                                                 | Use Case                    |
+| ------------------ | ----------------------------------------------------------- | --------------------------- |
+| `bun run ci`       | Full CI pipeline (security, lint, type-check, tests, build) | Pre-commit validation       |
+| `bun run ci:quick` | Quick CI (skip slow checks)                                 | Fast development feedback   |
+| `bun test`         | Run all tests                                               | Test-only validation        |
+| `bun run test:ai`  | AI-friendly test output                                     | AI development environments |
 
 ### ✨ **CI Features**
 
-| Feature | Description | Benefit |
-|---------|-------------|---------|
+| Feature                   | Description                            | Benefit                          |
+| ------------------------- | -------------------------------------- | -------------------------------- |
 | **Zero Zombie Processes** | Automatic cleanup of spawned processes | No resource leaks, clean CI runs |
-| **Timeout Enforcement** | 10s default timeout for all operations | Prevents hanging CI jobs |
-| **Signal Handling** | Ctrl+C cleanup for graceful shutdown | Better developer experience |
-| **Detailed Reporting** | Comprehensive test and build reports | Clear feedback on issues |
-| **Exit Code Handling** | Proper exit codes for CI integration | Reliable CI/CD pipeline |
+| **Timeout Enforcement**   | 10s default timeout for all operations | Prevents hanging CI jobs         |
+| **Signal Handling**       | Ctrl+C cleanup for graceful shutdown   | Better developer experience      |
+| **Detailed Reporting**    | Comprehensive test and build reports   | Clear feedback on issues         |
+| **Exit Code Handling**    | Proper exit codes for CI integration   | Reliable CI/CD pipeline          |
 
 ### 📚 **Related Documentation**
 
-- **[Zombie Process Fix](docs/ZOMBIE_PROCESS_FIX.md)** - Complete process management solution
-- **[CI Integration Patterns](.cursor/rules/ci-integration.mdc)** - CI/CD automation patterns
-- **[Testing Patterns](.cursor/rules/testing-patterns.mdc)** - Comprehensive testing standards
+- **[Zombie Process Fix](docs/ZOMBIE_PROCESS_FIX.md)** - Complete process
+  management solution
+- **[CI Integration Patterns](.cursor/rules/ci-integration.mdc)** - CI/CD
+  automation patterns
+- **[Testing Patterns](.cursor/rules/testing-patterns.mdc)** - Comprehensive
+  testing standards
 
 ## 📊 **Core Metrics**
 
 <div align="center">
 
-**Real-time monitoring** • **Automated alerts** • **Cost optimization** • **Quality assurance**
+**Real-time monitoring** • **Automated alerts** • **Cost optimization** •
+**Quality assurance**
 
 </div>
 
 ### 🎯 **Key Performance Indicators**
 
-| Metric | Alert Threshold | Cost Cap | Unit Test | Documentation |
-|--------|----------------|----------|-----------|---------------|
-| **CLV** | < -2% | 1k customers/hour | `clv.test.ts` | [Customer Analytics](.cursor/rules/analytics-testing.mdc) |
-| **Hold %** | < 4% or > 8% | 300s cache | `hold.test.ts` | [Financial Analytics](.cursor/rules/analytics-testing.mdc) |
-| **Exposure** | > $50k or > 60% | 50 rows/event | `exposure.test.ts` | [Risk Management](.cursor/rules/security-patterns.mdc) |
-| **Sharp Score** | > 60 | top-100 only | `sharp.test.ts` | [Customer Profiling](.cursor/rules/analytics-testing.mdc) |
-| **Steam Move** | ≥ 3σ in ≤ 60s | 5min dedupe | `steam.test.ts` | [Risk Detection](.cursor/rules/security-patterns.mdc) |
+| Metric          | Alert Threshold | Cost Cap          | Unit Test          | Documentation                                              |
+| --------------- | --------------- | ----------------- | ------------------ | ---------------------------------------------------------- |
+| **CLV**         | < -2%           | 1k customers/hour | `clv.test.ts`      | [Customer Analytics](.cursor/rules/analytics-testing.mdc)  |
+| **Hold %**      | < 4% or > 8%    | 300s cache        | `hold.test.ts`     | [Financial Analytics](.cursor/rules/analytics-testing.mdc) |
+| **Exposure**    | > $50k or > 60% | 50 rows/event     | `exposure.test.ts` | [Risk Management](.cursor/rules/security-patterns.mdc)     |
+| **Sharp Score** | > 60            | top-100 only      | `sharp.test.ts`    | [Customer Profiling](.cursor/rules/analytics-testing.mdc)  |
+| **Steam Move**  | ≥ 3σ in ≤ 60s   | 5min dedupe       | `steam.test.ts`    | [Risk Detection](.cursor/rules/security-patterns.mdc)      |
 
 ### 📈 **Monitoring & Alerts**
 
-| Component | Monitoring | Alerting | Documentation |
-|-----------|------------|----------|---------------|
-| **Performance** | Real-time metrics | Automated thresholds | [Quality Standards](.cursor/rules/quality-standards.mdc) |
-| **Cost Management** | Resource usage tracking | Budget alerts | [Cost Optimization](.cursor/rules/cache-optimization.mdc) |
-| **Security** | Threat detection | Security alerts | [Security Patterns](.cursor/rules/security-patterns.mdc) |
-| **Quality** | Code quality metrics | Quality gates | [Testing Patterns](.cursor/rules/testing-patterns.mdc) |
+| Component           | Monitoring              | Alerting             | Documentation                                             |
+| ------------------- | ----------------------- | -------------------- | --------------------------------------------------------- |
+| **Performance**     | Real-time metrics       | Automated thresholds | [Quality Standards](.cursor/rules/quality-standards.mdc)  |
+| **Cost Management** | Resource usage tracking | Budget alerts        | [Cost Optimization](.cursor/rules/cache-optimization.mdc) |
+| **Security**        | Threat detection        | Security alerts      | [Security Patterns](.cursor/rules/security-patterns.mdc)  |
+| **Quality**         | Code quality metrics    | Quality gates        | [Testing Patterns](.cursor/rules/testing-patterns.mdc)    |
 
 ## 🗄️ **Database Schema**
 
 <div align="center">
 
-**Edge-native storage** • **Type-safe queries** • **Automated migrations** • **Performance optimized**
+**Edge-native storage** • **Type-safe queries** • **Automated migrations** •
+**Performance optimized**
 
 </div>
 
 ### 📊 **Database Architecture**
 
-| Database | Purpose | Tables | Documentation |
-|----------|---------|--------|---------------|
-| **ANALYTICS** | Main betting analytics database | 32 tables | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| **RAW_FEED_DB** | Fantasy402 data ingestion | 20 tables | [Data Ingestion](.cursor/rules/mcp-integration.mdc) |
+| Database        | Purpose                         | Tables    | Documentation                                            |
+| --------------- | ------------------------------- | --------- | -------------------------------------------------------- |
+| **ANALYTICS**   | Main betting analytics database | 32 tables | [Database Patterns](.cursor/rules/database-patterns.mdc) |
+| **RAW_FEED_DB** | Fantasy402 data ingestion       | 20 tables | [Data Ingestion](.cursor/rules/mcp-integration.mdc)      |
 
 ### 🏗️ **Core Analytics Tables**
 
 <div align="center">
 
-**Real-time analytics** • **Time-series data** • **Customer profiling** • **Risk management**
+**Real-time analytics** • **Time-series data** • **Customer profiling** • **Risk
+management**
 
 </div>
 
 #### Line Movements (7-day TTL, ROWID+LZ4)
+
 ```sql
 CREATE TABLE line_movements (
   eid  TEXT NOT NULL,           -- Event ID
@@ -334,6 +369,7 @@ CREATE TABLE line_movements (
 ```
 
 #### Sharp Indicators (hourly refresh)
+
 ```sql
 CREATE TABLE sharp_indicators (
   cid  TEXT PRIMARY KEY,        -- Customer ID
@@ -346,6 +382,7 @@ CREATE TABLE sharp_indicators (
 ```
 
 #### Exposure Tracking (30s refresh)
+
 ```sql
 CREATE TABLE exposure_tracking (
   eid  TEXT NOT NULL,           -- Event ID
@@ -359,6 +396,7 @@ CREATE TABLE exposure_tracking (
 ```
 
 #### Steam Dedupe (5min TTL)
+
 ```sql
 CREATE TABLE steam_dedupe (
   eid  TEXT NOT NULL,           -- Event ID
@@ -371,6 +409,7 @@ CREATE TABLE steam_dedupe (
 ### MCP Analytics Tables
 
 #### Bet History
+
 ```sql
 CREATE TABLE bet_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -387,6 +426,7 @@ CREATE TABLE bet_history (
 ```
 
 #### Hold Tracking
+
 ```sql
 CREATE TABLE hold_tracking (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -402,6 +442,7 @@ CREATE TABLE hold_tracking (
 ### Fantasy402 Data Ingestion Tables
 
 #### Raw Feed
+
 ```sql
 CREATE TABLE fantasy402_raw_feed (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -427,6 +468,7 @@ CREATE TABLE fantasy402_raw_feed (
 ```
 
 #### Agent Performance
+
 ```sql
 CREATE TABLE fantasy402_agent_performance (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -454,6 +496,7 @@ CREATE TABLE fantasy402_agent_performance (
 ```
 
 #### Player Information
+
 ```sql
 CREATE TABLE fantasy402_players (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -492,6 +535,7 @@ CREATE TABLE fantasy402_players (
 ```
 
 #### Player Performance
+
 ```sql
 CREATE TABLE fantasy402_player_performance (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -519,6 +563,7 @@ CREATE TABLE fantasy402_player_performance (
 ```
 
 #### Transaction Tracking
+
 ```sql
 CREATE TABLE fantasy402_transactions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -540,6 +585,7 @@ CREATE TABLE fantasy402_transactions (
 ```
 
 #### Pending Wagers
+
 ```sql
 CREATE TABLE fantasy402_pending_wagers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -563,6 +609,7 @@ CREATE TABLE fantasy402_pending_wagers (
 ```
 
 #### Player Analysis
+
 ```sql
 CREATE TABLE fantasy402_player_analysis (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -590,6 +637,7 @@ CREATE TABLE fantasy402_player_analysis (
 ### Additional Fantasy402 Tables (Not Documented in Detail)
 
 **betting-analytics database also contains:**
+
 - `agent_graph` - Agent relationship mapping
 - `fantasy402_account_snapshots` - Account state snapshots
 - `fantasy402_agents` - Agent registry and metadata
@@ -604,6 +652,7 @@ CREATE TABLE fantasy402_player_analysis (
 - `fantasy402_weekly_figures` - Weekly performance figures
 
 **fantasy42-raw-feed database contains:**
+
 - Duplicate Fantasy402 tables for redundancy
 - Additional raw feed processing tables
 - Backup and archival tables
@@ -611,14 +660,19 @@ CREATE TABLE fantasy402_player_analysis (
 ### Database Bindings
 
 #### D1 Databases
-- **ANALYTICS**: `betting-analytics` (main analytics database) - **32 tables total**
-- **RAW_FEED_DB**: `fantasy42-raw-feed` (Fantasy402 data ingestion) - **20 tables total**
 
-**Note:** Fantasy402 tables are duplicated across both databases for redundancy and performance optimization.
+- **ANALYTICS**: `betting-analytics` (main analytics database) - **32 tables
+  total**
+- **RAW_FEED_DB**: `fantasy42-raw-feed` (Fantasy402 data ingestion) - **20
+  tables total**
+
+**Note:** Fantasy402 tables are duplicated across both databases for redundancy
+and performance optimization.
 
 ### Environment Variables & Configuration
 
 #### Required Environment Variables
+
 ```bash
 # Security & Authentication
 JWT_SECRET=your-jwt-secret-here                    # JWT signing secret
@@ -637,18 +691,21 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/...      # Slack notifications
 ```
 
 #### Cloudflare Account Configuration
+
 - **Account ID**: `80693377f3abb78e00820aa69a415ce4`
 - **Account Name**: `nolarose1968-806`
 - **Production Worker**: `betting-brain-v3-prod.nolarose1968-806.workers.dev`
 - **Staging Worker**: `betting-brain-v3-staging.nolarose1968-806.workers.dev`
 
 #### Configuration Files
+
 - **Worker Config**: `wrangler.toml` - Main Cloudflare Workers configuration
 - **Environment Template**: `env.example` - Environment variables template
 - **TypeScript Config**: `tsconfig.json` - TypeScript compiler configuration
 - **Bun Config**: `bunfig.toml` - Bun runtime configuration
 
 #### KV Namespaces
+
 - **BET_TICKER_RAW**: Raw BetTicker API responses (7-day retention)
 - **TOKEN_STORE**: JWT token management
 - **USER_STORE**: User session data
@@ -659,16 +716,21 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/...      # Slack notifications
 - **FANTASY_CONFIG_CACHE**: Fantasy402 configuration cache
 
 #### Analytics Engine
+
 - **ANALYTICS_ENGINE**: `betting-metrics` dataset for time-series analytics
 
 #### Queues
+
 - **LINE_INGRESS**: Line movement ingestion (10 msg/batch, 5s timeout)
 - **STEAM_WEBHOOK**: Steam move notifications (5 msg/batch, 10s timeout)
 - **STEAM_QUEUE**: Steam processing (10 msg/batch, 2s timeout, 2 retries)
-- **EXPOSURE_QUEUE**: Exposure calculations (50 msg/batch, 10s timeout, 3 retries)
-- **FANTASY402_QUEUE**: Fantasy402 data processing (100 msg/batch, 5s timeout, 5 retries)
+- **EXPOSURE_QUEUE**: Exposure calculations (50 msg/batch, 10s timeout, 3
+  retries)
+- **FANTASY402_QUEUE**: Fantasy402 data processing (100 msg/batch, 5s timeout, 5
+  retries)
 
 ### TTL Triggers
+
 - **Line Movements**: 7-day retention
 - **Steam Dedupe**: 5-minute retention
 - **Sharp Indicators**: 30-day retention
@@ -678,46 +740,48 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/...      # Slack notifications
 
 <div align="center">
 
-**Real-time processing** • **Auto-scaling queues** • **Event-driven architecture** • **Zero cold starts**
+**Real-time processing** • **Auto-scaling queues** • **Event-driven
+architecture** • **Zero cold starts**
 
 </div>
 
 ### 🚀 **Pipeline Components**
 
-| Component | Type | File | Description | Documentation |
-|-----------|------|------|-------------|---------------|
-| **Ingest** | Queue consumer | `src/queues/lineIngress.ts` | Line movement ingestion | [Queue Patterns](.cursor/rules/ci-patterns.mdc) |
-| **Diff** | D1 trigger | `src/triggers/onLineMove.ts` | Line movement processing | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| **Steam** | Queue → Webhook | `src/queues/steamWebhook.ts` | Steam move notifications | [Queue Management](.cursor/rules/process-management.mdc) |
-| **Sharp** | Scheduled (hourly) | `src/schedules/sharpCalc.ts` | Sharp calculation | [Scheduling Patterns](.cursor/rules/cloudflare-workers.mdc) |
-| **Exposure** | Scheduled (30s) | `src/schedules/exposureCalc.ts` | Exposure calculation | [Real-time Processing](.cursor/rules/cloudflare-workers.mdc) |
-| **BetTicker Sniffer** | Transparent proxy | `src/interceptors/bet-ticker-sniffer.ts` | API interception & archiving | [API Interception](.cursor/rules/api-patterns.mdc) |
+| Component             | Type               | File                                     | Description                  | Documentation                                                |
+| --------------------- | ------------------ | ---------------------------------------- | ---------------------------- | ------------------------------------------------------------ |
+| **Ingest**            | Queue consumer     | `src/queues/lineIngress.ts`              | Line movement ingestion      | [Queue Patterns](.cursor/rules/ci-patterns.mdc)              |
+| **Diff**              | D1 trigger         | `src/triggers/onLineMove.ts`             | Line movement processing     | [Database Patterns](.cursor/rules/database-patterns.mdc)     |
+| **Steam**             | Queue → Webhook    | `src/queues/steamWebhook.ts`             | Steam move notifications     | [Queue Management](.cursor/rules/process-management.mdc)     |
+| **Sharp**             | Scheduled (hourly) | `src/schedules/sharpCalc.ts`             | Sharp calculation            | [Scheduling Patterns](.cursor/rules/cloudflare-workers.mdc)  |
+| **Exposure**          | Scheduled (30s)    | `src/schedules/exposureCalc.ts`          | Exposure calculation         | [Real-time Processing](.cursor/rules/cloudflare-workers.mdc) |
+| **BetTicker Sniffer** | Transparent proxy  | `src/interceptors/bet-ticker-sniffer.ts` | API interception & archiving | [API Interception](.cursor/rules/api-patterns.mdc)           |
 
 ### ⚡ **Performance Features**
 
-| Feature | Description | Benefit |
-|---------|-------------|---------|
-| **Auto-scaling Queues** | Scale to zero when empty | Cost optimization, resource efficiency |
-| **Event-driven Architecture** | Reactive processing based on data changes | Real-time responsiveness |
-| **Zero Cold Starts** | Edge-native execution | Global performance, instant response |
-| **Type-safe Processing** | Full TypeScript with Zod validation | Runtime safety, development confidence |
+| Feature                       | Description                               | Benefit                                |
+| ----------------------------- | ----------------------------------------- | -------------------------------------- |
+| **Auto-scaling Queues**       | Scale to zero when empty                  | Cost optimization, resource efficiency |
+| **Event-driven Architecture** | Reactive processing based on data changes | Real-time responsiveness               |
+| **Zero Cold Starts**          | Edge-native execution                     | Global performance, instant response   |
+| **Type-safe Processing**      | Full TypeScript with Zod validation       | Runtime safety, development confidence |
 
 ## 🛠️ **MCP Tools**
 
 <div align="center">
 
-**AI-native intelligence APIs** • **Type-safe validation** • **Rate-limited access** • **Zero-cost scaling**
+**AI-native intelligence APIs** • **Type-safe validation** • **Rate-limited
+access** • **Zero-cost scaling**
 
 </div>
 
 ### 🚀 **Tool Features**
 
-| Feature | Description | Benefit |
-|---------|-------------|---------|
-| **Zod Validation** | Input/output validation with TypeScript | Type safety, runtime validation |
-| **Rate Limiting** | 10 req/s per IP (Cloudflare Rate-Limit rule) | Fair usage, system protection |
-| **Zero Cost** | Free until 100k requests/day | Cost-effective scaling |
-| **Auto-generated** | Typed intelligence APIs | Consistent interface, reduced maintenance |
+| Feature            | Description                                  | Benefit                                   |
+| ------------------ | -------------------------------------------- | ----------------------------------------- |
+| **Zod Validation** | Input/output validation with TypeScript      | Type safety, runtime validation           |
+| **Rate Limiting**  | 10 req/s per IP (Cloudflare Rate-Limit rule) | Fair usage, system protection             |
+| **Zero Cost**      | Free until 100k requests/day                 | Cost-effective scaling                    |
+| **Auto-generated** | Typed intelligence APIs                      | Consistent interface, reduced maintenance |
 
 ### 🔧 **Tool Generation**
 
@@ -736,46 +800,54 @@ curl https://betting-brain-v3-prod.nolarose1968-806.workers.dev/api/mcp -X POST 
 
 ### 📚 **Related Documentation**
 
-- **[MCP Integration](.cursor/rules/mcp-integration.mdc)** - Complete MCP server patterns
-- **[API Patterns](.cursor/rules/api-patterns.mdc)** - API design and validation standards
-- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Code quality enforcement
+- **[MCP Integration](.cursor/rules/mcp-integration.mdc)** - Complete MCP server
+  patterns
+- **[API Patterns](.cursor/rules/api-patterns.mdc)** - API design and validation
+  standards
+- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Code quality
+  enforcement
 
 ## 💰 **Cost-Cap Guardrails**
 
 <div align="center">
 
-**Budget protection** • **Automatic scaling** • **Resource optimization** • **Predictable costs**
+**Budget protection** • **Automatic scaling** • **Resource optimization** •
+**Predictable costs**
 
 </div>
 
 ### 🛡️ **Cost Protection Tiers**
 
-| Tier | Limit | Action | Documentation |
-|------|-------|--------|---------------|
-| **Free** | 100k req/day | Hard stop → 429 | [Rate Limiting](.cursor/rules/security-patterns.mdc) |
-| **D1** | 5GB / 50M rows | TTL auto-purge | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| **Queue** | 1M ops/month | Pause ingestion | [Queue Management](.cursor/rules/process-management.mdc) |
-| **Analytics Engine** | 25M points/month | Sample 10% | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
+| Tier                 | Limit            | Action          | Documentation                                            |
+| -------------------- | ---------------- | --------------- | -------------------------------------------------------- |
+| **Free**             | 100k req/day     | Hard stop → 429 | [Rate Limiting](.cursor/rules/security-patterns.mdc)     |
+| **D1**               | 5GB / 50M rows   | TTL auto-purge  | [Database Patterns](.cursor/rules/database-patterns.mdc) |
+| **Queue**            | 1M ops/month     | Pause ingestion | [Queue Management](.cursor/rules/process-management.mdc) |
+| **Analytics Engine** | 25M points/month | Sample 10%      | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
 
 ### 🔧 **Implementation**
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| **Cost Guards** | `src/guards/costCap.ts` | Hard-wired cost controls |
-| **Rate Limiting** | `src/guards/rateLimit.ts` | Request throttling |
-| **Resource Monitoring** | Analytics Engine | Real-time usage tracking |
+| Component               | Location                  | Purpose                  |
+| ----------------------- | ------------------------- | ------------------------ |
+| **Cost Guards**         | `src/guards/costCap.ts`   | Hard-wired cost controls |
+| **Rate Limiting**       | `src/guards/rateLimit.ts` | Request throttling       |
+| **Resource Monitoring** | Analytics Engine          | Real-time usage tracking |
 
 ### 📚 **Related Documentation**
 
-- **[Security Patterns](.cursor/rules/security-patterns.mdc)** - Production security and cost controls
-- **[Cache Optimization](.cursor/rules/cache-optimization.mdc)** - Performance and cost optimization
-- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Resource usage standards
+- **[Security Patterns](.cursor/rules/security-patterns.mdc)** - Production
+  security and cost controls
+- **[Cache Optimization](.cursor/rules/cache-optimization.mdc)** - Performance
+  and cost optimization
+- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Resource usage
+  standards
 
 ## 🚀 **Deployment**
 
 <div align="center">
 
-**One-command deployment** • **Zero-downtime updates** • **Instant rollback** • **Production-ready**
+**One-command deployment** • **Zero-downtime updates** • **Instant rollback** •
+**Production-ready**
 
 </div>
 
@@ -787,6 +859,7 @@ bun run deploy:prod
 ```
 
 #### **Deployment Output**
+
 ```
 ✔ Migrations applied (v3)
 ✔ 6 edge functions deployed (≈ 250 ms cold start)
@@ -804,24 +877,27 @@ bun run rollback v3.3.0-<sha>
 
 ### 📊 **Deployment Features**
 
-| Feature | Description | Benefit |
-|---------|-------------|---------|
-| **Zero-downtime** | Seamless updates without service interruption | Continuous availability |
-| **Instant Rollback** | One-command rollback to previous version | Risk mitigation, quick recovery |
-| **Automated Migrations** | Database schema updates applied automatically | Consistent deployments |
-| **Health Validation** | Pre-deployment health checks | Quality assurance |
+| Feature                  | Description                                   | Benefit                         |
+| ------------------------ | --------------------------------------------- | ------------------------------- |
+| **Zero-downtime**        | Seamless updates without service interruption | Continuous availability         |
+| **Instant Rollback**     | One-command rollback to previous version      | Risk mitigation, quick recovery |
+| **Automated Migrations** | Database schema updates applied automatically | Consistent deployments          |
+| **Health Validation**    | Pre-deployment health checks                  | Quality assurance               |
 
 ### 📚 **Related Documentation**
 
-- **[Cloudflare Workers](.cursor/rules/cloudflare-workers.mdc)** - Workers deployment patterns
+- **[Cloudflare Workers](.cursor/rules/cloudflare-workers.mdc)** - Workers
+  deployment patterns
 - **[CI Integration](.cursor/rules/ci-integration.mdc)** - CI/CD automation
-- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Deployment quality checks
+- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Deployment
+  quality checks
 
 ## 📈 **Monitoring**
 
 <div align="center">
 
-**Real-time monitoring** • **AI-native dashboards** • **Automated alerts** • **Comprehensive visibility**
+**Real-time monitoring** • **AI-native dashboards** • **Automated alerts** •
+**Comprehensive visibility**
 
 </div>
 
@@ -829,21 +905,23 @@ bun run rollback v3.3.0-<sha>
 
 <div align="center">
 
-**One-command system overview** • **AI-friendly output** • **Comprehensive health checks**
+**One-command system overview** • **AI-friendly output** • **Comprehensive
+health checks**
 
 </div>
 
 #### **Forest Commands**
 
-| Command | Description | Use Case |
-|---------|-------------|----------|
-| `bun run forest` | Full dashboard: health, freshness, release, analytics | Complete system overview |
-| `bun run forest h` | Health check only | Quick health verification |
-| `bun run forest f` | Freshness check only | Dependency status |
-| `bun run forest r` | Release status only | Version management |
-| `bun run forest a` | Analytics status only | Analytics system health |
+| Command            | Description                                           | Use Case                  |
+| ------------------ | ----------------------------------------------------- | ------------------------- |
+| `bun run forest`   | Full dashboard: health, freshness, release, analytics | Complete system overview  |
+| `bun run forest h` | Health check only                                     | Quick health verification |
+| `bun run forest f` | Freshness check only                                  | Dependency status         |
+| `bun run forest r` | Release status only                                   | Version management        |
+| `bun run forest a` | Analytics status only                                 | Analytics system health   |
 
 **Example Output:**
+
 ```
 🌲  Forest Health
 ✅  worker   UP
@@ -870,24 +948,26 @@ Coverage: Run tests for coverage
 
 <div align="center">
 
-**Self-documenting** • **Self-healing** • **Self-deploying** • **AI-native validation**
+**Self-documenting** • **Self-healing** • **Self-deploying** • **AI-native
+validation**
 
 </div>
 
 #### **Floor Commands**
 
-| Command | Description | Use Case |
-|---------|-------------|----------|
-| `bun run floor:health` | Complete health check (lint, types, tests, coverage, security) | Pre-deployment validation |
-| `bun run floor:test` | 60-second smoke test (validates entire system end-to-end) | Comprehensive system validation |
-| `bun run floor:test:quick` | Quick smoke test (10 seconds, skips optional checks) | Fast validation |
-| `bun run floor:deploy` | Deploy with health check (circuit breaker on failure) | Safe deployment |
-| `bun run floor:status` | Live system status | Real-time monitoring |
-| `bun run floor:fix` | Auto-fix issues | Automated maintenance |
-| `bun run floor:voice` | List MCP tools | Tool discovery |
-| `bun run floor:mcp` | Start MCP server | AI assistant integration |
+| Command                    | Description                                                    | Use Case                        |
+| -------------------------- | -------------------------------------------------------------- | ------------------------------- |
+| `bun run floor:health`     | Complete health check (lint, types, tests, coverage, security) | Pre-deployment validation       |
+| `bun run floor:test`       | 60-second smoke test (validates entire system end-to-end)      | Comprehensive system validation |
+| `bun run floor:test:quick` | Quick smoke test (10 seconds, skips optional checks)           | Fast validation                 |
+| `bun run floor:deploy`     | Deploy with health check (circuit breaker on failure)          | Safe deployment                 |
+| `bun run floor:status`     | Live system status                                             | Real-time monitoring            |
+| `bun run floor:fix`        | Auto-fix issues                                                | Automated maintenance           |
+| `bun run floor:voice`      | List MCP tools                                                 | Tool discovery                  |
+| `bun run floor:mcp`        | Start MCP server                                               | AI assistant integration        |
 
 **Example Output:**
+
 ```
 ╔══════════════════════════════════════╗
 ║  🤖 Floor Health Check               ║
@@ -903,6 +983,7 @@ Coverage: Run tests for coverage
 ```
 
 **Floor System Features:**
+
 - ✅ One-command health validation (`bun run floor:health`)
 - ✅ 60-second smoke test proves entire system works (`bun run floor:test`)
 - ✅ Circuit breaker prevents bad deployments (auto-gates on failure)
@@ -910,13 +991,19 @@ Coverage: Run tests for coverage
 - ✅ Auto-fix common issues (`bun run floor:fix`)
 - ✅ MCP server for AI assistant integration (`bun run floor:mcp`)
 
-📖 **[Floor System Documentation](docs/FLOOR_SYSTEM.md)** | **[Floor Smoke Test](docs/FLOOR_SMOKE_TEST.md)** | **[Command Reference](docs/COMMAND_REFERENCE.md)**
+📖 **[Floor System Documentation](docs/FLOOR_SYSTEM.md)** |
+**[Floor Smoke Test](docs/FLOOR_SMOKE_TEST.md)** |
+**[Command Reference](docs/COMMAND_REFERENCE.md)**
 
 ### Live Endpoints (Auto-Deployed)
 
-- **Worker Health**: `GET https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health`
-- **Metrics**: `GET https://betting-brain-v3-prod.nolarose1968-806.workers.dev/metrics` (Prometheus format)
-- **Dashboards**: [HTML Dashboards](dashboards/index.html) (local) or Cloudflare Pages (deployed)
+- **Worker Health**:
+  `GET https://betting-brain-v3-prod.nolarose1968-806.workers.dev/health`
+- **Metrics**:
+  `GET https://betting-brain-v3-prod.nolarose1968-806.workers.dev/metrics`
+  (Prometheus format)
+- **Dashboards**: [HTML Dashboards](dashboards/index.html) (local) or Cloudflare
+  Pages (deployed)
 - **Grafana**: Import JSON from `monitoring/grafana/dashboard.json`
 
 ### Automation Status
@@ -938,41 +1025,46 @@ Coverage: Run tests for coverage
 
 <div align="center">
 
-**Production-ready security** • **Automated enforcement** • **Zero vulnerabilities** • **Comprehensive protection**
+**Production-ready security** • **Automated enforcement** • **Zero
+vulnerabilities** • **Comprehensive protection**
 
 </div>
 
 ### 🛡️ **Security Features**
 
-| Feature | Status | Details | Documentation |
-|---------|--------|---------|---------------|
-| **ast-grep Enforcement** | ✅ Active | 20 security rules enforced in CI | [Security Patterns](.cursor/rules/security-patterns.mdc) |
-| **Zero Blocking Violations** | ✅ Clean | 0 blocking violations (99 hints for optimization) | [Code Quality](.cursor/rules/quality-standards.mdc) |
-| **Pinned Versions** | ✅ Secure | Bun 1.2.23, ast-grep 0.39.5 | [Dependency Management](.cursor/rules/bun-runtime.mdc) |
-| **Cached Builds** | ✅ Fast | ~8s warm runs | [CI Integration](.cursor/rules/ci-integration.mdc) |
-| **Rate Limiting** | ✅ Active | 10 req/s per IP | [Rate Limiting](.cursor/rules/security-patterns.mdc) |
-| **Input Validation** | ✅ Enforced | Zod schemas for all inputs | [API Patterns](.cursor/rules/api-patterns.mdc) |
-| **Cost Guards** | ✅ Active | Hard limits on resource usage | [Cost Optimization](.cursor/rules/cache-optimization.mdc) |
-| **Circuit Breakers** | ✅ Active | Graceful degradation on failures | [Quality Standards](.cursor/rules/quality-standards.mdc) |
+| Feature                      | Status      | Details                                           | Documentation                                             |
+| ---------------------------- | ----------- | ------------------------------------------------- | --------------------------------------------------------- |
+| **ast-grep Enforcement**     | ✅ Active   | 20 security rules enforced in CI                  | [Security Patterns](.cursor/rules/security-patterns.mdc)  |
+| **Zero Blocking Violations** | ✅ Clean    | 0 blocking violations (99 hints for optimization) | [Code Quality](.cursor/rules/quality-standards.mdc)       |
+| **Pinned Versions**          | ✅ Secure   | Bun 1.2.23, ast-grep 0.39.5                       | [Dependency Management](.cursor/rules/bun-runtime.mdc)    |
+| **Cached Builds**            | ✅ Fast     | ~8s warm runs                                     | [CI Integration](.cursor/rules/ci-integration.mdc)        |
+| **Rate Limiting**            | ✅ Active   | 10 req/s per IP                                   | [Rate Limiting](.cursor/rules/security-patterns.mdc)      |
+| **Input Validation**         | ✅ Enforced | Zod schemas for all inputs                        | [API Patterns](.cursor/rules/api-patterns.mdc)            |
+| **Cost Guards**              | ✅ Active   | Hard limits on resource usage                     | [Cost Optimization](.cursor/rules/cache-optimization.mdc) |
+| **Circuit Breakers**         | ✅ Active   | Graceful degradation on failures                  | [Quality Standards](.cursor/rules/quality-standards.mdc)  |
 
 ### ⚠️ **Security Notes**
 
-| Component | Note | Recommendation |
-|-----------|------|----------------|
-| **Rate Limiting** | Uses in-memory storage per worker instance | For multi-instance deployments, consider Cloudflare Durable Objects |
-| **Current Implementation** | Suitable for most single-region deployments | Monitor and scale as needed |
+| Component                  | Note                                        | Recommendation                                                      |
+| -------------------------- | ------------------------------------------- | ------------------------------------------------------------------- |
+| **Rate Limiting**          | Uses in-memory storage per worker instance  | For multi-instance deployments, consider Cloudflare Durable Objects |
+| **Current Implementation** | Suitable for most single-region deployments | Monitor and scale as needed                                         |
 
 ### 📚 **Related Documentation**
 
-- **[Security Patterns](.cursor/rules/security-patterns.mdc)** - Complete security implementation
-- **[Production Security](.cursor/rules/production-security.mdc)** - Production security patterns
-- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Code quality and security standards
+- **[Security Patterns](.cursor/rules/security-patterns.mdc)** - Complete
+  security implementation
+- **[Production Security](.cursor/rules/production-security.mdc)** - Production
+  security patterns
+- **[Quality Standards](.cursor/rules/quality-standards.mdc)** - Code quality
+  and security standards
 
 ## 📁 **Project Structure**
 
 <div align="center">
 
-**Organized architecture** • **Clear separation of concerns** • **Scalable design** • **Maintainable codebase**
+**Organized architecture** • **Clear separation of concerns** • **Scalable
+design** • **Maintainable codebase**
 
 </div>
 
@@ -1022,16 +1114,16 @@ betting-brain-v3/
 
 ### 📚 **Structure Documentation**
 
-| Directory | Purpose | Documentation |
-|-----------|---------|---------------|
-| **src/** | Core application code | [API Patterns](.cursor/rules/api-patterns.mdc) |
-| **dashboards/** | HTML dashboards | [Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md) |
-| **tools/** | HTML tools and utilities | [Tools & Utilities](tools/README.md) |
-| **tests/** | Test suite | [Testing Patterns](.cursor/rules/testing-patterns.mdc) |
-| **docs/** | Documentation | [Documentation](.cursor/rules/documentation.mdc) |
-| **browser-extension/** | Browser extension | [Browser Extension](.cursor/rules/browser-extension.mdc) |
-| **migrations/** | Database migrations | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| **scripts/** | Build and automation | [CI Integration](.cursor/rules/ci-integration.mdc) |
+| Directory              | Purpose                  | Documentation                                              |
+| ---------------------- | ------------------------ | ---------------------------------------------------------- |
+| **src/**               | Core application code    | [API Patterns](.cursor/rules/api-patterns.mdc)             |
+| **dashboards/**        | HTML dashboards          | [Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md) |
+| **tools/**             | HTML tools and utilities | [Tools & Utilities](tools/README.md)                       |
+| **tests/**             | Test suite               | [Testing Patterns](.cursor/rules/testing-patterns.mdc)     |
+| **docs/**              | Documentation            | [Documentation](.cursor/rules/documentation.mdc)           |
+| **browser-extension/** | Browser extension        | [Browser Extension](.cursor/rules/browser-extension.mdc)   |
+| **migrations/**        | Database migrations      | [Database Patterns](.cursor/rules/database-patterns.mdc)   |
+| **scripts/**           | Build and automation     | [CI Integration](.cursor/rules/ci-integration.mdc)         |
 
 ## 🧪 Testing
 
@@ -1079,19 +1171,22 @@ bun run ci:bun      # ✅ Auto-detects Replit AI
 ```
 
 **Benefits:**
+
 - ✅ Shows only test failures (not passing tests)
 - ✅ 90% reduction in output verbosity for AI context windows
 - ✅ Preserves failure details and summaries
 - ✅ Improves readability in AI-assisted development
 
 **Environment Variables:**
+
 - `CLAUDECODE=1` - Claude Code sessions
-- `REPL_ID=1` - Replit AI environments  
+- `REPL_ID=1` - Replit AI environments
 - `AGENT=1` - Generic AI agent flag
 
 ### 📊 **Current Test Status**
 
 **Test Health:** ✅ **PRODUCTION READY**
+
 - ✅ **Test Files**: 26 total (unit, integration, performance)
 - ✅ **Analytics Stub**: Available for testing
 - ✅ **Performance Tests**: Passing
@@ -1101,48 +1196,55 @@ bun run ci:bun      # ✅ Auto-detects Replit AI
 - ✅ **Test Organization**: Categorized by type and scope
 
 **Documentation Health:** ✅ **Excellent**
+
 - ✅ **Core Documentation**: 100% navigable
 - ✅ **Testing System**: Complete Forest Grove integration
 - ✅ **Rule Versioning**: 100% standardized frontmatter
 - ✅ **Code Searchability**: 40% enhanced with ast-grep patterns
 - ✅ **Quality Standards**: Comprehensive enforcement
-- 📊 **[Frontmatter & Searchability Enhancement](docs/FRONTMATTER_SEARCHABILITY_ENHANCEMENT.md)** - Complete enhancement guide
-- **[Testing System](docs/testing/INTEGRATED_TESTING_SYSTEM.md)** - Forest Grove testing documentation
-- **[Cursor Rules Versioning](docs/CURSOR_RULES_VERSIONING_SUMMARY.md)** - Rule versioning summary
+- 📊
+  **[Frontmatter & Searchability Enhancement](docs/FRONTMATTER_SEARCHABILITY_ENHANCEMENT.md)** -
+  Complete enhancement guide
+- **[Testing System](docs/testing/INTEGRATED_TESTING_SYSTEM.md)** - Forest Grove
+  testing documentation
+- **[Cursor Rules Versioning](docs/CURSOR_RULES_VERSIONING_SUMMARY.md)** - Rule
+  versioning summary
 
 ## 🎯 **Fantasy402 Integration**
 
 <div align="center">
 
-**Complete Fantasy402.com API integration** • **Real-time data processing** • **Browser extension interception** • **Dashboard monitoring**
+**Complete Fantasy402.com API integration** • **Real-time data processing** •
+**Browser extension interception** • **Dashboard monitoring**
 
 </div>
 
 ### 🚀 **Supported Operations**
 
-| Operation | Description | Status | Documentation |
-|-----------|-------------|--------|---------------|
-| **getInfoPlayer** | Player information and status | ✅ Active | [Player Info](.cursor/rules/mcp-integration.mdc) |
-| **getPerformancePlayer** | Player performance metrics | ✅ Active | [Performance Analytics](.cursor/rules/analytics-testing.mdc) |
-| **getTransactionList** | Transaction history and summaries | ✅ Active | [Transaction Management](.cursor/rules/database-patterns.mdc) |
-| **getPending** | Pending wagers and risk exposure | ✅ Active | [Risk Management](.cursor/rules/security-patterns.mdc) |
-| **getReportPlayerAnalysis** | Comprehensive player analysis | ✅ Active | [Player Analytics](.cursor/rules/analytics-testing.mdc) |
-| **getTransactionHistory** | Historical transaction data | ✅ Active | [Data Processing](.cursor/rules/database-patterns.mdc) |
+| Operation                   | Description                       | Status    | Documentation                                                 |
+| --------------------------- | --------------------------------- | --------- | ------------------------------------------------------------- |
+| **getInfoPlayer**           | Player information and status     | ✅ Active | [Player Info](.cursor/rules/mcp-integration.mdc)              |
+| **getPerformancePlayer**    | Player performance metrics        | ✅ Active | [Performance Analytics](.cursor/rules/analytics-testing.mdc)  |
+| **getTransactionList**      | Transaction history and summaries | ✅ Active | [Transaction Management](.cursor/rules/database-patterns.mdc) |
+| **getPending**              | Pending wagers and risk exposure  | ✅ Active | [Risk Management](.cursor/rules/security-patterns.mdc)        |
+| **getReportPlayerAnalysis** | Comprehensive player analysis     | ✅ Active | [Player Analytics](.cursor/rules/analytics-testing.mdc)       |
+| **getTransactionHistory**   | Historical transaction data       | ✅ Active | [Data Processing](.cursor/rules/database-patterns.mdc)        |
 
 ### ✨ **Integration Features**
 
-| Feature | Description | Benefit | Documentation |
-|---------|-------------|---------|---------------|
-| **🔄 Real-time Interception** | Browser extension captures all API calls | Zero-latency data capture | [Browser Extension](.cursor/rules/browser-extension.mdc) |
-| **📊 Data Processing** | Parsed and normalized data storage | Consistent data format | [Data Processing](.cursor/rules/database-patterns.mdc) |
-| **💾 Database Storage** | D1 tables for all operation types | Persistent data storage | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| **📈 Dashboard Integration** | Floor Control dashboard cards | Real-time monitoring | [Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md) |
-| **🔍 Analytics Engine** | Metrics tracking and monitoring | Business intelligence | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
-| **⚡ KV Caching** | Fast access to recent data | Performance optimization | [Cache Optimization](.cursor/rules/cache-optimization.mdc) |
+| Feature                       | Description                              | Benefit                   | Documentation                                              |
+| ----------------------------- | ---------------------------------------- | ------------------------- | ---------------------------------------------------------- |
+| **🔄 Real-time Interception** | Browser extension captures all API calls | Zero-latency data capture | [Browser Extension](.cursor/rules/browser-extension.mdc)   |
+| **📊 Data Processing**        | Parsed and normalized data storage       | Consistent data format    | [Data Processing](.cursor/rules/database-patterns.mdc)     |
+| **💾 Database Storage**       | D1 tables for all operation types        | Persistent data storage   | [Database Patterns](.cursor/rules/database-patterns.mdc)   |
+| **📈 Dashboard Integration**  | Floor Control dashboard cards            | Real-time monitoring      | [Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md) |
+| **🔍 Analytics Engine**       | Metrics tracking and monitoring          | Business intelligence     | [Analytics Testing](.cursor/rules/analytics-testing.mdc)   |
+| **⚡ KV Caching**             | Fast access to recent data               | Performance optimization  | [Cache Optimization](.cursor/rules/cache-optimization.mdc) |
 
 ### 🚀 **API Endpoints**
 
 #### **Core System Endpoints**
+
 ```bash
 # Health & Status
 GET  /health                    # Basic health check
@@ -1158,6 +1260,7 @@ WS   /ws                       # Fantasy402 WebSocket connection
 ```
 
 #### **MCP & Intelligence Tools**
+
 ```bash
 # MCP Protocol
 POST /mcp                      # JSON-RPC 2.0 MCP server
@@ -1170,6 +1273,7 @@ POST /mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"ge
 ```
 
 #### **Sports & Live Data**
+
 ```bash
 # Live Sports Data
 GET  /api/live-odds?sport=nba&market=moneyline    # Live odds aggregation
@@ -1183,6 +1287,7 @@ POST /ingest                                     # Data ingestion (JWT required)
 ```
 
 #### **Fantasy402 Integration**
+
 ```bash
 # Fantasy402 Performance API
 GET  /api/fantasy402/performance                 # Agent performance
@@ -1206,6 +1311,7 @@ GET  /api/f402/graph                             # Agent graph data
 ```
 
 #### **BetTicker Sniffer**
+
 ```bash
 # BetTicker Interception
 POST /cloud/api/Manager/getBetTicker             # Transparent proxy + KV storage
@@ -1217,6 +1323,7 @@ GET  /interceptor/stats                          # Response statistics
 ```
 
 #### **Analytics & Monitoring**
+
 ```bash
 # Database & Analytics
 GET  /api/database/metrics                       # Database record counts
@@ -1240,37 +1347,41 @@ GET  /api/stats                                  # System statistics
 
 ### 📊 **Dashboard Integration**
 
-| Component | Description | Refresh Rate | Documentation |
-|-----------|-------------|--------------|---------------|
-| **Floor Control Dashboard** | Individual cards for each operation | 30 seconds | [Floor Control](dashboards/floor-control.html) |
-| **Real-time Updates** | Live data synchronization | 30 seconds | [Real-time Processing](.cursor/rules/cloudflare-workers.mdc) |
-| **Visual Analytics** | Charts and metrics display | Real-time | [Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md) |
-| **Error Handling** | Comprehensive error reporting | Real-time | [Error Handling](.cursor/rules/api-patterns.mdc) |
+| Component                   | Description                         | Refresh Rate | Documentation                                                |
+| --------------------------- | ----------------------------------- | ------------ | ------------------------------------------------------------ |
+| **Floor Control Dashboard** | Individual cards for each operation | 30 seconds   | [Floor Control](dashboards/floor-control.html)               |
+| **Real-time Updates**       | Live data synchronization           | 30 seconds   | [Real-time Processing](.cursor/rules/cloudflare-workers.mdc) |
+| **Visual Analytics**        | Charts and metrics display          | Real-time    | [Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md)   |
+| **Error Handling**          | Comprehensive error reporting       | Real-time    | [Error Handling](.cursor/rules/api-patterns.mdc)             |
 
 ### 📚 **Related Documentation**
 
-- **[Fantasy402 Integration Guide](docs/FANTASY402_INTEGRATION_COMPLETE.md)** - Complete integration documentation
-- **[Floor Control Cards](docs/FLOOR_CONTROL_FANTASY402_CARDS.md)** - Dashboard card specifications
+- **[Fantasy402 Integration Guide](docs/FANTASY402_INTEGRATION_COMPLETE.md)** -
+  Complete integration documentation
+- **[Floor Control Cards](docs/FLOOR_CONTROL_FANTASY402_CARDS.md)** - Dashboard
+  card specifications
 - **[MCP Integration](.cursor/rules/mcp-integration.mdc)** - MCP server patterns
-- **[Browser Extension](.cursor/rules/browser-extension.mdc)** - Extension development patterns
+- **[Browser Extension](.cursor/rules/browser-extension.mdc)** - Extension
+  development patterns
 
 ## 🎯 **BetTicker Sniffer**
 
 <div align="center">
 
-**Transparent API interceptor** • **Zero client impact** • **Historical data analysis** • **Comprehensive metadata tracking**
+**Transparent API interceptor** • **Zero client impact** • **Historical data
+analysis** • **Comprehensive metadata tracking**
 
 </div>
 
 ### 🚀 **Sniffer Features**
 
-| Feature | Description | Benefit | Documentation |
-|---------|-------------|---------|---------------|
-| **🔄 API Interception** | Intercepts `POST /cloud/api/Manager/getBetTicker` | Complete data capture | [API Interception](.cursor/rules/api-patterns.mdc) |
-| **💾 KV Storage** | Stores raw responses in KV (7-day retention) | Persistent data archive | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| **⚡ Zero Impact** | Zero performance impact (async storage) | No client disruption | [Performance](.cursor/rules/cloudflare-workers.mdc) |
-| **📊 Analysis Endpoints** | Historical data analysis endpoints | Data exploration | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
-| **🔍 Metadata Tracking** | Comprehensive metadata tracking | Full audit trail | [Quality Standards](.cursor/rules/quality-standards.mdc) |
+| Feature                   | Description                                       | Benefit                 | Documentation                                            |
+| ------------------------- | ------------------------------------------------- | ----------------------- | -------------------------------------------------------- |
+| **🔄 API Interception**   | Intercepts `POST /cloud/api/Manager/getBetTicker` | Complete data capture   | [API Interception](.cursor/rules/api-patterns.mdc)       |
+| **💾 KV Storage**         | Stores raw responses in KV (7-day retention)      | Persistent data archive | [Database Patterns](.cursor/rules/database-patterns.mdc) |
+| **⚡ Zero Impact**        | Zero performance impact (async storage)           | No client disruption    | [Performance](.cursor/rules/cloudflare-workers.mdc)      |
+| **📊 Analysis Endpoints** | Historical data analysis endpoints                | Data exploration        | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
+| **🔍 Metadata Tracking**  | Comprehensive metadata tracking                   | Full audit trail        | [Quality Standards](.cursor/rules/quality-standards.mdc) |
 
 ### 🚀 **API Endpoints**
 
@@ -1304,184 +1415,233 @@ curl -X POST https://betting-brain-v3-prod.nolarose1968-806.workers.dev/cloud/ap
 
 ### 📊 **Data Retention**
 
-| Data Type | Retention Period | Storage Location | Documentation |
-|-----------|------------------|------------------|---------------|
-| **Raw Responses** | 7 days | KV Store | [KV Storage](.cursor/rules/cloudflare-workers.mdc) |
-| **Metadata** | 30 days | D1 Database | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| **Analysis Data** | 90 days | Analytics Engine | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
+| Data Type         | Retention Period | Storage Location | Documentation                                            |
+| ----------------- | ---------------- | ---------------- | -------------------------------------------------------- |
+| **Raw Responses** | 7 days           | KV Store         | [KV Storage](.cursor/rules/cloudflare-workers.mdc)       |
+| **Metadata**      | 30 days          | D1 Database      | [Database Patterns](.cursor/rules/database-patterns.mdc) |
+| **Analysis Data** | 90 days          | Analytics Engine | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
 
 ### 📚 **Related Documentation**
 
-- **[BetTicker Sniffer Guide](docs/BET_TICKER_SNIFFER.md)** - Complete sniffer documentation
-- **[API Interception](.cursor/rules/api-patterns.mdc)** - API interception patterns
-- **[Database Patterns](.cursor/rules/database-patterns.mdc)** - Data storage patterns
-- **[Analytics Testing](.cursor/rules/analytics-testing.mdc)** - Analytics integration
+- **[BetTicker Sniffer Guide](docs/BET_TICKER_SNIFFER.md)** - Complete sniffer
+  documentation
+- **[API Interception](.cursor/rules/api-patterns.mdc)** - API interception
+  patterns
+- **[Database Patterns](.cursor/rules/database-patterns.mdc)** - Data storage
+  patterns
+- **[Analytics Testing](.cursor/rules/analytics-testing.mdc)** - Analytics
+  integration
 
 ## 📡 **Complete API Reference**
 
 <div align="center">
 
-**50+ Production Endpoints** • **Real-time Data** • **MCP Integration** • **Fantasy402 Complete**
+**50+ Production Endpoints** • **Real-time Data** • **MCP Integration** •
+**Fantasy402 Complete**
 
 </div>
 
 ### 🚀 **System Health & Monitoring**
 
-| Endpoint | Method | Description | Documentation |
-|----------|--------|-------------|---------------|
-| `/health` | GET | Basic health check | [Health Monitoring](.cursor/rules/cloudflare-workers.mdc) |
-| `/floor/status` | GET | Detailed system status | [Floor System](.cursor/rules/99-floor.mdc) |
-| `/api/health/dns` | GET | DNS health check | [Health Monitoring](.cursor/rules/cloudflare-workers.mdc) |
-| `/api/health/dns/batch` | GET | Batch DNS health check | [Health Monitoring](.cursor/rules/cloudflare-workers.mdc) |
-| `/diagnostics` | GET | System diagnostics | [System Diagnostics](.cursor/rules/endpoint-routing.mdc) |
-| `/system-status` | GET | Detailed system status | [System Status](.cursor/rules/endpoint-routing.mdc) |
-| `/logs` | GET | System logs | [Logging](.cursor/rules/quality-standards.mdc) |
+| Endpoint                | Method | Description            | Documentation                                             |
+| ----------------------- | ------ | ---------------------- | --------------------------------------------------------- |
+| `/health`               | GET    | Basic health check     | [Health Monitoring](.cursor/rules/cloudflare-workers.mdc) |
+| `/floor/status`         | GET    | Detailed system status | [Floor System](.cursor/rules/99-floor.mdc)                |
+| `/api/health/dns`       | GET    | DNS health check       | [Health Monitoring](.cursor/rules/cloudflare-workers.mdc) |
+| `/api/health/dns/batch` | GET    | Batch DNS health check | [Health Monitoring](.cursor/rules/cloudflare-workers.mdc) |
+| `/diagnostics`          | GET    | System diagnostics     | [System Diagnostics](.cursor/rules/endpoint-routing.mdc)  |
+| `/system-status`        | GET    | Detailed system status | [System Status](.cursor/rules/endpoint-routing.mdc)       |
+| `/logs`                 | GET    | System logs            | [Logging](.cursor/rules/quality-standards.mdc)            |
 
 ### 🤖 **MCP & Intelligence Tools**
 
-| Endpoint | Method | Description | Documentation |
-|----------|--------|-------------|---------------|
-| `/mcp` | POST | JSON-RPC 2.0 MCP server | [MCP Integration](.cursor/rules/mcp-integration.mdc) |
-| `/api/events` | GET | Active events | [API Patterns](.cursor/rules/api-patterns.mdc) |
-| `/api/exposure` | GET | Betting exposure | [Risk Management](.cursor/rules/security-patterns.mdc) |
-| `/api/sharp-customers` | GET | Sharp customers | [Customer Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/steam-moves` | GET | Steam moves | [Live Betting](.cursor/rules/mcp-integration.mdc) |
-| `/api/clv` | GET | Closing line value | [Customer Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/hold` | GET | Hold percentage | [Financial Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/markets` | GET | Market data | [Market Analysis](.cursor/rules/database-patterns.mdc) |
-| `/api/customers` | GET | Customer data | [Customer Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/stats` | GET | System statistics | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
+| Endpoint               | Method | Description             | Documentation                                              |
+| ---------------------- | ------ | ----------------------- | ---------------------------------------------------------- |
+| `/mcp`                 | POST   | JSON-RPC 2.0 MCP server | [MCP Integration](.cursor/rules/mcp-integration.mdc)       |
+| `/api/events`          | GET    | Active events           | [API Patterns](.cursor/rules/api-patterns.mdc)             |
+| `/api/exposure`        | GET    | Betting exposure        | [Risk Management](.cursor/rules/security-patterns.mdc)     |
+| `/api/sharp-customers` | GET    | Sharp customers         | [Customer Analytics](.cursor/rules/analytics-testing.mdc)  |
+| `/api/steam-moves`     | GET    | Steam moves             | [Live Betting](.cursor/rules/mcp-integration.mdc)          |
+| `/api/clv`             | GET    | Closing line value      | [Customer Analytics](.cursor/rules/analytics-testing.mdc)  |
+| `/api/hold`            | GET    | Hold percentage         | [Financial Analytics](.cursor/rules/analytics-testing.mdc) |
+| `/api/markets`         | GET    | Market data             | [Market Analysis](.cursor/rules/database-patterns.mdc)     |
+| `/api/customers`       | GET    | Customer data           | [Customer Analytics](.cursor/rules/analytics-testing.mdc)  |
+| `/api/stats`           | GET    | System statistics       | [Analytics Testing](.cursor/rules/analytics-testing.mdc)   |
 
 ### 🏈 **Sports & Live Data**
 
-| Endpoint | Method | Description | Documentation |
-|----------|--------|-------------|---------------|
-| `/api/live-odds` | GET | Live odds aggregation | [Sports API](.cursor/rules/mcp-integration.mdc) |
-| `/api/live-scores` | GET | Live scores | [Sports API](.cursor/rules/mcp-integration.mdc) |
-| `/api/sports/live` | GET | Live sports data | [Live Data](.cursor/rules/cloudflare-workers.mdc) |
-| `/api/analytics/live` | GET | Live analytics | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
-| `/api/sessions/live` | GET | Live session data | [Session Management](.cursor/rules/cloudflare-workers.mdc) |
-| `/ingest` | POST | Data ingestion (JWT required) | [Data Ingestion](.cursor/rules/security-patterns.mdc) |
+| Endpoint              | Method | Description                   | Documentation                                              |
+| --------------------- | ------ | ----------------------------- | ---------------------------------------------------------- |
+| `/api/live-odds`      | GET    | Live odds aggregation         | [Sports API](.cursor/rules/mcp-integration.mdc)            |
+| `/api/live-scores`    | GET    | Live scores                   | [Sports API](.cursor/rules/mcp-integration.mdc)            |
+| `/api/sports/live`    | GET    | Live sports data              | [Live Data](.cursor/rules/cloudflare-workers.mdc)          |
+| `/api/analytics/live` | GET    | Live analytics                | [Analytics Testing](.cursor/rules/analytics-testing.mdc)   |
+| `/api/sessions/live`  | GET    | Live session data             | [Session Management](.cursor/rules/cloudflare-workers.mdc) |
+| `/ingest`             | POST   | Data ingestion (JWT required) | [Data Ingestion](.cursor/rules/security-patterns.mdc)      |
 
 ### 🎯 **Fantasy402 Integration (Complete)**
 
-| Endpoint | Method | Description | Documentation |
-|----------|--------|-------------|---------------|
-| `/api/fantasy402/performance` | GET | Agent performance | [Fantasy402 Integration](.cursor/rules/mcp-integration.mdc) |
-| `/api/fantasy402/sport-performance` | GET | Sport performance | [Performance Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/fantasy402/summary` | GET | Performance summary | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
-| `/api/fantasy402/config` | GET | Fantasy402 configuration | [Configuration](.cursor/rules/cloudflare-workers.mdc) |
-| `/api/f402/mission-control` | GET | Mission control dashboard | [Mission Control](.cursor/rules/mcp-integration.mdc) |
-| `/api/f402/bets/live` | GET | Live bets | [Live Betting](.cursor/rules/mcp-integration.mdc) |
-| `/api/f402/agents/performance` | GET | Agent performance | [Agent Management](.cursor/rules/mcp-integration.mdc) |
-| `/api/f402/agents/list` | GET | Agent list | [Agent Management](.cursor/rules/mcp-integration.mdc) |
-| `/api/f402/agents/tree` | GET | Agent tree structure | [Agent Management](.cursor/rules/mcp-integration.mdc) |
-| `/api/f402/agents/{agentID}` | GET | Agent details | [Agent Management](.cursor/rules/mcp-integration.mdc) |
-| `/api/f402/cache/metrics` | GET | Cache metrics | [Cache Optimization](.cursor/rules/cache-optimization.mdc) |
-| `/api/f402/cache/warm` | POST | Warm cache | [Cache Optimization](.cursor/rules/cache-optimization.mdc) |
-| `/api/f402/customers/active` | GET | Active customers | [Customer Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/f402/customers/staked` | GET | Staked totals | [Financial Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/f402/transactions/latest` | GET | Latest transactions | [Transaction Management](.cursor/rules/database-patterns.mdc) |
-| `/api/f402/graph` | GET | Agent graph data | [Data Visualization](.cursor/rules/mcp-integration.mdc) |
+| Endpoint                            | Method | Description               | Documentation                                                 |
+| ----------------------------------- | ------ | ------------------------- | ------------------------------------------------------------- |
+| `/api/fantasy402/performance`       | GET    | Agent performance         | [Fantasy402 Integration](.cursor/rules/mcp-integration.mdc)   |
+| `/api/fantasy402/sport-performance` | GET    | Sport performance         | [Performance Analytics](.cursor/rules/analytics-testing.mdc)  |
+| `/api/fantasy402/summary`           | GET    | Performance summary       | [Analytics Testing](.cursor/rules/analytics-testing.mdc)      |
+| `/api/fantasy402/config`            | GET    | Fantasy402 configuration  | [Configuration](.cursor/rules/cloudflare-workers.mdc)         |
+| `/api/f402/mission-control`         | GET    | Mission control dashboard | [Mission Control](.cursor/rules/mcp-integration.mdc)          |
+| `/api/f402/bets/live`               | GET    | Live bets                 | [Live Betting](.cursor/rules/mcp-integration.mdc)             |
+| `/api/f402/agents/performance`      | GET    | Agent performance         | [Agent Management](.cursor/rules/mcp-integration.mdc)         |
+| `/api/f402/agents/list`             | GET    | Agent list                | [Agent Management](.cursor/rules/mcp-integration.mdc)         |
+| `/api/f402/agents/tree`             | GET    | Agent tree structure      | [Agent Management](.cursor/rules/mcp-integration.mdc)         |
+| `/api/f402/agents/{agentID}`        | GET    | Agent details             | [Agent Management](.cursor/rules/mcp-integration.mdc)         |
+| `/api/f402/cache/metrics`           | GET    | Cache metrics             | [Cache Optimization](.cursor/rules/cache-optimization.mdc)    |
+| `/api/f402/cache/warm`              | POST   | Warm cache                | [Cache Optimization](.cursor/rules/cache-optimization.mdc)    |
+| `/api/f402/customers/active`        | GET    | Active customers          | [Customer Analytics](.cursor/rules/analytics-testing.mdc)     |
+| `/api/f402/customers/staked`        | GET    | Staked totals             | [Financial Analytics](.cursor/rules/analytics-testing.mdc)    |
+| `/api/f402/transactions/latest`     | GET    | Latest transactions       | [Transaction Management](.cursor/rules/database-patterns.mdc) |
+| `/api/f402/graph`                   | GET    | Agent graph data          | [Data Visualization](.cursor/rules/mcp-integration.mdc)       |
 
 ### 🎯 **BetTicker Sniffer**
 
-| Endpoint | Method | Description | Documentation |
-|----------|--------|-------------|---------------|
-| `/cloud/api/Manager/getBetTicker` | POST | Transparent proxy + KV storage | [API Interception](.cursor/rules/api-patterns.mdc) |
-| `/interceptor/history` | GET | Historical responses | [Data Analysis](.cursor/rules/analytics-testing.mdc) |
-| `/interceptor/response` | GET | Specific response | [Data Analysis](.cursor/rules/analytics-testing.mdc) |
-| `/interceptor/stats` | GET | Response statistics | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
+| Endpoint                          | Method | Description                    | Documentation                                            |
+| --------------------------------- | ------ | ------------------------------ | -------------------------------------------------------- |
+| `/cloud/api/Manager/getBetTicker` | POST   | Transparent proxy + KV storage | [API Interception](.cursor/rules/api-patterns.mdc)       |
+| `/interceptor/history`            | GET    | Historical responses           | [Data Analysis](.cursor/rules/analytics-testing.mdc)     |
+| `/interceptor/response`           | GET    | Specific response              | [Data Analysis](.cursor/rules/analytics-testing.mdc)     |
+| `/interceptor/stats`              | GET    | Response statistics            | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
 
 ### 📊 **Analytics & Monitoring**
 
-| Endpoint | Method | Description | Documentation |
-|----------|--------|-------------|---------------|
-| `/api/database/metrics` | GET | Database record counts | [Database Patterns](.cursor/rules/database-patterns.mdc) |
-| `/api/analytics/metrics` | GET | Analytics metrics | [Analytics Testing](.cursor/rules/analytics-testing.mdc) |
-| `/api/activity` | GET | System activity | [Activity Monitoring](.cursor/rules/cloudflare-workers.mdc) |
-| `/api/player-analysis` | GET | Player analysis | [Player Analytics](.cursor/rules/analytics-testing.mdc) |
-| `/api/transaction-history` | GET | Transaction history | [Transaction Management](.cursor/rules/database-patterns.mdc) |
-| `/api/new-users` | GET | New user metrics | [User Analytics](.cursor/rules/analytics-testing.mdc) |
+| Endpoint                   | Method | Description            | Documentation                                                 |
+| -------------------------- | ------ | ---------------------- | ------------------------------------------------------------- |
+| `/api/database/metrics`    | GET    | Database record counts | [Database Patterns](.cursor/rules/database-patterns.mdc)      |
+| `/api/analytics/metrics`   | GET    | Analytics metrics      | [Analytics Testing](.cursor/rules/analytics-testing.mdc)      |
+| `/api/activity`            | GET    | System activity        | [Activity Monitoring](.cursor/rules/cloudflare-workers.mdc)   |
+| `/api/player-analysis`     | GET    | Player analysis        | [Player Analytics](.cursor/rules/analytics-testing.mdc)       |
+| `/api/transaction-history` | GET    | Transaction history    | [Transaction Management](.cursor/rules/database-patterns.mdc) |
+| `/api/new-users`           | GET    | New user metrics       | [User Analytics](.cursor/rules/analytics-testing.mdc)         |
 
 ### 🔌 **WebSocket & Real-time**
 
-| Endpoint | Method | Description | Documentation |
-|----------|--------|-------------|---------------|
-| `/ws` | WS | Fantasy402 WebSocket connection | [WebSocket](.cursor/rules/cloudflare-workers.mdc) |
+| Endpoint | Method | Description                     | Documentation                                     |
+| -------- | ------ | ------------------------------- | ------------------------------------------------- |
+| `/ws`    | WS     | Fantasy402 WebSocket connection | [WebSocket](.cursor/rules/cloudflare-workers.mdc) |
 
 ## 📊 Dashboards & Tools
 
 ### **🎯 Quick Start**
-- **[📊 Dashboards Hub](dashboards/index.html)** - All betting intelligence dashboards in one place
-- **[🛠️ Testing Tools Hub](tools/index.html)** - Complete diagnostic and testing suite
+
+- **[📊 Dashboards Hub](dashboards/index.html)** - All betting intelligence
+  dashboards in one place
+- **[🛠️ Testing Tools Hub](tools/index.html)** - Complete diagnostic and testing
+  suite
 
 ### **Recommended Dashboards**
-- **[🌲 Floor Control Dashboard](dashboards/floor-control.html)** ⭐ - Complete system monitoring with Floor health, Forest grove status, MCP tools, live odds, scores, database metrics, Fantasy402 integration, and real-time analytics (NEW RECOMMENDED)
-- **[Enhanced Analytics](dashboards/dashboard-enhanced.html)** - Charts, alerts, and deep analytics
-- **[AI Intelligence Hub](dashboards/dashboard-pro.html)** - AI-powered insights with Claude integration
-- **[Position & Risk Tracker](dashboards/dashboard-positions.html)** - Real-time risk analysis
-- **[Basic Monitoring](dashboards/dashboard.html)** - Simple, clean monitoring interface
+
+- **[🌲 Floor Control Dashboard](dashboards/floor-control.html)** ⭐ - Complete
+  system monitoring with Floor health, Forest grove status, MCP tools, live
+  odds, scores, database metrics, Fantasy402 integration, and real-time
+  analytics (NEW RECOMMENDED)
+- **[Enhanced Analytics](dashboards/dashboard-enhanced.html)** - Charts, alerts,
+  and deep analytics
+- **[AI Intelligence Hub](dashboards/dashboard-pro.html)** - AI-powered insights
+  with Claude integration
+- **[Position & Risk Tracker](dashboards/dashboard-positions.html)** - Real-time
+  risk analysis
+- **[Basic Monitoring](dashboards/dashboard.html)** - Simple, clean monitoring
+  interface
 
 ### **Essential Tools**
-- **[System Health Monitor](tools/system-health-monitor.html)** - Real-time system diagnostics
-- **[Extension Test Suite](tools/extension-test-suite.html)** - Automated extension testing
+
+- **[System Health Monitor](tools/system-health-monitor.html)** - Real-time
+  system diagnostics
+- **[Extension Test Suite](tools/extension-test-suite.html)** - Automated
+  extension testing
 - **[Flow Tester](tools/flow-tester.html)** - End-to-end data flow validation
-- **[Troubleshooting Guide](tools/troubleshooting-guide.html)** - Intelligent problem diagnosis
+- **[Troubleshooting Guide](tools/troubleshooting-guide.html)** - Intelligent
+  problem diagnosis
 
 ### **Documentation**
-- **[📊 Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md)** - Complete dashboard guide and specifications 🆕
+
+- **[📊 Dashboard Documentation](docs/DASHBOARD_DOCUMENTATION.md)** - Complete
+  dashboard guide and specifications 🆕
 - **[Dashboard Collection](README.md)** - Complete dashboard overview
-- **[Tools & Utilities](README.md)** - HTML tools and utilities  
-- **[Testing Guide](docs/guides/TESTING_GUIDE.md)** - Extension testing and deployment
+- **[Tools & Utilities](README.md)** - HTML tools and utilities
+- **[Testing Guide](docs/guides/TESTING_GUIDE.md)** - Extension testing and
+  deployment
 - **[Agent Risk Guide](docs/guides/AGENT_RISK_GUIDE.md)** - Risk analysis guide
 - **[Start Here Guide](docs/guides/START_HERE.md)** - Complete setup guide
-- **[🔧 Debugging Data Capture](docs/guides/DEBUGGING_DATA_CAPTURE.md)** - Fix data capture issues
+- **[🔧 Debugging Data Capture](docs/guides/DEBUGGING_DATA_CAPTURE.md)** - Fix
+  data capture issues
 
 ## 📚 Additional Documentation
 
 ### Core Documentation
+
 - **[Quick Start Guide](docs/QUICKSTART.md)** - 15-second setup
-- **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical overview
+- **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical
+  overview
 - **[Automation Guide](docs/AUTOMATION_GUIDE.md)** - Testing workflows
 
 ### API Documentation ✨ NEW
-- **[REST API Reference](docs/REST_API_REFERENCE.md)** - Complete REST API docs (15+ endpoints) 🆕
-- **[API Enhancement Summary](docs/API_ENHANCEMENT_SUMMARY.md)** - API layer overview & features 🆕
-- **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server status & overview
-- **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API docs for 24 tools
-- **[MCP Testing Guide](docs/guides/TESTING_GUIDE.md)** - Comprehensive testing procedures
+
+- **[REST API Reference](docs/REST_API_REFERENCE.md)** - Complete REST API docs
+  (15+ endpoints) 🆕
+- **[API Enhancement Summary](docs/API_ENHANCEMENT_SUMMARY.md)** - API layer
+  overview & features 🆕
+- **[MCP Integration Status](docs/MCP_INTEGRATION_STATUS.md)** - MCP server
+  status & overview
+- **[MCP Endpoints Reference](docs/MCP_ENDPOINTS.md)** - Complete API docs for
+  24 tools
+- **[MCP Testing Guide](docs/guides/TESTING_GUIDE.md)** - Comprehensive testing
+  procedures
 
 ### System Integration
-- **[Endpoint & Dashboard Integration](docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete integration guide
-- **[System Integration Map](docs/SYSTEM_INTEGRATION_MAP.md)** - Visual architecture diagrams
-- **[Database & Cron Verification](docs/DATABASE_CRON_VERIFICATION.md)** - System verification
+
+- **[Endpoint & Dashboard Integration](docs/ENDPOINT_DASHBOARD_INTEGRATION.md)** -
+  Complete integration guide
+- **[System Integration Map](docs/SYSTEM_INTEGRATION_MAP.md)** - Visual
+  architecture diagrams
+- **[Database & Cron Verification](docs/DATABASE_CRON_VERIFICATION.md)** -
+  System verification
 
 ### Quality & Testing
-- **[Quality Standards](docs/QUALITY_STANDARDS.md)** - Code quality standards & best practices (NEW!) 📏
+
+- **[Quality Standards](docs/QUALITY_STANDARDS.md)** - Code quality standards &
+  best practices (NEW!) 📏
 - **[Test Audit Report](docs/TEST_AUDIT_REPORT.md)** - Quality score: 100/100
-- **[Error Path Testing](docs/ERROR_PATH_TESTING.md)** - Comprehensive error path test suite (299 tests, 81% coverage) 🆕
+- **[Error Path Testing](docs/ERROR_PATH_TESTING.md)** - Comprehensive error
+  path test suite (299 tests, 81% coverage) 🆕
 - **[Code Quality Audit](docs/CODE_QUALITY_AUDIT.md)** - Comprehensive review
-- **[AI-Friendly Testing Guide](docs/testing/AI_FRIENDLY_TESTING.md)** - AI-optimized test patterns 🤖
-- **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception & archiving
+- **[AI-Friendly Testing Guide](docs/testing/AI_FRIENDLY_TESTING.md)** -
+  AI-optimized test patterns 🤖
+- **[BetTicker Sniffer](docs/BET_TICKER_SNIFFER.md)** - API interception &
+  archiving
 
 ### Developer Resources
 
 #### AI Development
+
 - **[Cursor Rules](.cursorrules)** - AI development standards and patterns 🤖
-- **[AI-Friendly Testing](.cursor/rules/ai-friendly-testing.mdc)** - AI-optimized test patterns 🤖
-- **[Style Guide](docs/STYLE_GUIDE.md)** - Human-readable coding standards with examples 📚
+- **[AI-Friendly Testing](.cursor/rules/ai-friendly-testing.mdc)** -
+  AI-optimized test patterns 🤖
+- **[Style Guide](docs/STYLE_GUIDE.md)** - Human-readable coding standards with
+  examples 📚
 - **[Cursor Rules Guide](docs/CURSOR_RULES.md)** - Complete rules documentation
-- **[Code Searchability](docs/QUICKSTART.md)** - ast-grep patterns for code discovery
+- **[Code Searchability](docs/QUICKSTART.md)** - ast-grep patterns for code
+  discovery
 - **[Root Structure](docs/ROOT_STRUCTURE.md)** - Root directory reference
 - **[Codebase Review](docs/CODEBASE_REVIEW.md)** - Complete codebase analysis
-- **[Production Patterns](docs/PRODUCTION_PATTERNS.md)** - Scale & security guide (NEW!)
-- **[Production Integration](docs/PRODUCTION_INTEGRATION.md)** - MCP integration guide (NEW!)
-- **[Real-Time Modules](docs/REALTIME_MODULES.md)** - WebSocket + Positions + Agents (NEW!)
+- **[Production Patterns](docs/PRODUCTION_PATTERNS.md)** - Scale & security
+  guide (NEW!)
+- **[Production Integration](docs/PRODUCTION_INTEGRATION.md)** - MCP integration
+  guide (NEW!)
+- **[Real-Time Modules](docs/REALTIME_MODULES.md)** - WebSocket + Positions +
+  Agents (NEW!)
 
 ## 📞 Support
 
-- **Documentation**: [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
+- **Documentation**:
+  [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - **Issues**: GitHub Issues
 - **Discord**: [Cloudflare Discord](https://discord.cloudflare.com/)
 

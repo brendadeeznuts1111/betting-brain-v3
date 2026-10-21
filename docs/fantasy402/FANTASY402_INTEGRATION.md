@@ -7,25 +7,29 @@
 ---
 
 **Metadata:**
+
 - **Platform:** https://fantasy402.com
 - **Integration Type:** Transparent API Proxy + Browser Extension
 - **Interception Point:** `/cloud/api/Manager/getBetTicker`
 - **Topics:** #integration #proxy #api #browser-extension
 - **Audience:** Developers, System Architects
-- **Related Docs:** [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md), [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)
+- **Related Docs:** [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md),
+  [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)
 
 ---
 
 ## 📊 Executive Summary
 
-The **Betting-Brain v3** system integrates with **fantasy402.com** (a sports betting platform) through:
+The **Betting-Brain v3** system integrates with **fantasy402.com** (a sports
+betting platform) through:
 
 1. **🌐 Browser Extension** - Intercepts API calls on the client side
 2. **☁️ Cloudflare Worker** - Acts as a transparent proxy
 3. **💾 KV Storage** - Archives all responses for analysis
 4. **📊 Intelligence APIs** - Processes betting data in real-time
 
-**Key Feature:** **Zero-impact transparent proxy** - Users experience no performance degradation or functionality changes.
+**Key Feature:** **Zero-impact transparent proxy** - Users experience no
+performance degradation or functionality changes.
 
 ---
 
@@ -97,9 +101,7 @@ The **Betting-Brain v3** system integrates with **fantasy402.com** (a sports bet
 {
   "name": "BetTicker Debug Extension",
   "version": "1.0.1-debug",
-  "host_permissions": [
-    "https://fantasy402.com/*"
-  ],
+  "host_permissions": ["https://fantasy402.com/*"],
   "content_scripts": [
     {
       "matches": ["https://fantasy402.com/*"],
@@ -111,6 +113,7 @@ The **Betting-Brain v3** system integrates with **fantasy402.com** (a sports bet
 ```
 
 **Key Points:**
+
 - ✅ **Host Permissions:** Extension can access fantasy402.com
 - ✅ **Content Script:** Injects at document_start for early interception
 - ✅ **Match Pattern:** Only runs on fantasy402.com (not other sites)
@@ -122,6 +125,7 @@ The **Betting-Brain v3** system integrates with **fantasy402.com** (a sports bet
 **File:** `browser-extension/content.js`
 
 **Key Constants:**
+
 ```javascript
 const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
 const TARGET_PATH = '/cloud/api/Manager/getBetTicker';
@@ -135,18 +139,18 @@ const ORIGIN_URL = 'https://fantasy402.com';
 const originalFetch = window.fetch;
 
 // 2. Override window.fetch
-window.fetch = async function(...args) {
+window.fetch = async function (...args) {
   const [resource, config] = args;
   const url = typeof resource === 'string' ? resource : resource.url;
-  
+
   // 3. Only intercept getBetTicker requests
   if (!url.includes(TARGET_PATH)) {
     return originalFetch(...args); // Pass through other requests
   }
-  
+
   // 4. Capture cookies
   const cookies = document.cookie;
-  
+
   // 5. Redirect to worker
   const workerUrl = WORKER_URL + TARGET_PATH;
   const modifiedConfig = {
@@ -155,17 +159,18 @@ window.fetch = async function(...args) {
       ...config?.headers,
       'X-Original-Cookies': cookies || '',
       'X-Original-Host': 'fantasy402.com',
-      'X-Interceptor-Version': '1.0.1'
+      'X-Interceptor-Version': '1.0.1',
     },
-    credentials: 'include'
+    credentials: 'include',
   };
-  
+
   // 6. Forward to worker
   return fetch(workerUrl, modifiedConfig);
 };
 ```
 
 **Enterprise Features:**
+
 - ✅ **Circuit Breaker** - Prevents cascading failures (opens after 5 failures)
 - ✅ **Retry Logic** - 3 attempts with exponential backoff
 - ✅ **Health Checks** - Periodic worker health monitoring
@@ -182,6 +187,7 @@ window.fetch = async function(...args) {
 **File:** `src/interceptors/bet-ticker-sniffer.ts`
 
 **Constants:**
+
 ```typescript
 const TARGET_ORIGIN = 'https://fantasy402.com';
 const TARGET_PATH = '/cloud/api/Manager/getBetTicker';
@@ -196,24 +202,24 @@ export async function handleBetTickerInterception(
   ctx: ExecutionContext
 ): Promise<Response> {
   const requestId = Date.now().toString(36);
-  
+
   // 1. Extract cookies from extension header
   const originalCookies = request.headers.get('X-Original-Cookies') || '';
-  
+
   // 2. Build origin request
   const originUrl = `${TARGET_ORIGIN}${TARGET_PATH}`;
   const originHeaders = new Headers(request.headers);
   originHeaders.set('Host', 'fantasy402.com');
   originHeaders.set('Cookie', originalCookies);
   originHeaders.delete('X-Original-Cookies'); // Don't leak to origin
-  
+
   // 3. Forward to fantasy402.com
   const originResponse = await fetch(originUrl, {
     method: request.method,
     headers: originHeaders,
     body: request.body,
   });
-  
+
   // 4. Store response in KV (async, non-blocking)
   ctx.waitUntil(
     env.BET_TICKER_RAW.put(
@@ -226,21 +232,22 @@ export async function handleBetTickerInterception(
           status: originResponse.status,
           ip: request.headers.get('cf-connecting-ip'),
           userAgent: request.headers.get('user-agent'),
-          contentLength: originResponse.headers.get('content-length')
-        }
+          contentLength: originResponse.headers.get('content-length'),
+        },
       }
     )
   );
-  
+
   // 5. Return original response (transparent to user)
   return new Response(originResponse.body, {
     status: originResponse.status,
-    headers: originResponse.headers
+    headers: originResponse.headers,
   });
 }
 ```
 
 **Key Features:**
+
 - ✅ **Zero Performance Impact** - KV storage is async (ctx.waitUntil)
 - ✅ **Cookie Forwarding** - Preserves fantasy402.com authentication
 - ✅ **Original Host** - Sets correct Host header for fantasy402.com
@@ -254,6 +261,7 @@ export async function handleBetTickerInterception(
 ### KV Namespace: BET_TICKER_RAW
 
 **Configuration:** `wrangler.toml`
+
 ```toml
 [[kv_namespaces]]
 binding = "BET_TICKER_RAW"
@@ -261,6 +269,7 @@ id = "..."
 ```
 
 **Storage Pattern:**
+
 ```
 Key: raw:getBetTicker:{timestamp}
 Value: Raw JSON response from fantasy402.com
@@ -275,6 +284,7 @@ Metadata: {
 ```
 
 **Automatic Cleanup:**
+
 - ✅ 7-day TTL (auto-expiration)
 - ✅ No manual cleanup required
 - ✅ Stays within Cloudflare free tier (1GB)
@@ -288,16 +298,19 @@ Metadata: {
 **Purpose:** Retrieve archived BetTicker responses
 
 **Query Parameters:**
+
 - `limit` - Number of records to return (default: 100)
 - `startTime` - Unix timestamp (filter by start time)
 - `endTime` - Unix timestamp (filter by end time)
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/history?limit=10"
 ```
 
 **Example Response:**
+
 ```json
 [
   {
@@ -321,14 +334,17 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/history?
 **Purpose:** Retrieve specific BetTicker response
 
 **Query Parameters:**
+
 - `key` - KV key (from history response)
 
 **Example Request:**
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/response?key=raw:getBetTicker:1696723456789"
 ```
 
 **Example Response:**
+
 ```json
 {
   "bets": [...],
@@ -347,6 +363,7 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/response
 **Solution:** Browser extension captures cookies and forwards via custom header
 
 **Flow:**
+
 ```
 1. User logs into fantasy402.com
 2. Browser stores authentication cookies
@@ -359,6 +376,7 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/response
 ```
 
 **Security Measures:**
+
 - ✅ **HTTPS Only** - All communication encrypted
 - ✅ **Header Cleanup** - `X-Original-Cookies` removed before forwarding
 - ✅ **Same-Origin Policy** - Extension only runs on fantasy402.com
@@ -372,12 +390,14 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/response
 ### Local Development
 
 **1. Start Worker:**
+
 ```bash
 cd /Users/nolarose/ffffff
 bun run dev
 ```
 
 **2. Load Extension:**
+
 ```
 1. Open Chrome → chrome://extensions/
 2. Enable "Developer mode"
@@ -387,6 +407,7 @@ bun run dev
 ```
 
 **3. Test on fantasy402.com:**
+
 ```
 1. Visit: https://fantasy402.com
 2. Log in (if not already logged in)
@@ -400,17 +421,20 @@ bun run dev
 ### Production Deployment
 
 **1. Deploy Worker:**
+
 ```bash
 wrangler deploy --env production
 ```
 
 **2. Update Extension:**
+
 ```javascript
 // browser-extension/content.js
 const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
 ```
 
 **3. Publish Extension:**
+
 ```
 1. Zip browser-extension/ directory
 2. Upload to Chrome Web Store
@@ -430,6 +454,7 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -451,6 +476,7 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/system-status
 ```
 
 **Response:**
+
 ```json
 {
   "timestamp": "2025-10-07T12:34:56.789Z",
@@ -475,6 +501,7 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/system-status
 ### Extension Stats
 
 **Check in Browser Console:**
+
 ```javascript
 // On fantasy402.com, run:
 window.__betTickerStats
@@ -506,10 +533,12 @@ window.__betTickerStats
 ### Issue 1: No Data Captured
 
 **Symptoms:**
+
 - `/interceptor/history` returns empty array
 - Dashboard shows 0 records
 
 **Checklist:**
+
 - [ ] Browser extension installed and enabled
 - [ ] User visited fantasy402.com (not localhost)
 - [ ] User logged into fantasy402.com
@@ -518,6 +547,7 @@ window.__betTickerStats
 - [ ] Console shows "Intercepting getBetTicker request"
 
 **Solution:**
+
 1. Reload extension: `chrome://extensions/` → Reload icon
 2. Visit fantasy402.com
 3. Log in
@@ -529,18 +559,21 @@ window.__betTickerStats
 ### Issue 2: 401 Authentication Errors
 
 **Symptoms:**
+
 - Worker returns 401 errors
 - Console shows "authentication error"
 
 **Cause:** Cookies not forwarded correctly
 
 **Checklist:**
+
 - [ ] User logged into fantasy402.com
 - [ ] Cookies available: `document.cookie` (check in console)
 - [ ] Extension has host permissions for fantasy402.com
 - [ ] `X-Original-Cookies` header present in worker request
 
 **Solution:**
+
 1. Ensure logged into fantasy402.com
 2. Check `document.cookie` in console
 3. Verify extension manifest has `"https://fantasy402.com/*"` permission
@@ -552,17 +585,21 @@ window.__betTickerStats
 ### Issue 3: Worker Unreachable
 
 **Symptoms:**
+
 - Console shows "Failed to fetch"
 - Circuit breaker opens
 
 **Checklist:**
+
 - [ ] Worker deployed: `wrangler deploy`
 - [ ] Worker URL correct in extension
 - [ ] Network connectivity (test: `curl WORKER_URL/health`)
 - [ ] Cloudflare Workers service healthy
 
 **Solution:**
-1. Test worker: `curl https://betting-brain-v3.nolarose1968-806.workers.dev/health`
+
+1. Test worker:
+   `curl https://betting-brain-v3.nolarose1968-806.workers.dev/health`
 2. If fails: Re-deploy worker
 3. Update extension with correct URL
 4. Reload extension
@@ -573,14 +610,15 @@ window.__betTickerStats
 
 ### Expected Latency
 
-| Operation | Latency | Notes |
-|-----------|---------|-------|
-| **Interception Overhead** | < 5ms | Extension overhead |
-| **Worker Processing** | 20-50ms | Proxy + KV storage |
-| **fantasy402.com API** | 100-500ms | Origin server response |
-| **Total (End-to-End)** | 120-555ms | User perceives this |
+| Operation                 | Latency   | Notes                  |
+| ------------------------- | --------- | ---------------------- |
+| **Interception Overhead** | < 5ms     | Extension overhead     |
+| **Worker Processing**     | 20-50ms   | Proxy + KV storage     |
+| **fantasy402.com API**    | 100-500ms | Origin server response |
+| **Total (End-to-End)**    | 120-555ms | User perceives this    |
 
 **Optimization:**
+
 - ✅ KV storage is async (doesn't block response)
 - ✅ Circuit breaker prevents cascading failures
 - ✅ Fallback to origin if worker slow
@@ -590,11 +628,13 @@ window.__betTickerStats
 ### Storage Estimates
 
 **Assumptions:**
+
 - 1 request per minute
 - 10KB per response
 - 7-day retention
 
 **Storage:**
+
 ```
 1 req/min × 60 min/hr × 24 hr/day × 7 days = 10,080 requests
 10,080 requests × 10KB = ~100MB
@@ -606,44 +646,49 @@ window.__betTickerStats
 
 ## 🔗 API Endpoints Reference
 
-| Endpoint | Method | Purpose | Docs |
-|----------|--------|---------|------|
-| `/cloud/api/Manager/getBetTicker` | POST | Transparent proxy | [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md) |
-| `/interceptor/history` | GET | List archived responses | [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md) |
-| `/interceptor/response` | GET | Get specific response | [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md) |
-| `/health` | GET | Worker health check | [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) |
-| `/system-status` | GET | Detailed system status | [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) |
-| `/diagnostics` | GET | Binding diagnostics | [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) |
+| Endpoint                          | Method | Purpose                 | Docs                                                                   |
+| --------------------------------- | ------ | ----------------------- | ---------------------------------------------------------------------- |
+| `/cloud/api/Manager/getBetTicker` | POST   | Transparent proxy       | [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md)                         |
+| `/interceptor/history`            | GET    | List archived responses | [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md)                         |
+| `/interceptor/response`           | GET    | Get specific response   | [BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md)                         |
+| `/health`                         | GET    | Worker health check     | [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) |
+| `/system-status`                  | GET    | Detailed system status  | [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) |
+| `/diagnostics`                    | GET    | Binding diagnostics     | [ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md) |
 
 ---
 
 ## 📚 Related Documentation
 
-- **[BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md)** - Technical implementation details
-- **[ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)** - Complete endpoint guide
+- **[BET_TICKER_SNIFFER.md](BET_TICKER_SNIFFER.md)** - Technical implementation
+  details
+- **[ENDPOINT_DASHBOARD_INTEGRATION.md](ENDPOINT_DASHBOARD_INTEGRATION.md)** -
+  Complete endpoint guide
 - **[browser-extension/README.md](../README.md)** - Extension installation guide
 - **[TESTING_GUIDE.md](guides/TESTING_GUIDE.md)** - Complete testing procedures
-- **[DEBUGGING_DATA_CAPTURE.md](guides/DEBUGGING_DATA_CAPTURE.md)** - Troubleshooting guide
+- **[DEBUGGING_DATA_CAPTURE.md](guides/DEBUGGING_DATA_CAPTURE.md)** -
+  Troubleshooting guide
 
 ---
 
 ## ✅ Integration Status
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| **Browser Extension** | ✅ Complete | Manifest v3, circuit breaker, health checks |
-| **Worker Proxy** | ✅ Complete | Transparent, zero-impact |
-| **KV Storage** | ✅ Complete | 7-day TTL, auto-expiration |
-| **Analysis Endpoints** | ✅ Complete | History + specific response retrieval |
-| **Monitoring** | ✅ Complete | Health checks, system status, extension stats |
-| **Documentation** | ✅ Complete | Comprehensive guides and troubleshooting |
-| **Testing** | ✅ Complete | Unit tests, integration tests, manual testing |
+| Component              | Status      | Notes                                         |
+| ---------------------- | ----------- | --------------------------------------------- |
+| **Browser Extension**  | ✅ Complete | Manifest v3, circuit breaker, health checks   |
+| **Worker Proxy**       | ✅ Complete | Transparent, zero-impact                      |
+| **KV Storage**         | ✅ Complete | 7-day TTL, auto-expiration                    |
+| **Analysis Endpoints** | ✅ Complete | History + specific response retrieval         |
+| **Monitoring**         | ✅ Complete | Health checks, system status, extension stats |
+| **Documentation**      | ✅ Complete | Comprehensive guides and troubleshooting      |
+| **Testing**            | ✅ Complete | Unit tests, integration tests, manual testing |
 
 ---
 
 **Status:** ✅ **PRODUCTION-READY**
 
-The fantasy402.com integration is **fully implemented, tested, and documented**. The system provides:
+The fantasy402.com integration is **fully implemented, tested, and documented**.
+The system provides:
+
 - ✅ **Zero-impact transparent proxy**
 - ✅ **Enterprise-grade reliability** (circuit breaker, retries, fallback)
 - ✅ **Comprehensive monitoring** (health checks, metrics, diagnostics)
@@ -656,4 +701,3 @@ The fantasy402.com integration is **fully implemented, tested, and documented**.
 **Generated:** 2025-10-07  
 **Maintainer:** Betting-Brain Team  
 **Support:** See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-

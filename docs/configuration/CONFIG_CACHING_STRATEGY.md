@@ -8,7 +8,8 @@
 
 ## 🎯 Overview
 
-This document describes the **multi-tier configuration caching strategy** for Fantasy402 bootstrap data. This includes:
+This document describes the **multi-tier configuration caching strategy** for
+Fantasy402 bootstrap data. This includes:
 
 - Sports types (NFL, NBA, MLB, etc.)
 - Wager types (Straight, Parlay, Teaser, etc.)
@@ -18,7 +19,8 @@ This document describes the **multi-tier configuration caching strategy** for Fa
 
 **Why Cache This Data?**
 
-Configuration data changes infrequently (maybe once per season) but is needed on every page load. By caching it aggressively, we:
+Configuration data changes infrequently (maybe once per season) but is needed on
+every page load. By caching it aggressively, we:
 
 - ⚡ **Instant UI load** (no network wait)
 - 📉 **90% reduction in API calls**
@@ -89,7 +91,7 @@ sequenceDiagram
         deactivate Worker
         Browser->>IndexedDB: PUT 'appConfig' (Save for next time)
     end
-    
+
     Note over Cron, Origin, KV: Scheduled Cache Refresh (every hour)
     Cron->>Worker: Trigger scheduled run
     activate Worker
@@ -108,16 +110,19 @@ sequenceDiagram
 ### Server-Side (Worker)
 
 **`src/api/fantasy402-config.ts`**
+
 - Main configuration API
 - KV cache management
 - Fetches from Origin on cache miss
 
 **Key Functions:**
+
 - `getFantasy402Config()` - GET endpoint handler
 - `warmConfigCache()` - Called by cron to refresh cache
 - `invalidateConfigCache()` - Force cache clear (admin use)
 
 **`src/index.ts`** (updated)
+
 - Added cache warmer to hourly cron job
 - Runs alongside sharp calculation
 
@@ -126,11 +131,13 @@ sequenceDiagram
 ### Client-Side (Browser Extension)
 
 **`browser-extension/fantasy402-config-cache.js`**
+
 - IndexedDB manager
 - Automatic cache warming on page load
 - Stale-while-revalidate pattern
 
 **Key Functions:**
+
 - `get()` - Get config (IndexedDB → Worker → Origin)
 - `refresh()` - Force refresh from Worker
 - `clear()` - Clear local cache
@@ -148,10 +155,10 @@ sequenceDiagram
 const config = await fantasy402ConfigCache.get();
 
 if (config) {
-    // Render UI with config
-    renderSportsMenu(config.sports);
-    setupWagerTypes(config.wagerTypes);
-    setBettingLimits(config.bettingRules);
+  // Render UI with config
+  renderSportsMenu(config.sports);
+  setupWagerTypes(config.wagerTypes);
+  setBettingLimits(config.bettingRules);
 }
 ```
 
@@ -159,22 +166,18 @@ if (config) {
 
 ```javascript
 // Get configuration with fallback to hardcoded values
-const config = await fantasy402ConfigCache.get() || {
-    sports: [
-        { id: '1', name: 'NFL', code: 'NFL', enabled: true },
-        { id: '2', name: 'NBA', code: 'NBA', enabled: true }
-    ],
-    wagerTypes: [
-        { id: '1', name: 'Straight', description: 'Single game wager' }
-    ],
-    teaserTypes: [
-        { id: '1', name: '6 Point Teaser', points: 6 }
-    ],
-    bettingRules: {
-        minWager: 10,
-        maxWager: 10000,
-        maxParlay: 15
-    }
+const config = (await fantasy402ConfigCache.get()) || {
+  sports: [
+    { id: '1', name: 'NFL', code: 'NFL', enabled: true },
+    { id: '2', name: 'NBA', code: 'NBA', enabled: true },
+  ],
+  wagerTypes: [{ id: '1', name: 'Straight', description: 'Single game wager' }],
+  teaserTypes: [{ id: '1', name: '6 Point Teaser', points: 6 }],
+  bettingRules: {
+    minWager: 10,
+    maxWager: 10000,
+    maxParlay: 15,
+  },
 };
 ```
 
@@ -183,8 +186,8 @@ const config = await fantasy402ConfigCache.get() || {
 ```javascript
 // Force refresh (e.g., after admin update)
 document.getElementById('refreshBtn').addEventListener('click', async () => {
-    await fantasy402ConfigCache.refresh();
-    location.reload(); // Reload UI with new config
+  await fantasy402ConfigCache.refresh();
+  location.reload(); // Reload UI with new config
 });
 ```
 
@@ -207,41 +210,43 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/api/fantasy402/config
 ```
 
 **Response:**
+
 ```json
 {
-    "sports": [
-        {
-            "id": "1",
-            "name": "NFL",
-            "code": "NFL",
-            "enabled": true
-        }
-    ],
-    "wagerTypes": [
-        {
-            "id": "1",
-            "name": "Straight",
-            "description": "Single game wager"
-        }
-    ],
-    "teaserTypes": [
-        {
-            "id": "1",
-            "name": "6 Point Teaser",
-            "points": 6
-        }
-    ],
-    "bettingRules": {
-        "minWager": 10,
-        "maxWager": 10000,
-        "maxParlay": 15
-    },
-    "version": "1.0.0",
-    "lastUpdated": "2025-10-08T14:30:00.000Z"
+  "sports": [
+    {
+      "id": "1",
+      "name": "NFL",
+      "code": "NFL",
+      "enabled": true
+    }
+  ],
+  "wagerTypes": [
+    {
+      "id": "1",
+      "name": "Straight",
+      "description": "Single game wager"
+    }
+  ],
+  "teaserTypes": [
+    {
+      "id": "1",
+      "name": "6 Point Teaser",
+      "points": 6
+    }
+  ],
+  "bettingRules": {
+    "minWager": 10,
+    "maxWager": 10000,
+    "maxParlay": 15
+  },
+  "version": "1.0.0",
+  "lastUpdated": "2025-10-08T14:30:00.000Z"
 }
 ```
 
 **Headers:**
+
 - `X-Cache: HIT` - Served from KV cache
 - `X-Cache: MISS` - Fetched from Origin
 - `Cache-Control: public, max-age=3600` - Browser can cache for 1 hour
@@ -255,8 +260,8 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/api/fantasy402/config
 // In src/index.ts scheduled() handler
 
 if (cron === '0 * * * *') {
-    const { warmConfigCache } = await import('./api/fantasy402-config');
-    await warmConfigCache(env);
+  const { warmConfigCache } = await import('./api/fantasy402-config');
+  await warmConfigCache(env);
 }
 ```
 
@@ -276,20 +281,22 @@ await invalidateConfigCache(env);
 
 ## ⏱️ Cache TTLs
 
-| Layer | TTL | Why |
-|-------|-----|-----|
+| Layer         | TTL      | Why                                       |
+| ------------- | -------- | ----------------------------------------- |
 | **IndexedDB** | 24 hours | Persists across sessions, valid for a day |
-| **KV** | 1 hour | Balances freshness vs edge cache benefit |
-| **Origin** | N/A | Source of truth, no TTL |
+| **KV**        | 1 hour   | Balances freshness vs edge cache benefit  |
+| **Origin**    | N/A      | Source of truth, no TTL                   |
 
 ### TTL Rationale
 
 **24 hours (IndexedDB):**
+
 - Config rarely changes (maybe once per season)
 - Long TTL = better UX (instant load)
 - Automatically refreshed if older than 24 hours
 
 **1 hour (KV):**
+
 - Balances freshness and performance
 - Hourly cron job keeps it warm
 - Fast edge response (< 50ms)
@@ -338,20 +345,22 @@ await invalidateConfigCache(env);
 
 ### Cache Hit Rates
 
-| Layer | Expected Hit Rate | Latency |
-|-------|------------------|---------|
-| IndexedDB | 99% | 0ms (instant) |
-| KV | 95% | < 50ms |
-| Origin | 5% | 200-500ms |
+| Layer     | Expected Hit Rate | Latency       |
+| --------- | ----------------- | ------------- |
+| IndexedDB | 99%               | 0ms (instant) |
+| KV        | 95%               | < 50ms        |
+| Origin    | 5%                | 200-500ms     |
 
 ### Request Reduction
 
 **Before caching:**
+
 - 1,000 users
 - Each loads config 10x/day
 - = 10,000 Origin requests/day
 
 **After caching:**
+
 - IndexedDB serves 99% (9,900 requests)
 - KV serves 95% of remaining (95 requests)
 - Origin serves 5% (5 requests)
@@ -363,7 +372,8 @@ await invalidateConfigCache(env);
 
 ### Configuration Data in Analytics Jobs
 
-Configuration caching directly supports analytics by providing fast access to metadata:
+Configuration caching directly supports analytics by providing fast access to
+metadata:
 
 ```typescript
 // In analytics job
@@ -394,13 +404,13 @@ const betsBySport = bets.results.map(row => ({
 // WebSocket stream + cached config
 const config = await getConfigFromCache(env);
 
-webSocket.onmessage = (event) => {
-    const bet = JSON.parse(event.data);
-    
-    // Use cached config for UI display
-    const wagerType = config.wagerTypes.find(w => w.id === bet.wagerTypeId);
-    
-    console.log(`Sharp bet detected: ${wagerType.name}`);
+webSocket.onmessage = event => {
+  const bet = JSON.parse(event.data);
+
+  // Use cached config for UI display
+  const wagerType = config.wagerTypes.find(w => w.id === bet.wagerTypeId);
+
+  console.log(`Sharp bet detected: ${wagerType.name}`);
 };
 ```
 
@@ -409,21 +419,21 @@ webSocket.onmessage = (event) => {
 ```typescript
 // Cron job runs hourly
 async function calculateCLV(env: Env) {
-    // 1. Get config from KV (fast!)
-    const config = await getConfigFromCache(env);
-    
-    // 2. Query historical data from D1
-    const bets = await env.ANALYTICS.prepare(`...`).all();
-    
-    // 3. Combine with config metadata
-    const analysis = bets.map(bet => ({
-        ...bet,
-        sportName: config.sports.find(s => s.id === bet.sportId)?.name,
-        wagerType: config.wagerTypes.find(w => w.id === bet.wagerTypeId)?.name
-    }));
-    
-    // 4. Save results
-    await saveAnalysis(analysis);
+  // 1. Get config from KV (fast!)
+  const config = await getConfigFromCache(env);
+
+  // 2. Query historical data from D1
+  const bets = await env.ANALYTICS.prepare(`...`).all();
+
+  // 3. Combine with config metadata
+  const analysis = bets.map(bet => ({
+    ...bet,
+    sportName: config.sports.find(s => s.id === bet.sportId)?.name,
+    wagerType: config.wagerTypes.find(w => w.id === bet.wagerTypeId)?.name,
+  }));
+
+  // 4. Save results
+  await saveAnalysis(analysis);
 }
 ```
 
@@ -487,6 +497,7 @@ wrangler tail --format pretty
 **Symptom:** Old config shown in browser even after admin update
 
 **Solutions:**
+
 1. Check IndexedDB TTL (24 hours by default)
 2. Force refresh: `await fantasy402ConfigCache.refresh()`
 3. Clear and reload: `await fantasy402ConfigCache.clear(); location.reload();`
@@ -498,6 +509,7 @@ wrangler tail --format pretty
 **Symptom:** Worker returns old config
 
 **Solutions:**
+
 1. Check cron job is running: `wrangler tail`
 2. Manual invalidation: Call `invalidateConfigCache(env)`
 3. Wait for next hourly cron (automatic refresh)
@@ -509,6 +521,7 @@ wrangler tail --format pretty
 **Symptom:** Too many requests hitting fantasy402.com
 
 **Solutions:**
+
 1. Verify KV TTL is set (1 hour)
 2. Check cron job is running hourly
 3. Verify clients are caching in IndexedDB
@@ -519,7 +532,8 @@ wrangler tail --format pretty
 
 - [Architecture Complete](ARCHITECTURE_COMPLETE.md) - Full system architecture
 - [Queue-Based Logging](QUEUE_BASED_LOGGING.md) - Async processing patterns
-- [WebSocket Implementation](WEBSOCKET_IMPLEMENTATION_COMPLETE.md) - Real-time connections
+- [WebSocket Implementation](WEBSOCKET_IMPLEMENTATION_COMPLETE.md) - Real-time
+  connections
 
 ---
 
@@ -553,7 +567,7 @@ POST /api/fantasy402/config/invalidate
 ```typescript
 // Runs automatically every hour
 if (cron === '0 * * * *') {
-    await warmConfigCache(env);
+  await warmConfigCache(env);
 }
 ```
 
@@ -562,6 +576,7 @@ if (cron === '0 * * * *') {
 **Status:** ✅ **PRODUCTION-READY**
 
 **Benefits:**
+
 - ⚡ **Instant load** (0ms from IndexedDB)
 - 📉 **99.95% reduction** in Origin API calls
 - 💰 **Lower costs** (fewer Origin requests)
@@ -569,4 +584,3 @@ if (cron === '0 * * * *') {
 - 🔄 **Always fresh** (hourly cron refresh)
 
 🎉 **Configuration caching is now production-ready!**
-

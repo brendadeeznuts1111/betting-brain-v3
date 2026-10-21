@@ -72,6 +72,7 @@ Before deploying, ensure you have:
 ## 🎯 Quick Start
 
 ### 1. Clone and Install
+
 ```bash
 git clone https://github.com/brendadeeznuts1111/betting-brain-v3.git
 cd betting-brain-v3
@@ -79,22 +80,26 @@ bun install
 ```
 
 ### 2. Authenticate with Cloudflare
+
 ```bash
 wrangler login
 ```
 
 ### 3. Setup Production Environment
+
 ```bash
 chmod +x deployment/deploy/*.sh
 ./deployment/deploy/setup-production.sh
 ```
 
 This will:
+
 - Create D1 database
 - Create queues
 - Prompt for API secrets
 
 ### 4. Deploy to Production
+
 ```bash
 ./deploy/production-deploy.sh
 ```
@@ -104,6 +109,7 @@ This will:
 ### Environment Files
 
 **wrangler.toml** (main configuration):
+
 ```toml
 name = "betting-brain-v3"
 main = "src/index.ts"
@@ -121,6 +127,7 @@ database_id = "your-database-id"
 ### Secrets Configuration
 
 Set secrets using wrangler CLI:
+
 ```bash
 wrangler secret put SPORTSBET_IO_API_KEY --env=production
 wrangler secret put PINNACLE_API_KEY --env=production
@@ -152,11 +159,13 @@ Monitor deployment at: https://github.com/your-username/betting-brain-v3/actions
 ### Method 2: Manual Deployment
 
 **Staging (Quick Testing):**
+
 ```bash
 ./deploy/staging-deploy.sh
 ```
 
 **Production (With Health Checks):**
+
 ```bash
 ./deploy/production-deploy.sh
 ```
@@ -164,6 +173,7 @@ Monitor deployment at: https://github.com/your-username/betting-brain-v3/actions
 ### Method 3: Direct Wrangler
 
 **For advanced users:**
+
 ```bash
 # Apply migrations
 bunx wrangler d1 migrations apply betting-analytics --env production
@@ -177,6 +187,7 @@ bunx wrangler deploy --env production
 ### GitHub Actions Workflows
 
 **1. Main Deployment Pipeline** (`.github/workflows/deploy.yml`)
+
 - Triggered on: Push to main, Pull requests
 - Steps:
   1. Link check documentation
@@ -186,6 +197,7 @@ bunx wrangler deploy --env production
   5. Create release tags
 
 **2. Documentation Deployment** (`.github/workflows/deploy-docs.yml`)
+
 - Triggered on: Doc changes, manual dispatch
 - Deploys documentation to GitHub Pages
 - Creates beautiful HTML documentation site
@@ -194,21 +206,23 @@ bunx wrangler deploy --env production
 
 Configure these in your repository settings:
 
-| Secret | Description | How to Get |
-|--------|-------------|------------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API token | Create at https://dash.cloudflare.com/profile/api-tokens |
-| `CLOUDFLARE_ACCOUNT_ID` | Your account ID | Find at https://dash.cloudflare.com |
+| Secret                  | Description          | How to Get                                               |
+| ----------------------- | -------------------- | -------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare API token | Create at https://dash.cloudflare.com/profile/api-tokens |
+| `CLOUDFLARE_ACCOUNT_ID` | Your account ID      | Find at https://dash.cloudflare.com                      |
 
 ## 📊 Monitoring
 
 ### Health Checks
 
 **Basic Health:**
+
 ```bash
 curl https://betting-brain-v3-prod.workers.dev/health
 ```
 
 **Expected Response:**
+
 ```json
 {
   "status": "ok",
@@ -219,6 +233,7 @@ curl https://betting-brain-v3-prod.workers.dev/health
 ### Grafana Dashboard
 
 Access your monitoring dashboard:
+
 1. Import `monitoring/grafana/dashboard.json` to your Grafana instance
 2. Configure data sources (Cloudflare Analytics Engine + Prometheus)
 3. View 17 real-time monitoring panels
@@ -228,6 +243,7 @@ See `monitoring/grafana/README.md` for detailed setup instructions.
 ### Cloudflare Dashboard
 
 Monitor your deployment:
+
 - **Workers:** https://dash.cloudflare.com/workers
 - **D1:** https://dash.cloudflare.com/d1
 - **Queues:** https://dash.cloudflare.com/queues
@@ -236,11 +252,13 @@ Monitor your deployment:
 ### Logs
 
 View real-time logs:
+
 ```bash
 wrangler tail --env=production
 ```
 
 Filter by status:
+
 ```bash
 wrangler tail --env=production --status error
 ```
@@ -254,6 +272,7 @@ The production deployment script creates rollback tags automatically.
 ### Manual Rollback
 
 **Option 1: Rollback via Git**
+
 ```bash
 # View recent commits
 git log --oneline -5
@@ -266,6 +285,7 @@ bunx wrangler deploy --env=production
 ```
 
 **Option 2: Rollback via Wrangler**
+
 ```bash
 # List recent deployments
 wrangler deployments list --env=production
@@ -275,6 +295,7 @@ wrangler rollback <deployment-id> --env=production
 ```
 
 **Option 3: Use Rollback Tag**
+
 ```bash
 # Find rollback tag
 ls -la backups/
@@ -291,18 +312,21 @@ bunx wrangler deploy --env=production
 ### Common Issues
 
 **Issue: "wrangler not found"**
+
 ```bash
 # Solution: Install wrangler globally
 bun install -g wrangler@latest
 ```
 
 **Issue: "Not authenticated with Cloudflare"**
+
 ```bash
 # Solution: Login to Cloudflare
 wrangler login
 ```
 
 **Issue: "Database not found"**
+
 ```bash
 # Solution: Run setup script
 ./deployment/deploy/setup-production.sh
@@ -312,6 +336,7 @@ wrangler d1 create betting-analytics
 ```
 
 **Issue: "Deployment failed"**
+
 ```bash
 # Check logs
 wrangler tail --env=production --status error
@@ -323,6 +348,7 @@ wrangler secret list --env=production
 ```
 
 **Issue: "Tests failing"**
+
 ```bash
 # Run tests locally
 bun test
@@ -338,16 +364,19 @@ bun run lint
 If health checks fail after deployment:
 
 1. **Check worker logs:**
+
    ```bash
    wrangler tail --env=production
    ```
 
 2. **Verify database:**
+
    ```bash
    wrangler d1 execute betting-analytics --command "SELECT 1"
    ```
 
 3. **Check secrets:**
+
    ```bash
    wrangler secret list --env=production
    ```
@@ -372,7 +401,7 @@ If health checks fail after deployment:
 ### Deployment Frequency
 
 - **Staging:** As often as needed for testing
-- **Production:** 
+- **Production:**
   - Hotfixes: Immediately after verification
   - Features: During low-traffic periods
   - Major changes: With extended monitoring
@@ -392,6 +421,7 @@ If health checks fail after deployment:
 
 1. **Add domain in Cloudflare Dashboard**
 2. **Update wrangler.toml:**
+
    ```toml
    [env.production]
    routes = [
@@ -400,6 +430,7 @@ If health checks fail after deployment:
    ```
 
 3. **Add DNS record:**
+
    ```
    Type: CNAME
    Name: api
@@ -424,6 +455,7 @@ If health checks fail after deployment:
 After deployment, verify:
 
 1. **Health endpoint returns 200:**
+
    ```bash
    curl -I https://betting-brain-v3-prod.workers.dev/health
    ```
@@ -439,4 +471,3 @@ After deployment, verify:
 **Last Updated:** October 7, 2025  
 **Maintained By:** Betting-Brain Team  
 **Status:** ✅ Production Ready
-

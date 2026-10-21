@@ -8,7 +8,9 @@
 
 ## 📋 Overview
 
-This guide documents **battle-tested patterns** for running a sports betting platform on **Bun + Cloudflare** that survives **1,000× traffic spikes** on game day.
+This guide documents **battle-tested patterns** for running a sports betting
+platform on **Bun + Cloudflare** that survives **1,000× traffic spikes** on game
+day.
 
 All patterns are MIT licensed and production-proven.
 
@@ -17,6 +19,7 @@ All patterns are MIT licensed and production-proven.
 ## 🏗️ Architecture
 
 ### Current Structure
+
 ```
 betting-brain-v3/
 ├── sgconfig.yml              ← ast-grep configuration
@@ -41,6 +44,7 @@ betting-brain-v3/
 ```
 
 ### Recommended Evolution (Monorepo)
+
 ```
 betting-brain-v3/
 ├── packages/
@@ -60,6 +64,7 @@ betting-brain-v3/
 ## 🛡️ Security Rules (ast-grep)
 
 ### 1. No parseFloat on User Stakes
+
 **File:** `rules/no-parsefloat-stake.yaml`
 
 ```typescript
@@ -73,9 +78,11 @@ if (isNaN(stake) || stake <= 0) {
 }
 ```
 
-**Why:** `parseFloat("100abc")` returns `100`, silently accepting garbage input. For betting stakes, this is catastrophic.
+**Why:** `parseFloat("100abc")` returns `100`, silently accepting garbage input.
+For betting stakes, this is catastrophic.
 
 ### 2. No new Date() in Edge Workers
+
 **File:** `rules/no-new-date-edge.yaml`
 
 ```typescript
@@ -87,9 +94,11 @@ const nowMs = Date.now();
 const nowISO = new Date().toISOString();
 ```
 
-**Why:** Edge workers run in UTC-only environments. Using `new Date()` without arguments can cause subtle timezone bugs.
+**Why:** Edge workers run in UTC-only environments. Using `new Date()` without
+arguments can cause subtle timezone bugs.
 
 ### 3. D1 SQL Injection Prevention
+
 **File:** `rules/d1-sql-injection.yaml`
 
 ```typescript
@@ -103,9 +112,11 @@ await env.ANALYTICS.prepare(`SELECT * FROM users WHERE id = ?`)
   .all();
 ```
 
-**Why:** Template literal interpolation bypasses D1's parameterization, allowing SQL injection attacks.
+**Why:** Template literal interpolation bypasses D1's parameterization, allowing
+SQL injection attacks.
 
 ### 4. Queue Batch Size Limits
+
 **File:** `rules/queue-batch-limit.yaml`
 
 ```typescript
@@ -119,9 +130,11 @@ for (let i = 0; i < items.length; i += 100) {
 }
 ```
 
-**Why:** Cloudflare Queues enforce a hard limit of 100 messages per batch. Exceeding this causes runtime errors.
+**Why:** Cloudflare Queues enforce a hard limit of 100 messages per batch.
+Exceeding this causes runtime errors.
 
 ### 5. WASM Memory Management
+
 **File:** `rules/wasm-memory-guard.yaml`
 
 ```typescript
@@ -139,13 +152,15 @@ try {
 }
 ```
 
-**Why:** WASM linear memory is not garbage collected. Failing to free allocated memory causes memory leaks at the edge.
+**Why:** WASM linear memory is not garbage collected. Failing to free allocated
+memory causes memory leaks at the edge.
 
 ---
 
 ## 📊 Data Pipeline (Game-Day Scale)
 
 ### Ingest Path (Zero Downtime)
+
 ```
 Browser Extension
     ↓
@@ -165,21 +180,25 @@ ClickHouse (analytics) ← Flush every 60s
 ### Key Principles
 
 #### 1. R2 for Raw Ingestion
+
 - **> 10× cheaper** than AWS S3 for 1M req/min
 - Store raw JSON before processing
 - Enables replay in case of pipeline failures
 
 #### 2. Queue Guarantees
+
 - **At-least-once delivery** with deduplication
 - Consumer uses `UUIDv7` primary keys for idempotency
 - Backlog monitoring via `queue.length()`
 
 #### 3. D1 for Live State Only
+
 - D1 is **NOT** for high-write OLTP
 - Keep only **live bets** (< 2h TTL)
 - Auto-cleanup with `schedules/sharpCalc.ts` cron job
 
 #### 4. ClickHouse for Analytics
+
 - Flush aggregated data every 60s
 - Use `INSERT INTO SELECT` for batch transfers
 - Retain historical data (30+ days)
@@ -191,12 +210,14 @@ ClickHouse (analytics) ← Flush every 60s
 ### Bun-Specific Tricks
 
 #### 1. Fast Package Installs
+
 ```bash
 # Docker stage: 1.8s cold start
 bun install --frozen-lockfile --production
 ```
 
 #### 2. Native File API
+
 ```typescript
 // ❌ SLOW: Node.js fs
 import fs from 'fs';
@@ -207,35 +228,40 @@ const secrets = await Bun.file('secrets.json').json();
 ```
 
 #### 3. Keep-Alive Connections
+
 ```typescript
 // Native fetch in Bun supports keep-alive
 const response = await fetch('https://clickhouse.internal', {
-  keepalive: true,  // Reuse TCP connection
+  keepalive: true, // Reuse TCP connection
 });
 ```
 
 ### Cloudflare Worker Optimizations
 
 #### 1. Odds Calculation
+
 - **WASM module** compiled with `zig build -Dtarget=wasm32-wasi` (< 60 kB)
 - Cache in **Durable Objects** (RAM) with write-through to D1 every 30s
-- Use `crypto.subtle.digest('SHA-256', payload)` for ETags → 304 Not Modified saves 40% bandwidth
+- Use `crypto.subtle.digest('SHA-256', payload)` for ETags → 304 Not Modified
+  saves 40% bandwidth
 
 #### 2. Back-Pressure Handling
+
 ```typescript
 // Consumer worker manual GC every 1,000 messages
 let processedCount = 0;
 for (const message of batch.messages) {
   await processMessage(message);
   processedCount++;
-  
+
   if (processedCount % 1000 === 0) {
-    Bun.gc();  // Force garbage collection
+    Bun.gc(); // Force garbage collection
   }
 }
 ```
 
 #### 3. Auto-Scaling
+
 ```bash
 # If queue backlog > 50,000, scale up
 wrangler dispatch-namespace put odds-consumer --min-executions 20
@@ -246,6 +272,7 @@ wrangler dispatch-namespace put odds-consumer --min-executions 20
 ## 💰 Exactly-Once Money Ledger
 
 ### Requirements
+
 - **Idempotency:** Duplicate requests must not double-charge
 - **Consistency:** Balance must always be correct
 - **Auditability:** Full transaction history
@@ -256,9 +283,9 @@ wrangler dispatch-namespace put odds-consumer --min-executions 20
 // Append-only ledger table
 interface LedgerEntry {
   user_id: string;
-  delta: number;      // Positive or negative
-  nonce: string;      // UUID (idempotency key)
-  ts: number;         // Timestamp
+  delta: number; // Positive or negative
+  nonce: string; // UUID (idempotency key)
+  ts: number; // Timestamp
   type: 'bet' | 'win' | 'refund';
 }
 
@@ -275,16 +302,16 @@ async function recordTransaction(
       `INSERT INTO ledger (user_id, delta, nonce, ts, type)
        VALUES (?, ?, ?, ?, ?)`
     )
-    .bind(userId, delta, nonce, Date.now(), type)
-    .run();
-    
+      .bind(userId, delta, nonce, Date.now(), type)
+      .run();
+
     // Update user balance
     await env.ANALYTICS.prepare(
       `UPDATE users SET balance = balance + ?
        WHERE user_id = ?`
     )
-    .bind(delta, userId)
-    .run();
+      .bind(delta, userId)
+      .run();
   } catch (error) {
     if (error.message.includes('UNIQUE constraint')) {
       // Duplicate nonce - idempotency check passed
@@ -321,27 +348,32 @@ CREATE TABLE users (
 ## 🔐 Security Checklist
 
 ### Secrets Management
+
 - ✅ Never store model weights in env vars
 - ✅ Use **Cloudflare Secrets**: `wrangler secret put MODEL_SEED`
 - ✅ Rotate secrets every 90 days
 
 ### Authentication
+
 - ✅ Set `compatibility_date >= 2024-10-01` for built-in `crypto.Ed25519` JWT
 - ✅ Use short-lived tokens (15 min) with refresh tokens
 - ✅ Store refresh tokens in KV with TTL
 
 ### Rate Limiting
+
 - ✅ Rate-limit by **user_id**, not IP (bettors sit behind NAT)
 - ✅ Use Durable Object with token-bucket algorithm
 - ✅ Current: In-memory per-instance (10 req/s) → See `src/guards/rateLimit.ts`
 - ✅ Recommended: Durable Object for distributed rate limiting
 
 ### Input Validation
+
 - ✅ Use Zod schemas (already implemented in `src/utils/validation.ts`)
 - ✅ Validate all stakes with `Number()` + `isNaN()` check
 - ✅ Enforce min/max bet limits at validation layer
 
 ### SQL Injection
+
 - ✅ Always use parameterized queries with `.bind()`
 - ✅ Run `sg scan --filter "d1-sql-injection"` in CI
 - ✅ Zero tolerance policy
@@ -355,6 +387,7 @@ CREATE TABLE users (
 **File:** `.github/workflows/deploy.yml` (already exists)
 
 **Add ast-grep check:**
+
 ```yaml
 - name: Run ast-grep security scan
   run: sg scan --error
@@ -401,6 +434,7 @@ new-rule:
 ## 📊 Current Status
 
 ### Implemented ✅
+
 - [x] D1 database with migrations
 - [x] Queue-based ingestion pipeline
 - [x] Cron jobs (sharp calc, exposure calc)
@@ -414,6 +448,7 @@ new-rule:
 - [x] Error handling & CORS
 
 ### Recommended Next Steps 🔲
+
 - [ ] WASM odds engine (Rust/Zig compiled)
 - [ ] Durable Objects for distributed rate limiting
 - [ ] ClickHouse integration for analytics
@@ -436,7 +471,8 @@ new-rule:
 
 ## 🎯 Key Takeaways
 
-1. **Security First:** Run `sg scan --error` in CI - zero tolerance for SQL injection
+1. **Security First:** Run `sg scan --error` in CI - zero tolerance for SQL
+   injection
 2. **Scale for Game Day:** Use R2 + Queue + D1 + ClickHouse pipeline
 3. **Idempotency Matters:** UUID nonces + UNIQUE constraints for money ledger
 4. **Rate Limit Smart:** By user_id, not IP (NAT reality)
@@ -450,5 +486,4 @@ new-rule:
 **Status:** Production-Ready Patterns  
 **License:** MIT
 
-*These patterns are battle-tested for 1,000× game-day traffic spikes.*
-
+_These patterns are battle-tested for 1,000× game-day traffic spikes._

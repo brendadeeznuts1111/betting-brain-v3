@@ -3,7 +3,7 @@
  * Tests error handling in individual MCP tool handlers
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import { getSteamMoves } from '../../src/mcp/handlers/steamMoves';
 import { getRiskConcentration } from '../../src/mcp/handlers/riskConcentration';
 import { getSharpActivity } from '../../src/mcp/handlers/sharpActivity';
@@ -38,10 +38,7 @@ describe('MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60 },
-        envWithoutAnalytics
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60 }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -54,10 +51,7 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60 }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Error detecting steam moves');
@@ -65,10 +59,7 @@ describe('MCP Handler Error Paths', () => {
     });
 
     test('should handle invalid lookbackMinutes parameter', async () => {
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: -100 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: -100 }, mockEnv);
 
       // Should not error, but may return strange results
       expect(result.isError).toBe(false);
@@ -90,10 +81,7 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -107,10 +95,7 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -121,45 +106,31 @@ describe('MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { event_id: null, market_type: null, line_change: 'invalid' }
-            ]
+            results: [{ event_id: null, market_type: null, line_change: 'invalid' }],
           }),
         }),
       });
 
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60 }, mockEnv);
 
       // Should handle gracefully without crashing
       expect(result.isError).toBe(false);
     });
 
     test('should handle extremely large lookbackMinutes', async () => {
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 999999999 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 999999999 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle zero threshold', async () => {
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60, threshold: 0 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60, threshold: 0 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle negative threshold', async () => {
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60, threshold: -3.0 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60, threshold: -3.0 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -171,10 +142,7 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: 60 },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: 60 }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -187,10 +155,7 @@ describe('MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getRiskConcentration(
-        { agentID: 'test' },
-        envWithoutAnalytics
-      );
+      const result = await getRiskConcentration({ agentID: 'test' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -203,10 +168,7 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getRiskConcentration(
-        { agentID: 'test', minExposure: 1000 },
-        mockEnv
-      );
+      const result = await getRiskConcentration({ agentID: 'test', minExposure: 1000 }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Error analyzing risk concentration');
@@ -219,10 +181,7 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getRiskConcentration(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getRiskConcentration({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -230,28 +189,19 @@ describe('MCP Handler Error Paths', () => {
     });
 
     test('should handle negative minExposure', async () => {
-      const result = await getRiskConcentration(
-        { agentID: 'test', minExposure: -5000 },
-        mockEnv
-      );
+      const result = await getRiskConcentration({ agentID: 'test', minExposure: -5000 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle zero minExposure', async () => {
-      const result = await getRiskConcentration(
-        { agentID: 'test', minExposure: 0 },
-        mockEnv
-      );
+      const result = await getRiskConcentration({ agentID: 'test', minExposure: 0 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle extremely large minExposure', async () => {
-      const result = await getRiskConcentration(
-        { agentID: 'test', minExposure: Number.MAX_SAFE_INTEGER },
-        mockEnv
-      );
+      const result = await getRiskConcentration({ agentID: 'test', minExposure: Number.MAX_SAFE_INTEGER }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -260,17 +210,12 @@ describe('MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { event_id: 'event1', total_exposure: null, bet_count: 0 }
-            ]
+            results: [{ event_id: 'event1', total_exposure: null, bet_count: 0 }],
           }),
         }),
       });
 
-      const result = await getRiskConcentration(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getRiskConcentration({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -279,17 +224,12 @@ describe('MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { event_id: undefined, total_exposure: 'not-a-number' }
-            ]
+            results: [{ event_id: undefined, total_exposure: 'not-a-number' }],
           }),
         }),
       });
 
-      const result = await getRiskConcentration(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getRiskConcentration({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -307,10 +247,7 @@ describe('MCP Handler Error Paths', () => {
     test('should handle missing ANALYTICS database', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getSharpActivity(
-        { agentID: 'test' },
-        envWithoutAnalytics
-      );
+      const result = await getSharpActivity({ agentID: 'test' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('ANALYTICS database not available');
@@ -323,38 +260,26 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getSharpActivity(
-        { agentID: 'test', lookbackHours: 24 },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test', lookbackHours: 24 }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Error tracking sharp activity');
     });
 
     test('should handle invalid lookbackHours parameter', async () => {
-      const result = await getSharpActivity(
-        { agentID: 'test', lookbackHours: -24 },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test', lookbackHours: -24 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle zero lookbackHours', async () => {
-      const result = await getSharpActivity(
-        { agentID: 'test', lookbackHours: 0 },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test', lookbackHours: 0 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle extremely large lookbackHours', async () => {
-      const result = await getSharpActivity(
-        { agentID: 'test', lookbackHours: 999999 },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test', lookbackHours: 999999 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -366,10 +291,7 @@ describe('MCP Handler Error Paths', () => {
         }),
       });
 
-      const result = await getSharpActivity(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
       const data = JSON.parse(result.content[0].text);
@@ -380,17 +302,12 @@ describe('MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { cid: 'customer1', sharp_score: null, bet_count: 0 }
-            ]
+            results: [{ cid: 'customer1', sharp_score: null, bet_count: 0 }],
           }),
         }),
       });
 
-      const result = await getSharpActivity(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -399,17 +316,12 @@ describe('MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { cid: 'customer1', sharp_score: -50, bet_count: 10 }
-            ]
+            results: [{ cid: 'customer1', sharp_score: -50, bet_count: 10 }],
           }),
         }),
       });
 
-      const result = await getSharpActivity(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -418,17 +330,12 @@ describe('MCP Handler Error Paths', () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
           all: vi.fn().mockResolvedValue({
-            results: [
-              { cid: 'customer1', sharp_score: 150, bet_count: 10 }
-            ]
+            results: [{ cid: 'customer1', sharp_score: 150, bet_count: 10 }],
           }),
         }),
       });
 
-      const result = await getSharpActivity(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -442,10 +349,7 @@ describe('MCP Handler Error Paths', () => {
     });
 
     test('should handle invalid minSharpScore threshold', async () => {
-      const result = await getSharpActivity(
-        { agentID: 'test', minSharpScore: -999 },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test', minSharpScore: -999 }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -453,18 +357,13 @@ describe('MCP Handler Error Paths', () => {
     test('should handle database timeout', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          all: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          ),
+          all: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
         }),
       });
 
-      const result = await getSharpActivity(
-        { agentID: 'test' },
-        mockEnv
-      );
+      const result = await getSharpActivity({ agentID: 'test' }, mockEnv);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('Timeout');
@@ -493,37 +392,25 @@ describe('MCP Handler Error Paths', () => {
         ANALYTICS: undefined,
       } as any;
 
-      const result = await getSteamMoves(
-        { agentID: 'test' },
-        partialEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test' }, partialEnv);
 
       expect(result.isError).toBe(true);
     });
 
     test('should handle handler calls with null arguments', async () => {
-      const result = await getSteamMoves(
-        { agentID: null, lookbackMinutes: null } as any,
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: null, lookbackMinutes: null } as any, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle handler calls with string numbers', async () => {
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: '60' as any },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: '60' as any }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
 
     test('should handle handler calls with boolean parameters', async () => {
-      const result = await getSteamMoves(
-        { agentID: 'test', lookbackMinutes: true as any },
-        mockEnv
-      );
+      const result = await getSteamMoves({ agentID: 'test', lookbackMinutes: true as any }, mockEnv);
 
       expect(result.isError).toBe(false);
     });
@@ -531,10 +418,7 @@ describe('MCP Handler Error Paths', () => {
     test('should preserve error messages in result', async () => {
       const envWithoutAnalytics = {} as Env;
 
-      const result = await getSteamMoves(
-        { agentID: 'test' },
-        envWithoutAnalytics
-      );
+      const result = await getSteamMoves({ agentID: 'test' }, envWithoutAnalytics);
 
       expect(result.isError).toBe(true);
       expect(result.content[0].type).toBe('text');

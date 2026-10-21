@@ -28,16 +28,10 @@ interface CacheWarmResponse {
  * POST /api/f402/cache/warm
  * Warms KV cache with D1 data
  */
-export async function warmCache(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function warmCache(request: Request, env: Env, requestId: string): Promise<Response> {
   console.log(`[${requestId}] 🔥 POST /api/f402/cache/warm`);
 
   const startTime = Date.now();
-
-
 
   try {
     if (!env.FANTASY_CACHE || !env.RAW_FEED_DB) {
@@ -48,12 +42,14 @@ export async function warmCache(
     let agentListsWarmed = 0;
 
     // 1. Warm agent hierarchies (group by owner)
-    const owners = await env.RAW_FEED_DB.prepare(`
+    const owners = await env.RAW_FEED_DB.prepare(
+      `
       SELECT DISTINCT agent_owner
       FROM fantasy402_agents
       WHERE agent_owner IS NOT NULL
       LIMIT 100
-    `).all();
+    `
+    ).all();
 
     console.log(`[${requestId}] 🔍 Found ${owners.results.length} unique owners`);
 
@@ -63,13 +59,17 @@ export async function warmCache(
       if (!owner) continue;
 
       // Fetch all agents for this owner
-      const agents = await env.RAW_FEED_DB.prepare(`
+      const agents = await env.RAW_FEED_DB.prepare(
+        `
         SELECT *
         FROM fantasy402_agents
         WHERE agent_owner = ?
         ORDER BY last_active DESC
         LIMIT 500
-      `).bind(owner).all();
+      `
+      )
+        .bind(owner)
+        .all();
 
       if (agents.results.length === 0) continue;
 
@@ -88,10 +88,7 @@ export async function warmCache(
       };
 
       // Store in all cache keys
-      const cacheKeys = [
-        `fantasy402:agents:by-owner:${owner}`,
-        `fantasy402:agents:latest:${owner}`,
-      ];
+      const cacheKeys = [`fantasy402:agents:by-owner:${owner}`, `fantasy402:agents:latest:${owner}`];
 
       await Promise.all(
         cacheKeys.map(key =>
@@ -104,19 +101,21 @@ export async function warmCache(
       agentListsWarmed += cacheKeys.length;
 
       // 2. Index individual agents
-      const indexPromises = agentList.map((agent: any) => {
-        if (!agent.agent_id) return null;
-        return env.FANTASY_CACHE!.put(
-          `fantasy402:agent:${agent.agent_id}`,
-          JSON.stringify({
-            ...agent,
-            agentOwner: owner,
-            capturedAt: new Date(Date.now()).toISOString(),
-            warmedAt: new Date(Date.now()).toISOString(),
-          }),
-          { expirationTtl: 86400 }
-        );
-      }).filter(Boolean);
+      const indexPromises = agentList
+        .map((agent: any) => {
+          if (!agent.agent_id) return null;
+          return env.FANTASY_CACHE!.put(
+            `fantasy402:agent:${agent.agent_id}`,
+            JSON.stringify({
+              ...agent,
+              agentOwner: owner,
+              capturedAt: new Date(Date.now()).toISOString(),
+              warmedAt: new Date(Date.now()).toISOString(),
+            }),
+            { expirationTtl: 86400 }
+          );
+        })
+        .filter(Boolean);
 
       await Promise.all(indexPromises);
       agentsWarmed += indexPromises.length;
@@ -130,7 +129,7 @@ export async function warmCache(
           tree: agentList,
           owner,
           count: agentList.length,
-          warmedAt: new Date(Date.now()).toISOString()
+          warmedAt: new Date(Date.now()).toISOString(),
         }),
         { expirationTtl: 3600 } // 1 hour TTL during iteration
       );
@@ -141,12 +140,16 @@ export async function warmCache(
       const owner = ownerRow.agent_owner;
       if (!owner) continue;
 
-      const agents = await env.RAW_FEED_DB.prepare(`
+      const agents = await env.RAW_FEED_DB.prepare(
+        `
         SELECT agent_id, agent_owner, agent_type, office
         FROM fantasy402_agents
         WHERE agent_owner = ?
         ORDER BY agent_id
-      `).bind(owner).all();
+      `
+      )
+        .bind(owner)
+        .all();
 
       const agentHash = JSON.stringify(
         (agents.results as any[]).map((a: any) => ({
@@ -175,7 +178,9 @@ export async function warmCache(
       timestamp: new Date(Date.now()).toISOString(),
     };
 
-    console.log(`[${requestId}] 🔥 Cache warming complete: ${agentsWarmed} agents, ${agentListsWarmed} lists (${duration}ms)`);
+    console.log(
+      `[${requestId}] 🔥 Cache warming complete: ${agentsWarmed} agents, ${agentListsWarmed} lists (${duration}ms)`
+    );
 
     return new Response(JSON.stringify(response), {
       headers: CORS_HEADERS,

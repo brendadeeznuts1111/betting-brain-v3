@@ -9,16 +9,18 @@
 ### Issue: Cannot find type definition for '@cloudflare/workers-types'
 
 **Symptoms:**
+
 ```
 Cannot find type definition file for '@cloudflare/workers-types'.
 The file is in the program because:
   Entry point of type library '@cloudflare/workers-types' specified in compilerOptions
 ```
 
-**Cause:**
-The Bun package manager is configured to use a private registry (`packages.apexodds.net`) which doesn't have all public npm packages.
+**Cause:** The Bun package manager is configured to use a private registry
+(`packages.apexodds.net`) which doesn't have all public npm packages.
 
 **Solution 1: Override Registry for Installation (Recommended)**
+
 ```bash
 # Unset private registry environment variables
 env -u BUN_REGISTRY -u npm_config_registry bun install
@@ -30,14 +32,16 @@ env -u BUN_REGISTRY -u npm_config_registry bun install
 ```
 
 **Solution 2: Install Specific Packages**
+
 ```bash
 # Install missing type definitions
 env -u BUN_REGISTRY -u npm_config_registry bun add -d @types/bun
 env -u BUN_REGISTRY -u npm_config_registry bun add -d @cloudflare/workers-types
 ```
 
-**Solution 3: Ignore Type Errors During Development**
-The TypeScript error is a linter warning and won't block:
+**Solution 3: Ignore Type Errors During Development** The TypeScript error is a
+linter warning and won't block:
+
 - ✅ Development (`bun run dev`)
 - ✅ Deployment (`wrangler deploy`)
 - ✅ Runtime execution
@@ -51,11 +55,13 @@ The `.vscode/settings.json` file has been configured to minimize these warnings.
 ### Issue: D1 Database Not Found
 
 **Symptoms:**
+
 ```
 Error: Database 'betting-analytics' not found
 ```
 
 **Solution:**
+
 ```bash
 # Create the D1 database
 wrangler d1 create betting-analytics
@@ -70,11 +76,13 @@ bun run db:apply
 ### Issue: Queue Not Found
 
 **Symptoms:**
+
 ```
 Error: Queue 'line-ingress' not found
 ```
 
 **Solution:**
+
 ```bash
 # Create the queues
 wrangler queues create line-ingress
@@ -90,11 +98,13 @@ wrangler queues create steam-webhook
 ### Issue: Vitest Pool Workers Not Found
 
 **Symptoms:**
+
 ```
 error: @cloudflare/vitest-pool-workers@^0.1.0 failed to resolve
 ```
 
 **Solution:**
+
 ```bash
 # Use public registry for dev dependencies
 BUN_REGISTRY=https://registry.npmjs.org bun install --dev
@@ -110,12 +120,13 @@ npm install --save-dev @cloudflare/vitest-pool-workers @vitest/coverage-v8
 ### Issue: Link Checker Requires npm Packages
 
 **Symptoms:**
+
 ```
 error: Cannot find module 'glob'
 ```
 
-**Solution:**
-Use the standalone shell script instead:
+**Solution:** Use the standalone shell script instead:
+
 ```bash
 # Use the simple version (no dependencies)
 bash scripts/link-check-simple.sh
@@ -132,11 +143,13 @@ npm run link-check
 ### Issue: Environment Variables Not Set
 
 **Symptoms:**
+
 ```
 Error: Missing required environment variable
 ```
 
 **Solution:**
+
 ```bash
 # Copy example env file
 cp .env.example .env
@@ -151,11 +164,13 @@ wrangler secret put MY_SECRET
 ### Issue: Migration Failures
 
 **Symptoms:**
+
 ```
 Error applying migration: table already exists
 ```
 
 **Solution:**
+
 ```bash
 # Check current migration status
 wrangler d1 migrations list betting-analytics
@@ -173,10 +188,10 @@ bun run db:apply
 
 ### Issue: Worker Not Reloading
 
-**Symptoms:**
-Changes to code don't appear in local development.
+**Symptoms:** Changes to code don't appear in local development.
 
 **Solution:**
+
 ```bash
 # Kill any running wrangler processes
 pkill -f wrangler
@@ -193,11 +208,13 @@ bun run dev
 ### Issue: Port Already in Use
 
 **Symptoms:**
+
 ```
 Error: listen EADDRINUSE: address already in use :::8787
 ```
 
 **Solution:**
+
 ```bash
 # Find and kill process on port 8787
 lsof -ti:8787 | xargs kill -9
@@ -212,10 +229,10 @@ wrangler dev --port 8788
 
 ### Issue: Grafana Dashboard Not Loading
 
-**Symptoms:**
-Dashboard shows "No data" or fails to load.
+**Symptoms:** Dashboard shows "No data" or fails to load.
 
 **Solution:**
+
 ```bash
 # Verify Analytics Engine is configured
 # Check wrangler.toml for analytics_engine_datasets binding
@@ -231,12 +248,11 @@ wrangler tail
 
 ### Issue: Rate Limit Memory Cleanup
 
-**Symptoms:**
-Memory grows over time in rate limiter.
+**Symptoms:** Memory grows over time in rate limiter.
 
-**Solution:**
-The rate limiter uses probabilistic cleanup (1% chance per request).
-For high-traffic scenarios, consider:
+**Solution:** The rate limiter uses probabilistic cleanup (1% chance per
+request). For high-traffic scenarios, consider:
+
 - Using Durable Objects for persistent rate limiting
 - Using KV with TTL for distributed rate limiting
 - Increasing cleanup probability
@@ -247,10 +263,10 @@ For high-traffic scenarios, consider:
 
 ### Issue: Broken Links in Documentation
 
-**Symptoms:**
-Link checker reports broken links.
+**Symptoms:** Link checker reports broken links.
 
 **Solution:**
+
 ```bash
 # Run link checker
 bash scripts/link-check-simple.sh
@@ -269,20 +285,22 @@ bash scripts/link-check-simple.sh
 ### Quick Checks
 
 1. **Check Environment:**
+
    ```bash
    # Verify Node/Bun version
    node --version  # Should be 18+
    bun --version   # Should be 1.0+
-   
+
    # Verify Wrangler
    wrangler --version  # Should be 3.0+
    ```
 
 2. **Check Configuration:**
+
    ```bash
    # Verify wrangler.toml is valid
    wrangler whoami
-   
+
    # Check TypeScript config
    bun run lint
    ```
@@ -291,10 +309,10 @@ bash scripts/link-check-simple.sh
    ```bash
    # Local development logs
    bun run dev
-   
+
    # Production logs
    wrangler tail
-   
+
    # Deployment logs
    wrangler deployments list
    ```
@@ -302,7 +320,8 @@ bash scripts/link-check-simple.sh
 ### Still Stuck?
 
 1. Check the [QUICKSTART.md](QUICKSTART.md) for setup instructions
-2. Review [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for architecture details
+2. Review [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for
+   architecture details
 3. Check [INDEX.md](INDEX.md) for complete documentation map
 4. Review [CHANGELOG.md](CHANGELOG.md) for recent changes
 
@@ -311,6 +330,7 @@ bash scripts/link-check-simple.sh
 ## 🔄 Common Workflows
 
 ### Clean Slate Setup
+
 ```bash
 # 1. Clean everything
 rm -rf node_modules .wrangler dist coverage
@@ -333,6 +353,7 @@ bun run dev
 ```
 
 ### Pre-Deployment Checklist
+
 ```bash
 # 1. Run linter
 bun run lint
@@ -361,4 +382,3 @@ bun run deploy:prod
 **Last Updated:** October 7, 2025  
 **Version:** 3.1.0  
 **Maintainer:** Betting-Brain Team
-

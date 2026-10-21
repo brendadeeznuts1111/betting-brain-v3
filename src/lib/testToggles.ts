@@ -4,5 +4,5 @@
  */
 
 export const isTestEnvironment = (): boolean => {
-    return process.env.NODE_ENV === 'test' || process.env.CI === 'true';
+  return process.env.NODE_ENV === 'test' || process.env.CI === 'true';
 };

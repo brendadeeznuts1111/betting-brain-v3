@@ -9,9 +9,12 @@ You have **19 commits** on `feature/mcp-integration` ready to merge into `main`.
 ## Option 1: **Merge Commit** (Recommended) ✅
 
 ### What It Does
-Creates a single merge commit that combines all changes from your feature branch.
+
+Creates a single merge commit that combines all changes from your feature
+branch.
 
 ### Pros
+
 - ✅ Preserves complete history of feature development
 - ✅ Easy to revert entire feature if needed
 - ✅ Shows when feature was integrated
@@ -20,10 +23,12 @@ Creates a single merge commit that combines all changes from your feature branch
 - ✅ **GitHub default and most common**
 
 ### Cons
+
 - ❌ Creates extra merge commit
 - ❌ More commits in history
 
 ### GitHub Command
+
 ```bash
 # After PR is approved, click "Merge pull request" button
 # Or via CLI:
@@ -31,6 +36,7 @@ gh pr merge --merge
 ```
 
 ### Git Command
+
 ```bash
 git checkout main
 git pull origin main
@@ -39,6 +45,7 @@ git push origin main
 ```
 
 ### Result
+
 ```
 main:
   * (merge commit) Merge feature/mcp-integration into main
@@ -57,27 +64,32 @@ main:
 ## Option 2: **Squash and Merge**
 
 ### What It Does
+
 Combines all 19 commits into **1 single commit** on main.
 
 ### Pros
+
 - ✅ Clean, linear history on main
 - ✅ One commit = one feature
 - ✅ Easier to read main branch history
 - ✅ Good for atomic features
 
 ### Cons
+
 - ❌ Loses detailed commit history
 - ❌ Can't cherry-pick individual commits
 - ❌ Harder to debug if something breaks
 - ❌ **Not recommended for large features like this**
 
 ### GitHub Command
+
 ```bash
 # Click "Squash and merge" dropdown option
 gh pr merge --squash
 ```
 
 ### Result
+
 ```
 main:
   * MCP Integration & Complete System Documentation
@@ -85,34 +97,40 @@ main:
   * Previous main commit
 ```
 
-**⚠️ Not Recommended:** This feature has 19 well-structured commits with clear separation of concerns. Squashing would lose valuable history.
+**⚠️ Not Recommended:** This feature has 19 well-structured commits with clear
+separation of concerns. Squashing would lose valuable history.
 
 ---
 
 ## Option 3: **Rebase and Merge**
 
 ### What It Does
+
 Replays all 19 commits on top of current main, creating a linear history.
 
 ### Pros
+
 - ✅ Clean, linear history
 - ✅ Preserves individual commits
 - ✅ No merge commit
 - ✅ Easier to follow
 
 ### Cons
+
 - ❌ Rewrites commit history (changes commit SHAs)
 - ❌ Can cause issues if others have pulled your branch
 - ❌ More complex conflict resolution
 - ❌ Risk of breaking if not done carefully
 
 ### GitHub Command
+
 ```bash
 # Click "Rebase and merge" dropdown option
 gh pr merge --rebase
 ```
 
 ### Git Command
+
 ```bash
 git checkout feature/mcp-integration
 git rebase main
@@ -124,6 +142,7 @@ git push origin main
 ```
 
 ### Result
+
 ```
 main:
   * feat: Add endpoint routing Cursor rule
@@ -141,14 +160,18 @@ main:
 ### **Use Merge Commit (Option 1)** ✅
 
 **Why?**
-1. **Large Feature** - This is a major feature (140 files, 27K+ lines) that deserves clear demarcation
+
+1. **Large Feature** - This is a major feature (140 files, 27K+ lines) that
+   deserves clear demarcation
 2. **Well-Organized Commits** - Your 19 commits are logical and well-structured
 3. **Collaborative** - Easier for team to understand what happened
-4. **Reversible** - Easy to revert entire feature if needed: `git revert -m 1 <merge-commit>`
+4. **Reversible** - Easy to revert entire feature if needed:
+   `git revert -m 1 <merge-commit>`
 5. **Safe** - No history rewriting, no force pushes
 6. **Industry Standard** - Most projects use merge commits for features
 
 **Your commits are already clean:**
+
 - `feat:` - New features
 - `docs:` - Documentation
 - `fix:` - Bug fixes
@@ -163,6 +186,7 @@ main:
 ### Step 1: Create Pull Request
 
 **Option A: GitHub CLI (if installed)**
+
 ```bash
 cd /Users/nolarose/ffffff
 gh pr create \
@@ -173,7 +197,9 @@ gh pr create \
 ```
 
 **Option B: GitHub Web**
-1. Visit: https://github.com/brendadeeznuts1111/betting-brain-v3/compare/main...feature/mcp-integration
+
+1. Visit:
+   https://github.com/brendadeeznuts1111/betting-brain-v3/compare/main...feature/mcp-integration
 2. Click "Create pull request"
 3. Copy content from `PR_DESCRIPTION.md`
 4. Click "Create pull request"
@@ -183,6 +209,7 @@ gh pr create \
 ### Step 2: Review
 
 **Self-Review Checklist:**
+
 - [ ] All tests passing
 - [ ] Documentation complete
 - [ ] No breaking changes
@@ -190,6 +217,7 @@ gh pr create \
 - [ ] Ready for production
 
 **If working with team:**
+
 - Request reviews from relevant team members
 - Address any feedback
 - Make changes on the feature branch if needed
@@ -207,6 +235,7 @@ gh pr create \
    - Delete branch (optional but recommended)
 
 2. **GitHub CLI:**
+
    ```bash
    gh pr merge --merge
    ```
@@ -258,6 +287,7 @@ wrangler d1 migrations list betting-analytics --remote
 ## 🚨 If Something Goes Wrong
 
 ### Merge Conflicts
+
 ```bash
 # If conflicts during merge:
 git merge feature/mcp-integration
@@ -270,6 +300,7 @@ git push origin main
 ```
 
 ### Need to Undo Merge
+
 ```bash
 # Find merge commit
 git log --oneline -10
@@ -280,6 +311,7 @@ git push origin main
 ```
 
 ### Need to Update PR
+
 ```bash
 # Make changes on feature branch
 git checkout feature/mcp-integration
@@ -295,11 +327,11 @@ git push origin feature/mcp-integration
 
 ## 📊 Comparison Summary
 
-| Strategy | History | Complexity | Reversible | Best For |
-|----------|---------|------------|------------|----------|
-| **Merge Commit** | Complete | Low | ✅ Easy | **Large features** ✅ |
-| Squash | Condensed | Low | ❌ Hard | Small features |
-| Rebase | Linear | High | ⚠️ Medium | Clean history lovers |
+| Strategy         | History   | Complexity | Reversible | Best For              |
+| ---------------- | --------- | ---------- | ---------- | --------------------- |
+| **Merge Commit** | Complete  | Low        | ✅ Easy    | **Large features** ✅ |
+| Squash           | Condensed | Low        | ❌ Hard    | Small features        |
+| Rebase           | Linear    | High       | ⚠️ Medium  | Clean history lovers  |
 
 ---
 
@@ -329,4 +361,3 @@ wrangler deploy --env production
 **Estimated Review Time:** 1-2 hours (large PR)
 
 **Risk Level:** Low (all additive changes, no breaking changes)
-

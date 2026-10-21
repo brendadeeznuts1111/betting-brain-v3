@@ -54,19 +54,25 @@ export async function getHandleAndHold(args: Record<string, any>, env: Env): Pro
     `;
 
     const binds = marketType ? [lookbackTime, marketType] : [lookbackTime];
-    const handleData = await env.ANALYTICS.prepare(handleQuery).bind(...binds).all();
+    const handleData = await env.ANALYTICS.prepare(handleQuery)
+      .bind(...binds)
+      .all();
 
     if (!handleData.results || handleData.results.length === 0) {
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              message: 'No handle data found',
-              lookbackDays,
-              marketType: marketType || 'ALL',
-              agentID,
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                message: 'No handle data found',
+                lookbackDays,
+                marketType: marketType || 'ALL',
+                agentID,
+              },
+              null,
+              2
+            ),
           },
         ],
         isError: false,
@@ -83,21 +89,29 @@ export async function getHandleAndHold(args: Record<string, any>, env: Env): Pro
     const recentPeriods = handleData.results.slice(-3);
     const olderPeriods = handleData.results.slice(0, -3);
 
-    const recentAvgHandle = recentPeriods.reduce((sum: number, row: any) => sum + (row.total_handle || 0), 0) / recentPeriods.length;
-    const olderAvgHandle = olderPeriods.length > 0
-      ? olderPeriods.reduce((sum: number, row: any) => sum + (row.total_handle || 0), 0) / olderPeriods.length
-      : recentAvgHandle;
+    const recentAvgHandle =
+      recentPeriods.reduce((sum: number, row: any) => sum + (row.total_handle || 0), 0) / recentPeriods.length;
+    const olderAvgHandle =
+      olderPeriods.length > 0
+        ? olderPeriods.reduce((sum: number, row: any) => sum + (row.total_handle || 0), 0) / olderPeriods.length
+        : recentAvgHandle;
 
-    const handleTrend = recentAvgHandle > olderAvgHandle * 1.1 ? 'INCREASING' :
-                        recentAvgHandle < olderAvgHandle * 0.9 ? 'DECREASING' : 'STABLE';
+    const handleTrend =
+      recentAvgHandle > olderAvgHandle * 1.1
+        ? 'INCREASING'
+        : recentAvgHandle < olderAvgHandle * 0.9
+          ? 'DECREASING'
+          : 'STABLE';
 
-    const recentAvgHold = recentPeriods.reduce((sum: number, row: any) => sum + (row.hold_pct || 0), 0) / recentPeriods.length;
-    const olderAvgHold = olderPeriods.length > 0
-      ? olderPeriods.reduce((sum: number, row: any) => sum + (row.hold_pct || 0), 0) / olderPeriods.length
-      : recentAvgHold;
+    const recentAvgHold =
+      recentPeriods.reduce((sum: number, row: any) => sum + (row.hold_pct || 0), 0) / recentPeriods.length;
+    const olderAvgHold =
+      olderPeriods.length > 0
+        ? olderPeriods.reduce((sum: number, row: any) => sum + (row.hold_pct || 0), 0) / olderPeriods.length
+        : recentAvgHold;
 
-    const holdTrend = recentAvgHold > olderAvgHold + 0.5 ? 'INCREASING' :
-                      recentAvgHold < olderAvgHold - 0.5 ? 'DECREASING' : 'STABLE';
+    const holdTrend =
+      recentAvgHold > olderAvgHold + 0.5 ? 'INCREASING' : recentAvgHold < olderAvgHold - 0.5 ? 'DECREASING' : 'STABLE';
 
     // Market breakdown if no specific market
     let marketBreakdown = null;

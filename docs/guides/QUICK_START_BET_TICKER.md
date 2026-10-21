@@ -27,7 +27,7 @@ curl https://brain.mybook.com/interceptor/history?limit=1
 ✅ Intercepts `POST /cloud/api/Manager/getBetTicker`  
 ✅ Stores raw JSON in KV (7-day TTL)  
 ✅ Returns original response (transparent)  
-✅ Zero performance impact (async storage)  
+✅ Zero performance impact (async storage)
 
 ---
 
@@ -49,20 +49,24 @@ curl "https://brain.mybook.com/interceptor/history?startTime=1728300000000&endTi
 ## 🗂️ Files Created
 
 ### Core Implementation
+
 - `src/interceptors/bet-ticker-sniffer.ts` - Main interceptor
 - `src/types/api.ts` - Type definitions (extended)
 - `src/index.ts` - Routing (extended)
 
 ### Configuration
+
 - `wrangler.toml` - KV binding (base)
 - `wrangler.staging.toml` - KV binding (staging)
 - `wrangler.production.toml` - KV binding (prod)
 - `env.example` - Environment variables
 
 ### Testing
+
 - `tests/unit/bet-ticker-sniffer.test.ts` - 15 tests ✅
 
 ### Documentation
+
 - `docs/BET_TICKER_SNIFFER.md` - Full guide
 - `docs/deployment/BET_TICKER_IMPLEMENTATION.md` - Implementation summary
 - `README.md` - Updated with sniffer section
@@ -79,6 +83,7 @@ curl "https://brain.mybook.com/interceptor/history?startTime=1728300000000&endTi
 ```
 
 Run tests:
+
 ```bash
 bun test tests/unit/bet-ticker-sniffer.test.ts
 ```
@@ -90,6 +95,7 @@ bun test tests/unit/bet-ticker-sniffer.test.ts
 ### KV Namespace IDs (Update These!)
 
 **wrangler.toml:**
+
 ```toml
 [[kv_namespaces]]
 binding = "BET_TICKER_RAW"
@@ -98,6 +104,7 @@ preview_id = "your-preview-kv-id"     # ← UPDATE
 ```
 
 **wrangler.production.toml:**
+
 ```toml
 [[env.production.kv_namespaces]]
 binding = "BET_TICKER_RAW"
@@ -106,6 +113,7 @@ preview_id = "your-production-bet-ticker-preview-kv-id"  # ← UPDATE
 ```
 
 **wrangler.staging.toml:**
+
 ```toml
 [[env.staging.kv_namespaces]]
 binding = "BET_TICKER_RAW"
@@ -117,26 +125,29 @@ preview_id = "your-staging-bet-ticker-preview-kv-id"    # ← UPDATE
 
 ## 📈 Key Metrics
 
-| Metric | Value |
-|--------|-------|
-| Client latency | 0ms (async) |
-| Overhead | < 5ms |
-| Storage | 1-10 KB/response |
-| Retention | 7 days (auto-cleanup) |
-| Cost | $0-5/month |
-| Tests | 15/15 ✅ |
+| Metric         | Value                 |
+| -------------- | --------------------- |
+| Client latency | 0ms (async)           |
+| Overhead       | < 5ms                 |
+| Storage        | 1-10 KB/response      |
+| Retention      | 7 days (auto-cleanup) |
+| Cost           | $0-5/month            |
+| Tests          | 15/15 ✅              |
 
 ---
 
 ## 🐛 Troubleshooting
 
 ### Issue: "BetTicker interception not configured"
+
 **Fix:** Update wrangler.toml with KV namespace IDs
 
 ### Issue: Responses not storing
+
 **Fix:** Check `wrangler tail --env production` for errors
 
 ### Issue: Can't find stored responses
+
 **Fix:** Check `/interceptor/history` - they expire after 7 days
 
 ---
@@ -151,9 +162,8 @@ preview_id = "your-staging-bet-ticker-preview-kv-id"    # ← UPDATE
 
 **Status:** ✅ Production Ready  
 **Test Coverage:** 100%  
-**Time to Deploy:** < 15 minutes  
+**Time to Deploy:** < 15 minutes
 
 ---
 
 **Built with ❤️ on Cloudflare Edge**
-

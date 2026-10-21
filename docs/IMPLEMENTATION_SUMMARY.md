@@ -2,13 +2,15 @@
 
 ## ✨ Complete Production-Ready System
 
-All components have been implemented for a **zero-config, cost-capped, edge-native** betting intelligence layer.
+All components have been implemented for a **zero-config, cost-capped,
+edge-native** betting intelligence layer.
 
 ---
 
 ## 📊 Implementation Progress: 14/14 Complete (100%) ✅
 
 ### 1. ✅ Directory Structure
+
 ```
 betting-brain-v3/
 ├── src/                      # Source code
@@ -27,11 +29,13 @@ betting-brain-v3/
 ```
 
 ### 2. ✅ TypeScript Type Definitions (3 files)
+
 - **database.ts** - D1 schema types with ROWID and LZ4 compression
 - **metrics.ts** - Core metrics (CLV, Hold, Exposure, Sharp, Steam)
 - **api.ts** - Request/response types with Zod validation schemas
 
 ### 3. ✅ Guards & Security (2 files)
+
 - **costCap.ts** - Hard-wired cost controls
   - D1: 5GB / 50M rows with TTL auto-purge
   - Queue: 1M ops/month with pause on limit
@@ -40,6 +44,7 @@ betting-brain-v3/
 - **rateLimit.ts** - 10 req/s per IP with burst protection
 
 ### 4. ✅ Queue Consumers (2 files)
+
 - **lineIngress.ts** - Line movement ingestion
   - Batch processing (10 messages)
   - Zod validation
@@ -52,6 +57,7 @@ betting-brain-v3/
   - Analytics Engine logging
 
 ### 5. ✅ D1 Triggers (1 file)
+
 - **onLineMove.ts** - Automatic line movement processing
   - Calculates line change metrics
   - Triggers steam detection
@@ -59,6 +65,7 @@ betting-brain-v3/
   - Non-blocking execution
 
 ### 6. ✅ Scheduled Jobs (2 files)
+
 - **sharpCalc.ts** - Hourly sharp score calculation
   - Top 100 customers only
   - CLV, win rate, action count
@@ -71,7 +78,9 @@ betting-brain-v3/
   - Multi-side exposure
 
 ### 7. ✅ MCP Tools / Intelligence APIs (4 files)
+
 All tools include:
+
 - Zod input/output validation
 - Rate limiting (10 req/s)
 - Cost cap checks
@@ -79,17 +88,20 @@ All tools include:
 - Type-safe responses
 
 **Tools:**
+
 1. **getBettingExposure.ts** - Current exposure by event
 2. **getSharpScore.ts** - Customer sharp scores
 3. **getHoldPercentage.ts** - Hold % and volume
 4. **getCLV.ts** - Customer lifetime value
 
 ### 8. ✅ Shared Utilities (3 files)
+
 - **database.ts** - D1 helper with retry logic, batch operations, vacuum/analyze
 - **validation.ts** - Centralized Zod schemas for all API endpoints
 - **formatting.ts** - Currency, percentage, timestamp, table formatting
 
 ### 9. ✅ Database Migrations (2 files)
+
 - **0001_initial_schema.sql**
   - line_movements (ROWID, LZ4, 7-day TTL)
   - sharp_indicators (hourly refresh)
@@ -102,7 +114,9 @@ All tools include:
   - Zero manual maintenance
 
 ### 10. ✅ Comprehensive Tests (5 files)
+
 All tests use Vitest + Miniflare:
+
 - **clv.test.ts** - CLV calculations and < -2% alerts
 - **hold.test.ts** - Hold % validation (4%-8% range)
 - **exposure.test.ts** - Exposure tracking ($50k / 60% limits)
@@ -110,6 +124,7 @@ All tests use Vitest + Miniflare:
 - **steam.test.ts** - Steam detection (3σ in 60s)
 
 ### 11. ✅ Automation Scripts (3 files)
+
 - **bootstrap.ts** - Zero-config setup
   - Creates D1 database
   - Applies migrations
@@ -128,7 +143,9 @@ All tests use Vitest + Miniflare:
   - Creates rollback tags
 
 ### 12. ✅ Grafana Dashboard
+
 **dashboard.json** includes 12 panels:
+
 - CLV, Hold, Exposure, Sharp alerts (4 stat panels)
 - Total exposure by event (graph)
 - Steam moves table (last hour)
@@ -140,7 +157,9 @@ All tests use Vitest + Miniflare:
 - Queue operations (graph)
 
 ### 13. ✅ CI/CD Workflows
+
 **deploy.yml** - GitHub Actions:
+
 - **Test Job**: Runs tests, type checking, coverage
 - **Deploy Staging**: PR deployments
 - **Deploy Production**: Main branch deployments
@@ -148,6 +167,7 @@ All tests use Vitest + Miniflare:
 - Deployment notifications
 
 ### 14. ✅ Configuration & Documentation
+
 - **package.json** - Updated with all scripts
 - **tsconfig.json** - TypeScript configuration
 - **vitest.config.ts** - Test configuration
@@ -161,6 +181,7 @@ All tests use Vitest + Miniflare:
 ## 🎯 Core Features Implemented
 
 ### ✅ Zero-Config Boot
+
 ```bash
 npm install
 npm run bootstrap  # Creates everything
@@ -168,24 +189,28 @@ npm run dev        # Start development
 ```
 
 ### ✅ Typed Migrations
+
 - SQL with STRICT mode
 - ROWID and WITHOUT ROWID optimizations
 - LZ4 compression
 - Auto-TTL triggers
 
 ### ✅ Auto-Generated Tests
+
 - 100% typed with Vitest
 - Miniflare environment
 - All 5 core metrics covered
 - Mock data for deterministic tests
 
 ### ✅ 1-Click Rollback
+
 ```bash
 npm run deploy:prod  # Creates v3.1.0-abc123
 npm run rollback v3.1.0-abc123  # Instant rollback
 ```
 
 ### ✅ Grafana Sidecar
+
 - Auto-provisioned dashboard
 - 12 real-time panels
 - Cost cap monitoring
@@ -195,36 +220,39 @@ npm run rollback v3.1.0-abc123  # Instant rollback
 
 ## 📈 Performance Metrics
 
-| Component | Metric | Value |
-|-----------|--------|-------|
-| **Cold Start** | Edge functions | ≤ 250ms |
-| **Rate Limit** | Requests per IP | 10 req/s |
-| **Batch Size** | Line ingress | 10 messages |
-| **Batch Size** | Steam webhook | 5 messages |
-| **Schedule** | Sharp calc | Every hour |
-| **Schedule** | Exposure calc | Every 30s |
-| **TTL** | Line movements | 7 days |
-| **TTL** | Steam dedupe | 5 minutes |
-| **TTL** | Sharp indicators | 30 days |
-| **TTL** | Exposure tracking | 24 hours |
+| Component      | Metric            | Value       |
+| -------------- | ----------------- | ----------- |
+| **Cold Start** | Edge functions    | ≤ 250ms     |
+| **Rate Limit** | Requests per IP   | 10 req/s    |
+| **Batch Size** | Line ingress      | 10 messages |
+| **Batch Size** | Steam webhook     | 5 messages  |
+| **Schedule**   | Sharp calc        | Every hour  |
+| **Schedule**   | Exposure calc     | Every 30s   |
+| **TTL**        | Line movements    | 7 days      |
+| **TTL**        | Steam dedupe      | 5 minutes   |
+| **TTL**        | Sharp indicators  | 30 days     |
+| **TTL**        | Exposure tracking | 24 hours    |
 
 ---
 
 ## 🔐 Security & Compliance
 
 ### Rate Limiting
+
 - 10 requests/second per IP
 - Burst limit: 20 requests
 - Window: 60 seconds
 - Automatic cleanup
 
 ### Cost Caps
+
 - **D1**: 5GB / 50M rows (auto-purge)
 - **Queue**: 1M ops/month (pause on limit)
 - **Analytics**: 25M points/month (10% sampling)
 - **Requests**: 100k/day (hard stop)
 
 ### Input Validation
+
 - All inputs validated with Zod
 - Type-safe at compile time
 - Runtime validation
@@ -235,17 +263,20 @@ npm run rollback v3.1.0-abc123  # Instant rollback
 ## 🚀 Deployment Flow
 
 ### Development
+
 ```bash
 npm run dev  # Local Miniflare
 ```
 
 ### Staging (PR)
+
 ```bash
 git push origin feature-branch
 # Auto-deploys to staging via GitHub Actions
 ```
 
 ### Production (Main)
+
 ```bash
 git push origin main
 # Auto-deploys to production via GitHub Actions
@@ -253,6 +284,7 @@ git push origin main
 ```
 
 ### Rollback
+
 ```bash
 npm run rollback v3.1.0-abc123
 ```
@@ -290,7 +322,8 @@ npm run rollback v3.1.0-abc123
 
 ## 🎉 Ready for Production!
 
-The system is **100% complete** and ready for production deployment. Every component has been implemented with:
+The system is **100% complete** and ready for production deployment. Every
+component has been implemented with:
 
 ✅ Type safety  
 ✅ Error handling  
@@ -301,7 +334,7 @@ The system is **100% complete** and ready for production deployment. Every compo
 ✅ Zero-config setup  
 ✅ 1-click deployment  
 ✅ Instant rollback  
-✅ Real-time monitoring  
+✅ Real-time monitoring
 
 ---
 

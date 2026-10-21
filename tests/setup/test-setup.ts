@@ -1,7 +1,7 @@
 /**
  * Global test setup and configuration
  * Runs before all tests to configure the testing environment
- * 
+ *
  * Features:
  * - Quiet testing support for AI environments
  * - Test caching and smart skipping
@@ -112,6 +112,6 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Global error handling for uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   console.error('Uncaught Exception:', error);
 });

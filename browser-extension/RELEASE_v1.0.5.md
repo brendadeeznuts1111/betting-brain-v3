@@ -8,31 +8,36 @@
 ## 🚀 What's New
 
 ### 1. Comprehensive API Monitoring ✅ IMPLEMENTED
+
 **Before:**
+
 ```javascript
 const INTERCEPT_PATTERNS = [
   '/cloud/api/System/authenticateCustomer',
   '/cloud/api/Manager/',
   '/cloud/api/Log/',
   '/cloud/api/Wager/',
-  '/cloud/api/Report/'
+  '/cloud/api/Report/',
 ];
 ```
 
 **After:**
+
 ```javascript
 const INTERCEPT_PATTERNS = [
-  '/cloud/api/' // Now captures EVERYTHING!
+  '/cloud/api/', // Now captures EVERYTHING!
 ];
 ```
 
 **Impact:**
+
 - ✅ Captures ALL Fantasy402 API calls
 - ✅ No more missed endpoints
 - ✅ Complete data coverage
 - ✅ Better analytics
 
 ### Previously Missed Endpoints Now Captured:
+
 - `/cloud/api/Manager/getAccountInfoOwner` ✅
 - `/cloud/api/Manager/getConfigWebReports` ✅
 - `/cloud/api/Manager/getConfigWebReportsPending` ✅
@@ -50,6 +55,7 @@ const INTERCEPT_PATTERNS = [
 ## 📊 Expected Results
 
 ### Console Output
+
 ```
 [Fantasy402] 🚀 Interceptor initialized
 [Fantasy402] 📡 Worker URL: https://betting-brain-v3.nolarose1968-806.workers.dev
@@ -61,6 +67,7 @@ const INTERCEPT_PATTERNS = [
 ```
 
 ### Database Growth
+
 ```bash
 Before: SELECT COUNT(*) FROM fantasy402_raw_feed → 0 records
 After:  SELECT COUNT(*) FROM fantasy402_raw_feed → 50+ records (after 5 minutes)
@@ -71,6 +78,7 @@ After:  SELECT COUNT(*) FROM fantasy402_raw_feed → 50+ records (after 5 minute
 ## 🔧 How to Upgrade
 
 ### Step 1: Reload Extension
+
 ```
 chrome://extensions/
 Find "Fantasy402 Data Capture"
@@ -79,6 +87,7 @@ Click 🔄 reload button
 ```
 
 ### Step 2: Hard Refresh Fantasy402
+
 ```
 Go to: fantasy402.com/manager.html
 Press: Cmd+Shift+R (Mac) or Ctrl+Shift+R (Windows)
@@ -86,7 +95,9 @@ Clear console: Cmd+K or Ctrl+L
 ```
 
 ### Step 3: Verify
+
 Navigate around Fantasy402 and check console for:
+
 - ✅ Multiple `🔎 XHR send detected:` messages
 - ✅ Various different endpoints being captured
 - ✅ All showing `Pattern match: true`
@@ -97,18 +108,20 @@ Navigate around Fantasy402 and check console for:
 
 ### Planned Enhancement: WebSocket Push Instead of HTTP Polling
 
-**The Problem:**
-Currently, the extension makes repetitive HTTP POST requests to forward data. This uses unnecessary bandwidth and creates latency.
+**The Problem:** Currently, the extension makes repetitive HTTP POST requests to
+forward data. This uses unnecessary bandwidth and creates latency.
 
-**The Solution:**
-Replace HTTP polling with WebSocket persistent connection. This will:
+**The Solution:** Replace HTTP polling with WebSocket persistent connection.
+This will:
+
 - ⚡ Reduce requests by 90%
 - 🌐 Cut bandwidth usage by 90%
 - ⏱️ Eliminate polling latency
 - 💰 Lower Cloudflare costs
 - 🔋 Improve battery life
 
-**Documentation:** [docs/WEBSOCKET_ENHANCEMENT_PLAN.md](../docs/WEBSOCKET_ENHANCEMENT_PLAN.md)
+**Documentation:**
+[docs/WEBSOCKET_ENHANCEMENT_PLAN.md](../docs/WEBSOCKET_ENHANCEMENT_PLAN.md)
 
 **Timeline:** 2-3 weeks (planned for v1.1.0)
 
@@ -117,6 +130,7 @@ Replace HTTP polling with WebSocket persistent connection. This will:
 ## 🐛 Bug Fixes
 
 ### v1.0.4 → v1.0.5
+
 - ✅ Simplified endpoint monitoring (5 patterns → 1 pattern)
 - ✅ Reduced configuration complexity
 - ✅ Improved pattern matching performance
@@ -127,22 +141,27 @@ Replace HTTP polling with WebSocket persistent connection. This will:
 ## 📋 Version History
 
 ### v1.0.5 (Current) - 2025-10-08
+
 - ✅ Comprehensive API monitoring (`/cloud/api/`)
 - ✅ All endpoints now captured
 
 ### v1.0.4 - 2025-10-08
+
 - ✅ Added `world: "MAIN"` for early injection
 - ✅ Fixed XHR interception timing issue
 
 ### v1.0.3 - 2025-10-08
+
 - ✅ Added debug logging for XHR interception
 - ✅ Improved diagnostic capabilities
 
 ### v1.0.2 - 2025-10-08
+
 - ✅ Fixed manifest version format
 - ✅ Simplified content scripts
 
 ### v1.0.1 - 2025-10-07
+
 - ✅ Initial Fantasy402 integration
 
 ---
@@ -152,10 +171,13 @@ Replace HTTP polling with WebSocket persistent connection. This will:
 After upgrading to v1.0.5, monitor these:
 
 ### Worker Logs
+
 ```bash
 wrangler tail --env=""
 ```
+
 Should show MORE diverse operations:
+
 ```
 [abc123] 📥 Fantasy402 data: /cloud/api/Manager/getAccountInfoOwner
 [abc456] 📥 Fantasy402 data: /cloud/api/Manager/getWeeklyFigureByAgentLite
@@ -163,22 +185,26 @@ Should show MORE diverse operations:
 ```
 
 ### Database Records
+
 ```bash
 wrangler d1 execute fantasy42-raw-feed --remote --command="
-SELECT operation, COUNT(*) as count 
-FROM fantasy402_raw_feed 
-GROUP BY operation 
+SELECT operation, COUNT(*) as count
+FROM fantasy402_raw_feed
+GROUP BY operation
 ORDER BY count DESC
 LIMIT 20
 "
 ```
+
 Should show 15-20+ different operations (vs. 5 before)
 
 ### KV Storage
+
 ```bash
 wrangler kv key list --namespace-id=e8ea80789b5246e58ea95798f04d0047 \
   --prefix="fantasy402:"
 ```
+
 Should show diverse keys for different operations
 
 ---
@@ -198,14 +224,18 @@ You'll know v1.0.5 is working correctly when:
 ## 🚨 Troubleshooting
 
 ### Issue: Still not seeing all endpoints
+
 **Solution:**
+
 1. Verify extension version is 1.0.5
 2. Hard refresh Fantasy402 (Cmd+Shift+R)
 3. Check console shows: `🎯 Monitoring endpoints: (1) ['/cloud/api/']`
 4. If not, reload extension and try again
 
 ### Issue: Extension not intercepting at all
+
 **Solution:**
+
 1. Check extension is enabled
 2. Verify `world: "MAIN"` is in manifest
 3. Check console for initialization message
@@ -216,10 +246,11 @@ You'll know v1.0.5 is working correctly when:
 ## 📞 Support
 
 - **Documentation:** [docs/FANTASY402_AUDIT.md](../docs/FANTASY402_AUDIT.md)
-- **WebSocket Plan:** [docs/WEBSOCKET_ENHANCEMENT_PLAN.md](../docs/WEBSOCKET_ENHANCEMENT_PLAN.md)
-- **Troubleshooting:** [browser-extension/TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- **WebSocket Plan:**
+  [docs/WEBSOCKET_ENHANCEMENT_PLAN.md](../docs/WEBSOCKET_ENHANCEMENT_PLAN.md)
+- **Troubleshooting:**
+  [browser-extension/TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ---
 
 **Upgrade now to capture 100% of Fantasy402 API calls!** 🚀
-

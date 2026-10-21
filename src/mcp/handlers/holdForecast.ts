@@ -8,12 +8,7 @@ import { MCPToolResult } from '../types';
 
 export async function getHoldForecast(args: Record<string, any>, env: Env): Promise<MCPToolResult> {
   try {
-    const {
-      eventID,
-      marketType,
-      lookbackDays = 30,
-      forecastHours = 24,
-    } = args;
+    const { eventID, marketType, lookbackDays = 30, forecastHours = 24 } = args;
 
     if (!env.ANALYTICS) {
       throw new Error('ANALYTICS database not available');
@@ -39,18 +34,24 @@ export async function getHoldForecast(args: Record<string, any>, env: Env): Prom
     `;
 
     const binds = marketType ? [lookbackTime, marketType] : [lookbackTime];
-    const history = await env.ANALYTICS.prepare(historyQuery).bind(...binds).all();
+    const history = await env.ANALYTICS.prepare(historyQuery)
+      .bind(...binds)
+      .all();
 
     if (!history.results || history.results.length === 0) {
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              message: 'No historical hold data found',
-              lookbackDays,
-              marketType: marketType || 'ALL',
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                message: 'No historical hold data found',
+                lookbackDays,
+                marketType: marketType || 'ALL',
+              },
+              null,
+              2
+            ),
           },
         ],
         isError: false,
@@ -91,10 +92,7 @@ export async function getHoldForecast(args: Record<string, any>, env: Env): Prom
     const lowerBound = expectedHold - confidenceInterval;
     const upperBound = expectedHold + confidenceInterval;
 
-    const riskLevel =
-      volatility > 5.0 ? 'HIGH' :
-      volatility > 2.0 ? 'MEDIUM' :
-      'LOW';
+    const riskLevel = volatility > 5.0 ? 'HIGH' : volatility > 2.0 ? 'MEDIUM' : 'LOW';
 
     const response = {
       forecast: {
@@ -104,18 +102,19 @@ export async function getHoldForecast(args: Record<string, any>, env: Env): Prom
           upper: Math.round(upperBound * 100) / 100,
         },
         forecast_hours: forecastHours,
-        trend: forecast.slope > 0.1 ? 'INCREASING' :
-               forecast.slope < -0.1 ? 'DECREASING' : 'STABLE',
+        trend: forecast.slope > 0.1 ? 'INCREASING' : forecast.slope < -0.1 ? 'DECREASING' : 'STABLE',
         volatility: Math.round(volatility * 100) / 100,
         risk_level: riskLevel,
       },
-      current_state: currentHold ? {
-        event_id: eventID,
-        current_hold_pct: Number(currentHold.hold_pct),
-        volume: Number(currentHold.volume),
-        timestamp: String(currentHold.ts),
-        deviation_from_forecast: Math.abs(Number(currentHold.hold_pct) - expectedHold),
-      } : null,
+      current_state: currentHold
+        ? {
+            event_id: eventID,
+            current_hold_pct: Number(currentHold.hold_pct),
+            volume: Number(currentHold.volume),
+            timestamp: String(currentHold.ts),
+            deviation_from_forecast: Math.abs(Number(currentHold.hold_pct) - expectedHold),
+          }
+        : null,
       historical_summary: {
         lookback_days: lookbackDays,
         total_samples: dataPoints.length,
@@ -233,7 +232,9 @@ function generateHoldRecommendations(
   }
 
   if (currentHold && Math.abs(currentHold.hold_pct - expectedHold) > 3.0) {
-    recommendations.push(`Current hold deviating significantly from forecast (${Math.round(Math.abs(currentHold.hold_pct - expectedHold) * 100) / 100}% difference)`);
+    recommendations.push(
+      `Current hold deviating significantly from forecast (${Math.round(Math.abs(currentHold.hold_pct - expectedHold) * 100) / 100}% difference)`
+    );
     recommendations.push('Investigate recent betting patterns or line movements');
   }
 

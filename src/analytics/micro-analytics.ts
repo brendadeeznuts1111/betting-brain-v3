@@ -14,9 +14,7 @@ import type { Env } from '../types/api';
  */
 export function betsPerMinute(bets: any[], windowMs = 5 * 60 * 1000): number {
   const now = Date.now();
-  const recentBets = bets.filter(b =>
-    new Date(b.InsertDateTime).getTime() >= now - windowMs
-  );
+  const recentBets = bets.filter(b => new Date(b.InsertDateTime).getTime() >= now - windowMs);
   return recentBets.length / (windowMs / 60000); // per minute
 }
 
@@ -61,7 +59,7 @@ export function giniCoefficient(customerStakes: Map<string, number>): number {
  */
 export function decayScore(lastActivityMs: number, halfLife = 24 * 60 * 60 * 1000): number {
   const age = Date.now() - lastActivityMs;
-  return Math.exp(-Math.LN2 * age / halfLife);
+  return Math.exp((-Math.LN2 * age) / halfLife);
 }
 
 // ============================================================================
@@ -115,17 +113,19 @@ export async function computeAndStore(
     velocity,
     sharpness,
     concentration,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   // Write all four KV keys in parallel (non-blocking)
   if (env.FANTASY_CACHE) {
-    ctx.waitUntil(Promise.all([
-      env.FANTASY_CACHE.put(`vm:${agentId}`, velocity.toFixed(2), { expirationTtl: 300 }),
-      env.FANTASY_CACHE.put(`sharp:${agentId}`, sharpness.toFixed(2), { expirationTtl: 300 }),
-      env.FANTASY_CACHE.put(`gini:${agentId}`, concentration.toFixed(3), { expirationTtl: 3600 }),
-      env.FANTASY_CACHE.put(`meta:${agentId}`, JSON.stringify(analytics), { expirationTtl: 300 })
-    ]));
+    ctx.waitUntil(
+      Promise.all([
+        env.FANTASY_CACHE.put(`vm:${agentId}`, velocity.toFixed(2), { expirationTtl: 300 }),
+        env.FANTASY_CACHE.put(`sharp:${agentId}`, sharpness.toFixed(2), { expirationTtl: 300 }),
+        env.FANTASY_CACHE.put(`gini:${agentId}`, concentration.toFixed(3), { expirationTtl: 3600 }),
+        env.FANTASY_CACHE.put(`meta:${agentId}`, JSON.stringify(analytics), { expirationTtl: 300 }),
+      ])
+    );
   }
 
   return analytics;
@@ -147,9 +147,7 @@ export async function computeCustomerRecency(
     recencies.push({ customerId, recencyScore: score, lastActivity });
 
     if (env.FANTASY_CACHE) {
-      writes.push(
-        env.FANTASY_CACHE.put(`rec:${customerId}`, score.toFixed(3), { expirationTtl: 3600 })
-      );
+      writes.push(env.FANTASY_CACHE.put(`rec:${customerId}`, score.toFixed(3), { expirationTtl: 3600 }));
     }
   });
 

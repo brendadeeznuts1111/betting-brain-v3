@@ -18,12 +18,7 @@ import type { Env } from '../types/api';
 
 export type CircuitBreakerState = 'closed' | 'open' | 'half_open';
 export type TripReason =
-  | 'model_uncertainty'
-  | 'api_failures'
-  | 'daily_loss_limit'
-  | 'balance_delta'
-  | 'manual_trigger'
-  | 'system_error';
+  'model_uncertainty' | 'api_failures' | 'daily_loss_limit' | 'balance_delta' | 'manual_trigger' | 'system_error';
 
 export interface CircuitBreakerStatus {
   state: CircuitBreakerState;
@@ -59,7 +54,7 @@ export class TradingCircuitBreaker {
     maxModelUncertainty: 0.15, // 15%
     maxConsecutiveFailures: 3,
     maxDailyLoss: 10000, // $10k
-    minBalanceDelta: -0.10, // -10%
+    minBalanceDelta: -0.1, // -10%
     autoResetAfterSeconds: undefined, // Manual reset only by default
   };
 
@@ -149,10 +144,7 @@ export class TradingCircuitBreaker {
   /**
    * Trip the circuit breaker
    */
-  private async trip(
-    reason: TripReason,
-    metrics: Record<string, any> = {}
-  ): Promise<void> {
+  private async trip(reason: TripReason, metrics: Record<string, any> = {}): Promise<void> {
     if (this.state === 'open') {
       // Already tripped
       return;
@@ -170,12 +162,7 @@ export class TradingCircuitBreaker {
 
     // Log to audit trail
     this.env.ANALYTICS_ENGINE.writeDataPoint({
-      blobs: [
-        'circuit_breaker',
-        'tripped',
-        reason,
-        JSON.stringify(metrics),
-      ],
+      blobs: ['circuit_breaker', 'tripped', reason, JSON.stringify(metrics)],
       doubles: [this.tripCount],
       indexes: [Date.now()],
     });
@@ -210,9 +197,7 @@ export class TradingCircuitBreaker {
     return {
       state: this.state,
       trip_reason: this.tripReason || undefined,
-      trip_timestamp: this.tripTimestamp
-        ? new Date(this.tripTimestamp).toISOString()
-        : undefined,
+      trip_timestamp: this.tripTimestamp ? new Date(this.tripTimestamp).toISOString() : undefined,
       trip_count: this.tripCount,
       last_check_timestamp: new Date().toISOString(),
       metrics: {
@@ -244,11 +229,7 @@ export class TradingCircuitBreaker {
       { expirationTtl: 86400 } // 24 hours
     );
 
-    await this.env.SESSION_STORE?.put(
-      'circuit_breaker_details',
-      JSON.stringify(state),
-      { expirationTtl: 86400 }
-    );
+    await this.env.SESSION_STORE?.put('circuit_breaker_details', JSON.stringify(state), { expirationTtl: 86400 });
   }
 
   /**

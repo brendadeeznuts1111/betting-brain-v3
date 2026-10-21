@@ -15,21 +15,22 @@ function isRetryableError(error: unknown): boolean {
     if (error.name === 'ZodError' || error.message.includes('validation')) {
       return false;
     }
-    
+
     // Don't retry database constraint errors
-    if (error.message.includes('UNIQUE constraint') || 
-        error.message.includes('FOREIGN KEY constraint')) {
+    if (error.message.includes('UNIQUE constraint') || error.message.includes('FOREIGN KEY constraint')) {
       return false;
     }
-    
+
     // Retry network errors, timeouts, and other transient errors
-    if (error.message.includes('timeout') || 
-        error.message.includes('network') ||
-        error.message.includes('connection')) {
+    if (
+      error.message.includes('timeout') ||
+      error.message.includes('network') ||
+      error.message.includes('connection')
+    ) {
       return true;
     }
   }
-  
+
   // Default to retryable for unknown errors
   return true;
 }
@@ -42,7 +43,7 @@ const LineMovementSchema = z.object({
   la: z.number().nullable(),
   vb: z.number().nullable(),
   va: z.number().nullable(),
-  ts: z.string().datetime()
+  ts: z.string().datetime(),
 });
 
 // Type inference from schema
@@ -58,10 +59,10 @@ export async function handleLineIngress(message: Message, env: Env, ctx: Executi
       // JSON parsing errors are non-retryable
       return;
     }
-    
+
     // Validate incoming data
     const validatedData = LineMovementSchema.parse(data);
-    
+
     // Check cost cap before processing
     const costCheck = await costCapGuard.checkRequest(new Request('https://internal'), env);
     if (!costCheck.allowed) {
@@ -72,13 +73,13 @@ export async function handleLineIngress(message: Message, env: Env, ctx: Executi
 
     // Process the line movement
     await processLineMovement(validatedData, env);
-    
+
     console.log(`Processed line movement for event ${validatedData.eid}, market ${validatedData.mt}`);
-    
+
     // Message will be automatically acknowledged on successful completion
   } catch (error) {
     console.error('Error processing line movement:', error);
-    
+
     // Check if this is a retryable error
     if (isRetryableError(error)) {
       console.log('Retryable error detected, message will be retried');
@@ -93,25 +94,20 @@ export async function handleLineIngress(message: Message, env: Env, ctx: Executi
 
 async function processLineMovement(data: LineMovementInsert, env: Env): Promise<void> {
   const now = new Date().toISOString();
-  
+
   // Insert line movement into database
-  await env.ANALYTICS.prepare(`
+  await env.ANALYTICS.prepare(
+    `
     INSERT INTO line_movements (eid, mt, lb, la, vb, va, ts, ing)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    data.eid,
-    data.mt,
-    data.lb,
-    data.la,
-    data.vb,
-    data.va,
-    data.ts,
-    now
-  ).run();
+  `
+  )
+    .bind(data.eid, data.mt, data.lb, data.la, data.vb, data.va, data.ts, now)
+    .run();
 
   // Check if this is a significant line movement
   const isSignificant = await checkSignificantMovement(data, env);
-  
+
   if (isSignificant) {
     // Trigger steam move detection
     await triggerSteamMoveDetection(data, env);
@@ -119,17 +115,12 @@ async function processLineMovement(data: LineMovementInsert, env: Env): Promise<
 
   // Update exposure tracking if needed
   await updateExposureTracking(data, env);
-  
+
   // Write metrics to analytics engine
   await env.ANALYTICS_ENGINE.writeDataPoint({
     blobs: [data.eid, data.mt, 'line_ingress'],
-    doubles: [
-      data.lb || 0,
-      data.la || 0,
-      data.vb || 0,
-      data.va || 0
-    ],
-    indexes: ['line_ingress']
+    doubles: [data.lb || 0, data.la || 0, data.vb || 0, data.va || 0],
+    indexes: ['line_ingress'],
   });
 }
 
@@ -163,7 +154,7 @@ async function triggerSteamMoveDetection(data: LineMovementInsert, env: Env): Pr
     vb: data.vb,
     va: data.va,
     ts: data.ts,
-    trigger: 'line_movement'
+    trigger: 'line_movement',
   });
 }
 
@@ -177,14 +168,12 @@ async function updateExposureTracking(data: LineMovementInsert, env: Env): Promi
 export async function handleBatchLineIngress(messages: Message[], env: Env, ctx: ExecutionContext): Promise<void> {
   const batchSize = 10; // Max batch size from wrangler.toml
   const batches = [];
-  
+
   for (let i = 0; i < messages.length; i += batchSize) {
     batches.push(messages.slice(i, i + batchSize));
   }
 
   for (const batch of batches) {
-    await Promise.all(
-      batch.map(message => handleLineIngress(message, env, ctx))
-    );
+    await Promise.all(batch.map(message => handleLineIngress(message, env, ctx)));
   }
 }

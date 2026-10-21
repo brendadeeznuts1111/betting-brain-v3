@@ -2,9 +2,11 @@
 
 ## Quick Start
 
-The MCP server is accessible at the `/mcp` endpoint and uses JSON-RPC 2.0 protocol.
+The MCP server is accessible at the `/mcp` endpoint and uses JSON-RPC 2.0
+protocol.
 
-**Base URL:** `http://localhost:8787/mcp` (development) or `https://your-worker.workers.dev/mcp` (production)
+**Base URL:** `http://localhost:8787/mcp` (development) or
+`https://your-worker.workers.dev/mcp` (production)
 
 ---
 
@@ -23,6 +25,7 @@ curl -X POST http://localhost:8787/mcp \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -63,6 +66,7 @@ curl -X POST http://localhost:8787/mcp \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -362,12 +366,14 @@ await testMCPTool('getSteamMoves', {
 ## All Available Tools
 
 ### Intelligence Tools (4)
+
 1. `getBettingExposure` - Current exposure by event/market
 2. `getCLV` - Customer lifetime value
 3. `getHoldPercentage` - Hold percentage analysis
 4. `getSharpScore` - Basic sharp score calculation
 
 ### Live Betting Tools (5)
+
 5. `getLiveBettingTicker` - Real-time betting feed (not implemented)
 6. **`getSteamMoves`** - 3-sigma steam detection ✅
 7. **`getRiskConcentration`** - Risk clustering analysis ✅
@@ -375,6 +381,7 @@ await testMCPTool('getSteamMoves', {
 9. `getClosingLineValue` - CLV analysis (not implemented)
 
 ### Analytics Tools (6)
+
 10. **`getTimeSeriesCLV`** - CLV trend analysis ✅
 11. **`getEnhancedSharpScore`** - ML-like customer profiling ✅
 12. **`getHoldForecast`** - Predictive hold analytics ✅
@@ -389,6 +396,7 @@ await testMCPTool('getSteamMoves', {
 ## Troubleshooting
 
 ### Tool Not Found
+
 **Error:** `Tool not found: toolName`
 
 **Solution:** Check available tools with `tools/list` method
@@ -396,9 +404,11 @@ await testMCPTool('getSteamMoves', {
 ---
 
 ### Missing Database
+
 **Error:** `ANALYTICS database not available`
 
 **Solution:** Ensure D1 database is bound in `wrangler.toml`:
+
 ```toml
 [[d1_databases]]
 binding = "ANALYTICS"
@@ -409,16 +419,20 @@ database_id = "your-database-id"
 ---
 
 ### Invalid Parameters
+
 **Error:** `Invalid params`
 
-**Solution:** Check tool schema with `tools/list` and ensure all required parameters are provided
+**Solution:** Check tool schema with `tools/list` and ensure all required
+parameters are provided
 
 ---
 
 ### Customer Not Found
+
 **Response:** `{"error": "Customer not found", "cid": "..."}`
 
-**Solution:** Use a valid customer ID that exists in the `sharp_indicators` table
+**Solution:** Use a valid customer ID that exists in the `sharp_indicators`
+table
 
 ---
 
@@ -446,6 +460,7 @@ Use one of the cURL examples above
 ### 4. Check Logs
 
 Server logs show:
+
 ```
 [request-id] 🤖 MCP Protocol request
 [MCP] Executing tool: getSteamMoves { args: {...} }
@@ -463,6 +478,7 @@ Parse the `result.content[0].text` field which contains JSON data
 Tools expect these D1 tables:
 
 ### `sharp_indicators`
+
 ```sql
 CREATE TABLE sharp_indicators (
   cid TEXT PRIMARY KEY,
@@ -474,6 +490,7 @@ CREATE TABLE sharp_indicators (
 ```
 
 ### `line_movements`
+
 ```sql
 CREATE TABLE line_movements (
   eid TEXT,
@@ -488,6 +505,7 @@ CREATE TABLE line_movements (
 ```
 
 ### `bet_history`
+
 ```sql
 CREATE TABLE bet_history (
   cid TEXT,
@@ -502,6 +520,7 @@ CREATE TABLE bet_history (
 ```
 
 ### `exposure_tracking`
+
 ```sql
 CREATE TABLE exposure_tracking (
   eid TEXT,
@@ -513,6 +532,7 @@ CREATE TABLE exposure_tracking (
 ```
 
 ### `hold_tracking`
+
 ```sql
 CREATE TABLE hold_tracking (
   eid TEXT,
@@ -529,19 +549,20 @@ CREATE TABLE hold_tracking (
 
 Expected response times (with populated database):
 
-| Tool | Query Complexity | Expected Time |
-|------|------------------|---------------|
-| getSteamMoves | Medium | 150-300ms |
-| getRiskConcentration | Medium | 200-400ms |
-| getSharpActivity | Medium | 150-300ms |
-| getTimeSeriesCLV | High | 400-800ms |
-| getEnhancedSharpScore | High | 500-1000ms |
-| getHoldForecast | High | 400-800ms |
-| getHandleAndHold | Medium | 300-600ms |
-| getCustomerVolume | High | 500-1000ms |
-| getTimeSeriesAnalytics | High | 400-900ms |
+| Tool                   | Query Complexity | Expected Time |
+| ---------------------- | ---------------- | ------------- |
+| getSteamMoves          | Medium           | 150-300ms     |
+| getRiskConcentration   | Medium           | 200-400ms     |
+| getSharpActivity       | Medium           | 150-300ms     |
+| getTimeSeriesCLV       | High             | 400-800ms     |
+| getEnhancedSharpScore  | High             | 500-1000ms    |
+| getHoldForecast        | High             | 400-800ms     |
+| getHandleAndHold       | Medium           | 300-600ms     |
+| getCustomerVolume      | High             | 500-1000ms    |
+| getTimeSeriesAnalytics | High             | 400-900ms     |
 
-*Note: Times assume D1 database with < 100K rows. Larger datasets may be slower.*
+_Note: Times assume D1 database with < 100K rows. Larger datasets may be
+slower._
 
 ---
 
@@ -564,5 +585,4 @@ Expected response times (with populated database):
 
 ---
 
-*Last Updated: 2025-10-07*
-*Betting-Brain v3 MCP Server Testing Guide*
+_Last Updated: 2025-10-07_ _Betting-Brain v3 MCP Server Testing Guide_

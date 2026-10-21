@@ -310,64 +310,64 @@ src/schedules/exposureCalc.ts → handleExposureCalculation()
 ## 🎯 Complete Endpoint Reference
 
 ### Core (4 endpoints)
-| Endpoint | Method | Purpose | Used By |
-|----------|--------|---------|---------|
-| `/health` | GET | Health check | All dashboards, monitoring |
-| `/logs` | POST | Centralized logging | Browser extension |
-| `/diagnostics` | GET | System diagnostics | Tools, setup wizard |
-| `/system-status` | GET | Detailed status | Dashboard stats |
+
+| Endpoint         | Method | Purpose             | Used By                    |
+| ---------------- | ------ | ------------------- | -------------------------- |
+| `/health`        | GET    | Health check        | All dashboards, monitoring |
+| `/logs`          | POST   | Centralized logging | Browser extension          |
+| `/diagnostics`   | GET    | System diagnostics  | Tools, setup wizard        |
+| `/system-status` | GET    | Detailed status     | Dashboard stats            |
 
 ---
 
 ### BetTicker (3+ endpoints)
-| Endpoint | Method | Purpose | Used By |
-|----------|--------|---------|---------|
-| `/cloud/api/Manager/getBetTicker` | POST | Transparent proxy | Browser extension |
-| `/interceptor/history` | GET | Historical records | All dashboards |
-| `/interceptor/stats` | GET | Statistics | Health monitor |
+
+| Endpoint                          | Method | Purpose            | Used By           |
+| --------------------------------- | ------ | ------------------ | ----------------- |
+| `/cloud/api/Manager/getBetTicker` | POST   | Transparent proxy  | Browser extension |
+| `/interceptor/history`            | GET    | Historical records | All dashboards    |
+| `/interceptor/stats`              | GET    | Statistics         | Health monitor    |
 
 ---
 
 ### MCP (2+ endpoints)
-| Endpoint | Method | Purpose | Used By |
-|----------|--------|---------|---------|
-| `/mcp` | POST | JSON-RPC 2.0 | Claude Desktop, AI tools |
-| `/tools/*` | GET | Intelligence tools | All dashboards, MCP |
+
+| Endpoint   | Method | Purpose            | Used By                  |
+| ---------- | ------ | ------------------ | ------------------------ |
+| `/mcp`     | POST   | JSON-RPC 2.0       | Claude Desktop, AI tools |
+| `/tools/*` | GET    | Intelligence tools | All dashboards, MCP      |
 
 ---
 
 ### Intelligence Tools (13 tools via `/tools/*`)
 
 **Core Tools (4):**
+
 1. `getBettingExposure` - Current exposure by event
 2. `getCLV` - Customer Lifetime Value
 3. `getSharpScore` - Sharp customer scoring
 4. `getHoldPercentage` - Hold % calculation
 
-**MCP Handlers (9):**
-5. `getSteamMoves` - 3-sigma line movements
-6. `getRiskConcentration` - Risk clustering
-7. `getSharpActivity` - Sharp customer tracking
-8. `getTimeSeriesCLV` - CLV trend analysis
-9. `getEnhancedSharpScore` - 7-feature profiling
-10. `getHoldForecast` - Predictive hold %
-11. `getHandleAndHold` - Revenue analytics
-12. `getCustomerVolume` - Customer segmentation
-13. `getTimeSeriesAnalytics` - Flexible analysis
+**MCP Handlers (9):** 5. `getSteamMoves` - 3-sigma line movements 6.
+`getRiskConcentration` - Risk clustering 7. `getSharpActivity` - Sharp customer
+tracking 8. `getTimeSeriesCLV` - CLV trend analysis 9. `getEnhancedSharpScore` -
+7-feature profiling 10. `getHoldForecast` - Predictive hold % 11.
+`getHandleAndHold` - Revenue analytics 12. `getCustomerVolume` - Customer
+segmentation 13. `getTimeSeriesAnalytics` - Flexible analysis
 
 ---
 
 ## 📚 Documentation Cross-Reference
 
-| Document | Purpose | Key Info |
-|----------|---------|----------|
-| **[MCP_ENDPOINTS.md](./MCP_ENDPOINTS.md)** | MCP API reference | 13 tools, JSON-RPC protocol |
-| **[ENDPOINT_DASHBOARD_INTEGRATION.md](./ENDPOINT_DASHBOARD_INTEGRATION.md)** | Dashboard integration | All endpoints, CORS, testing |
-| **[DATABASE_CRON_VERIFICATION.md](./DATABASE_CRON_VERIFICATION.md)** | DB & cron jobs | Tables, scheduled jobs, handlers |
-| **[TEST_AUDIT_REPORT.md](./TEST_AUDIT_REPORT.md)** | Test patterns | Bun Test, structure, quality |
-| **[BET_TICKER_SNIFFER.md](./BET_TICKER_SNIFFER.md)** | BetTicker interception | Proxy, KV storage, retention |
-| **[TESTING_STATUS.md](./TESTING_STATUS.md)** | Test health | Current status, issues, next steps |
-| **[MCP_INTEGRATION_STATUS.md](./MCP_INTEGRATION_STATUS.md)** | MCP overview | Status, tools, architecture |
+| Document                                                                     | Purpose                | Key Info                           |
+| ---------------------------------------------------------------------------- | ---------------------- | ---------------------------------- |
+| **[MCP_ENDPOINTS.md](./MCP_ENDPOINTS.md)**                                   | MCP API reference      | 13 tools, JSON-RPC protocol        |
+| **[ENDPOINT_DASHBOARD_INTEGRATION.md](./ENDPOINT_DASHBOARD_INTEGRATION.md)** | Dashboard integration  | All endpoints, CORS, testing       |
+| **[DATABASE_CRON_VERIFICATION.md](./DATABASE_CRON_VERIFICATION.md)**         | DB & cron jobs         | Tables, scheduled jobs, handlers   |
+| **[TEST_AUDIT_REPORT.md](./TEST_AUDIT_REPORT.md)**                           | Test patterns          | Bun Test, structure, quality       |
+| **[BET_TICKER_SNIFFER.md](./BET_TICKER_SNIFFER.md)**                         | BetTicker interception | Proxy, KV storage, retention       |
+| **[TESTING_STATUS.md](./TESTING_STATUS.md)**                                 | Test health            | Current status, issues, next steps |
+| **[MCP_INTEGRATION_STATUS.md](./MCP_INTEGRATION_STATUS.md)**                 | MCP overview           | Status, tools, architecture        |
 
 ---
 
@@ -378,7 +378,8 @@ src/schedules/exposureCalc.ts → handleExposureCalculation()
 - [ ] 1. Start worker: `bun run dev`
 - [ ] 2. Worker running at: `http://localhost:8787`
 - [ ] 3. Update dashboard URLs: `const WORKER_URL = 'http://localhost:8787'`
-- [ ] 4. Open dashboard hub: `file:///Users/nolarose/ffffff/dashboards/index.html`
+- [ ] 4. Open dashboard hub:
+      `file:///Users/nolarose/ffffff/dashboards/index.html`
 - [ ] 5. Verify system status: Should show ✅
 - [ ] 6. Check data count: Should load number
 - [ ] 7. Test dashboard navigation: Click cards
@@ -388,7 +389,8 @@ src/schedules/exposureCalc.ts → handleExposureCalculation()
 
 ### Production Deployment
 
-- [ ] 1. Apply D1 migrations: `wrangler d1 migrations apply betting-analytics --remote`
+- [ ] 1. Apply D1 migrations:
+      `wrangler d1 migrations apply betting-analytics --remote`
 - [ ] 2. Deploy worker: `wrangler deploy --env production`
 - [ ] 3. Verify deployment: `wrangler tail --env production`
 - [ ] 4. Test health endpoint: `curl https://...workers.dev/health`
@@ -405,18 +407,18 @@ src/schedules/exposureCalc.ts → handleExposureCalculation()
 
 ### All Systems Operational ✅
 
-| Component | Status | Indicator |
-|-----------|--------|-----------|
-| Worker | ✅ Running | `/health` returns 200 |
-| Database | ✅ Connected | 7 tables present |
-| Queues | ✅ Active | LINE_INGRESS, STEAM_WEBHOOK |
-| Cron Jobs | ✅ Scheduled | 4 triggers configured |
-| KV Storage | ✅ Connected | BET_TICKER_RAW ready |
-| Analytics | ✅ Writing | ANALYTICS_ENGINE active |
-| Dashboards | ✅ Integrated | 4 dashboards linked |
-| MCP | ✅ Ready | 13 tools available |
-| Tests | ✅ Passing | 100/100 quality score |
-| Documentation | ✅ Complete | 7 major docs |
+| Component     | Status        | Indicator                   |
+| ------------- | ------------- | --------------------------- |
+| Worker        | ✅ Running    | `/health` returns 200       |
+| Database      | ✅ Connected  | 7 tables present            |
+| Queues        | ✅ Active     | LINE_INGRESS, STEAM_WEBHOOK |
+| Cron Jobs     | ✅ Scheduled  | 4 triggers configured       |
+| KV Storage    | ✅ Connected  | BET_TICKER_RAW ready        |
+| Analytics     | ✅ Writing    | ANALYTICS_ENGINE active     |
+| Dashboards    | ✅ Integrated | 4 dashboards linked         |
+| MCP           | ✅ Ready      | 13 tools available          |
+| Tests         | ✅ Passing    | 100/100 quality score       |
+| Documentation | ✅ Complete   | 7 major docs                |
 
 ---
 
@@ -424,15 +426,15 @@ src/schedules/exposureCalc.ts → handleExposureCalculation()
 
 ### Response Times (Avg)
 
-| Endpoint | Response Time | Complexity |
-|----------|--------------|------------|
-| `/health` | 5-20ms | Low |
-| `/interceptor/history` | 50-300ms | Medium |
-| `/mcp` (tools/list) | 20-100ms | Low |
-| `/mcp` (tools/call) | 100-500ms | High |
-| `/tools/getBettingExposure` | 50-150ms | Medium |
-| Cron: Sharp Calc | 30-45s | High |
-| Cron: Exposure Calc | 5-15s | Medium |
+| Endpoint                    | Response Time | Complexity |
+| --------------------------- | ------------- | ---------- |
+| `/health`                   | 5-20ms        | Low        |
+| `/interceptor/history`      | 50-300ms      | Medium     |
+| `/mcp` (tools/list)         | 20-100ms      | Low        |
+| `/mcp` (tools/call)         | 100-500ms     | High       |
+| `/tools/getBettingExposure` | 50-150ms      | Medium     |
+| Cron: Sharp Calc            | 30-45s        | High       |
+| Cron: Exposure Calc         | 5-15s         | Medium     |
 
 ---
 
@@ -461,5 +463,4 @@ src/schedules/exposureCalc.ts → handleExposureCalculation()
 **Last Verified:** 2025-10-07  
 **Production Ready:** YES ✅
 
-*Complete system integration with full documentation and working dashboards!*
-
+_Complete system integration with full documentation and working dashboards!_

@@ -21,10 +21,7 @@ let autoTrader: AutoTrader | null = null;
 /**
  * Handle scheduled trading execution
  */
-export async function handleTradingSchedule(
-  env: Env & MCPEnv,
-  ctx: ExecutionContext
-): Promise<void> {
+export async function handleTradingSchedule(env: Env & MCPEnv, ctx: ExecutionContext): Promise<void> {
   const requestId = `trading_${Date.now()}`;
   console.log(`[${requestId}] Trading scheduler triggered`);
 

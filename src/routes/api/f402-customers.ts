@@ -25,17 +25,11 @@ interface StakedTotalResponse {
  * GET /api/f402/customers/active
  * Returns count of unique customers who placed bets in last N minutes
  */
-export async function getActiveCustomers(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getActiveCustomers(request: Request, env: Env, requestId: string): Promise<Response> {
   const url = new URL(request.url);
   const minutes = parseInt(url.searchParams.get('minutes') || '30', 10);
 
   console.log(`[${requestId}] 👥 GET /api/f402/customers/active?minutes=${minutes}`);
-
-  
 
   try {
     if (!env.ANALYTICS) {
@@ -43,11 +37,13 @@ export async function getActiveCustomers(
     }
 
     // Get distinct customer count in time window
-    const query = await env.ANALYTICS.prepare(`
+    const query = (await env.ANALYTICS.prepare(
+      `
       SELECT COUNT(DISTINCT cid) as count
       FROM bet_history
       WHERE ts > datetime('now', '-${minutes} minutes')
-    `).first() as { count: number } | null;
+    `
+    ).first()) as { count: number } | null;
 
     const count = query?.count || 0;
     console.log(`[${requestId}] 📊 Active customers (${minutes}min): ${count}`);
@@ -57,7 +53,6 @@ export async function getActiveCustomers(
     return new Response(JSON.stringify(response), {
       headers: CORS_HEADERS,
     });
-
   } catch (error) {
     console.error(`[${requestId}] ❌ Error fetching active customers:`, error);
 
@@ -79,17 +74,11 @@ export async function getActiveCustomers(
  * GET /api/f402/customers/staked
  * Returns total amount staked for specified period
  */
-export async function getStakedTotal(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getStakedTotal(request: Request, env: Env, requestId: string): Promise<Response> {
   const url = new URL(request.url);
   const period = url.searchParams.get('period') || 'today';
 
   console.log(`[${requestId}] 💵 GET /api/f402/customers/staked?period=${period}`);
-
-  
 
   try {
     if (!env.ANALYTICS) {
@@ -105,11 +94,13 @@ export async function getStakedTotal(
     }
 
     // Get total staked amount
-    const query = await env.ANALYTICS.prepare(`
+    const query = (await env.ANALYTICS.prepare(
+      `
       SELECT SUM(stake) as total
       FROM bet_history
       WHERE ${dateFilter}
-    `).first() as { total: number | null } | null;
+    `
+    ).first()) as { total: number | null } | null;
 
     const total = query?.total || 0;
     console.log(`[${requestId}] 💰 Total staked (${period}): $${total.toFixed(2)}`);
@@ -119,7 +110,6 @@ export async function getStakedTotal(
     return new Response(JSON.stringify(response), {
       headers: CORS_HEADERS,
     });
-
   } catch (error) {
     console.error(`[${requestId}] ❌ Error fetching staked total:`, error);
 

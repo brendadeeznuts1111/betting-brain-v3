@@ -3,7 +3,7 @@
  * Tests error handling and edge cases in validation and database utilities
  */
 
-import { describe, test, expect, vi, beforeEach } from "bun:test";
+import { describe, test, expect, vi, beforeEach } from 'bun:test';
 import {
   validateRequest,
   EventIdSchema,
@@ -17,12 +17,9 @@ import {
   SharpScoreResponseSchema,
   HoldPercentageResponseSchema,
   CLVResponseSchema,
-  ErrorResponseSchema
+  ErrorResponseSchema,
 } from '../../src/utils/validation';
-import {
-  createErrorResponse,
-  createSuccessResponse
-} from '../../src/utils/error-handler';
+import { createErrorResponse, createSuccessResponse } from '../../src/utils/error-handler';
 import { DatabaseHelper, createDatabaseHelper } from '../../src/utils/database';
 import type { Env } from '../../src/types/api';
 
@@ -42,18 +39,18 @@ describe('Utilities Error Path Tests', () => {
           bind: vi.fn().mockReturnValue({
             first: vi.fn().mockResolvedValue({ count: 0 }),
             run: vi.fn().mockResolvedValue({ success: true }),
-            all: vi.fn().mockResolvedValue({ results: [] })
-          })
+            all: vi.fn().mockResolvedValue({ results: [] }),
+          }),
         }),
         exec: vi.fn().mockResolvedValue({ success: true }),
-        batch: vi.fn().mockResolvedValue([{ success: true, meta: { changes: 1 } }])
+        batch: vi.fn().mockResolvedValue([{ success: true, meta: { changes: 1 } }]),
       } as any,
       QUEUE_PRODUCER: {
-        send: vi.fn().mockResolvedValue({ success: true })
+        send: vi.fn().mockResolvedValue({ success: true }),
       } as any,
       ANALYTICS_ENGINE: {
-        writeDataPoint: vi.fn().mockResolvedValue(undefined)
-      } as any
+        writeDataPoint: vi.fn().mockResolvedValue(undefined),
+      } as any,
     };
   });
 
@@ -96,7 +93,7 @@ describe('Utilities Error Path Tests', () => {
         { eid: 'valid', timeWindow: 25 }, // Exceeds max
         null,
         undefined,
-        'not-an-object'
+        'not-an-object',
       ];
 
       malformedRequests.forEach(request => {
@@ -114,7 +111,7 @@ describe('Utilities Error Path Tests', () => {
         { eid: 'valid', sides: [{ side: 'HOME', risk: 'not-number' }] }, // Wrong type
         { eid: 'valid', totalRisk: -1 }, // Negative risk
         null,
-        undefined
+        undefined,
       ];
 
       malformedResponses.forEach(response => {
@@ -134,7 +131,7 @@ describe('Utilities Error Path Tests', () => {
         code: 'INTERNAL_ERROR',
         error: 'INTERNAL_ERROR',
         message: 'An internal error occurred',
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
 
       const body2 = await error2.text();
@@ -143,7 +140,7 @@ describe('Utilities Error Path Tests', () => {
         error: 'INTERNAL_ERROR',
         message: 'An internal error occurred',
         requestId: 'TEST_CODE',
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
 
       const body3 = await error3.text();
@@ -153,15 +150,14 @@ describe('Utilities Error Path Tests', () => {
         message: 'An internal error occurred',
         path: { detail: 'test' },
         requestId: 'TEST_CODE',
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
     });
 
     test('should handle createSuccessResponse with invalid data', () => {
       const invalidData = { eid: '', sides: [] };
 
-      expect(() => createSuccessResponse(invalidData, BettingExposureResponseSchema))
-        .toThrow();
+      expect(() => createSuccessResponse(invalidData, BettingExposureResponseSchema)).toThrow();
     });
 
     test('should handle validation with circular references', () => {
@@ -176,7 +172,7 @@ describe('Utilities Error Path Tests', () => {
       const largeData = {
         eid: 'x'.repeat(1000000), // 1MB string in valid field
         includeHistory: true,
-        timeWindow: 1
+        timeWindow: 1,
       };
 
       const result = validateRequest(GetBettingExposureRequestSchema, largeData);
@@ -208,15 +204,15 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Connection failed')),
           run: vi.fn().mockRejectedValue(new Error('Connection failed')),
-          all: vi.fn().mockRejectedValue(new Error('Connection failed'))
-        })
+          all: vi.fn().mockRejectedValue(new Error('Connection failed')),
+        }),
       } as any);
 
       await expect(dbHelper.executeQuery('SELECT 1')).rejects.toThrow('Connection failed');
       await expect(dbHelper.executeQueryFirst('SELECT 1')).resolves.toBeNull();
       await expect(dbHelper.executeWrite('INSERT INTO test VALUES (1)')).resolves.toEqual({
         success: false,
-        rowsAffected: 0
+        rowsAffected: 0,
       });
     });
 
@@ -228,8 +224,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('SQL syntax error')),
           run: vi.fn().mockRejectedValue(new Error('SQL syntax error')),
-          all: vi.fn().mockRejectedValue(new Error('SQL syntax error'))
-        })
+          all: vi.fn().mockRejectedValue(new Error('SQL syntax error')),
+        }),
       } as any);
 
       await expect(dbHelper.executeQuery('INVALID SQL')).rejects.toThrow('SQL syntax error');
@@ -237,30 +233,22 @@ describe('Utilities Error Path Tests', () => {
 
     test('should handle timeout scenarios', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
-        first: vi.fn().mockImplementation(() =>
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout')), 100)
-          )
-        ),
+        first: vi
+          .fn()
+          .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockImplementation(() =>
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout')), 100)
-          )
-        ),
+        all: vi
+          .fn()
+          .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
         bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          ),
+          first: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          )
-        })
+          all: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
+        }),
       } as any);
 
       // Should timeout and retry
@@ -272,7 +260,7 @@ describe('Utilities Error Path Tests', () => {
 
       const operations = [
         { query: 'INSERT INTO test VALUES (1)', params: [] },
-        { query: 'INSERT INTO test VALUES (2)', params: [] }
+        { query: 'INSERT INTO test VALUES (2)', params: [] },
       ];
 
       const result = await dbHelper.executeBatch(operations);
@@ -288,8 +276,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Table check failed')),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const exists = await dbHelper.tableExists('test_table');
@@ -304,8 +292,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Count failed')),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const count = await dbHelper.getRowCount('test_table');
@@ -320,8 +308,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Size check failed')),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const size = await dbHelper.getDatabaseSize();
@@ -336,8 +324,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockRejectedValue(new Error('Vacuum failed')),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       await expect(dbHelper.vacuum()).rejects.toThrow('Vacuum failed');
@@ -351,8 +339,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 0 }),
           run: vi.fn().mockRejectedValue(new Error('Analyze failed')),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       await expect(dbHelper.analyze()).rejects.toThrow('Analyze failed');
@@ -379,8 +367,8 @@ describe('Utilities Error Path Tests', () => {
             return Promise.resolve({ count: 1 });
           }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] })
-        })
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
       } as any);
 
       const result = await dbHelper.executeQueryFirst('SELECT COUNT(*) as count FROM test');
@@ -396,8 +384,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Persistent failure')),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockRejectedValue(new Error('Persistent failure'))
-        })
+          all: vi.fn().mockRejectedValue(new Error('Persistent failure')),
+        }),
       } as any);
 
       await expect(dbHelper.executeQuery('SELECT 1', [], { retry: 2 })).rejects.toThrow('Persistent failure');
@@ -440,8 +428,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockRejectedValue(new Error('Database error')),
           run: vi.fn().mockRejectedValue(new Error('Database error')),
-          all: vi.fn().mockRejectedValue(new Error('Database error'))
-        })
+          all: vi.fn().mockRejectedValue(new Error('Database error')),
+        }),
       } as any);
 
       // Test validation first
@@ -465,8 +453,8 @@ describe('Utilities Error Path Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 100000 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(largeResult)
-        })
+          all: vi.fn().mockResolvedValue(largeResult),
+        }),
       } as any);
 
       const result = await dbHelper.executeQuery('SELECT * FROM large_table');

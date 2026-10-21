@@ -7,30 +7,35 @@
 
 ## 📋 Overview
 
-This document tracks known issues that need to be addressed in follow-up PRs after the MCP Integration merge. These are technical debt items that don't block the core functionality but should be fixed.
+This document tracks known issues that need to be addressed in follow-up PRs
+after the MCP Integration merge. These are technical debt items that don't block
+the core functionality but should be fixed.
 
 ---
 
 ## 🚨 Critical Issues
 
 ### None
+
 All critical functionality is working.
 
 ---
 
-## ⚠️  High Priority
+## ⚠️ High Priority
 
 ### 1. Test Failures (128/264 tests failing)
 
 **Issue:** Vitest to Bun Test migration incomplete
 
 **Details:**
+
 - 128 test failures from mock/API changes
 - `vi.mocked()` API no longer available in Bun
 - Type mismatches in test data structures
 - Missing mock implementations
 
 **Affected Files:**
+
 - `tests/mocks/env.ts` - Uses `vi.` API
 - `tests/mocks/data.ts` - Type mismatches
 - `tests/unit/*.test.ts` - 100+ TypeScript errors
@@ -47,6 +52,7 @@ All critical functionality is working.
 **Issue:** Type definition mismatches from Vitest removal
 
 **Categories:**
+
 - `vi.mocked()` not found (18 instances)
 - Type property mismatches (40+ instances)
 - Missing type exports (10+ instances)
@@ -65,12 +71,14 @@ All critical functionality is working.
 **Issue:** File reorganization created many broken internal links
 
 **Categories:**
+
 - Archived files referenced (30 links)
 - Example/placeholder links (10 links)
 - Old deployment structure (15 links)
 - Missing files (20 links)
 
 **Affected Areas:**
+
 - `docs/INDEX.md` - Archive references
 - `docs/CURSOR_RULES.md` - Example `mdc:` links
 - `docs/deployment/*.md` - Old structure
@@ -89,6 +97,7 @@ All critical functionality is working.
 **Issue:** CI takes 2+ minutes to complete
 
 **Opportunities:**
+
 - Cache Bun dependencies
 - Parallelize test runs
 - Skip redundant checks
@@ -104,6 +113,7 @@ All critical functionality is working.
 **Issue:** Some edge cases not covered
 
 **Areas:**
+
 - MCP error handling paths
 - Queue failure scenarios
 - Database connection edge cases
@@ -116,20 +126,22 @@ All critical functionality is working.
 
 ## 📊 Summary
 
-| Priority | Issues | Estimated Hours | Target PR |
-|----------|--------|-----------------|-----------|
-| **Critical** | 0 | 0 | N/A |
-| **High** | 2 | 7-10 | PR #2 |
-| **Medium** | 1 | 2-3 | PR #3 |
-| **Low** | 2 | 4-5 | Future |
-| **TOTAL** | 5 | 13-18 | 2-3 PRs |
+| Priority     | Issues | Estimated Hours | Target PR |
+| ------------ | ------ | --------------- | --------- |
+| **Critical** | 0      | 0               | N/A       |
+| **High**     | 2      | 7-10            | PR #2     |
+| **Medium**   | 1      | 2-3             | PR #3     |
+| **Low**      | 2      | 4-5             | Future    |
+| **TOTAL**    | 5      | 13-18           | 2-3 PRs   |
 
 ---
 
 ## 🎯 Recommended Approach
 
 ### Immediate (PR #2)
+
 **Fix Tests & TypeScript Errors Together**
+
 1. Update all test mocks to use Bun Test APIs
 2. Fix type definitions and exports
 3. Ensure all 264 tests pass
@@ -141,7 +153,9 @@ All critical functionality is working.
 ---
 
 ### Soon After (PR #3)
+
 **Fix Documentation Links**
+
 1. Audit all `docs/` internal links
 2. Update archive references
 3. Remove placeholder links
@@ -153,7 +167,9 @@ All critical functionality is working.
 ---
 
 ### Future (PR #4+)
+
 **Optimize & Enhance**
+
 1. CI performance improvements
 2. Additional test coverage
 3. Documentation enhancements
@@ -191,4 +207,3 @@ Despite these known issues, the following are **fully functional**:
 
 **Last Updated:** 2025-10-07  
 **Next Review:** After PR #2 completes
-

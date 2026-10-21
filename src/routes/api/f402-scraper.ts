@@ -44,18 +44,15 @@ interface ScrapedCustomerData {
  * Scrape Bet Ticker section from Manager page
  * Looks for: <span class="menu-title" data-language="L-545">Bet Ticker</span>
  */
-export async function scrapeBetTicker(
-  cookies: string,
-  requestId: string
-): Promise<ScrapedBetTickerData> {
+export async function scrapeBetTicker(cookies: string, requestId: string): Promise<ScrapedBetTickerData> {
   console.log(`[${requestId}] 🕷️  Scraping Bet Ticker from ${FANTASY402_BASE_URL}${MANAGER_PAGE}`);
 
   try {
     const response = await fetch(`${FANTASY402_BASE_URL}${MANAGER_PAGE}`, {
       headers: {
-        'Cookie': cookies,
+        Cookie: cookies,
         'User-Agent': 'Mozilla/5.0 (compatible; Betting-Brain-Scraper/3.0)',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       },
     });
 
@@ -106,7 +103,9 @@ function parseBetTickerHTML(html: string, requestId: string): ScrapedBetTickerDa
 
   // Extract bet rows from table
   // Look for: <tr class="bet-row" data-timestamp="..." data-stake="...">
-  const betRows = Array.from(betTickerHTML.matchAll(/<tr[^>]*class=["'][^"']*bet-row[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi));
+  const betRows = Array.from(
+    betTickerHTML.matchAll(/<tr[^>]*class=["'][^"']*bet-row[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi)
+  );
 
   console.log(`[${requestId}] 📋 Found ${betRows.length} bet rows`);
 
@@ -175,16 +174,13 @@ function parseBetTickerHTML(html: string, requestId: string): ScrapedBetTickerDa
  * Scrape agent performance from Manager dashboard
  * Looks for: <div class="agent-performance">...</div>
  */
-export async function scrapeAgentPerformance(
-  cookies: string,
-  requestId: string
-): Promise<ScrapedAgentData> {
+export async function scrapeAgentPerformance(cookies: string, requestId: string): Promise<ScrapedAgentData> {
   console.log(`[${requestId}] 🕷️  Scraping agent performance`);
 
   try {
     const response = await fetch(`${FANTASY402_BASE_URL}${MANAGER_PAGE}`, {
       headers: {
-        'Cookie': cookies,
+        Cookie: cookies,
         'User-Agent': 'Mozilla/5.0 (compatible; Betting-Brain-Scraper/3.0)',
       },
     });
@@ -215,9 +211,11 @@ export async function scrapeAgentPerformance(
     }
 
     // Extract top agents from table
-    const agentRows = Array.from(panelHTML.matchAll(/<tr[^>]*class=["'][^"']*agent-row[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi));
+    const agentRows = Array.from(
+      panelHTML.matchAll(/<tr[^>]*class=["'][^"']*agent-row[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi)
+    );
 
-    const top = agentRows.slice(0, 3).map((rowMatch) => {
+    const top = agentRows.slice(0, 3).map(rowMatch => {
       const row = rowMatch[1];
       const idMatch = row.match(/data-agent-id=["']([^"']+)["']/);
       const pnlMatch = row.match(/data-pnl=["']([^"']+)["']/);
@@ -240,16 +238,13 @@ export async function scrapeAgentPerformance(
 /**
  * Scrape customer activity statistics
  */
-export async function scrapeCustomerStats(
-  cookies: string,
-  requestId: string
-): Promise<ScrapedCustomerData> {
+export async function scrapeCustomerStats(cookies: string, requestId: string): Promise<ScrapedCustomerData> {
   console.log(`[${requestId}] 🕷️  Scraping customer stats`);
 
   try {
     const response = await fetch(`${FANTASY402_BASE_URL}${MANAGER_PAGE}`, {
       headers: {
-        'Cookie': cookies,
+        Cookie: cookies,
         'User-Agent': 'Mozilla/5.0 (compatible; Betting-Brain-Scraper/3.0)',
       },
     });
@@ -285,11 +280,7 @@ export async function scrapeCustomerStats(
 /**
  * Get cookies from request headers or KV store
  */
-export async function getFantasy402Cookies(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<string | null> {
+export async function getFantasy402Cookies(request: Request, env: Env, requestId: string): Promise<string | null> {
   // Option 1: From request header (if browser extension forwards them)
   const cookieHeader = request.headers.get('X-Fantasy402-Cookies');
   if (cookieHeader) {

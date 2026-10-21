@@ -22,10 +22,7 @@ const PlaceHedgeBetSchema = z.object({
   market: z.enum(['moneyline', 'spread', 'total'], {
     errorMap: () => ({ message: 'Market must be moneyline, spread, or total' }),
   }),
-  amount: z
-    .number()
-    .positive('Amount must be positive')
-    .max(1000, 'Amount cannot exceed $1,000 per bet'),
+  amount: z.number().positive('Amount must be positive').max(1000, 'Amount cannot exceed $1,000 per bet'),
   odds: z.number().min(1.01, 'Odds must be >= 1.01').max(100, 'Odds must be <= 100'),
   side: z.enum(['home', 'away'], {
     errorMap: () => ({ message: 'Side must be home or away' }),
@@ -55,10 +52,7 @@ export interface PlaceHedgeBetResult {
 /**
  * Place hedge bet via fantasy402 API
  */
-export async function placeHedgeBet(
-  args: Record<string, any>,
-  env: MCPEnv
-): Promise<MCPToolResult> {
+export async function placeHedgeBet(args: Record<string, any>, env: MCPEnv): Promise<MCPToolResult> {
   const requestId = `bet_${Date.now()}`;
   console.log(`[${requestId}] Place Hedge Bet request:`, args);
 
@@ -68,13 +62,7 @@ export async function placeHedgeBet(
 
     // Log to audit trail
     env.ANALYTICS_ENGINE.writeDataPoint({
-      blobs: [
-        'mcp_tool',
-        'place_hedge_bet',
-        'request',
-        requestId,
-        JSON.stringify(validatedArgs),
-      ],
+      blobs: ['mcp_tool', 'place_hedge_bet', 'request', requestId, JSON.stringify(validatedArgs)],
       doubles: [validatedArgs.amount, validatedArgs.odds],
       indexes: [Date.now()],
     });
@@ -219,20 +207,14 @@ export async function placeHedgeBet(
 
     // Log error to audit trail
     env.ANALYTICS_ENGINE.writeDataPoint({
-      blobs: [
-        'mcp_tool',
-        'place_hedge_bet',
-        'error',
-        requestId,
-        String(error),
-      ],
+      blobs: ['mcp_tool', 'place_hedge_bet', 'error', requestId, String(error)],
       doubles: [0],
       indexes: [Date.now()],
     });
 
     const errorMessage =
       error instanceof z.ZodError
-        ? `Validation error: ${error.errors.map((e) => e.message).join(', ')}`
+        ? `Validation error: ${error.errors.map(e => e.message).join(', ')}`
         : error instanceof Error
           ? error.message
           : String(error);
@@ -278,10 +260,7 @@ async function checkRiskLimits(amount: number, env: MCPEnv): Promise<boolean> {
 /**
  * Place bet via fantasy402 API
  */
-async function placeBetViaAPI(
-  bet: PlaceHedgeBetInput,
-  env: MCPEnv
-): Promise<PlaceHedgeBetResult> {
+async function placeBetViaAPI(bet: PlaceHedgeBetInput, env: MCPEnv): Promise<PlaceHedgeBetResult> {
   // Get fantasy402 API credentials
   const apiBase = env.FANTASY402_API_BASE || 'https://fantasy402.com/api';
   const jwtToken = env.FANTASY402_JWT_TOKEN;

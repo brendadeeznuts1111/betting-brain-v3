@@ -2,7 +2,8 @@
 
 ## Overview
 
-This guide covers the comprehensive testing strategy for Betting-Brain v3, including unit tests, integration tests, and end-to-end tests.
+This guide covers the comprehensive testing strategy for Betting-Brain v3,
+including unit tests, integration tests, and end-to-end tests.
 
 ## Test Structure
 
@@ -42,36 +43,43 @@ tests/
 ## Running Tests
 
 ### All Tests
+
 ```bash
 bun test
 ```
 
 ### Unit Tests Only
+
 ```bash
 bun test:unit
 ```
 
 ### Integration Tests Only
+
 ```bash
 bun test:integration
 ```
 
 ### End-to-End Tests
+
 ```bash
 bun test:e2e
 ```
 
 ### Watch Mode
+
 ```bash
 bun test:watch
 ```
 
 ### Coverage Report
+
 ```bash
 bun test:ci
 ```
 
 ### Environment-Specific Tests
+
 ```bash
 bun test:staging
 bun test:prod
@@ -79,7 +87,8 @@ bun test:prod
 
 ### AI-Friendly Test Output 🤖
 
-**NEW:** Tests automatically run in quiet mode when AI environments are detected:
+**NEW:** Tests automatically run in quiet mode when AI environments are
+detected:
 
 ```bash
 # Dedicated AI command (explicit)
@@ -93,12 +102,14 @@ bun run ci:local  # Automatically enables quiet mode
 ```
 
 **Benefits:**
+
 - ✅ Shows only test failures (not passing tests)
 - ✅ Reduces output verbosity for AI context windows
 - ✅ Preserves failure details and summaries
 - ✅ Improves readability in AI sessions
 
-**See:** [AI-Friendly Testing Guide](AI_FRIENDLY_TESTING.md) for complete details.
+**See:** [AI-Friendly Testing Guide](AI_FRIENDLY_TESTING.md) for complete
+details.
 
 ## Test Categories
 
@@ -185,8 +196,10 @@ describe('Component Tests', () => {
 import { it, expect, vi } from 'bun:test';
 
 it('should handle errors gracefully', async () => {
-  vi.mocked(mockEnv.ANALYTICS.prepare).mockRejectedValue(new Error('Database error'));
-  
+  vi.mocked(mockEnv.ANALYTICS.prepare).mockRejectedValue(
+    new Error('Database error')
+  );
+
   await expect(componentFunction(mockEnv)).rejects.toThrow('Database error');
 });
 ```
@@ -198,7 +211,7 @@ import { it, expect } from 'bun:test';
 
 it('should process data asynchronously', async () => {
   const result = await componentFunction(mockEnv);
-  
+
   expect(result).toBeDefined();
   expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
 });
@@ -218,7 +231,8 @@ timeout = 10000 # 10 seconds default
 
 ### Environment-Specific Configurations
 
-For environment-specific configurations, override settings in `bunfig.toml` or use environment variables.
+For environment-specific configurations, override settings in `bunfig.toml` or
+use environment variables.
 
 ## Coverage Requirements
 
@@ -247,10 +261,10 @@ For environment-specific configurations, override settings in `bunfig.toml` or u
 
 ```typescript
 // Good
-it('should calculate CLV correctly for winning customer')
+it('should calculate CLV correctly for winning customer');
 
 // Bad
-it('should work')
+it('should work');
 ```
 
 ### 3. Arrange-Act-Assert Pattern
@@ -264,10 +278,10 @@ it('should process line movement', async () => {
   // Arrange
   const mockData = mockLineMovement;
   const mockEnv = createMockEnv();
-  
+
   // Act
   const result = await processLineMovement(mockData, mockEnv);
-  
+
   // Assert
   expect(result).toBeDefined();
   expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalled();
@@ -282,7 +296,7 @@ import { vi } from 'bun:test';
 
 it('should call correct methods', async () => {
   await componentFunction(mockEnv);
-  
+
   expect(mockEnv.ANALYTICS.prepare).toHaveBeenCalledWith(
     expect.stringContaining('SELECT')
   );
@@ -315,6 +329,7 @@ bun test --inspect-brk
 ### GitHub Actions
 
 Tests run automatically on:
+
 - Pull requests
 - Pushes to main branch
 - Scheduled runs
@@ -337,7 +352,8 @@ bun install --save-dev husky lint-staged
 
 ### Debug Tips
 
-1. Use `console.log` in tests for debugging (but prefer structured logging in production code)
+1. Use `console.log` in tests for debugging (but prefer structured logging in
+   production code)
 2. Check mock call counts with `toHaveBeenCalledTimes`
 3. Verify mock implementations with `toHaveBeenCalledWith`
 

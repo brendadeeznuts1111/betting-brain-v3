@@ -45,7 +45,7 @@ const PATH_MAPPINGS: Record<string, string> = {
   // Root files from subdirs
   'README.md': 'README.md',
   'CLAUDE.md': 'CLAUDE.md',
-  'LICENSE': 'LICENSE',
+  LICENSE: 'LICENSE',
 };
 
 function getAllMarkdownFiles(dir: string): string[] {

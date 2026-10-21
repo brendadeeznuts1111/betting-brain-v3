@@ -3,22 +3,13 @@
 // Runs daily: 24 × 1-h AE → 1 × 1-day R2 Parquet
 
 import type { Env } from '../types/api';
-import {
-  queryHot,
-  writeWarm,
-  writeCold,
-  type BucketedPoint
-} from '../analytics/timeSeriesLayer';
+import { queryHot, writeWarm, writeCold, type BucketedPoint } from '../analytics/timeSeriesLayer';
 
 /**
  * Hourly cron: Roll 1-min buckets into 1-hour aggregates
  * Cron: 0 * * * * (every hour)
  */
-export async function hourlyDownSample(
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext
-): Promise<Response> {
+export async function hourlyDownSample(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const requestId = Date.now().toString(36);
   console.log(`[${requestId}] ⏰ Hourly down-sample started`);
 
@@ -58,17 +49,23 @@ export async function hourlyDownSample(
 
     console.log(`[${requestId}] ✅ Hourly down-sample complete: ${hourlyAggregates.length} hourly buckets`);
 
-    return new Response(JSON.stringify({
-      success: true,
-      buckets: hourlyAggregates.length,
-      timestamp: now
-    }), { headers: { 'Content-Type': 'application/json' } });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        buckets: hourlyAggregates.length,
+        timestamp: now,
+      }),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error(`[${requestId}] ❌ Hourly down-sample failed:`, error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
 
@@ -76,11 +73,7 @@ export async function hourlyDownSample(
  * Daily cron: Roll 24 × 1-hour AE buckets → 1 × 1-day R2 Parquet
  * Cron: 0 0 * * * (midnight UTC)
  */
-export async function dailyDownSample(
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext
-): Promise<Response> {
+export async function dailyDownSample(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const requestId = Date.now().toString(36);
   console.log(`[${requestId}] ⏰ Daily down-sample started`);
 
@@ -106,18 +99,24 @@ export async function dailyDownSample(
 
     console.log(`[${requestId}] ✅ Daily down-sample complete: ${dailyAggregates.length} daily buckets`);
 
-    return new Response(JSON.stringify({
-      success: true,
-      date: yesterday.toISOString(),
-      buckets: dailyAggregates.length,
-      timestamp: now
-    }), { headers: { 'Content-Type': 'application/json' } });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        date: yesterday.toISOString(),
+        buckets: dailyAggregates.length,
+        timestamp: now,
+      }),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error(`[${requestId}] ❌ Daily down-sample failed:`, error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
 
@@ -133,9 +132,7 @@ async function getActiveAgents(env: Env, since: number): Promise<string[]> {
 
   // List all keys matching `meta:*` pattern
   const list = await env.FANTASY_CACHE.list({ prefix: 'meta:' });
-  const agentIds = list.keys
-    .map(k => k.name.replace('meta:', ''))
-    .filter(aid => aid.length > 0);
+  const agentIds = list.keys.map(k => k.name.replace('meta:', '')).filter(aid => aid.length > 0);
 
   return agentIds;
 }
@@ -143,11 +140,7 @@ async function getActiveAgents(env: Env, since: number): Promise<string[]> {
 /**
  * Aggregate multiple minute buckets into one hourly bucket
  */
-function aggregateBuckets(
-  buckets: BucketedPoint[],
-  hourStart: number,
-  hourEnd: number
-): BucketedPoint {
+function aggregateBuckets(buckets: BucketedPoint[], hourStart: number, hourEnd: number): BucketedPoint {
   const values = buckets.flatMap(b => Array(b.values.count).fill(b.values.avg));
 
   return {
@@ -160,8 +153,8 @@ function aggregateBuckets(
       max: Math.max(...values),
       avg: values.reduce((sum, v) => sum + v, 0) / values.length,
       sum: values.reduce((sum, v) => sum + v, 0),
-      count: values.length
-    }
+      count: values.length,
+    },
   };
 }
 

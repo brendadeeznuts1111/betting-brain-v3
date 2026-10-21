@@ -20,7 +20,8 @@ import { getCustomerVolume } from '../src/mcp/handlers/customerVolume';
 import { getTimeSeriesAnalytics } from '../src/mcp/handlers/timeSeriesAnalytics';
 
 // D1 database path (local wrangler state)
-const DB_PATH = '.wrangler/state/v3/d1/miniflare-D1DatabaseObject/01b59b890321a35d03a357938019b4e898a0a4755a7023b476de81b79fabe5c1.sqlite';
+const DB_PATH =
+  '.wrangler/state/v3/d1/miniflare-D1DatabaseObject/01b59b890321a35d03a357938019b4e898a0a4755a7023b476de81b79fabe5c1.sqlite';
 
 interface TestResult {
   tool: string;
@@ -55,7 +56,7 @@ function createD1Wrapper(sqliteDb: Database): D1Database {
                 return {
                   results: results as T[],
                   success: true,
-                  meta: { duration: 0 }
+                  meta: { duration: 0 },
                 };
               } catch (error) {
                 console.error('[D1] all() error:', error);
@@ -70,7 +71,7 @@ function createD1Wrapper(sqliteDb: Database): D1Database {
                 console.error('[D1] run() error:', error);
                 throw error;
               }
-            }
+            },
           };
         },
         first: async <T = unknown>() => {
@@ -87,7 +88,7 @@ function createD1Wrapper(sqliteDb: Database): D1Database {
             return {
               results: results as T[],
               success: true,
-              meta: { duration: 0 }
+              meta: { duration: 0 },
             };
           } catch (error) {
             console.error('[D1] all() (no bind) error:', error);
@@ -102,12 +103,12 @@ function createD1Wrapper(sqliteDb: Database): D1Database {
             console.error('[D1] run() (no bind) error:', error);
             throw error;
           }
-        }
+        },
       };
     },
     dump: async () => new ArrayBuffer(0),
     batch: async <T = unknown>(statements: any[]) => [],
-    exec: async (query: string) => ({ count: 0, duration: 0 })
+    exec: async (query: string) => ({ count: 0, duration: 0 }),
   } as any;
 }
 
@@ -127,7 +128,7 @@ async function testHandler(
 
     // Create mock env
     const mockEnv = {
-      ANALYTICS: d1Wrapper
+      ANALYTICS: d1Wrapper,
     };
 
     // Call handler
@@ -143,7 +144,7 @@ async function testHandler(
         tool: name,
         status: 'FAIL',
         duration_ms: duration,
-        error: result.content[0].text
+        error: result.content[0].text,
       };
     }
 
@@ -163,16 +164,15 @@ async function testHandler(
       status: 'PASS',
       duration_ms: duration,
       data_preview: dataPreview + '...',
-      record_count: recordCount
+      record_count: recordCount,
     };
-
   } catch (error) {
     const duration = Date.now() - startTime;
     return {
       tool: name,
       status: 'ERROR',
       duration_ms: duration,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -188,65 +188,64 @@ async function main() {
   // Test Core Handlers
   console.log('📋 Testing Core Handlers (Steam, Risk, Sharp)...');
 
-  results.push(await testHandler(
-    'getSteamMoves',
-    getSteamMoves,
-    { agentID: 'DEMO', lookbackHours: 24, minLineChange: 0.5 }
-  ));
+  results.push(
+    await testHandler('getSteamMoves', getSteamMoves, { agentID: 'DEMO', lookbackHours: 24, minLineChange: 0.5 })
+  );
 
-  results.push(await testHandler(
-    'getRiskConcentration',
-    getRiskConcentration,
-    { agentID: 'DEMO', groupBy: 'event', topN: 20 }
-  ));
+  results.push(
+    await testHandler('getRiskConcentration', getRiskConcentration, { agentID: 'DEMO', groupBy: 'event', topN: 20 })
+  );
 
-  results.push(await testHandler(
-    'getSharpActivity',
-    getSharpActivity,
-    { agentID: 'DEMO', lookbackHours: 24, minSharpScore: 60 }
-  ));
+  results.push(
+    await testHandler('getSharpActivity', getSharpActivity, { agentID: 'DEMO', lookbackHours: 24, minSharpScore: 60 })
+  );
 
   // Test Analytics Handlers
   console.log('📊 Testing Analytics Handlers (CLV, Score, Forecast)...');
 
-  results.push(await testHandler(
-    'getTimeSeriesCLV',
-    getTimeSeriesCLV,
-    { cid: 'sharp-pro-001', lookbackDays: 30, granularity: 'daily' }
-  ));
+  results.push(
+    await testHandler('getTimeSeriesCLV', getTimeSeriesCLV, {
+      cid: 'sharp-pro-001',
+      lookbackDays: 30,
+      granularity: 'daily',
+    })
+  );
 
-  results.push(await testHandler(
-    'getEnhancedSharpScore',
-    getEnhancedSharpScore,
-    { cid: 'sharp-pro-001', lookbackDays: 30, includeFeatures: true }
-  ));
+  results.push(
+    await testHandler('getEnhancedSharpScore', getEnhancedSharpScore, {
+      cid: 'sharp-pro-001',
+      lookbackDays: 30,
+      includeFeatures: true,
+    })
+  );
 
-  results.push(await testHandler(
-    'getHoldForecast',
-    getHoldForecast,
-    { lookbackDays: 30, forecastHours: 24, marketType: 'SPREAD' }
-  ));
+  results.push(
+    await testHandler('getHoldForecast', getHoldForecast, { lookbackDays: 30, forecastHours: 24, marketType: 'SPREAD' })
+  );
 
   // Test Remaining Handlers
   console.log('📈 Testing Remaining Handlers (Handle, Volume, Time-Series)...');
 
-  results.push(await testHandler(
-    'getHandleAndHold',
-    getHandleAndHold,
-    { agentID: 'DEMO', lookbackDays: 7, granularity: 'daily' }
-  ));
+  results.push(
+    await testHandler('getHandleAndHold', getHandleAndHold, { agentID: 'DEMO', lookbackDays: 7, granularity: 'daily' })
+  );
 
-  results.push(await testHandler(
-    'getCustomerVolume',
-    getCustomerVolume,
-    { agentID: 'DEMO', lookbackDays: 30, minBets: 5, segmentBy: 'volume' }
-  ));
+  results.push(
+    await testHandler('getCustomerVolume', getCustomerVolume, {
+      agentID: 'DEMO',
+      lookbackDays: 30,
+      minBets: 5,
+      segmentBy: 'volume',
+    })
+  );
 
-  results.push(await testHandler(
-    'getTimeSeriesAnalytics',
-    getTimeSeriesAnalytics,
-    { metric: 'volume', lookbackDays: 30, granularity: 'daily' }
-  ));
+  results.push(
+    await testHandler('getTimeSeriesAnalytics', getTimeSeriesAnalytics, {
+      metric: 'volume',
+      lookbackDays: 30,
+      granularity: 'daily',
+    })
+  );
 
   // Print results
   console.log('');
@@ -260,13 +259,14 @@ async function main() {
   const failCount = results.filter(r => r.status === 'FAIL').length;
   const errorCount = results.filter(r => r.status === 'ERROR').length;
 
-  console.table(results.map(r => ({
-    Tool: r.tool,
-    Status: r.status === 'PASS' ? '✅ PASS' :
-            r.status === 'FAIL' ? '❌ FAIL' : '🔥 ERROR',
-    'Time (ms)': r.duration_ms,
-    Records: r.record_count || '-'
-  })));
+  console.table(
+    results.map(r => ({
+      Tool: r.tool,
+      Status: r.status === 'PASS' ? '✅ PASS' : r.status === 'FAIL' ? '❌ FAIL' : '🔥 ERROR',
+      'Time (ms)': r.duration_ms,
+      Records: r.record_count || '-',
+    }))
+  );
 
   console.log('');
   console.log('Summary:');

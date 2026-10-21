@@ -1,4 +1,5 @@
 # 🎯 Test Health Dashboard
+
 **Last Updated:** October 7, 2025 @ 07:54  
 **Project:** Betting-Brain v3
 
@@ -17,8 +18,9 @@
 ## 📊 Component Health
 
 ### Test Execution ✅ **100/100**
+
 ```
-✅ Unit Tests:        121/121 passing (100%) 
+✅ Unit Tests:        121/121 passing (100%)
 ✅ Integration Tests: 128/128 passing (100%)
 ⚪ E2E Tests:           0/0   N/A     (TODO)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -26,10 +28,11 @@
 ```
 
 ### Type Safety 🚨 **0/100**
+
 ```
 🚨 TypeScript Check:  FAILING
    89 errors across 20 files
-   
+
    Critical:  6 errors  (D1 casting, imports)
    High:     50 errors  (vitest types)
    Medium:   20 errors  (missing fields)
@@ -37,22 +40,24 @@
 ```
 
 ### Performance ⚠️ **40/100**
+
 ```
 ⚠️ Integration Tests: SLOW (99 seconds)
-   
+
    🟢 Unit tests:              4.3s  ✅ FAST
-   🟢 Fast integration:         5s   ✅ FAST  
+   🟢 Fast integration:         5s   ✅ FAST
    🔴 Slow integration:        99s   🚨 VERY SLOW
-   
+
    Bottleneck: Dynamic imports in trigger tests
    Expected after fix: ~15s (84% improvement)
 ```
 
 ### Coverage 📊 **85/100**
+
 ```
 📊 Actual Coverage: 95%+ (EXCELLENT)
    Reported:        3.54% (MISLEADING)
-   
+
    src/index.ts:     100%  ✅
    src/guards/:       86%  ✅
    src/queues/:       95%  ✅
@@ -60,7 +65,7 @@
    src/tools/:        75%  ✅
    src/triggers/:     99%  ✅
    src/utils/:        98%  ✅
-   
+
    Issue: Coverage includes node_modules in calculation
 ```
 
@@ -68,19 +73,20 @@
 
 ## 🎯 Critical Metrics
 
-| Metric | Current | Target | Status |
-|--------|---------|--------|--------|
-| **Tests Passing** | 249/249 | 100% | ✅ |
-| **Type Errors** | 89 | 0 | 🚨 |
-| **Test Speed** | 99s | <20s | ⚠️ |
-| **Coverage (Real)** | 95% | >85% | ✅ |
-| **E2E Tests** | 0 | 10+ | ⚪ |
+| Metric              | Current | Target | Status |
+| ------------------- | ------- | ------ | ------ |
+| **Tests Passing**   | 249/249 | 100%   | ✅     |
+| **Type Errors**     | 89      | 0      | 🚨     |
+| **Test Speed**      | 99s     | <20s   | ⚠️     |
+| **Coverage (Real)** | 95%     | >85%   | ✅     |
+| **E2E Tests**       | 0       | 10+    | ⚪     |
 
 ---
 
 ## 🔥 Top 5 Issues
 
 ### 1. 🚨 **TypeScript Errors Block Production**
+
 **Severity:** CRITICAL  
 **Impact:** High - Production builds may fail  
 **Effort:** 2 hours  
@@ -92,6 +98,7 @@
 ```
 
 ### 2. 🚨 **D1 Type Casting is Unsafe**
+
 **Severity:** CRITICAL  
 **Impact:** High - Runtime type errors possible  
 **Effort:** 1 hour  
@@ -106,6 +113,7 @@ return (result as D1Result<T>).results || [];
 ```
 
 ### 3. ⚠️ **Integration Tests 20x Too Slow**
+
 **Severity:** HIGH  
 **Impact:** Medium - Developer productivity  
 **Effort:** 3 hours  
@@ -114,14 +122,15 @@ return (result as D1Result<T>).results || [];
 ```typescript
 // Problem: 21 dynamic imports
 it('test', async () => {
-  const { fn } = await import('./module');  // SLOW!
+  const { fn } = await import('./module'); // SLOW!
 });
 
 // Fix: Static import
-import { fn } from './module';  // FAST!
+import { fn } from './module'; // FAST!
 ```
 
 ### 4. 🟡 **Missing Test Data Fields**
+
 **Severity:** MEDIUM  
 **Impact:** Medium - Type safety gaps  
 **Effort:** 30 minutes  
@@ -129,10 +138,11 @@ import { fn } from './module';  // FAST!
 
 ```typescript
 // Missing 'ing' field in LineMovement mocks
-ing: new Date().toISOString()
+ing: new Date().toISOString();
 ```
 
 ### 5. 🟡 **Coverage Metrics Misleading**
+
 **Severity:** LOW  
 **Impact:** Low - Reporting only  
 **Effort:** 15 minutes  
@@ -140,7 +150,7 @@ ing: new Date().toISOString()
 
 ```typescript
 // Exclude type definitions from coverage
-exclude: [...existing, '**/*.d.ts', '**/node_modules/**']
+exclude: [...existing, '**/*.d.ts', '**/node_modules/**'];
 ```
 
 ---
@@ -148,10 +158,11 @@ exclude: [...existing, '**/*.d.ts', '**/node_modules/**']
 ## 📈 Progress Tracking
 
 ### Phase 1: Critical Fixes (0% complete) 🔴
+
 **Estimated Time:** 3-4 hours  
 **Blocking:** Production deployment
 
-- [ ] Add vitest types to tsconfig.json (15 min) 
+- [ ] Add vitest types to tsconfig.json (15 min)
 - [ ] Fix type imports in test mocks (30 min)
 - [ ] Add missing `ing` fields (30 min)
 - [ ] Fix D1Result type casting (1 hour)
@@ -161,6 +172,7 @@ exclude: [...existing, '**/*.d.ts', '**/node_modules/**']
 **Completion:** 0/6 tasks (0%) ❌
 
 ### Phase 2: Performance (0% complete) 🟠
+
 **Estimated Time:** 3-4 hours  
 **Blocking:** Developer experience
 
@@ -174,6 +186,7 @@ exclude: [...existing, '**/*.d.ts', '**/node_modules/**']
 **Expected Speedup:** 84% faster (99s → 15s) 🚀
 
 ### Phase 3: Type Safety (0% complete) 🟡
+
 **Estimated Time:** 2-3 hours  
 **Blocking:** Code quality
 
@@ -187,6 +200,7 @@ exclude: [...existing, '**/*.d.ts', '**/node_modules/**']
 **Completion:** 0/6 tasks (0%) ❌
 
 ### Phase 4: Enhancements (0% complete) 🟢
+
 **Estimated Time:** 8-16 hours  
 **Blocking:** Nothing (nice to have)
 
@@ -201,13 +215,13 @@ exclude: [...existing, '**/*.d.ts', '**/node_modules/**']
 
 ## ⏱️ Time Estimates
 
-| Phase | Tasks | Estimated Time | Priority |
-|-------|-------|----------------|----------|
-| **Phase 1** | 6 | 3-4 hours | 🔴 CRITICAL |
-| **Phase 2** | 5 | 3-4 hours | 🟠 HIGH |
-| **Phase 3** | 6 | 2-3 hours | 🟡 MEDIUM |
-| **Phase 4** | 4 | 8-16 hours | 🟢 LOW |
-| **Total** | 21 | 16-27 hours | - |
+| Phase       | Tasks | Estimated Time | Priority    |
+| ----------- | ----- | -------------- | ----------- |
+| **Phase 1** | 6     | 3-4 hours      | 🔴 CRITICAL |
+| **Phase 2** | 5     | 3-4 hours      | 🟠 HIGH     |
+| **Phase 3** | 6     | 2-3 hours      | 🟡 MEDIUM   |
+| **Phase 4** | 4     | 8-16 hours     | 🟢 LOW      |
+| **Total**   | 21    | 16-27 hours    | -           |
 
 **Minimum Viable Fix:** Phase 1 only (3-4 hours)  
 **Production Ready:** Phase 1 + 2 (6-8 hours)  
@@ -293,23 +307,23 @@ npm run lint
 
 ### By Component
 
-| Component | Coverage | Lines | Uncovered |
-|-----------|----------|-------|-----------|
-| **index.ts** | 100% | 50 | 0 |
-| **guards/costCap.ts** | 89% | 200 | 22 |
-| **guards/rateLimit.ts** | 82% | 150 | 27 |
-| **queues/lineIngress.ts** | 95% | 180 | 9 |
-| **queues/steamWebhook.ts** | 94% | 160 | 10 |
-| **schedules/exposureCalc.ts** | 99% | 120 | 1 |
-| **schedules/sharpCalc.ts** | 95% | 140 | 7 |
-| **tools/getBettingExposure.ts** | 74% | 95 | 25 |
-| **tools/getCLV.ts** | 77% | 85 | 20 |
-| **tools/getHoldPercentage.ts** | 80% | 90 | 18 |
-| **tools/getSharpScore.ts** | 71% | 85 | 25 |
-| **triggers/onLineMove.ts** | 99% | 150 | 2 |
-| **utils/database.ts** | 96% | 180 | 7 |
-| **utils/formatting.ts** | 99% | 100 | 1 |
-| **utils/validation.ts** | 98% | 110 | 2 |
+| Component                       | Coverage | Lines | Uncovered |
+| ------------------------------- | -------- | ----- | --------- |
+| **index.ts**                    | 100%     | 50    | 0         |
+| **guards/costCap.ts**           | 89%      | 200   | 22        |
+| **guards/rateLimit.ts**         | 82%      | 150   | 27        |
+| **queues/lineIngress.ts**       | 95%      | 180   | 9         |
+| **queues/steamWebhook.ts**      | 94%      | 160   | 10        |
+| **schedules/exposureCalc.ts**   | 99%      | 120   | 1         |
+| **schedules/sharpCalc.ts**      | 95%      | 140   | 7         |
+| **tools/getBettingExposure.ts** | 74%      | 95    | 25        |
+| **tools/getCLV.ts**             | 77%      | 85    | 20        |
+| **tools/getHoldPercentage.ts**  | 80%      | 90    | 18        |
+| **tools/getSharpScore.ts**      | 71%      | 85    | 25        |
+| **triggers/onLineMove.ts**      | 99%      | 150   | 2         |
+| **utils/database.ts**           | 96%      | 180   | 7         |
+| **utils/formatting.ts**         | 99%      | 100   | 1         |
+| **utils/validation.ts**         | 98%      | 110   | 2         |
 
 ### Coverage Gaps (Areas Needing Tests)
 
@@ -324,6 +338,7 @@ npm run lint
 ## 🛠️ Recommended Tools
 
 ### During Development
+
 ```bash
 # Watch mode for instant feedback
 bun test:watch
@@ -333,12 +348,14 @@ while true; do npm run lint; sleep 5; done
 ```
 
 ### Before Commit
+
 ```bash
 # Full validation
 npm run lint && bun test:ci
 ```
 
 ### For Performance Analysis
+
 ```bash
 # Run with timing
 bun test:integration --reporter=verbose
@@ -361,17 +378,20 @@ bun test tests/integration/triggers.test.ts --reporter=verbose
 ## 🎯 Success Criteria
 
 ### Minimum (Phase 1)
+
 - ✅ 0 TypeScript errors
 - ✅ All tests passing
 - ✅ Coverage >85%
 
 ### Target (Phase 1 + 2)
+
 - ✅ 0 TypeScript errors
 - ✅ All tests passing
 - ✅ Integration tests <20s
 - ✅ Coverage >85%
 
 ### Excellent (All Phases)
+
 - ✅ 0 TypeScript errors
 - ✅ All tests passing
 - ✅ Integration tests <20s
@@ -385,4 +405,3 @@ bun test tests/integration/triggers.test.ts --reporter=verbose
 **Next Milestone:** 🟢 Production Ready (85/100) - Complete Phase 1 & 2
 
 **Estimated Time to Production Ready:** 6-8 hours 🚀
-

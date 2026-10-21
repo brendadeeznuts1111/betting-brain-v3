@@ -8,15 +8,23 @@
 
 ## 📖 Your Story: "Fantasy402 - The Ultimate Manager Dashboard"
 
-You're building a sophisticated web application and browser extension for `fantasy402.com`. Your primary goal is to provide a highly performant, real-time, and resilient "Manager Dashboard" experience for users like `BILLY666`. This involves:
+You're building a sophisticated web application and browser extension for
+`fantasy402.com`. Your primary goal is to provide a highly performant,
+real-time, and resilient "Manager Dashboard" experience for users like
+`BILLY666`. This involves:
 
-* **Real-time Insights:** Delivering live "bet ticker" updates to managers
-* **Comprehensive Logging:** Meticulously tracking all user and API interactions for auditing and analysis
-* **Blazing Fast UI:** Ensuring the dashboard loads quickly and feels responsive, even with complex data
-* **Scalability & Reliability:** Leveraging Cloudflare's edge platform to handle traffic efficiently and ensure data integrity
-* **Efficient Data Management:** Handling both hot, frequently accessed data and cold, archival data cost-effectively
+- **Real-time Insights:** Delivering live "bet ticker" updates to managers
+- **Comprehensive Logging:** Meticulously tracking all user and API interactions
+  for auditing and analysis
+- **Blazing Fast UI:** Ensuring the dashboard loads quickly and feels
+  responsive, even with complex data
+- **Scalability & Reliability:** Leveraging Cloudflare's edge platform to handle
+  traffic efficiently and ensure data integrity
+- **Efficient Data Management:** Handling both hot, frequently accessed data and
+  cold, archival data cost-effectively
 
-This architecture marries client-side performance with server-side robustness, powered by Cloudflare's serverless ecosystem.
+This architecture marries client-side performance with server-side robustness,
+powered by Cloudflare's serverless ecosystem.
 
 ---
 
@@ -56,7 +64,7 @@ graph TD
 
     CF_Worker_Main -- Fetches Core Data --> Origin_API
     Origin_API -- Core App Logic / DB --> CF_D1
-    
+
     %% Styling
     classDef user fill:#62AEEF,stroke:#333,stroke-width:2px,color:#FFF;
     classDef client_app fill:#A1C935,stroke:#333,stroke-width:2px,color:#FFF;
@@ -76,7 +84,8 @@ graph TD
 
 ### 1. Login & Initial Data Fetch (Cached with IndexedDB)
 
-This sequence shows how critical data is fetched once after login and then cached locally for rapid access.
+This sequence shows how critical data is fetched once after login and then
+cached locally for rapid access.
 
 ```mermaid
 sequenceDiagram
@@ -121,6 +130,7 @@ sequenceDiagram
 ```
 
 **Key Points:**
+
 - JWT token obtained during login
 - Worker checks KV cache first
 - Falls back to Origin API on cache miss
@@ -154,13 +164,14 @@ sequenceDiagram
 
     Browser->>CF_Worker_Main: (Optional) Client messages (e.g., auth, subscribe)
     CF_Worker_Main->>Browser: (Optional) Worker responses to client messages
-    
+
     Browser->>CF_Worker_Main: (User closes tab/Browser closes)
     deactivate CF_Worker_Main
     Note over Browser,CF_Worker_Main: WebSocket Connection Closed (Worker cleans up resources)
 ```
 
 **Key Points:**
+
 - Persistent WSS connection (wss://)
 - Heartbeat every 30 seconds to keep connection alive
 - Real-time push from Worker to Browser
@@ -170,7 +181,8 @@ sequenceDiagram
 
 ### 3. API Request & Logging (Queues, D1, KV)
 
-This sequence details how API calls are made, responses potentially cached, and every request reliably logged.
+This sequence details how API calls are made, responses potentially cached, and
+every request reliably logged.
 
 ```mermaid
 sequenceDiagram
@@ -184,7 +196,7 @@ sequenceDiagram
 
     Browser->>CF_Worker_Main: API Call: POST /Manager/someEndpoint (HTTPS, w/ JWT & Browser Headers)
     activate CF_Worker_Main
-    
+
     Note over CF_Worker_Main: **Data Fetch Logic:**
     CF_Worker_Main->>CF_KV: Attempt GET 'someEndpoint_response'
     alt Cache Miss
@@ -206,7 +218,7 @@ sequenceDiagram
     deactivate CF_Worker_Main
 
     CF_Worker_Main-->>Browser: API Response JSON (from KV or Origin)
-    
+
     Note over CF_Queue_Logs,CF_Worker_Consumer: Queue asynchronously triggers Log Consumer Worker
     CF_Queue_Logs->>CF_Worker_Consumer: Deliver Batch of Log Messages
     activate CF_Worker_Consumer
@@ -219,6 +231,7 @@ sequenceDiagram
 ```
 
 **Key Points:**
+
 - Worker returns response immediately (fast path)
 - Logging happens asynchronously via queue
 - Batch processing for efficiency
@@ -244,7 +257,7 @@ sequenceDiagram
     activate CF_D1
     CF_D1-->>CF_Worker_Consumer: Old Log Records
     deactivate CF_D1
-    
+
     CF_Worker_Consumer->>CF_R2: PUT /logs/archive_YYYY-MM-DD.json (Upload file with old logs)
     activate CF_R2
     CF_R2-->>CF_Worker_Consumer: OK
@@ -258,6 +271,7 @@ sequenceDiagram
 ```
 
 **Key Points:**
+
 - Runs on schedule (e.g., daily at 2 AM UTC)
 - Two-phase commit: Write to R2 first, then delete from D1
 - Keeps D1 database lean and performant
@@ -269,12 +283,12 @@ sequenceDiagram
 
 ### Protocols Used
 
-| Protocol | Purpose | Use In System |
-|----------|---------|---------------|
-| **HTTPS** | Secure HTTP requests | All API calls, page loads, Worker requests |
-| **WSS** | Secure WebSocket | Real-time bet ticker, live updates |
-| **SQL** | Database queries | D1 interactions |
-| **S3-compatible** | Object storage | R2 file uploads/downloads |
+| Protocol          | Purpose              | Use In System                              |
+| ----------------- | -------------------- | ------------------------------------------ |
+| **HTTPS**         | Secure HTTP requests | All API calls, page loads, Worker requests |
+| **WSS**           | Secure WebSocket     | Real-time bet ticker, live updates         |
+| **SQL**           | Database queries     | D1 interactions                            |
+| **S3-compatible** | Object storage       | R2 file uploads/downloads                  |
 
 ---
 
@@ -285,11 +299,13 @@ sequenceDiagram
 **Purpose:** Fast, persistent local storage within the user's browser
 
 **Data Stored:**
+
 - User-specific, frequently accessed data
 - Login info, dashboard settings
 - Cached reports after login
 
 **Benefits:**
+
 - ✅ Zero network latency for repeat access
 - ✅ Instant UI response
 - ✅ Offline capability
@@ -303,11 +319,13 @@ sequenceDiagram
 **Purpose:** Ultra-fast, globally distributed key-value store
 
 **Data Stored:**
+
 - Frequently accessed API responses
 - Configuration data, feature flags
 - Pre-computed report summaries
 
 **Benefits:**
+
 - ✅ Extremely low latency (< 10ms)
 - ✅ Global distribution
 - ✅ Reduces Origin API load
@@ -315,13 +333,12 @@ sequenceDiagram
 **TTL:** Configurable (e.g., 1 hour for dynamic data, 24 hours for config)
 
 **Example:**
+
 ```typescript
 // Write to KV with 1 hour TTL
-await env.FANTASY_CACHE.put(
-    'betTicker:BILLY666',
-    JSON.stringify(data),
-    { expirationTtl: 3600 }
-);
+await env.FANTASY_CACHE.put('betTicker:BILLY666', JSON.stringify(data), {
+  expirationTtl: 3600,
+});
 
 // Read from KV
 const cached = await env.FANTASY_CACHE.get('betTicker:BILLY666');
@@ -334,52 +351,63 @@ const cached = await env.FANTASY_CACHE.get('betTicker:BILLY666');
 **Purpose:** Relational SQL database for structured, queryable data
 
 **Data Stored:**
+
 - API logs
 - Bet records
 - User accounts
 - Transaction histories
 
 **Benefits:**
+
 - ✅ Strong consistency
 - ✅ Complex querying (SQL)
 - ✅ Transactional integrity
 - ✅ Serverless scaling
 
 **Example:**
+
 ```typescript
 // Query D1
-const result = await env.RAW_FEED_DB.prepare(`
+const result = await env.RAW_FEED_DB.prepare(
+  `
     SELECT * FROM fantasy402_raw_feed
     WHERE operation = ?
     ORDER BY timestamp DESC
     LIMIT 100
-`).bind('getBetTicker').all();
+`
+)
+  .bind('getBetTicker')
+  .all();
 ```
 
 ---
 
 #### 4. Cloudflare R2 (Object Storage)
 
-**Purpose:** Cost-effective, scalable object storage for large, unstructured data
+**Purpose:** Cost-effective, scalable object storage for large, unstructured
+data
 
 **Data Stored:**
+
 - Archived API logs (from D1)
 - Long-term backups
 - Static assets
 - Large reports
 
 **Benefits:**
+
 - ✅ Cheap storage (< $0.015/GB/month)
 - ✅ No egress fees
 - ✅ S3-compatible API
 - ✅ Unlimited scalability
 
 **Example:**
+
 ```typescript
 // Write to R2
 await env.R2_BUCKET.put(
-    'archives/logs-2025-10-08.json',
-    JSON.stringify(oldLogs)
+  'archives/logs-2025-10-08.json',
+  JSON.stringify(oldLogs)
 );
 
 // Read from R2
@@ -402,16 +430,16 @@ sequenceDiagram
     Note over Browser,Origin: Initial Login
     Browser->>Origin: POST /authenticateCustomer (username, password)
     Origin-->>Browser: Access Token (JWT, 15 min) + Refresh Token (7 days)
-    
+
     Note over Browser: Access token expires after 15 minutes
-    
+
     Browser->>Worker: API Call with expired JWT
     Worker-->>Browser: 401 Unauthorized
-    
+
     Note over Browser: Automatic token refresh
     Browser->>Origin: POST /token/refresh (Refresh Token)
     Origin-->>Browser: New Access Token (JWT, 15 min)
-    
+
     Browser->>Worker: Retry API Call with new JWT
     Worker-->>Browser: Success
 ```
@@ -423,6 +451,7 @@ sequenceDiagram
 - **Automatic Refresh:** Client catches 401 errors and refreshes transparently
 
 **Implementation:**
+
 ```typescript
 // In Fantasy402Client
 async makeRequest(endpoint: string, params: any): Promise<any> {
@@ -449,12 +478,14 @@ async makeRequest(endpoint: string, params: any): Promise<any> {
 **Format:** Appended to URL after `?`
 
 **Use Cases:**
+
 - Filtering data
 - Sorting results
 - Pagination
 - Search queries
 
 **Example:**
+
 ```typescript
 // GET /api/wagers?status=pending&limit=50&offset=0
 const url = new URL('https://worker.dev/api/wagers');
@@ -472,38 +503,41 @@ const response = await fetch(url);
 **Format:** JSON or `application/x-www-form-urlencoded`
 
 **Use Cases:**
+
 - Creating records
 - Updating records
 - Submitting forms
 - Complex queries
 
 **Example (JSON):**
+
 ```typescript
 // POST /api/wagers
 await fetch('https://worker.dev/api/wagers', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        user: 'BILLY666',
-        amount: 100,
-        gameId: 'xyz'
-    })
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user: 'BILLY666',
+    amount: 100,
+    gameId: 'xyz',
+  }),
 });
 ```
 
 **Example (Form-encoded):**
+
 ```typescript
 // POST /Manager/getBetTicker
 const params = new URLSearchParams({
-    agent: 'BILLY666',
-    daterange: '01/01/2025 - 12/31/2025',
-    limit: '200'
+  agent: 'BILLY666',
+  daterange: '01/01/2025 - 12/31/2025',
+  limit: '200',
 });
 
 await fetch('https://fantasy402.com/cloud/api/Manager/getBetTicker', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params.toString()
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: params.toString(),
 });
 ```
 
@@ -514,6 +548,7 @@ await fetch('https://fantasy402.com/cloud/api/Manager/getBetTicker', {
 ### When to Use Polling
 
 **✅ Use Polling When:**
+
 - Updates are infrequent (every few minutes)
 - Real-time is not critical (30-60 second delay is acceptable)
 - Implementation simplicity is key
@@ -522,20 +557,23 @@ await fetch('https://fantasy402.com/cloud/api/Manager/getBetTicker', {
 **Example:** System messages, email notifications
 
 **Implementation:**
+
 ```typescript
 // Poll every 60 seconds
 setInterval(async () => {
-    const messages = await fetch('/api/messages');
-    updateUI(messages);
+  const messages = await fetch('/api/messages');
+  updateUI(messages);
 }, 60000);
 ```
 
 **Pros:**
+
 - Simple to implement
 - Works everywhere
 - Easy to debug
 
 **Cons:**
+
 - High server load
 - Wasted requests
 - High latency
@@ -546,6 +584,7 @@ setInterval(async () => {
 ### When to Use WebSockets
 
 **✅ Use WebSockets When:**
+
 - High-frequency, low-latency updates required
 - Data must be pushed instantly
 - Bi-directional communication needed
@@ -554,22 +593,25 @@ setInterval(async () => {
 **Example:** Live bet ticker, chat, real-time scores
 
 **Implementation:**
+
 ```typescript
 const ws = new WebSocket('wss://worker.dev/ws');
 
-ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    updateUI(data);
+ws.onmessage = event => {
+  const data = JSON.parse(event.data);
+  updateUI(data);
 };
 ```
 
 **Pros:**
+
 - Real-time updates (< 100ms)
 - 98% fewer requests
 - 92% less bandwidth
 - Better UX
 
 **Cons:**
+
 - More complex to implement
 - Requires connection management
 - Harder to debug
@@ -578,14 +620,14 @@ ws.onmessage = (event) => {
 
 ### Comparison Table
 
-| Metric | HTTP Polling | WebSocket |
-|--------|-------------|-----------|
-| **Requests/min** | 120 (every 30s) | 2 (heartbeat) |
-| **Latency** | 30s max | < 100ms |
-| **Bandwidth** | ~12 KB/min | ~1 KB/min |
-| **Server Load** | High | Low |
-| **Battery Usage** | High | Low |
-| **Complexity** | Low | Medium |
+| Metric            | HTTP Polling    | WebSocket     |
+| ----------------- | --------------- | ------------- |
+| **Requests/min**  | 120 (every 30s) | 2 (heartbeat) |
+| **Latency**       | 30s max         | < 100ms       |
+| **Bandwidth**     | ~12 KB/min      | ~1 KB/min     |
+| **Server Load**   | High            | Low           |
+| **Battery Usage** | High            | Low           |
+| **Complexity**    | Low             | Medium        |
 
 ---
 
@@ -596,25 +638,27 @@ ws.onmessage = (event) => {
 **Problem:** Data in IndexedDB, KV, D1, and R2 can get out of sync
 
 **Solutions:**
+
 - ✅ Clear IndexedDB on logout
 - ✅ Use TTLs on KV entries
 - ✅ Implement Stale-While-Revalidate (SWR)
 - ✅ Explicit cache invalidation for critical updates
 
 **Example (SWR):**
+
 ```typescript
 // Return cached data immediately, refresh in background
 const cached = await getFromCache(key);
 if (cached) {
-    displayData(cached);
-    
-    // Refresh in background
-    fetchFreshData(key).then(fresh => {
-        if (JSON.stringify(fresh) !== JSON.stringify(cached)) {
-            updateCache(key, fresh);
-            displayData(fresh);
-        }
-    });
+  displayData(cached);
+
+  // Refresh in background
+  fetchFreshData(key).then(fresh => {
+    if (JSON.stringify(fresh) !== JSON.stringify(cached)) {
+      updateCache(key, fresh);
+      displayData(fresh);
+    }
+  });
 }
 ```
 
@@ -625,11 +669,13 @@ if (cached) {
 **Problem:** Caching data that changes too frequently or not caching stable data
 
 **Solutions:**
+
 - ✅ Analyze access patterns
 - ✅ Use layered caching strategy
 - ✅ Set appropriate TTLs
 
 **Layered Strategy:**
+
 ```
 IndexedDB (Client)
     └─> Personal, dashboard-specific data (e.g., user settings)
@@ -651,25 +697,27 @@ D1 (Database)
 **Problem:** WebSockets drop due to network issues, server restarts, inactivity
 
 **Solutions:**
+
 - ✅ Automatic reconnection with exponential backoff
 - ✅ Heartbeat/ping mechanism
 - ✅ Graceful degradation (fallback to polling)
 
 **Implementation:**
+
 ```typescript
 // Exponential backoff reconnection
 let reconnectAttempts = 0;
 socket.onclose = () => {
-    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-    setTimeout(() => connect(), delay);
-    reconnectAttempts++;
+  const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+  setTimeout(() => connect(), delay);
+  reconnectAttempts++;
 };
 
 // Heartbeat
 setInterval(() => {
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: 'ping' }));
-    }
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ type: 'ping' }));
+  }
 }, 30000);
 ```
 
@@ -680,31 +728,36 @@ setInterval(() => {
 **Problem:** Queue fills up faster than consumer can process
 
 **Solutions:**
+
 - ✅ Batch processing in consumer
 - ✅ Automatic retry logic
 - ✅ Error handling with logging
 - ✅ Monitoring and alerting
 
 **Implementation:**
+
 ```typescript
 // Batch processing
 export async function processQueue(batch: MessageBatch) {
-    const statements: D1PreparedStatement[] = [];
-    
-    for (const message of batch.messages) {
-        statements.push(
-            env.DB.prepare('INSERT INTO logs VALUES (?, ?, ?)')
-                .bind(message.id, message.data, message.timestamp)
-        );
-    }
-    
-    try {
-        // Process all at once
-        await env.DB.batch(statements);
-    } catch (error) {
-        console.error('Batch failed:', error);
-        throw error; // Triggers automatic retry
-    }
+  const statements: D1PreparedStatement[] = [];
+
+  for (const message of batch.messages) {
+    statements.push(
+      env.DB.prepare('INSERT INTO logs VALUES (?, ?, ?)').bind(
+        message.id,
+        message.data,
+        message.timestamp
+      )
+    );
+  }
+
+  try {
+    // Process all at once
+    await env.DB.batch(statements);
+  } catch (error) {
+    console.error('Batch failed:', error);
+    throw error; // Triggers automatic retry
+  }
 }
 ```
 
@@ -715,31 +768,41 @@ export async function processQueue(batch: MessageBatch) {
 **Problem:** Data deleted from D1 before successfully moved to R2
 
 **Solutions:**
+
 - ✅ Two-phase commit (write R2 first, then delete from D1)
 - ✅ Idempotent archival logic
 - ✅ UTC timestamps everywhere
 - ✅ Verification after archival
 
 **Implementation:**
+
 ```typescript
 // Two-phase commit
 async function archiveOldLogs() {
-    // Phase 1: Write to R2
-    const oldLogs = await env.D1.prepare(`
+  // Phase 1: Write to R2
+  const oldLogs = await env.D1.prepare(
+    `
         SELECT * FROM logs WHERE timestamp < ?
-    `).bind(thirtyDaysAgo).all();
-    
-    await env.R2.put(
-        `archives/logs-${date}.json`,
-        JSON.stringify(oldLogs.results)
-    );
-    
-    // Phase 2: Delete from D1 (only after R2 success)
-    await env.D1.prepare(`
+    `
+  )
+    .bind(thirtyDaysAgo)
+    .all();
+
+  await env.R2.put(
+    `archives/logs-${date}.json`,
+    JSON.stringify(oldLogs.results)
+  );
+
+  // Phase 2: Delete from D1 (only after R2 success)
+  await env.D1.prepare(
+    `
         DELETE FROM logs WHERE timestamp < ?
-    `).bind(thirtyDaysAgo).run();
-    
-    console.log(`Archived ${oldLogs.results.length} records`);
+    `
+  )
+    .bind(thirtyDaysAgo)
+    .run();
+
+  console.log(`Archived ${oldLogs.results.length} records`);
 }
 ```
 
@@ -748,7 +811,8 @@ async function archiveOldLogs() {
 ## 📚 Related Documentation
 
 - [Queue-Based Logging](QUEUE_BASED_LOGGING.md) - Async processing architecture
-- [WebSocket Implementation](WEBSOCKET_IMPLEMENTATION_COMPLETE.md) - Real-time connections
+- [WebSocket Implementation](WEBSOCKET_IMPLEMENTATION_COMPLETE.md) - Real-time
+  connections
 - [Fantasy402 Authenticated API](API.md) - Server-side API client
 - [Architecture Upgrade](ARCHITECTURE_UPGRADE_COMPLETE.md) - Migration summary
 
@@ -789,6 +853,7 @@ Need real-time updates?
 **Status:** 🎉 **PRODUCTION-READY**
 
 **Architecture Achievements:**
+
 - ✅ Multi-tier caching (IndexedDB → KV → D1)
 - ✅ Real-time WebSocket communication
 - ✅ Queue-based async processing
@@ -799,4 +864,3 @@ Need real-time updates?
 - ✅ < 100ms latency for real-time updates
 
 🚀 **Ready to scale to millions of users!**
-

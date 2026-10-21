@@ -6,13 +6,7 @@
 
 import { MCPEnv } from '../types/api';
 import { CORS_HEADERS, createJSONResponse, createOPTIONSResponse } from '../utils/request';
-import {
-  JSONRPCRequest,
-  JSONRPCResponse,
-  MCPErrorCode,
-  MCPInitializeResult,
-  MCPMethod,
-} from './types';
+import { JSONRPCRequest, JSONRPCResponse, MCPErrorCode, MCPInitializeResult, MCPMethod } from './types';
 import { getMCPTools } from './tools';
 import { callTool } from './toolRegistry';
 
@@ -20,10 +14,7 @@ import { callTool } from './toolRegistry';
  * Main MCP request handler
  * Processes JSON-RPC 2.0 requests and routes to appropriate handlers
  */
-export async function handleMCPRequest(
-  request: Request,
-  env: MCPEnv
-): Promise<Response> {
+export async function handleMCPRequest(request: Request, env: MCPEnv): Promise<Response> {
   // Remove manual corsHeaders object as CORS_HEADERS is imported and used by createJSONResponse/createOPTIONSResponse
 
   if (request.method === 'OPTIONS') {
@@ -35,7 +26,7 @@ export async function handleMCPRequest(
   }
 
   try {
-    const body = await request.json() as JSONRPCRequest;
+    const body = (await request.json()) as JSONRPCRequest;
     const { jsonrpc, id, method, params } = body;
 
     // Validate JSON-RPC 2.0 format
@@ -63,23 +54,13 @@ export async function handleMCPRequest(
 
       case 'tools/call':
         if (!params?.name) {
-          return createErrorResponse(
-            id,
-            MCPErrorCode.InvalidParams,
-            'Missing required parameter: name',
-            CORS_HEADERS
-          );
+          return createErrorResponse(id, MCPErrorCode.InvalidParams, 'Missing required parameter: name', CORS_HEADERS);
         }
         result = await handleToolCall(params.name, params.arguments || {}, env);
         break;
 
       default:
-        return createErrorResponse(
-          id,
-          MCPErrorCode.MethodNotFound,
-          `Method not found: ${method}`,
-          CORS_HEADERS
-        );
+        return createErrorResponse(id, MCPErrorCode.MethodNotFound, `Method not found: ${method}`, CORS_HEADERS);
     }
 
     // Return successful response
@@ -132,11 +113,7 @@ async function handleToolsList(env: MCPEnv): Promise<{ tools: any[] }> {
  * Handle tools/call method
  * Executes a specific tool and returns results
  */
-async function handleToolCall(
-  toolName: string,
-  args: Record<string, any>,
-  env: MCPEnv
-): Promise<any> {
+async function handleToolCall(toolName: string, args: Record<string, any>, env: MCPEnv): Promise<any> {
   try {
     const result = await callTool(toolName, args, env);
     return result;

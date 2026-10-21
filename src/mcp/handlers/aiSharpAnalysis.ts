@@ -25,16 +25,22 @@ export async function getAISharpAnalysis(args: Record<string, any>, env: Env): P
     }
 
     // Query customer data from D1
-    const customer = await env.ANALYTICS.prepare(`
+    const customer = await env.ANALYTICS.prepare(
+      `
       SELECT cid, clv, wr, ao, nb, upd
       FROM sharp_indicators
       WHERE cid = ?
       LIMIT 1
-    `).bind(customerId).first<CustomerData>();
+    `
+    )
+      .bind(customerId)
+      .first<CustomerData>();
 
     if (!customer) {
       return {
-        content: [{ type: 'text', text: JSON.stringify({ error: 'Customer not found', customerId, agentID }, null, 2) }],
+        content: [
+          { type: 'text', text: JSON.stringify({ error: 'Customer not found', customerId, agentID }, null, 2) },
+        ],
         isError: true,
       };
     }
@@ -58,8 +64,19 @@ export async function getAISharpAnalysis(args: Record<string, any>, env: Env): P
       },
       indicators: result.indicators,
       insights: result.insights,
-      rawData: { clv: customer.clv, winRate: customer.wr, actionCount: customer.ao, netBet: customer.nb, lastUpdate: customer.upd },
-      aiUsage: { inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, totalTokens: result.usage.totalTokens, cost: result.cost.totalCost },
+      rawData: {
+        clv: customer.clv,
+        winRate: customer.wr,
+        actionCount: customer.ao,
+        netBet: customer.nb,
+        lastUpdate: customer.upd,
+      },
+      aiUsage: {
+        inputTokens: result.usage.inputTokens,
+        outputTokens: result.usage.outputTokens,
+        totalTokens: result.usage.totalTokens,
+        cost: result.cost.totalCost,
+      },
       timestamp: new Date().toISOString(),
     };
 
@@ -67,7 +84,21 @@ export async function getAISharpAnalysis(args: Record<string, any>, env: Env): P
   } catch (error) {
     console.error('AI Sharp Analysis error:', error);
     return {
-      content: [{ type: 'text', text: JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error', tool: 'aiSharpAnalysis', agentID: args.agentID || 'DEMO', timestamp: new Date().toISOString() }, null, 2) }],
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: error instanceof Error ? error.message : 'Unknown error',
+              tool: 'aiSharpAnalysis',
+              agentID: args.agentID || 'DEMO',
+              timestamp: new Date().toISOString(),
+            },
+            null,
+            2
+          ),
+        },
+      ],
       isError: true,
     };
   }

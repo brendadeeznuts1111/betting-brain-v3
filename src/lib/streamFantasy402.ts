@@ -67,7 +67,7 @@ export function startStream(
             eventId: `f402-${msg.betId}`,
             timestamp: msg.settledAt,
             volume: msg.stake,
-            hold: msg.stake > 0 ? (msg.profit / msg.stake) : 0, // % hold
+            hold: msg.stake > 0 ? msg.profit / msg.stake : 0, // % hold
             source: 'fantasy402',
           };
           onData(data);
@@ -77,7 +77,7 @@ export function startStream(
       }
     });
 
-    ws.on('error', (error) => {
+    ws.on('error', error => {
       console.error('[stream] WebSocket error:', error.message);
     });
 
@@ -138,7 +138,7 @@ function startPolling(
           eventId: `f402-${bet.betId}`,
           timestamp: bet.settledAt,
           volume: bet.stake,
-          hold: bet.stake > 0 ? (bet.profit / bet.stake) : 0,
+          hold: bet.stake > 0 ? bet.profit / bet.stake : 0,
           source: 'fantasy402',
         };
         onData(data);

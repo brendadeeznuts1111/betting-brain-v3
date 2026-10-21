@@ -63,10 +63,7 @@ interface FloorStatus {
   };
 }
 
-export async function handleFloorStatus(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleFloorStatus(request: Request, env: Env): Promise<Response> {
   const requestId = Date.now().toString(36);
   console.log(`[${requestId}] 📊 Floor status request`);
 
@@ -86,7 +83,7 @@ export async function handleFloorStatus(
         pass: 239,
         fail: 60,
         total: 299,
-        rate: 0.80,
+        rate: 0.8,
       },
       coverage: {
         percentage: 81,
@@ -201,11 +198,9 @@ async function checkComponentHealth(env: Env): Promise<FloorStatus['health']> {
 /**
  * Determine overall system status based on component health
  */
-function determineOverallStatus(
-  health: FloorStatus['health']
-): 'green' | 'yellow' | 'red' {
+function determineOverallStatus(health: FloorStatus['health']): 'green' | 'yellow' | 'red' {
   const components = Object.values(health);
-  const upCount = components.filter((status) => status === 'up').length;
+  const upCount = components.filter(status => status === 'up').length;
   const totalCount = components.length;
 
   if (upCount === totalCount) {

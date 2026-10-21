@@ -39,7 +39,7 @@ function parseImports(content: string): { imports: Import[]; rest: string } {
       imports.push({
         type: detectImportType(line),
         line: lines[i], // Keep original formatting
-        module
+        module,
       });
       firstNonImportIndex = i + 1;
     } else if (line && !line.startsWith('//') && !line.startsWith('/*')) {
@@ -56,7 +56,7 @@ function sortImports(imports: Import[]): string[] {
   const groups = {
     external: [] as Import[],
     internal: [] as Import[],
-    relative: [] as Import[]
+    relative: [] as Import[],
   };
 
   imports.forEach(imp => {
@@ -65,9 +65,7 @@ function sortImports(imports: Import[]): string[] {
 
   // Sort each group alphabetically by module
   Object.keys(groups).forEach(key => {
-    groups[key as keyof typeof groups].sort((a, b) =>
-      a.module.localeCompare(b.module)
-    );
+    groups[key as keyof typeof groups].sort((a, b) => a.module.localeCompare(b.module));
   });
 
   // Combine groups with blank lines between

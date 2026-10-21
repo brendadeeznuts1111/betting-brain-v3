@@ -31,7 +31,8 @@ betting-brain-v3/
 
 ## 📚 Documentation Structure (docs/)
 
-All comprehensive documentation has been moved to the `docs/` directory for better organization:
+All comprehensive documentation has been moved to the `docs/` directory for
+better organization:
 
 ```
 docs/
@@ -45,14 +46,14 @@ docs/
 
 ### Document Purposes:
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| **QUICKSTART.md** | Fast setup and deployment | Developers (getting started) |
-| **IMPLEMENTATION_SUMMARY.md** | Technical architecture | Architects, senior developers |
-| **BUILD_REPORT.md** | Statistics and metrics | Project managers, stakeholders |
-| **REVIEW_AND_GAPS.md** | Quality assessment | QA, technical leads |
-| **FIXES_APPLIED.md** | Recent improvements | All team members |
-| **PROJECT_STRUCTURE.md** | This file | New contributors |
+| Document                      | Purpose                   | Audience                       |
+| ----------------------------- | ------------------------- | ------------------------------ |
+| **QUICKSTART.md**             | Fast setup and deployment | Developers (getting started)   |
+| **IMPLEMENTATION_SUMMARY.md** | Technical architecture    | Architects, senior developers  |
+| **BUILD_REPORT.md**           | Statistics and metrics    | Project managers, stakeholders |
+| **REVIEW_AND_GAPS.md**        | Quality assessment        | QA, technical leads            |
+| **FIXES_APPLIED.md**          | Recent improvements       | All team members               |
+| **PROJECT_STRUCTURE.md**      | This file                 | New contributors               |
 
 ---
 
@@ -121,6 +122,7 @@ migrations/
 ```
 
 **Database Tables:**
+
 - `line_movements` - Line changes with 7-day TTL
 - `sharp_indicators` - Customer sharp scores (30-day retention)
 - `exposure_tracking` - Real-time exposure (24-hour retention)
@@ -141,50 +143,57 @@ scripts/
 
 ## 📊 Configuration Files
 
-| File | Purpose | Notes |
-|------|---------|-------|
-| **package.json** | Dependencies and scripts | NPM configuration |
-| **tsconfig.json** | TypeScript compiler config | Strict mode enabled |
-| **vitest.config.ts** | Test runner configuration | Miniflare environment |
-| **wrangler.toml** | Cloudflare Workers config | D1, queues, cron jobs |
-| **.env.example** | Environment variable template | Copy to .env |
-| **.gitignore** | Git ignore patterns | Node, build, logs |
+| File                 | Purpose                       | Notes                 |
+| -------------------- | ----------------------------- | --------------------- |
+| **package.json**     | Dependencies and scripts      | NPM configuration     |
+| **tsconfig.json**    | TypeScript compiler config    | Strict mode enabled   |
+| **vitest.config.ts** | Test runner configuration     | Miniflare environment |
+| **wrangler.toml**    | Cloudflare Workers config     | D1, queues, cron jobs |
+| **.env.example**     | Environment variable template | Copy to .env          |
+| **.gitignore**       | Git ignore patterns           | Node, build, logs     |
 
 ---
 
 ## 🎯 Key Directories Explained
 
 ### `/src` - Source Code
+
 - All production TypeScript code
 - Organized by architectural layer
 - No configuration files here
 
 ### `/tests` - Unit Tests
+
 - One test file per core metric
 - Mocked Cloudflare environment
 - Vitest + Miniflare
 
 ### `/docs` - Documentation
+
 - **NEW!** Centralized documentation
 - Markdown files for different audiences
 - Referenced from main README.md
 
 ### `/migrations` - Database Schema
+
 - Versioned SQL migrations
 - Auto-applied during deployment
 - D1-specific optimizations
 
 ### `/scripts` - Automation
+
 - Bootstrap, codegen, deploy
 - Uses Bun native APIs (not Node.js)
 - Idempotent and safe
 
 ### `/grafana` - Monitoring
+
 - Dashboard JSON configuration
 - 12 pre-configured panels
 - Auto-provisioned on deploy
 
 ### `/.github` - CI/CD
+
 - GitHub Actions workflows
 - Automated testing and deployment
 - Staging and production pipelines
@@ -194,17 +203,20 @@ scripts/
 ## 📝 File Naming Conventions
 
 ### Source Files
+
 - **TypeScript:** `kebab-case.ts`
 - **Tests:** `feature.test.ts`
 - **Migrations:** `NNNN_description.sql`
 - **Scripts:** `action.ts`
 
 ### Directories
+
 - **All lowercase:** `kebab-case/`
 - **No spaces or special characters**
 - **Descriptive names**
 
 ### Functions & Variables
+
 - **Functions:** `camelCase()`
 - **Classes:** `PascalCase`
 - **Constants:** `UPPER_SNAKE_CASE`
@@ -215,15 +227,19 @@ scripts/
 ## 🚀 Quick Navigation
 
 ### For Developers:
+
 1. Start here: [README.md](../README.md)
 2. Quick setup: [docs/QUICKSTART.md](QUICKSTART.md)
 3. Contribute: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### For Architects:
-1. Technical overview: [docs/IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
+
+1. Technical overview:
+   [docs/IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 2. Quality review: [docs/REVIEW_AND_GAPS.md](archive/REVIEW_AND_GAPS.md)
 
 ### For Project Managers:
+
 1. Build report: [docs/BUILD_REPORT.md](archive/BUILD_REPORT.md)
 2. Change log: [CHANGELOG.md](CHANGELOG.md)
 
@@ -231,15 +247,15 @@ scripts/
 
 ## 📊 Statistics
 
-| Category | Count |
-|----------|-------|
-| **Total Directories** | 16 |
-| **Source Files** | 17 |
-| **Test Files** | 5 |
-| **Documentation Files** | 6 |
-| **Configuration Files** | 6 |
-| **Migration Files** | 2 |
-| **Script Files** | 3 |
+| Category                | Count  |
+| ----------------------- | ------ |
+| **Total Directories**   | 16     |
+| **Source Files**        | 17     |
+| **Test Files**          | 5      |
+| **Documentation Files** | 6      |
+| **Configuration Files** | 6      |
+| **Migration Files**     | 2      |
+| **Script Files**        | 3      |
 | **Total Lines of Code** | ~4,780 |
 
 ---
@@ -247,6 +263,7 @@ scripts/
 ## ✨ Organization Improvements (v3.1.0)
 
 ### What Changed:
+
 - ✅ Created `docs/` directory for all documentation
 - ✅ Moved 5 markdown files to `docs/`
 - ✅ Added `.gitignore` for clean repository
@@ -257,6 +274,7 @@ scripts/
 - ✅ Created this structure guide
 
 ### Benefits:
+
 - 📁 **Cleaner root directory** (8 files vs 13)
 - 📚 **Centralized documentation** (easy to find)
 - 🔍 **Better discoverability** (clear structure)

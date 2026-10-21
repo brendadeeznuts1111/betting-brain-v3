@@ -1,6 +1,7 @@
 # 🎯 BetTicker Interceptor Browser Extension
 
-Automatically proxies `getBetTicker` API requests through your Cloudflare Worker for real-time analytics.
+Automatically proxies `getBetTicker` API requests through your Cloudflare Worker
+for real-time analytics.
 
 ## 🚀 Installation
 
@@ -29,7 +30,8 @@ Automatically proxies `getBetTicker` API requests through your Cloudflare Worker
 
 ## 🎯 Features
 
-- ✅ **Automatic Proxy**: All `getBetTicker` requests automatically route through worker
+- ✅ **Automatic Proxy**: All `getBetTicker` requests automatically route
+  through worker
 - ✅ **Zero Configuration**: Works immediately after installation
 - ✅ **Toggle On/Off**: Disable when not needed
 - ✅ **Live Counter**: See intercepts in real-time
@@ -46,6 +48,7 @@ betting-brain-v3.nolarose1968-806.workers.dev/cloud/api/Manager/getBetTicker
 ```
 
 Your worker then:
+
 1. Forwards request to fantasy402.com
 2. Stores response in KV
 3. Returns original response (zero impact!)
@@ -67,6 +70,7 @@ Your worker then:
 ## 🎨 Icons
 
 Place these icon files in the `browser-extension` folder:
+
 - `icon16.png` (16x16px)
 - `icon48.png` (48x48px)
 - `icon128.png` (128x128px)
@@ -76,25 +80,30 @@ Or use any emoji-to-PNG converter with 🎯 emoji.
 ## 🔧 Troubleshooting
 
 **Extension not intercepting?**
+
 1. Check extension is enabled in `chrome://extensions/`
 2. Click extension icon and ensure status shows "Active"
 3. Refresh fantasy402.com page
 4. Check browser console for redirect errors
 
 **Counter not updating?**
+
 1. Popup auto-refreshes every 2 seconds
 2. Close and reopen popup to force refresh
 3. Check worker logs: `wrangler tail --env-file=/dev/null`
 
 **Need to disable temporarily?**
+
 - Click extension icon → "Disable Interceptor"
 - Or disable extension in `chrome://extensions/`
 
 ## 📊 Analytics
 
 View captured data at:
+
 - **Dashboard**: http://localhost:8888/dashboard-enhanced.html
-- **Raw Data**: https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/history
+- **Raw Data**:
+  https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/history
 
 ## 🎉 Pro Tips
 
@@ -103,4 +112,3 @@ View captured data at:
 - Export data regularly (CSV/JSON) for offline analysis
 - Configure alerts for high-roller activity
 - Use hourly patterns to identify peak betting times
-

@@ -5,11 +5,13 @@
 
 ## Overview
 
-This guide covers the new analytics testing pattern that makes Analytics Engine calls first-class citizens in Bun tests. No network, no flakes, no waiting.
+This guide covers the new analytics testing pattern that makes Analytics Engine
+calls first-class citizens in Bun tests. No network, no flakes, no waiting.
 
 ## Key Features
 
-- ✅ **AnalyticsEngineStub** - First-class call tracking without network dependencies
+- ✅ **AnalyticsEngineStub** - First-class call tracking without network
+  dependencies
 - ✅ **Auto-flush on failure** - Only spam console on analytics tests
 - ✅ **analytics.calls()** - Clean assertions instead of `toHaveBeenCalledWith`
 - ✅ **CI integration** - Runs `--coverage --randomize` with stub (fast)
@@ -37,14 +39,14 @@ describe('My Analytics Test', () => {
     // Your code that calls analytics
     await mockEnv.ANALYTICS_ENGINE.writeDataPoint({
       blobs: ['event_id', 'line_movement'],
-      doubles: [1.5, 1000]
+      doubles: [1.5, 1000],
     });
 
     // Use analytics.getCalls() instead of toHaveBeenCalledWith
     expect(analytics.callCount()).toBe(1);
     expectAnalyticsCall(analytics, {
       blobs: ['event_id', 'line_movement'],
-      doubles: [1.5, 1000]
+      doubles: [1.5, 1000],
     });
   });
 });
@@ -57,12 +59,12 @@ test('should filter calls by event type', async () => {
   // Make multiple calls
   await mockEnv.ANALYTICS_ENGINE.writeDataPoint({
     blobs: ['nba_123', 'line_movement'],
-    doubles: [1.5, 1000]
+    doubles: [1.5, 1000],
   });
 
   await mockEnv.ANALYTICS_ENGINE.writeDataPoint({
     blobs: ['nfl_456', 'line_movement'],
-    doubles: [2.0, 1500]
+    doubles: [2.0, 1500],
   });
 
   // Filter calls by event ID
@@ -138,13 +140,13 @@ import {
   expectAnalyticsCallCount,
   expectAnalyticsEventType,
   getAnalyticsCallsForEvent,
-  expectAnalyticsDoubles
+  expectAnalyticsDoubles,
 } from '../utils/test-helpers';
 
 // Assert specific call was made
 expectAnalyticsCall(analytics, {
   blobs: ['event_id', 'type'],
-  doubles: [1.5, 1000]
+  doubles: [1.5, 1000],
 });
 
 // Assert call count
@@ -165,49 +167,53 @@ expectAnalyticsDoubles(analytics, [1.5, 1000], 0.001);
 ### From Old Pattern
 
 **Before:**
+
 ```typescript
 // Old way - using vi.fn() mocks
 const mockEnv = {
   ANALYTICS_ENGINE: {
-    writeDataPoint: vi.fn().mockResolvedValue(undefined)
-  }
+    writeDataPoint: vi.fn().mockResolvedValue(undefined),
+  },
 };
 
 // Old assertions
 expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
   expect.objectContaining({
-    blobs: ['event_id', 'type']
+    blobs: ['event_id', 'type'],
   })
 );
 ```
 
 **After:**
+
 ```typescript
 // New way - using analytics stub
 const { env: mockEnv, analytics } = createMockEnv();
 
 // New assertions
 expectAnalyticsCall(analytics, {
-  blobs: ['event_id', 'type']
+  blobs: ['event_id', 'type'],
 });
 ```
 
 ### Updating Existing Tests
 
 1. **Replace mock creation:**
+
    ```typescript
    // Old
    const mockEnv = createMockEnvLegacy();
-   
+
    // New
    const { env: mockEnv, analytics } = createMockEnv();
    ```
 
 2. **Replace assertions:**
+
    ```typescript
    // Old
    expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledTimes(2);
-   
+
    // New
    expect(analytics.callCount()).toBe(2);
    ```
@@ -218,14 +224,14 @@ expectAnalyticsCall(analytics, {
    expect(mockEnv.ANALYTICS_ENGINE.writeDataPoint).toHaveBeenCalledWith(
      expect.objectContaining({
        blobs: ['event_id', 'type'],
-       doubles: [1.5, 1000]
+       doubles: [1.5, 1000],
      })
    );
-   
+
    // New
    expectAnalyticsCall(analytics, {
      blobs: ['event_id', 'type'],
-     doubles: [1.5, 1000]
+     doubles: [1.5, 1000],
    });
    ```
 
@@ -247,6 +253,7 @@ bun run analytics:binding
 ### CI Configuration
 
 The CI now runs tests with:
+
 - `--coverage` - Code coverage reporting
 - `--randomize` - Random test order for better reliability
 - `--concurrent` - Parallel test execution
@@ -254,6 +261,7 @@ The CI now runs tests with:
 ### Nightly Jobs
 
 The nightly job runs:
+
 1. **Dry-run tests** with AnalyticsEngineStub (fast, no network)
 2. **Real binding smoke test** against actual analytics engine
 
@@ -274,7 +282,7 @@ beforeEach(() => {
 // Good - specific about what you're testing
 expectAnalyticsCall(analytics, {
   blobs: ['nba_123', 'line_movement'],
-  doubles: [1.5, 1000]
+  doubles: [1.5, 1000],
 });
 
 // Avoid - too generic
@@ -299,10 +307,10 @@ expect(allCalls.length).toBeGreaterThan(0);
 test('should handle analytics errors gracefully', async () => {
   // Mock analytics to throw error
   const { env: mockEnv, analytics } = createMockEnv();
-  
+
   // Your code should handle the error
   await expect(yourFunction(mockEnv)).resolves.not.toThrow();
-  
+
   // Analytics should still be called (or not, depending on your logic)
   expect(analytics.callCount()).toBe(0); // or whatever your expectation is
 });
@@ -317,7 +325,8 @@ test('should handle analytics errors gracefully', async () => {
    - Check that `analytics` variable is properly destructured
 
 2. **Tests failing after migration**
-   - Update assertions to use `analytics.calls()` instead of `toHaveBeenCalledWith`
+   - Update assertions to use `analytics.calls()` instead of
+     `toHaveBeenCalledWith`
    - Use helper functions for cleaner assertions
 
 3. **Performance issues**
@@ -339,11 +348,15 @@ console.log('Calls by event:', analytics.callsByEventType());
 
 ## Related Files
 
-- **[AnalyticsEngineStub](tests/utils/analytics-engine-stub.ts)** - Core stub implementation
-- **[Test Helpers](tests/utils/test-helpers.ts)** - Helper functions for assertions
-- **[Example Test](tests/unit/analytics-testing-example.test.ts)** - Complete example
+- **[AnalyticsEngineStub](tests/utils/analytics-engine-stub.ts)** - Core stub
+  implementation
+- **[Test Helpers](tests/utils/test-helpers.ts)** - Helper functions for
+  assertions
+- **[Example Test](tests/unit/analytics-testing-example.test.ts)** - Complete
+  example
 - **[Nightly Job](scripts/nightly-analytics-test.ts)** - Nightly testing script
-- **[Binding Test](scripts/test-analytics-binding.ts)** - Real binding smoke test
+- **[Binding Test](scripts/test-analytics-binding.ts)** - Real binding smoke
+  test
 
 ## Status Checklist
 
@@ -353,4 +366,5 @@ console.log('Calls by event:', analytics.callsByEventType());
 - [x] CI still runs --coverage --randomize with stub (fast)
 - [x] Nightly job deploys dry-run + real binding smoke test
 
-**Result:** Analytics Engine calls become first-class citizens in Bun tests – no network, no flakes, no waiting. 🚀
+**Result:** Analytics Engine calls become first-class citizens in Bun tests – no
+network, no flakes, no waiting. 🚀

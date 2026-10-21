@@ -1,20 +1,23 @@
 # 🌳 Agent Hierarchy Enhanced Dashboard
 
-**Version:** 1.0.0
-**Status:** ✅ Production Ready
-**Location:** `dashboards/hierarchy-enhanced.html`
+**Version:** 1.0.0 **Status:** ✅ Production Ready **Location:**
+`dashboards/hierarchy-enhanced.html`
 
 ---
 
 ## Overview
 
-The **Agent Hierarchy Enhanced** dashboard transforms the static nested agent tree into a **searchable, sortable, analytics-rich** component without touching the backend. It provides instant filtering, column sorting, micro-analytics, and keyboard shortcuts for efficient agent management.
+The **Agent Hierarchy Enhanced** dashboard transforms the static nested agent
+tree into a **searchable, sortable, analytics-rich** component without touching
+the backend. It provides instant filtering, column sorting, micro-analytics, and
+keyboard shortcuts for efficient agent management.
 
 ---
 
 ## Key Features
 
 ### 🔍 Type-Ahead Search
+
 - **Performance:** <20ms fuzzy matching
 - **Trigger:** Type in search box or press `/` key
 - **Clear:** Press `Esc` or clear input
@@ -22,6 +25,7 @@ The **Agent Hierarchy Enhanced** dashboard transforms the static nested agent tr
 - **Real-time:** Filters table and tree instantly
 
 ### 📊 Column Sorting
+
 - **Sortable Columns:**
   - Risk Score (default descending)
   - Steam Percentage (ascending/descending toggle)
@@ -30,6 +34,7 @@ The **Agent Hierarchy Enhanced** dashboard transforms the static nested agent tr
 - **Visual Indicator:** ▼ (descending) or ▲ (ascending)
 
 ### 📈 Micro-Analytics Drawer
+
 - **Trigger:** Click "Details" button on any agent row
 - **Content:**
   - Risk Score (0-100)
@@ -41,10 +46,12 @@ The **Agent Hierarchy Enhanced** dashboard transforms the static nested agent tr
 - **Close:** Click "Close" or click outside drawer
 
 ### ⌨️ Keyboard Shortcuts
+
 - **`/`** - Focus search box (from anywhere)
 - **`Esc`** - Clear search and blur input
 
 ### 🎨 Visual Design
+
 - **Style Framework:** Milligram CSS (1.4.1)
 - **Theme:** Clean, minimal, professional
 - **Badges:** Color-coded risk levels
@@ -59,17 +66,19 @@ The **Agent Hierarchy Enhanced** dashboard transforms the static nested agent tr
 ## Architecture
 
 ### Frontend-Only Implementation
+
 No backend changes required. Uses existing Worker endpoints:
 
 ```javascript
 const API_ENDPOINTS = {
-  hierarchy: '/api/f402/agents/tree',           // Agent tree structure
+  hierarchy: '/api/f402/agents/tree', // Agent tree structure
   agentDetail: '/api/f402/agents/:id?expand=true', // Agent analytics
-  microAnalytics: '/api/analytics/micro/:id'    // Micro-analytics (future)
+  microAnalytics: '/api/analytics/micro/:id', // Micro-analytics (future)
 };
 ```
 
 ### Mock Data Fallback
+
 If backend endpoints aren't ready, the dashboard generates realistic mock data:
 
 ```javascript
@@ -80,7 +89,7 @@ function generateMockData(count = 50) {
     level: i > 10 ? 1 : 0,
     risk: Math.random() * 100,
     steam: Math.random() * 100,
-    lastBet: Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000
+    lastBet: Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000,
   }));
 }
 ```
@@ -114,7 +123,9 @@ Open Side Drawer (300ms slide-in animation)
 ## API Integration
 
 ### GET /api/f402/agents/tree
+
 **Response:**
+
 ```json
 {
   "tree": [
@@ -139,7 +150,9 @@ Open Side Drawer (300ms slide-in animation)
 ```
 
 ### GET /api/f402/agents/:id?expand=true
+
 **Response:**
+
 ```json
 {
   "agent": "Alpha-Prime-1",
@@ -162,13 +175,13 @@ Open Side Drawer (300ms slide-in animation)
 
 ## Performance Characteristics
 
-| Metric | Target | Actual |
-|--------|--------|--------|
-| Search Latency | <20ms | ~3ms (50 agents) |
-| Sort Latency | <50ms | ~15ms (50 agents) |
-| Drawer Open | <300ms | 300ms (CSS transition) |
-| Initial Load | <2s | ~1.2s (mock data) |
-| Memory Usage | <50MB | ~35MB (500 agents) |
+| Metric         | Target | Actual                 |
+| -------------- | ------ | ---------------------- |
+| Search Latency | <20ms  | ~3ms (50 agents)       |
+| Sort Latency   | <50ms  | ~15ms (50 agents)      |
+| Drawer Open    | <300ms | 300ms (CSS transition) |
+| Initial Load   | <2s    | ~1.2s (mock data)      |
+| Memory Usage   | <50MB  | ~35MB (500 agents)     |
 
 ---
 
@@ -177,6 +190,7 @@ Open Side Drawer (300ms slide-in animation)
 ### Quick Start
 
 1. **Open Dashboard:**
+
    ```bash
    # Serve dashboard directory
    cd dashboards && python3 -m http.server 8080
@@ -207,13 +221,16 @@ Open Side Drawer (300ms slide-in animation)
 ## Configuration
 
 ### Worker URL Detection
+
 ```javascript
-const WORKER_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:8787'
-  : 'https://betting-brain-v3.nola.workers.dev';
+const WORKER_URL =
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:8787'
+    : 'https://betting-brain-v3.nola.workers.dev';
 ```
 
 ### Auto-Refresh
+
 Currently **disabled** for manual load control. To enable:
 
 ```javascript
@@ -231,11 +248,13 @@ setInterval(async () => {
 ### Adding New Columns
 
 1. **Update Table Header:**
+
    ```html
    <th data-sort="newMetric" title="Click to sort">New Metric ▼</th>
    ```
 
 2. **Update Row Rendering:**
+
    ```javascript
    <td>${r.newMetric.toFixed(1)}</td>
    ```
@@ -264,7 +283,7 @@ import Fuse from 'https://cdn.skypack.dev/fuse.js';
 const fuse = new Fuse(rows, {
   keys: ['agent', 'parent'],
   threshold: 0.3,
-  distance: 100
+  distance: 100,
 });
 
 function fuzzyFilter(query) {
@@ -278,6 +297,7 @@ function fuzzyFilter(query) {
 ## Integration with Mission Control
 
 ### Navigation Link
+
 Added to `floor-control.html` header:
 
 ```html
@@ -288,6 +308,7 @@ Added to `floor-control.html` header:
 ```
 
 ### Unified Analytics
+
 Both dashboards call the same backend endpoints:
 
 ```
@@ -300,26 +321,31 @@ Hierarchy: /api/f402/agents/tree (hierarchical)
 ## Troubleshooting
 
 ### Search Box Not Focusing with `/`
-**Issue:** Keyboard shortcut not working
-**Solution:** Check for conflicting browser extensions or ensure page has focus
+
+**Issue:** Keyboard shortcut not working **Solution:** Check for conflicting
+browser extensions or ensure page has focus
 
 ### Drawer Not Opening
-**Issue:** "Details" button click doesn't open drawer
-**Solution:** Check console for API errors, verify `sideDrawer.open = true` executes
+
+**Issue:** "Details" button click doesn't open drawer **Solution:** Check
+console for API errors, verify `sideDrawer.open = true` executes
 
 ### Mock Data Not Loading
-**Issue:** Empty table after page load
-**Solution:** Check `loadHierarchy()` fallback logic, verify `generateMockData()` is called
+
+**Issue:** Empty table after page load **Solution:** Check `loadHierarchy()`
+fallback logic, verify `generateMockData()` is called
 
 ### Sorting Not Working
-**Issue:** Column click doesn't sort
-**Solution:** Verify `th[data-sort]` attribute exists, check `sortRows()` function
+
+**Issue:** Column click doesn't sort **Solution:** Verify `th[data-sort]`
+attribute exists, check `sortRows()` function
 
 ---
 
 ## Roadmap
 
 ### Phase 1: Current (v1.0.0) ✅
+
 - Type-ahead search
 - Column sorting
 - Analytics drawer
@@ -327,18 +353,21 @@ Hierarchy: /api/f402/agents/tree (hierarchical)
 - Mock data fallback
 
 ### Phase 2: Enhanced Search (v1.1.0) 🚧
+
 - Fuse.js fuzzy matching
 - Multi-field search (agent + parent)
 - Search history
 - Saved searches
 
 ### Phase 3: Advanced Analytics (v1.2.0) 📋
+
 - Time-series charts in drawer
 - Comparative analytics (agent vs. parent)
 - Risk trend indicators
 - Steam correlation heatmaps
 
 ### Phase 4: Real-Time Updates (v1.3.0) 📋
+
 - WebSocket integration
 - Live badge updates
 - Push notifications
@@ -348,9 +377,11 @@ Hierarchy: /api/f402/agents/tree (hierarchical)
 
 ## Related Documentation
 
-- **[Floor Control Dashboard](../dashboards/floor-control.html)** - Main monitoring dashboard
+- **[Floor Control Dashboard](../dashboards/floor-control.html)** - Main
+  monitoring dashboard
 - **[Dashboard README](../dashboards/README.md)** - Complete dashboard guide
-- **[Enhanced Analytics Architecture](ENHANCED_ANALYTICS_ARCHITECTURE.md)** - Backend analytics system
+- **[Enhanced Analytics Architecture](ENHANCED_ANALYTICS_ARCHITECTURE.md)** -
+  Backend analytics system
 - **[MCP Endpoints](MCP_ENDPOINTS.md)** - Analytics API reference
 
 ---
@@ -358,12 +389,14 @@ Hierarchy: /api/f402/agents/tree (hierarchical)
 ## Performance Tips
 
 1. **Limit Rows:** For >500 agents, implement virtual scrolling:
+
    ```javascript
    // Use react-window or similar
    import { FixedSizeList } from 'react-window';
    ```
 
 2. **Debounce Search:** For slower devices:
+
    ```javascript
    const debounce = (fn, delay) => {
      let timer;
@@ -373,10 +406,13 @@ Hierarchy: /api/f402/agents/tree (hierarchical)
      };
    };
 
-   searchBox.addEventListener('input', debounce((e) => {
-     const filtered = fuzzyFilter(e.target.value);
-     renderTable(filtered);
-   }, 150));
+   searchBox.addEventListener(
+     'input',
+     debounce(e => {
+       const filtered = fuzzyFilter(e.target.value);
+       renderTable(filtered);
+     }, 150)
+   );
    ```
 
 3. **Lazy Load Analytics:** Defer non-visible analytics:
@@ -390,6 +426,5 @@ Hierarchy: /api/f402/agents/tree (hierarchical)
 
 ---
 
-**Maintained by:** Betting-Brain Team
-**Last Updated:** 2025-10-08
-**Status:** ✅ Production Ready
+**Maintained by:** Betting-Brain Team **Last Updated:** 2025-10-08 **Status:**
+✅ Production Ready

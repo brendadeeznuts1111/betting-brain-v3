@@ -42,14 +42,14 @@ export async function resolveHost(host: string): Promise<DNSResult> {
 
   try {
     const res = await fetch(url, {
-      headers: { 'Accept': 'application/dns-json' }
+      headers: { Accept: 'application/dns-json' },
     });
 
     if (!res.ok) {
       throw new Error(`DNS lookup failed: ${res.status} ${res.statusText}`);
     }
 
-    const json = await res.json() as DNSResponse;
+    const json = (await res.json()) as DNSResponse;
 
     if (!json.Answer || json.Answer.length === 0) {
       throw new Error(`No A record found for ${host}`);
@@ -76,12 +76,10 @@ export async function resolveHost(host: string): Promise<DNSResult> {
  * @param hosts - Array of hostnames to resolve
  * @returns Map of hostname to DNS result (or error)
  */
-export async function resolveMultiple(
-  hosts: string[]
-): Promise<Map<string, DNSResult | Error>> {
+export async function resolveMultiple(hosts: string[]): Promise<Map<string, DNSResult | Error>> {
   const results = new Map<string, DNSResult | Error>();
 
-  const promises = hosts.map(async (host) => {
+  const promises = hosts.map(async host => {
     try {
       const result = await resolveHost(host);
       results.set(host, result);

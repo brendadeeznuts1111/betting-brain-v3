@@ -137,15 +137,10 @@ async function checkWorkerHealth(url: string, timeout: number = 10000): Promise<
 /**
  * Send Slack notification
  */
-async function sendSlackNotification(
-  webhookUrl: string,
-  result: HealthCheckResult
-): Promise<void> {
+async function sendSlackNotification(webhookUrl: string, result: HealthCheckResult): Promise<void> {
   const emoji = result.success ? '✅' : '❌';
   const color = result.success ? '#36a64f' : '#ff0000';
-  const title = result.success
-    ? 'Health Check Passed'
-    : 'Health Check Failed';
+  const title = result.success ? 'Health Check Passed' : 'Health Check Failed';
 
   const fields: any[] = [
     {
@@ -212,9 +207,7 @@ async function sendSlackNotification(
     });
 
     if (!response.ok) {
-      console.error(
-        `Failed to send Slack notification: HTTP ${response.status}`
-      );
+      console.error(`Failed to send Slack notification: HTTP ${response.status}`);
     }
   } catch (error) {
     console.error('Failed to send Slack notification:', error);

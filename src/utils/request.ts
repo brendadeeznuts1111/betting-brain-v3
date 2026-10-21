@@ -116,9 +116,7 @@ export function createCORSHeaders(origin: string = '*'): Record<string, string> 
  * }
  * ```
  */
-export function createOPTIONSResponse(
-  customHeaders: Record<string, string> = {}
-): Response {
+export function createOPTIONSResponse(customHeaders: Record<string, string> = {}): Response {
   return new Response(null, {
     status: HTTP_STATUS.NO_CONTENT,
     headers: { ...CORS_HEADERS, ...customHeaders },
@@ -310,11 +308,7 @@ export function parseQueryParams(request: Request): URLSearchParams {
  * const limit = getQueryParam(request, 'limit', '20');
  * ```
  */
-export function getQueryParam(
-  request: Request,
-  key: string,
-  defaultValue?: string
-): string | undefined {
+export function getQueryParam(request: Request, key: string, defaultValue?: string): string | undefined {
   const params = parseQueryParams(request);
   return params.get(key) || defaultValue;
 }
@@ -332,11 +326,7 @@ export function getQueryParam(
  * const limit = getQueryParamNumber(request, 'limit', 20);
  * ```
  */
-export function getQueryParamNumber(
-  request: Request,
-  key: string,
-  defaultValue: number
-): number {
+export function getQueryParamNumber(request: Request, key: string, defaultValue: number): number {
   const value = getQueryParam(request, key);
   if (!value) return defaultValue;
 
@@ -359,11 +349,7 @@ export function getQueryParamNumber(
  * const includeHistory = getQueryParamBoolean(request, 'includeHistory', false);
  * ```
  */
-export function getQueryParamBoolean(
-  request: Request,
-  key: string,
-  defaultValue: boolean = false
-): boolean {
+export function getQueryParamBoolean(request: Request, key: string, defaultValue: boolean = false): boolean {
   const value = getQueryParam(request, key);
   if (!value) return defaultValue;
 

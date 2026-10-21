@@ -210,11 +210,7 @@ function initializeRegistry() {
 /**
  * Main entry point for tool execution
  */
-export async function callTool(
-  toolName: string,
-  args: Record<string, any>,
-  env: MCPEnv
-): Promise<MCPToolResult> {
+export async function callTool(toolName: string, args: Record<string, any>, env: MCPEnv): Promise<MCPToolResult> {
   // Initialize registry on first call
   initializeRegistry();
 

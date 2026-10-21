@@ -3,7 +3,7 @@
  * Tests the database trigger handlers for line movement processing
  */
 
-import { describe, test, expect, vi, beforeEach } from "bun:test";
+import { describe, test, expect, vi, beforeEach } from 'bun:test';
 import type { Env } from '../../src/types/api';
 import {
   createMockEnv,
@@ -11,7 +11,7 @@ import {
   resetAllMocks,
   setupDatabaseMock,
   createMockLineMovement,
-  expectAnalyticsCallCount
+  expectAnalyticsCallCount,
 } from '../utils/test-helpers';
 
 // Create mock environment and context
@@ -29,7 +29,7 @@ describe('Database Trigger Scenario Tests', () => {
 
     // Reset all mocks to clean state
     resetAllMocks(mockEnv, mockCtx);
-    
+
     // Reset analytics stub call count
     analytics.reset();
   });
@@ -60,7 +60,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 25000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -70,8 +70,8 @@ describe('Database Trigger Scenario Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 1 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([significantMovement])
-        })
+          all: vi.fn().mockResolvedValue([significantMovement]),
+        }),
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -92,7 +92,7 @@ describe('Database Trigger Scenario Tests', () => {
           vb: 10000,
           va: 12000,
           ts: new Date(Date.now() - 30000).toISOString(), // 30 seconds ago
-          ing: new Date(Date.now() - 30000).toISOString()
+          ing: new Date(Date.now() - 30000).toISOString(),
         },
         {
           eid: 'nba_123',
@@ -102,8 +102,8 @@ describe('Database Trigger Scenario Tests', () => {
           vb: 12000,
           va: 15000,
           ts: new Date().toISOString(), // Now
-          ing: new Date().toISOString()
-        }
+          ing: new Date().toISOString(),
+        },
       ];
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -113,8 +113,8 @@ describe('Database Trigger Scenario Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 2 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(rapidMovements)
-        })
+          all: vi.fn().mockResolvedValue(rapidMovements),
+        }),
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -150,7 +150,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: -1000, // Invalid negative volume
         va: 15000,
         ts: 'invalid-date', // Invalid ts
-        ing: 'invalid-date' // Invalid ing
+        ing: 'invalid-date', // Invalid ing
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -169,7 +169,7 @@ describe('Database Trigger Scenario Tests', () => {
           vb: 10000,
           va: 15000,
           ts: new Date().toISOString(),
-          ing: new Date().toISOString()
+          ing: new Date().toISOString(),
         },
         {
           eid: 'nba_456',
@@ -179,8 +179,8 @@ describe('Database Trigger Scenario Tests', () => {
           vb: 8000,
           va: 12000,
           ts: new Date().toISOString(),
-          ing: new Date().toISOString()
-        }
+          ing: new Date().toISOString(),
+        },
       ];
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -190,16 +190,14 @@ describe('Database Trigger Scenario Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 2 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(concurrentMovements)
-        })
+          all: vi.fn().mockResolvedValue(concurrentMovements),
+        }),
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
 
       // Process both movements concurrently
-      const promises = concurrentMovements.map(movement =>
-        onLineMove(mockEnv, movement)
-      );
+      const promises = concurrentMovements.map(movement => onLineMove(mockEnv, movement));
 
       await Promise.all(promises);
 
@@ -222,7 +220,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const startTime = Date.now();
@@ -245,11 +243,11 @@ describe('Database Trigger Scenario Tests', () => {
         eid: `nba_${i}`,
         mt: 'SPREAD',
         lb: 5.5,
-        la: 5.5 + (i * 0.1),
+        la: 5.5 + i * 0.1,
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       }));
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -259,16 +257,14 @@ describe('Database Trigger Scenario Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 100 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue(highFrequencyMovements)
-        })
+          all: vi.fn().mockResolvedValue(highFrequencyMovements),
+        }),
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
 
       // Process all movements
-      const promises = highFrequencyMovements.map(movement =>
-        onLineMove(mockEnv, movement)
-      );
+      const promises = highFrequencyMovements.map(movement => onLineMove(mockEnv, movement));
 
       await Promise.all(promises);
 
@@ -285,14 +281,14 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       // Mock cost cap guard to return limit exceeded
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         first: vi.fn().mockResolvedValue({ count: 0 }),
         run: vi.fn().mockResolvedValue({ success: true }),
-        all: vi.fn().mockResolvedValue({ results: [] })
+        all: vi.fn().mockResolvedValue({ results: [] }),
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -314,7 +310,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -332,7 +328,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -350,7 +346,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -368,7 +364,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: -1000, // Negative volume
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -388,7 +384,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -398,8 +394,8 @@ describe('Database Trigger Scenario Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 1 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([mockLineMovement])
-        })
+          all: vi.fn().mockResolvedValue([mockLineMovement]),
+        }),
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');
@@ -410,7 +406,7 @@ describe('Database Trigger Scenario Tests', () => {
       expect(mockEnv.STEAM_WEBHOOK.send).toHaveBeenCalledWith(
         expect.objectContaining({
           eid: 'nba_123',
-          mt: 'SPREAD'
+          mt: 'SPREAD',
         })
       );
     });
@@ -424,7 +420,7 @@ describe('Database Trigger Scenario Tests', () => {
         vb: 10000,
         va: 15000,
         ts: new Date().toISOString(),
-        ing: new Date().toISOString()
+        ing: new Date().toISOString(),
       };
 
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
@@ -434,8 +430,8 @@ describe('Database Trigger Scenario Tests', () => {
         bind: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue({ count: 1 }),
           run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue([mockLineMovement])
-        })
+          all: vi.fn().mockResolvedValue([mockLineMovement]),
+        }),
       } as any);
 
       const { onLineMove } = await import('../../src/triggers/onLineMove');

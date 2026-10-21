@@ -2,7 +2,8 @@
 
 ## Overview
 
-Added support for the `getPerformancePlayer` Fantasy402 operation to capture and process player performance data from the Fantasy402.com API.
+Added support for the `getPerformancePlayer` Fantasy402 operation to capture and
+process player performance data from the Fantasy402.com API.
 
 ## Implementation Details
 
@@ -13,12 +14,14 @@ Added support for the `getPerformancePlayer` Fantasy402 operation to capture and
 Added two new tables for player performance tracking:
 
 #### `fantasy402_player_performance`
+
 - Stores comprehensive player performance metrics
 - Includes financial data, wager counts, and period information
 - Indexed for performance on key fields
 - Tracks risk, win, commission, and net income
 
 #### `fantasy402_player_sport_performance`
+
 - Stores sport-specific performance breakdown
 - Links to main performance record via foreign key
 - Tracks risk, win, and wager count per sport
@@ -29,6 +32,7 @@ Added two new tables for player performance tracking:
 **File:** `src/utils/fantasy402-parser.ts`
 
 Added `parsePlayerPerformance()` function that:
+
 - Extracts player performance data from Fantasy402 API response
 - Handles financial data conversion (cents to dollars)
 - Processes sport breakdown arrays
@@ -40,6 +44,7 @@ Added `parsePlayerPerformance()` function that:
 **File:** `src/api/fantasy402-ingest.ts`
 
 Added `processPlayerPerformance()` function that:
+
 - Processes player performance data from intercepted requests
 - Stores data in both KV cache and D1 database
 - Handles sport-specific breakdown records
@@ -49,6 +54,7 @@ Added `processPlayerPerformance()` function that:
 ### 4. Operation Routing
 
 Updated the switch statement to handle `getPerformancePlayer` operations:
+
 ```typescript
 case 'getPerformancePlayer':
     await processPlayerPerformance(packet, parsedData, env, requestId);
@@ -67,6 +73,7 @@ case 'getPerformancePlayer':
 ## Supported Data Fields
 
 ### Performance Metrics
+
 - Customer ID, Agent ID
 - Period Start/End dates
 - Period Type, Number, Name
@@ -75,6 +82,7 @@ case 'getPerformancePlayer':
 - Free play usage and winnings
 
 ### Sport Breakdown
+
 - Sport name
 - Risk amount per sport
 - Win amount per sport
@@ -82,6 +90,7 @@ case 'getPerformancePlayer':
 - Period tracking
 
 ### Financial Data
+
 - All amounts converted from cents to dollars
 - Risk and win tracking
 - Commission calculations
@@ -90,11 +99,14 @@ case 'getPerformancePlayer':
 ## Testing
 
 ### Test Scripts
+
 - `scripts/test-player-performance.ts` - Full integration test
 - `scripts/test-player-performance-parser.ts` - Parser validation
 
 ### Test Data
+
 Uses realistic Fantasy402 response structure with:
+
 - Customer ID: `14801_6`
 - Agent ID: `BILLY666`
 - Period: Week 1 (2025-01-01 to 2025-01-07)
@@ -106,10 +118,11 @@ Uses realistic Fantasy402 response structure with:
 The system will automatically process `getPerformancePlayer` requests when:
 
 1. Browser extension intercepts the request:
+
 ```javascript
-fetch("https://fantasy402.com/cloud/api/Manager/getPerformancePlayer", {
-  "method": "POST",
-  "body": "acc=14801_6&period=0&operation=getPerformancePlayer&RRO=1&agentID=BILLY666&agentOwner=BILLY666&agentSite=1"
+fetch('https://fantasy402.com/cloud/api/Manager/getPerformancePlayer', {
+  method: 'POST',
+  body: 'acc=14801_6&period=0&operation=getPerformancePlayer&RRO=1&agentID=BILLY666&agentOwner=BILLY666&agentSite=1',
 });
 ```
 
@@ -120,43 +133,48 @@ fetch("https://fantasy402.com/cloud/api/Manager/getPerformancePlayer", {
 ## Database Queries
 
 ### Get Player Performance
+
 ```sql
-SELECT * FROM fantasy402_player_performance 
-WHERE customer_id = '14801_6' 
+SELECT * FROM fantasy402_player_performance
+WHERE customer_id = '14801_6'
 ORDER BY captured_at DESC;
 ```
 
 ### Get Sport Breakdown
+
 ```sql
-SELECT sport, risk, win, wager_count 
-FROM fantasy402_player_sport_performance 
-WHERE customer_id = '14801_6' 
+SELECT sport, risk, win, wager_count
+FROM fantasy402_player_sport_performance
+WHERE customer_id = '14801_6'
 AND period_start = '2025-01-01';
 ```
 
 ### Get Performance by Period
+
 ```sql
-SELECT customer_id, period_start, period_end, 
+SELECT customer_id, period_start, period_end,
        total_risk, total_win, net_income, total_wagers
-FROM fantasy402_player_performance 
-WHERE period_start >= '2025-01-01' 
+FROM fantasy402_player_performance
+WHERE period_start >= '2025-01-01'
 AND period_end <= '2025-01-07';
 ```
 
 ### Get Top Performing Players
+
 ```sql
-SELECT customer_id, SUM(total_risk) as total_risk, 
+SELECT customer_id, SUM(total_risk) as total_risk,
        SUM(total_win) as total_win, SUM(net_income) as net_income
-FROM fantasy402_player_performance 
+FROM fantasy402_player_performance
 WHERE captured_at >= date('now', '-30 days')
-GROUP BY customer_id 
-ORDER BY total_risk DESC 
+GROUP BY customer_id
+ORDER BY total_risk DESC
 LIMIT 10;
 ```
 
 ## Monitoring
 
 The implementation includes comprehensive logging:
+
 - Player performance processing
 - Financial metrics (risk, win, net income)
 - Sport breakdown analysis
@@ -183,6 +201,7 @@ All data is also sent to the Analytics Engine for monitoring and alerting.
 ## Future Enhancements
 
 Potential improvements:
+
 - Player performance analytics and trends
 - Risk assessment algorithms
 - Automated alerts for high-risk players
@@ -194,6 +213,7 @@ Potential improvements:
 ## Related Operations
 
 This implementation works alongside:
+
 - `getInfoPlayer` - Player information
 - `getAgentPerformance` - Agent performance
 - `getAccountInfoOwner` - Account information

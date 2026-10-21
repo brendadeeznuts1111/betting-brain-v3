@@ -3,7 +3,7 @@
  * Alert threshold: < 4% or > 8%
  */
 
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect, beforeEach } from 'bun:test';
 import { getHoldPercentage } from '../../src/tools/intelligence/getHoldPercentage';
 
 describe('Hold Percentage Calculations', () => {
@@ -18,27 +18,31 @@ describe('Hold Percentage Calculations', () => {
         prepare: (query: string) => ({
           bind: (...params: any[]) => ({
             first: async () => null,
-            all: async () => [{
+            all: async () => [
+              {
+                vb: 5000,
+                va: 5500,
+                lb: -110,
+                la: -115,
+              },
+            ],
+            run: async () => ({ success: true }),
+          }),
+          first: async () => null,
+          all: async () => [
+            {
               vb: 5000,
               va: 5500,
               lb: -110,
-              la: -115
-            }],
-            run: async () => ({ success: true })
-          }),
-          first: async () => null,
-          all: async () => [{
-            vb: 5000,
-            va: 5500,
-            lb: -110,
-            la: -115
-          }],
-          run: async () => ({ success: true })
-        })
+              la: -115,
+            },
+          ],
+          run: async () => ({ success: true }),
+        }),
       },
       ANALYTICS_ENGINE: {
-        writeDataPoint: async () => {}
-      }
+        writeDataPoint: async () => {},
+      },
     };
 
     mockRequest = new Request('https://test.com/getHoldPercentage?eid=nba_123&mt=SPREAD');
@@ -57,22 +61,26 @@ describe('Hold Percentage Calculations', () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,
-        all: async () => [{
+        all: async () => [
+          {
+            vb: 10000,
+            va: 10200,
+            lb: -105,
+            la: -105,
+          },
+        ],
+        run: async () => ({ success: true }),
+      }),
+      first: async () => null,
+      all: async () => [
+        {
           vb: 10000,
           va: 10200,
           lb: -105,
-          la: -105
-        }],
-        run: async () => ({ success: true })
-      }),
-      first: async () => null,
-      all: async () => [{
-        vb: 10000,
-        va: 10200,
-        lb: -105,
-        la: -105
-      }],
-      run: async () => ({ success: true })
+          la: -105,
+        },
+      ],
+      run: async () => ({ success: true }),
     });
 
     const response = await getHoldPercentage(mockRequest, mockEnv);
@@ -85,22 +93,26 @@ describe('Hold Percentage Calculations', () => {
     mockEnv.ANALYTICS.prepare = () => ({
       bind: () => ({
         first: async () => null,
-        all: async () => [{
+        all: async () => [
+          {
+            vb: 8000,
+            va: 9000,
+            lb: -120,
+            la: -125,
+          },
+        ],
+        run: async () => ({ success: true }),
+      }),
+      first: async () => null,
+      all: async () => [
+        {
           vb: 8000,
           va: 9000,
           lb: -120,
-          la: -125
-        }],
-        run: async () => ({ success: true })
-      }),
-      first: async () => null,
-      all: async () => [{
-        vb: 8000,
-        va: 9000,
-        lb: -120,
-        la: -125
-      }],
-      run: async () => ({ success: true })
+          la: -125,
+        },
+      ],
+      run: async () => ({ success: true }),
     });
 
     const response = await getHoldPercentage(mockRequest, mockEnv);
@@ -114,11 +126,11 @@ describe('Hold Percentage Calculations', () => {
       bind: () => ({
         first: async () => null,
         all: async () => [],
-        run: async () => ({ success: true })
+        run: async () => ({ success: true }),
       }),
       first: async () => null,
       all: async () => [],
-      run: async () => ({ success: true })
+      run: async () => ({ success: true }),
     });
 
     const response = await getHoldPercentage(mockRequest, mockEnv);

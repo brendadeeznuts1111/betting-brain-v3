@@ -21,11 +21,16 @@ interface HealthCheckResponse {
 /**
  * Check database connectivity
  */
-async function checkDatabase(db: D1Database, name: string): Promise<{ name: string; status: 'connected' | 'error'; tables?: number }> {
+async function checkDatabase(
+  db: D1Database,
+  name: string
+): Promise<{ name: string; status: 'connected' | 'error'; tables?: number }> {
   try {
     // Try a simple query
-    const result = await db.prepare('SELECT COUNT(*) as count FROM sqlite_master WHERE type = "table"').first<{ count: number }>();
-    
+    const result = await db
+      .prepare('SELECT COUNT(*) as count FROM sqlite_master WHERE type = "table"')
+      .first<{ count: number }>();
+
     return {
       name,
       status: 'connected',
@@ -53,7 +58,7 @@ async function checkKimiAPI(apiKey: string): Promise<'connected' | 'disconnected
     const response = await fetch('https://api.moonshot.cn/v1/models', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
     });
 
@@ -128,4 +133,3 @@ export async function handleHealthCheck(request: Request, env: Env): Promise<Res
     });
   }
 }
-

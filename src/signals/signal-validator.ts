@@ -26,8 +26,8 @@ export class SignalValidator {
   private readonly defaultRules: ValidationRules = {
     maxHedgeAmount: 1000, // $1,000 max per hedge
     maxDailyHedgeVolume: 10000, // $10,000 max daily
-    minModelConfidence: 0.70, // 70% R² minimum
-    maxUncertaintyScore: 0.30, // 30% uncertainty maximum
+    minModelConfidence: 0.7, // 70% R² minimum
+    maxUncertaintyScore: 0.3, // 30% uncertainty maximum
     minRiskLevel: 25, // Only hedge if risk ≥ 25/100
     allowedMarkets: ['moneyline', 'spread', 'total'],
   };
@@ -49,9 +49,7 @@ export class SignalValidator {
 
     // Rule 1: Check hedge amount
     if (signal.hedge_amount > this.rules.maxHedgeAmount) {
-      errors.push(
-        `Hedge amount $${signal.hedge_amount.toFixed(2)} exceeds max $${this.rules.maxHedgeAmount}`
-      );
+      errors.push(`Hedge amount $${signal.hedge_amount.toFixed(2)} exceeds max $${this.rules.maxHedgeAmount}`);
     }
 
     // Rule 2: Check daily volume limit
@@ -77,23 +75,17 @@ export class SignalValidator {
 
     // Rule 5: Check market whitelist
     if (!this.rules.allowedMarkets.includes(signal.hedge_market)) {
-      errors.push(
-        `Market "${signal.hedge_market}" not in whitelist: [${this.rules.allowedMarkets.join(', ')}]`
-      );
+      errors.push(`Market "${signal.hedge_market}" not in whitelist: [${this.rules.allowedMarkets.join(', ')}]`);
     }
 
     // Rule 6: Check odds validity
     if (signal.hedge_odds <= 1.0 || signal.hedge_odds > 100) {
-      errors.push(
-        `Invalid hedge odds: ${signal.hedge_odds} (must be between 1.0 and 100)`
-      );
+      errors.push(`Invalid hedge odds: ${signal.hedge_odds} (must be between 1.0 and 100)`);
     }
 
     // Rule 7: Check severity vs action consistency
     if (signal.severity === 'NONE' && signal.recommended_action !== 'no_action') {
-      warnings.push(
-        `Inconsistent signal: severity NONE but action is "${signal.recommended_action}"`
-      );
+      warnings.push(`Inconsistent signal: severity NONE but action is "${signal.recommended_action}"`);
     }
 
     // Rule 8: Check confidence interval sanity
@@ -104,9 +96,7 @@ export class SignalValidator {
 
     // Rule 9: Warn on critical severity
     if (signal.severity === 'CRITICAL') {
-      warnings.push(
-        `CRITICAL severity signal - manual review recommended before execution`
-      );
+      warnings.push(`CRITICAL severity signal - manual review recommended before execution`);
     }
 
     return {
@@ -176,7 +166,7 @@ export class SignalValidator {
    * Get only valid signals from batch
    */
   filterValid(signals: HedgeSignal[]): HedgeSignal[] {
-    return signals.filter((signal) => this.isValid(signal));
+    return signals.filter(signal => this.isValid(signal));
   }
 
   /**
@@ -216,8 +206,6 @@ export class SignalValidator {
 /**
  * Factory function to create validator with default rules
  */
-export function createSignalValidator(
-  customRules?: Partial<ValidationRules>
-): SignalValidator {
+export function createSignalValidator(customRules?: Partial<ValidationRules>): SignalValidator {
   return new SignalValidator(customRules as ValidationRules);
 }

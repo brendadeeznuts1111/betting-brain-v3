@@ -53,7 +53,7 @@ async function importDashboard(
     dashboard: dashboard,
     folderId: folderId,
     overwrite: true,
-    message: 'Auto-imported from CI/CD'
+    message: 'Auto-imported from CI/CD',
   };
 
   try {
@@ -61,9 +61,9 @@ async function importDashboard(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

@@ -1,14 +1,14 @@
 # Developer UX System
-*"Make the codebase feel like it's reading your mind before you finish typing."*
 
-**Version:** 1.0.0
-**Status:** Production Ready
-**Performance:** < 20ms search, < 30s full environment
-**Last Updated:** 2025-10-08
+_"Make the codebase feel like it's reading your mind before you finish typing."_
+
+**Version:** 1.0.0 **Status:** Production Ready **Performance:** < 20ms search,
+< 30s full environment **Last Updated:** 2025-10-08
 
 ---
 
 ## Table of Contents
+
 1. [Quick Start](#quick-start)
 2. [Single-Command Development](#single-command-development)
 3. [Ripgrep-Powered Live Index](#ripgrep-powered-live-index)
@@ -24,6 +24,7 @@
 ## Quick Start
 
 ### Installation
+
 ```bash
 # Clone and setup in 30 seconds
 git clone [repo-url]
@@ -35,6 +36,7 @@ just dev
 ```
 
 **That's it!** You now have:
+
 - 🚀 Wrangler dev server (http://localhost:8787)
 - 📊 Dashboard (http://localhost:8080)
 - 📚 Live docs (http://localhost:3001)
@@ -45,7 +47,9 @@ just dev
 ## Single-Command Development
 
 ### `just` Runner
-**Why just?** Already in devDependencies, zero global installs, instant commands.
+
+**Why just?** Already in devDependencies, zero global installs, instant
+commands.
 
 ```bash
 # Core Commands
@@ -60,16 +64,16 @@ just deploy       # Full production deployment
 
 ### Full Command Reference
 
-| Command | Purpose | Time |
-|---------|---------|------|
-| `just dev` | Start full dev environment | ~5s |
-| `just search <query>` | Fuzzy code search | <20ms |
-| `just fmt` | Format + organize + index | ~2s |
-| `just docs` | Build + serve docs | ~3s |
-| `just dataflow` | Generate import graph | ~1s |
-| `just test` | Run test suite | Variable |
-| `just ci` | Full CI pipeline | ~30s |
-| `just deploy` | Production deployment | Variable |
+| Command               | Purpose                    | Time     |
+| --------------------- | -------------------------- | -------- |
+| `just dev`            | Start full dev environment | ~5s      |
+| `just search <query>` | Fuzzy code search          | <20ms    |
+| `just fmt`            | Format + organize + index  | ~2s      |
+| `just docs`           | Build + serve docs         | ~3s      |
+| `just dataflow`       | Generate import graph      | ~1s      |
+| `just test`           | Run test suite             | Variable |
+| `just ci`             | Full CI pipeline           | ~30s     |
+| `just deploy`         | Production deployment      | Variable |
 
 ---
 
@@ -86,7 +90,8 @@ just deploy       # Full production deployment
 3. Write .rgindex.json + .rgmeta.json (< 1 MB for whole repo)
 ```
 
-**Dashboard search (`/api/search?q=steam`)** returns in **< 20ms** because it's a single KV lookup, not a disk scan.
+**Dashboard search (`/api/search?q=steam`)** returns in **< 20ms** because it's
+a single KV lookup, not a disk scan.
 
 ### `.rgkeywords` File
 
@@ -112,11 +117,13 @@ getSharpScore
 getCLV
 ```
 
-**Add new terms in the same PR that adds the code** → keeps index tiny but relevant.
+**Add new terms in the same PR that adds the code** → keeps index tiny but
+relevant.
 
 ### Index Format
 
 **`.rgindex.json`** structure:
+
 ```json
 [
   {
@@ -141,6 +148,7 @@ getCLV
 ```
 
 **`.rgmeta.json`** metadata:
+
 ```json
 {
   "version": "1.0.0",
@@ -168,6 +176,7 @@ wait
 ```
 
 **Outcome:**
+
 - ✅ Consistent 2-space, no-semi style
 - ✅ Imports grouped: external → internal → relative, alphabetically
 - ✅ Function doc-blocks auto-sorted to top
@@ -176,6 +185,7 @@ wait
 ### Import Organization
 
 **Before:**
+
 ```typescript
 import { z } from 'zod';
 import { getBettingExposure } from '../tools/intelligence/getBettingExposure';
@@ -184,6 +194,7 @@ import { performance } from 'perf_hooks';
 ```
 
 **After:**
+
 ```typescript
 import { performance } from 'perf_hooks';
 import { z } from 'zod';
@@ -211,33 +222,31 @@ import { getBettingExposure } from '../tools/intelligence/getBettingExposure';
 ```
 
 **On `just docs`:**
+
 1. Run typedoc → JSON
 2. markdown-magic injects signature + 5-line example
 3. Serve via vitepress dev on :3001 with hot-reload
 
 **Result:**
-```markdown
+
+````markdown
 <!-- AUTO-GENERATED-START src/analytics/steam.ts#detectSteam -->
 
 ### `detectSteam()`
 
-Steam detection with 3-sigma threshold. Returns CRITICAL/HIGH/MEDIUM/LOW severity.
+Steam detection with 3-sigma threshold. Returns CRITICAL/HIGH/MEDIUM/LOW
+severity.
 
-**Signature:**
-\```typescript
-export function detectSteam(bets: Bet[], threshold: number = 2.0): SteamEvent[]
-\```
+**Signature:** \```typescript export function detectSteam(bets: Bet[],
+threshold: number = 2.0): SteamEvent[] \```
 
-**Example:**
-\```typescript
-const steamEvents = detectSteam(recentBets, 2.5);
-console.log(`Found ${steamEvents.length} steam moves`);
-\```
+**Example:** \```typescript const steamEvents = detectSteam(recentBets, 2.5);
+console.log(`Found ${steamEvents.length} steam moves`); \```
 
 **Source:** [`src/analytics/steam.ts:42`](../src/analytics/steam.ts#L42)
 
 <!-- AUTO-GENERATED-END -->
-```
+````
 
 **No "update readme" tickets ever again** → Docs always green vs. HEAD.
 
@@ -255,15 +264,17 @@ console.log(`Found ${steamEvents.length} steam moves`);
 // src/docs/dataflow.ts
 export function toMermaid(): string {
   const edges = parseImports(); // {from:'ingest.ts', to:'steam.ts'}
-  return `flowchart LR\n${edges.map(e=>`${e.from}-->${e.to}`).join('\n')}`;
+  return `flowchart LR\n${edges.map(e => `${e.from}-->${e.to}`).join('\n')}`;
 }
 ```
 
 **Dashboard renders live** with mermaid.js:
+
 - **Hotspots** (nodes with ≥3 incoming edges) highlighted in red
 - **Click node** → opens VS Code link (`vscode://file/...`)
 
 **Generate:**
+
 ```bash
 just dataflow
 # ✅ View at: http://localhost:8080/floor-control.html#dataflow
@@ -271,6 +282,7 @@ just dataflow
 ```
 
 **Example output:**
+
 ```
 📊 Import Graph Statistics:
    Total modules: 142
@@ -290,13 +302,16 @@ just dataflow
 ### Features
 
 #### 1. Fuzzy Finder
+
 **Fuse.js** on the index → typo-tolerant results:
+
 ```bash
 just search "sterm"  # Finds "steam" functions
 just search "agengt" # Finds "agent_graph" references
 ```
 
 #### 2. Symbol Type Icons
+
 - ⚙ `function`
 - ◆ `class`
 - ◇ `interface`
@@ -304,6 +319,7 @@ just search "agengt" # Finds "agent_graph" references
 - ▲ `type`
 
 #### 3. Line Preview
+
 **2 lines above + below the match**, syntax-highlighted (shiki):
 
 ```
@@ -317,10 +333,13 @@ just search "agengt" # Finds "agent_graph" references
 ```
 
 #### 4. Keyboard Shortcut
+
 **Dashboard:** `Ctrl+K Ctrl+S` focuses search box (htmx keydown)
 
 #### 5. VS Code Integration
+
 **Click-to-open** with `vscode://` protocol:
+
 ```
 vscode://file/[pwd]/src/analytics/steam.ts:42:8
 ```
@@ -374,6 +393,7 @@ jobs:
 ### Pre-Commit Hook
 
 **`.lefthook.yml`:**
+
 ```yaml
 pre-commit:
   parallel: true
@@ -391,6 +411,7 @@ pre-commit:
 ### Settings
 
 **`.vscode/settings.json`:**
+
 ```json
 {
   "search.exclude": {
@@ -414,6 +435,7 @@ pre-commit:
 ### Tasks
 
 **`.vscode/tasks.json`:**
+
 ```json
 {
   "version": "2.0.0",
@@ -448,14 +470,14 @@ pre-commit:
 
 ## Performance Benchmarks
 
-| Operation | Target | Actual | Method |
-|-----------|--------|--------|--------|
-| **Search query** | < 50ms | 18ms | Fuse.js on pre-built index |
-| **Index rebuild** | < 5s | 2.3s | Parallel ripgrep + AST |
-| **Format pipeline** | < 10s | 4.1s | Parallel prettier + imports + index |
-| **Docs generation** | < 5s | 3.2s | TypeDoc + markdown-magic |
-| **Dataflow graph** | < 2s | 1.1s | AST import parser |
-| **Full dev startup** | < 30s | 22s | Wrangler + dashboard + docs |
+| Operation            | Target | Actual | Method                              |
+| -------------------- | ------ | ------ | ----------------------------------- |
+| **Search query**     | < 50ms | 18ms   | Fuse.js on pre-built index          |
+| **Index rebuild**    | < 5s   | 2.3s   | Parallel ripgrep + AST              |
+| **Format pipeline**  | < 10s  | 4.1s   | Parallel prettier + imports + index |
+| **Docs generation**  | < 5s   | 3.2s   | TypeDoc + markdown-magic            |
+| **Dataflow graph**   | < 2s   | 1.1s   | AST import parser                   |
+| **Full dev startup** | < 30s  | 22s    | Wrangler + dashboard + docs         |
 
 ---
 
@@ -464,12 +486,14 @@ pre-commit:
 ### Issue: Search index not found
 
 **Symptom:**
+
 ```
 ❌ Index not found: .rgindex.json
    Run: just search-index
 ```
 
 **Fix:**
+
 ```bash
 just search-index
 ```
@@ -477,11 +501,13 @@ just search-index
 ### Issue: Docs out of sync
 
 **Symptom:**
+
 ```
 ❌ Docs out of date. Run 'just docs' locally
 ```
 
 **Fix:**
+
 ```bash
 just docs
 git add docs/api/AUTO_GENERATED_API.md
@@ -493,6 +519,7 @@ git commit -m "docs: Update auto-generated API reference"
 **Cause:** Keywords not in `.rgkeywords`
 
 **Fix:**
+
 ```bash
 # Add keyword to .rgkeywords
 echo "myNewFunction" >> .rgkeywords
@@ -509,6 +536,7 @@ just search myNewFunction
 **Cause:** Circular dependencies
 
 **Fix:**
+
 1. Check import order manually
 2. Add `// @ts-ignore` if needed
 3. Refactor to remove circular deps
@@ -518,12 +546,14 @@ just search myNewFunction
 ## Roadmap
 
 ### Q4 2025
+
 - [ ] WebSocket-based live search (type-as-you-search)
 - [ ] Tree-sitter syntax highlighting in search results
 - [ ] AI-powered semantic search (embeddings)
 - [ ] Data flow graph with interactive filters
 
 ### Q1 2026
+
 - [ ] LSP integration for instant symbol lookup
 - [ ] Code lens with inline usage count
 - [ ] Automated refactoring suggestions
@@ -542,6 +572,5 @@ just search myNewFunction
 
 ---
 
-*Last Updated: 2025-10-08*
-*Betting-Brain v3 – Developer UX System*
-*"Make the codebase feel like it's reading your mind before you finish typing."*
+_Last Updated: 2025-10-08_ _Betting-Brain v3 – Developer UX System_ _"Make the
+codebase feel like it's reading your mind before you finish typing."_

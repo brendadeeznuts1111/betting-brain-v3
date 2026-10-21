@@ -17,23 +17,25 @@
 
 ✅ All required tables exist and have data:
 
-| Table | Status | Row Count | Purpose |
-|-------|--------|-----------|---------|
-| `bet_history` | ✅ Active | 28 rows | Historical betting data |
-| `exposure_tracking` | ✅ Active | - | Real-time exposure |
-| `hold_tracking` | ✅ Active | - | Hold % tracking |
-| `line_movements` | ✅ Active | 10 rows | Line change data |
-| `sharp_indicators` | ✅ Active | - | Customer profiling |
-| `d1_migrations` | ✅ System | - | Migration tracking |
-| `schema_migrations` | ✅ System | - | Schema versioning |
+| Table               | Status    | Row Count | Purpose                 |
+| ------------------- | --------- | --------- | ----------------------- |
+| `bet_history`       | ✅ Active | 28 rows   | Historical betting data |
+| `exposure_tracking` | ✅ Active | -         | Real-time exposure      |
+| `hold_tracking`     | ✅ Active | -         | Hold % tracking         |
+| `line_movements`    | ✅ Active | 10 rows   | Line change data        |
+| `sharp_indicators`  | ✅ Active | -         | Customer profiling      |
+| `d1_migrations`     | ✅ System | -         | Migration tracking      |
+| `schema_migrations` | ✅ System | -         | Schema versioning       |
 
 ### Sample Data Verification
 
 **line_movements:** 10 records ✅
+
 - Contains test data from migration `0004_test_data.sql`
 - Includes demo events and line changes
 
 **bet_history:** 28 records ✅
+
 - Contains 28 historical bets from test data
 - 14 customers with betting activity
 - Used by MCP tools for analytics
@@ -46,12 +48,12 @@
 
 From `wrangler.toml`:
 
-| Cron Expression | Frequency | Handler | Purpose |
-|----------------|-----------|---------|---------|
-| `0 * * * *` | Hourly | `sharpCalc.ts` | Sharp score calculation |
-| `* * * * *` | Every minute | `exposureCalc.ts` | Exposure tracking |
-| `*/1 * * * *` | Every minute | MCP cache | MCP cache warming |
-| `0 3 * * *` | Daily 3 AM UTC | MCP cleanup | Old data cleanup |
+| Cron Expression | Frequency      | Handler           | Purpose                 |
+| --------------- | -------------- | ----------------- | ----------------------- |
+| `0 * * * *`     | Hourly         | `sharpCalc.ts`    | Sharp score calculation |
+| `* * * * *`     | Every minute   | `exposureCalc.ts` | Exposure tracking       |
+| `*/1 * * * *`   | Every minute   | MCP cache         | MCP cache warming       |
+| `0 3 * * *`     | Daily 3 AM UTC | MCP cleanup       | Old data cleanup        |
 
 ---
 
@@ -63,6 +65,7 @@ From `wrangler.toml`:
 **Handler:** `handleSharpCalculation()`
 
 **Process:**
+
 ```typescript
 1. Check cost cap guard
 2. Get active customers (last 24h)
@@ -74,6 +77,7 @@ From `wrangler.toml`:
 ```
 
 **Sharp Score Algorithm:**
+
 ```
 CLV Score (0-50):     min(max(clv / 1000, 0), 50)
 Win Rate Score (0-30): min(max(winRate - 50, 0), 30)
@@ -83,6 +87,7 @@ Total: 0-100
 ```
 
 **Database Operations:**
+
 - **Read:** `sharp_indicators` (get active customers)
 - **Write:** `sharp_indicators` (update scores)
 - **Cleanup:** Delete records >30 days old
@@ -99,6 +104,7 @@ Total: 0-100
 **Handler:** `handleExposureCalculation()`
 
 **Process:**
+
 ```typescript
 1. Check cost cap guard
 2. Get active events (last 5 minutes)
@@ -110,6 +116,7 @@ Total: 0-100
 ```
 
 **Exposure Metrics:**
+
 ```
 Total Risk:    Sum of all risk amounts
 Max Exposure:  Maximum net exposure
@@ -118,11 +125,14 @@ Percentage:    (net / risk) × 100
 ```
 
 **Alert Thresholds:**
+
 - **Max Amount:** $50,000
 - **Max Percentage:** 60%
 
 **Database Operations:**
-- **Read:** `line_movements` (get active events), `exposure_tracking` (current exposure)
+
+- **Read:** `line_movements` (get active events), `exposure_tracking` (current
+  exposure)
 - **Write:** `exposure_tracking` (update exposure)
 
 ---
@@ -135,9 +145,9 @@ Percentage:    (net / risk) × 100
 async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
   const requestId = Date.now().toString(36);
   const cron = event.cron;
-  
+
   console.log(`[${requestId}] ⏰ Scheduled event triggered: ${cron}`);
-  
+
   try {
     // Route to appropriate handler
     switch (cron) {
@@ -156,6 +166,7 @@ async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise
 ```
 
 **Features:**
+
 - ✅ Request ID tracking
 - ✅ Error handling
 - ✅ Route by cron expression
@@ -168,6 +179,7 @@ async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise
 ### Local Testing
 
 **Direct handler testing:**
+
 ```bash
 # Test sharp calculation
 bun run scripts/test-handlers-direct.ts
@@ -177,6 +189,7 @@ bun run scripts/test-handlers-direct.ts
 ```
 
 **Wrangler local dev:**
+
 ```bash
 # Start dev server
 bun run dev
@@ -190,6 +203,7 @@ bun run dev
 ### Production Testing
 
 **Deploy and monitor:**
+
 ```bash
 # Deploy to production
 wrangler deploy --env production
@@ -208,12 +222,12 @@ wrangler tail --env production
 
 ### Queue Configuration (4 queues)
 
-| Queue | Binding | Max Batch | Max Timeout | Handler |
-|-------|---------|-----------|-------------|---------|
-| `line-ingress` | `LINE_INGRESS` | 10 | 5s | `lineIngress.ts` |
-| `steam-webhook` | `STEAM_WEBHOOK` | 5 | 10s | `steamWebhook.ts` |
-| `steam-processor` | `STEAM_QUEUE` | 10 | 2s | MCP handler |
-| `exposure-calculator` | `EXPOSURE_QUEUE` | 50 | 10s | MCP handler |
+| Queue                 | Binding          | Max Batch | Max Timeout | Handler           |
+| --------------------- | ---------------- | --------- | ----------- | ----------------- |
+| `line-ingress`        | `LINE_INGRESS`   | 10        | 5s          | `lineIngress.ts`  |
+| `steam-webhook`       | `STEAM_WEBHOOK`  | 5         | 10s         | `steamWebhook.ts` |
+| `steam-processor`     | `STEAM_QUEUE`    | 10        | 2s          | MCP handler       |
+| `exposure-calculator` | `EXPOSURE_QUEUE` | 50        | 10s         | MCP handler       |
 
 ---
 
@@ -224,12 +238,12 @@ wrangler tail --env production
 ```typescript
 async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext): Promise<void> {
   const requestId = Date.now().toString(36);
-  
+
   console.log(`[${requestId}] 📬 Queue batch received`, {
     queue: batch.queue,
     messages: batch.messages.length
   });
-  
+
   try {
     switch (batch.queue) {
       case 'line-ingress':
@@ -254,24 +268,28 @@ async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext): Promise<void>
 ### Test Queries
 
 **Check line movements:**
+
 ```bash
 wrangler d1 execute betting-analytics --local \
   --command "SELECT * FROM line_movements LIMIT 5;"
 ```
 
 **Check bet history:**
+
 ```bash
 wrangler d1 execute betting-analytics --local \
   --command "SELECT * FROM bet_history ORDER BY time DESC LIMIT 10;"
 ```
 
 **Check sharp indicators:**
+
 ```bash
 wrangler d1 execute betting-analytics --local \
   --command "SELECT cid, clv, wr FROM sharp_indicators LIMIT 10;"
 ```
 
 **Check exposure tracking:**
+
 ```bash
 wrangler d1 execute betting-analytics --local \
   --command "SELECT * FROM exposure_tracking ORDER BY upd DESC LIMIT 10;"
@@ -286,16 +304,19 @@ wrangler d1 execute betting-analytics --local \
 **Issue:** Cloudflare cron minimum is 1 minute, not 30 seconds
 
 **Current:**
+
 ```toml
 "* * * * *"  # Every minute
 ```
 
 **Desired:**
+
 ```
 Every 30 seconds
 ```
 
 **Workaround:**
+
 - Use Durable Alarms for sub-minute scheduling
 - Or trigger via queue messages
 
@@ -304,8 +325,12 @@ Every 30 seconds
 ### 2. Cost Cap Impact
 
 **Both scheduled jobs check cost cap:**
+
 ```typescript
-const costCheck = await costCapGuard.checkRequest(new Request('https://internal'), env);
+const costCheck = await costCapGuard.checkRequest(
+  new Request('https://internal'),
+  env
+);
 if (!costCheck.allowed) {
   console.warn('Job blocked by cost cap:', costCheck.reason);
   return;
@@ -331,25 +356,25 @@ if (!costCheck.allowed) {
 
 ### Sharp Calculation (Hourly)
 
-| Metric | Expected Value |
-|--------|---------------|
-| Customers/batch | 100 |
-| Max customers | 1,000 |
-| Processing time | 30-45s |
-| CPU time | <50ms per batch |
-| Database writes | 1 per customer |
+| Metric          | Expected Value  |
+| --------------- | --------------- |
+| Customers/batch | 100             |
+| Max customers   | 1,000           |
+| Processing time | 30-45s          |
+| CPU time        | <50ms per batch |
+| Database writes | 1 per customer  |
 
 ---
 
 ### Exposure Calculation (Every Minute)
 
-| Metric | Expected Value |
-|--------|---------------|
-| Events/run | 1-50 |
-| Processing time | 5-15s |
-| CPU time | <50ms |
-| Database writes | 2-4 per event |
-| Alert checks | All events |
+| Metric          | Expected Value |
+| --------------- | -------------- |
+| Events/run      | 1-50           |
+| Processing time | 5-15s          |
+| CPU time        | <50ms          |
+| Database writes | 2-4 per event  |
+| Alert checks    | All events     |
 
 ---
 
@@ -387,7 +412,8 @@ if (!costCheck.allowed) {
 - **[Testing Status](./TESTING_STATUS.md)** - Test health
 - **[MCP Endpoints](./MCP_ENDPOINTS.md)** - MCP API reference
 - **[Test Audit Report](./TEST_AUDIT_REPORT.md)** - Test pattern audit
-- **[Cursor Rules - Cloudflare Workers](.cursor/rules/cloudflare-workers.mdc)** - Worker patterns
+- **[Cursor Rules - Cloudflare Workers](.cursor/rules/cloudflare-workers.mdc)** -
+  Worker patterns
 
 ---
 
@@ -395,5 +421,4 @@ if (!costCheck.allowed) {
 **Last Verified:** 2025-10-07  
 **Quality Score:** 100/100 🎉
 
-*All systems operational and ready for deployment!*
-
+_All systems operational and ready for deployment!_

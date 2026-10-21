@@ -26,8 +26,7 @@ for (const file of files) {
   let replacements = 0;
 
   // Check if file already imports CORS_HEADERS
-  const hasImport = content.includes("from '../utils/request'") ||
-                    content.includes("from '../../utils/request'");
+  const hasImport = content.includes("from '../utils/request'") || content.includes("from '../../utils/request'");
 
   // Pattern 1: const corsHeaders = { 'Access-Control-Allow-Origin': '*', ... }
   const pattern = /const corsHeaders = \{[^}]*'Access-Control-Allow-Origin'[^}]*\};?/g;
@@ -42,9 +41,10 @@ for (const file of files) {
       const lastImportIndex = content.lastIndexOf('import ');
       const nextNewlineIndex = content.indexOf('\n', lastImportIndex);
 
-      modified = content.slice(0, nextNewlineIndex + 1) +
-                `import { CORS_HEADERS } from '${importPath}';\n` +
-                content.slice(nextNewlineIndex + 1);
+      modified =
+        content.slice(0, nextNewlineIndex + 1) +
+        `import { CORS_HEADERS } from '${importPath}';\n` +
+        content.slice(nextNewlineIndex + 1);
     }
 
     // Replace all corsHeaders definitions with CORS_HEADERS

@@ -3,7 +3,7 @@
  * Tests error handling in API interceptor, KV storage, and origin fetch
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import {
   handleBetTickerInterception,
   getBetTickerHistory,
@@ -65,11 +65,11 @@ describe('BetTicker Sniffer Error Paths', () => {
     });
 
     test('should handle origin timeout', async () => {
-      global.fetch = vi.fn().mockImplementation(() =>
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Origin timeout after 3s')), 3000)
-        )
-      );
+      global.fetch = vi
+        .fn()
+        .mockImplementation(
+          () => new Promise((_, reject) => setTimeout(() => reject(new Error('Origin timeout after 3s')), 3000))
+        );
 
       const request = new Request('https://test.com/cloud/api/Manager/getBetTicker', {
         method: 'POST',
@@ -84,9 +84,7 @@ describe('BetTicker Sniffer Error Paths', () => {
     }, 5000); // 5s timeout for this test
 
     test('should handle origin returning 4xx error', async () => {
-      global.fetch = vi.fn().mockResolvedValue(
-        new Response('Unauthorized', { status: 401 })
-      );
+      global.fetch = vi.fn().mockResolvedValue(new Response('Unauthorized', { status: 401 }));
 
       const request = new Request('https://test.com/cloud/api/Manager/getBetTicker', {
         method: 'POST',
@@ -204,9 +202,7 @@ describe('BetTicker Sniffer Error Paths', () => {
     });
 
     test('should handle KV storage failure', async () => {
-      (mockEnv.BET_TICKER_RAW.put as any).mockRejectedValue(
-        new Error('KV write failed')
-      );
+      (mockEnv.BET_TICKER_RAW.put as any).mockRejectedValue(new Error('KV write failed'));
 
       const request = new Request('https://test.com/cloud/api/Manager/getBetTicker', {
         method: 'POST',
@@ -349,16 +345,16 @@ describe('BetTicker Sniffer Error Paths', () => {
     });
 
     test('should handle concurrent interceptions', async () => {
-      const requests = Array.from({ length: 5 }, () =>
-        new Request('https://test.com/cloud/api/Manager/getBetTicker', {
-          method: 'POST',
-          headers: { 'X-Original-Cookies': 'session=abc123' },
-        })
+      const requests = Array.from(
+        { length: 5 },
+        () =>
+          new Request('https://test.com/cloud/api/Manager/getBetTicker', {
+            method: 'POST',
+            headers: { 'X-Original-Cookies': 'session=abc123' },
+          })
       );
 
-      const responses = await Promise.all(
-        requests.map(req => handleBetTickerInterception(req, mockEnv, mockContext))
-      );
+      const responses = await Promise.all(requests.map(req => handleBetTickerInterception(req, mockEnv, mockContext)));
 
       expect(responses).toHaveLength(5);
       responses.forEach(res => {
@@ -377,13 +373,9 @@ describe('BetTicker Sniffer Error Paths', () => {
     });
 
     test('should handle KV list error', async () => {
-      (mockEnv.BET_TICKER_RAW.list as any).mockRejectedValue(
-        new Error('KV list failed')
-      );
+      (mockEnv.BET_TICKER_RAW.list as any).mockRejectedValue(new Error('KV list failed'));
 
-      await expect(getBetTickerHistory(mockEnv, { limit: 100 })).rejects.toThrow(
-        'KV list failed'
-      );
+      await expect(getBetTickerHistory(mockEnv, { limit: 100 })).rejects.toThrow('KV list failed');
     });
 
     test('should handle invalid metadata in KV keys', async () => {
@@ -529,9 +521,7 @@ describe('BetTicker Sniffer Error Paths', () => {
     });
 
     test('should handle KV get error', async () => {
-      (mockEnv.BET_TICKER_RAW.getWithMetadata as any).mockRejectedValue(
-        new Error('KV get failed')
-      );
+      (mockEnv.BET_TICKER_RAW.getWithMetadata as any).mockRejectedValue(new Error('KV get failed'));
 
       const result = await getBetTickerResponse(mockEnv, 'test-key');
 
@@ -559,9 +549,7 @@ describe('BetTicker Sniffer Error Paths', () => {
 
   describe('KV Storage Edge Cases', () => {
     test('should handle KV quota exceeded', async () => {
-      (mockEnv.BET_TICKER_RAW.put as any).mockRejectedValue(
-        new Error('Quota exceeded')
-      );
+      (mockEnv.BET_TICKER_RAW.put as any).mockRejectedValue(new Error('Quota exceeded'));
 
       const request = new Request('https://test.com/cloud/api/Manager/getBetTicker', {
         method: 'POST',
@@ -575,10 +563,8 @@ describe('BetTicker Sniffer Error Paths', () => {
     });
 
     test('should handle KV write timeout', async () => {
-      (mockEnv.BET_TICKER_RAW.put as any).mockImplementation(() =>
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Write timeout')), 100)
-        )
+      (mockEnv.BET_TICKER_RAW.put as any).mockImplementation(
+        () => new Promise((_, reject) => setTimeout(() => reject(new Error('Write timeout')), 100))
       );
 
       const request = new Request('https://test.com/cloud/api/Manager/getBetTicker', {

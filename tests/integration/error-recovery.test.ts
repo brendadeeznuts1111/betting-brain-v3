@@ -3,7 +3,7 @@
  * Tests cascading failure scenarios and error recovery across multiple components
  */
 
-import { describe, test, expect, beforeEach, vi } from "bun:test";
+import { describe, test, expect, beforeEach, vi } from 'bun:test';
 import { handleLineIngress } from '../../src/queues/lineIngress';
 import { handleSteamWebhook } from '../../src/queues/steamWebhook';
 import { getBettingExposure } from '../../src/tools/intelligence/getBettingExposure';
@@ -52,14 +52,8 @@ describe('Integration Error Recovery Tests', () => {
       const envWithoutDb = {} as Env;
 
       const results = await Promise.allSettled([
-        getBettingExposure(
-          new Request('https://test.com/api/betting-exposure?eid=event-1'),
-          envWithoutDb
-        ),
-        getSharpScore(
-          new Request('https://test.com/api/sharp-score?cid=customer-1'),
-          envWithoutDb
-        ),
+        getBettingExposure(new Request('https://test.com/api/betting-exposure?eid=event-1'), envWithoutDb),
+        getSharpScore(new Request('https://test.com/api/sharp-score?cid=customer-1'), envWithoutDb),
         getSteamMoves({ agentID: 'test' }, envWithoutDb),
       ]);
 
@@ -104,10 +98,7 @@ describe('Integration Error Recovery Tests', () => {
       });
 
       const requests = Array.from({ length: 5 }, () =>
-        getSharpScore(
-          new Request('https://test.com/api/sharp-score?cid=customer-1'),
-          mockEnv
-        )
+        getSharpScore(new Request('https://test.com/api/sharp-score?cid=customer-1'), mockEnv)
       );
 
       const results = await Promise.allSettled(requests);
@@ -126,21 +117,15 @@ describe('Integration Error Recovery Tests', () => {
     test('should handle database timeout cascading to multiple operations', async () => {
       (mockEnv.ANALYTICS.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          first: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          ),
-          all: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          ),
-          run: vi.fn().mockImplementation(() =>
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 100)
-            )
-          ),
+          first: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
+          all: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
+          run: vi
+            .fn()
+            .mockImplementation(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))),
         }),
       });
 
@@ -158,9 +143,7 @@ describe('Integration Error Recovery Tests', () => {
         timestamp: Date.now(),
       } as Message;
 
-      await expect(handleLineIngress(message, mockEnv, mockContext)).rejects.toThrow(
-        'Timeout'
-      );
+      await expect(handleLineIngress(message, mockEnv, mockContext)).rejects.toThrow('Timeout');
     });
   });
 
@@ -183,10 +166,7 @@ describe('Integration Error Recovery Tests', () => {
 
       // Make many rapid requests to trigger rate limit
       const requests = Array.from({ length: 50 }, () =>
-        getBettingExposure(
-          new Request('https://test.com/api/betting-exposure?eid=event-1'),
-          mockEnv
-        )
+        getBettingExposure(new Request('https://test.com/api/betting-exposure?eid=event-1'), mockEnv)
       );
 
       const results = await Promise.all(requests);
@@ -215,17 +195,13 @@ describe('Integration Error Recovery Tests', () => {
         requestsPerSecond: 10,
         burstLimit: 20,
         windowSize: 1000,
-        keyGenerator: (req) => req.headers.get('cf-connecting-ip') || 'unknown',
+        keyGenerator: req => req.headers.get('cf-connecting-ip') || 'unknown',
       });
 
       // Make concurrent requests that might cause race conditions
-      const requests = Array.from({ length: 30 }, () =>
-        new Request('https://test.com/api/test')
-      );
+      const requests = Array.from({ length: 30 }, () => new Request('https://test.com/api/test'));
 
-      const results = await Promise.all(
-        requests.map(req => rateLimitGuard.checkRateLimit(req))
-      );
+      const results = await Promise.all(requests.map(req => rateLimitGuard.checkRateLimit(req)));
 
       expect(results).toHaveLength(30);
       results.forEach(result => {
@@ -301,9 +277,7 @@ describe('Integration Error Recovery Tests', () => {
         };
       });
 
-      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(
-        new Error('Analytics Engine unavailable')
-      );
+      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(new Error('Analytics Engine unavailable'));
 
       const message = {
         body: JSON.stringify({
@@ -332,13 +306,9 @@ describe('Integration Error Recovery Tests', () => {
         first: vi.fn().mockResolvedValue({ size: 1000, rows: 100 }),
       });
 
-      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(
-        new Error('Analytics error')
-      );
+      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(new Error('Analytics error'));
 
-      (mockEnv.STEAM_WEBHOOK.send as any).mockRejectedValue(
-        new Error('Queue error')
-      );
+      (mockEnv.STEAM_WEBHOOK.send as any).mockRejectedValue(new Error('Queue error'));
 
       const message = {
         body: JSON.stringify({
@@ -399,24 +369,23 @@ describe('Integration Error Recovery Tests', () => {
         'getSharpScore',
       ];
 
-      const requests = handlers.map(toolName =>
-        new Request('https://test.com/mcp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'tools/call',
-            params: { name: toolName, arguments: {} },
-            id: Math.random(),
-          }),
-        })
+      const requests = handlers.map(
+        toolName =>
+          new Request('https://test.com/mcp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'tools/call',
+              params: { name: toolName, arguments: {} },
+              id: Math.random(),
+            }),
+          })
       );
 
-      const responses = await Promise.all(
-        requests.map(req => handleMCPRequest(req, mockEnv))
-      );
+      const responses = await Promise.all(requests.map(req => handleMCPRequest(req, mockEnv)));
 
-      responses.forEach(async (response) => {
+      responses.forEach(async response => {
         const data = await response.json();
         expect(data.result).toBeDefined();
         expect(data.result.isError).toBe(true);
@@ -461,9 +430,7 @@ describe('Integration Error Recovery Tests', () => {
       } as Message;
 
       // Should throw to trigger retry
-      await expect(handleLineIngress(message, mockEnv, mockContext)).rejects.toThrow(
-        'connection timeout'
-      );
+      await expect(handleLineIngress(message, mockEnv, mockContext)).rejects.toThrow('connection timeout');
     });
 
     test('should handle partial system degradation', async () => {
@@ -479,9 +446,7 @@ describe('Integration Error Recovery Tests', () => {
         first: vi.fn().mockResolvedValue({ size: 1000, rows: 100 }),
       });
 
-      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(
-        new Error('Analytics Engine degraded')
-      );
+      (mockEnv.ANALYTICS_ENGINE.writeDataPoint as any).mockRejectedValue(new Error('Analytics Engine degraded'));
 
       // Intelligence tools should still work
       const exposureResponse = await getBettingExposure(
@@ -535,10 +500,7 @@ describe('Integration Error Recovery Tests', () => {
       });
 
       const requests = Array.from({ length: 5 }, () =>
-        getSharpScore(
-          new Request('https://test.com/api/sharp-score?cid=customer-1'),
-          mockEnv
-        )
+        getSharpScore(new Request('https://test.com/api/sharp-score?cid=customer-1'), mockEnv)
       );
 
       const results = await Promise.allSettled(requests);

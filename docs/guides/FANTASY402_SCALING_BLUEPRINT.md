@@ -8,7 +8,9 @@
 
 ## 🎯 The Proven Pattern
 
-You've successfully implemented the `getAgentPerformance` endpoint using a robust, scalable architecture. This document shows you how to systematically replicate this pattern for every Fantasy402 endpoint you want to capture.
+You've successfully implemented the `getAgentPerformance` endpoint using a
+robust, scalable architecture. This document shows you how to systematically
+replicate this pattern for every Fantasy402 endpoint you want to capture.
 
 ---
 
@@ -17,12 +19,14 @@ You've successfully implemented the `getAgentPerformance` endpoint using a robus
 ### Step 1: Identify the Endpoint 🔍
 
 **What to capture:**
+
 - URL path (e.g., `/cloud/api/Manager/getAgentPerformance`)
 - HTTP method (usually POST)
 - Request body format (form-urlencoded)
 - Response structure (JSON)
 
 **How:**
+
 ```javascript
 // In browser console (F12) on fantasy402.com
 // Monitor Network tab → XHR/Fetch
@@ -36,6 +40,7 @@ You've successfully implemented the `getAgentPerformance` endpoint using a robus
 **Location:** `src/utils/fantasy402-parser.ts`
 
 **Template:**
+
 ```typescript
 /**
  * Parse [ENDPOINT_NAME] response
@@ -66,27 +71,32 @@ export function parse[EndpointName](response: any): {
 ```
 
 **Then add to switch statement:**
+
 ```typescript
-export function extractOperationData(operation: string, responseBody: any): any {
-    switch (operation) {
-        // ... existing cases
-        
-        case '[operationName]':
-            return {
-                [dataKey]: parse[EndpointName](responseBody),
-                raw: responseBody
-            };
-        
-        default:
-            return {
-                normalized: normalizeObject(responseBody),
-                raw: responseBody
-            };
-    }
+export function extractOperationData(
+  operation: string,
+  responseBody: any
+): any {
+  switch (operation) {
+    // ... existing cases
+
+    case '[operationName]':
+      return {
+        [dataKey]: parse[EndpointName](responseBody),
+        raw: responseBody,
+      };
+
+    default:
+      return {
+        normalized: normalizeObject(responseBody),
+        raw: responseBody,
+      };
+  }
 }
 ```
 
 **Best Practices:**
+
 - ✅ Use `cleanString()` for all strings
 - ✅ Divide by 100 for cents → dollars
 - ✅ Convert Y/N to boolean
@@ -100,42 +110,43 @@ export function extractOperationData(operation: string, responseBody: any): any 
 **Location:** `migrations/NNNN_[endpoint_name].sql`
 
 **Template:**
+
 ```sql
 -- Migration: [Endpoint Name] Data Storage
 -- Created: YYYY-MM-DD
 
 CREATE TABLE IF NOT EXISTS fantasy402_[table_name] (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  
+
   -- Identification
   agent_id TEXT,
   customer_id TEXT,
-  
+
   -- Core data fields
   field1 TEXT,
   field2 REAL,
   field3 INTEGER,
-  
+
   -- Metadata
   captured_at TEXT NOT NULL,
-  
+
   -- Raw data
   raw_response_json TEXT,
-  
+
   -- Constraints
   CONSTRAINT unique_record UNIQUE (agent_id, captured_at)
 );
 
 -- Indexes for common queries
-CREATE INDEX IF NOT EXISTS idx_[table]_agent_id 
+CREATE INDEX IF NOT EXISTS idx_[table]_agent_id
   ON fantasy402_[table_name](agent_id);
 
-CREATE INDEX IF NOT EXISTS idx_[table]_captured_at 
+CREATE INDEX IF NOT EXISTS idx_[table]_captured_at
   ON fantasy402_[table_name](captured_at DESC);
 
 -- Optional: Create view for analytics
 CREATE VIEW IF NOT EXISTS v_[table]_summary AS
-SELECT 
+SELECT
   agent_id,
   COUNT(*) as total_records,
   MIN(captured_at) as first_captured,
@@ -145,11 +156,13 @@ GROUP BY agent_id;
 ```
 
 **Apply migration:**
+
 ```bash
 wrangler d1 migrations apply fantasy42-raw-feed --remote
 ```
 
 **Best Practices:**
+
 - ✅ Always include `captured_at` for time-series tracking
 - ✅ Store `raw_response_json` for future analysis
 - ✅ Add indexes on frequently queried fields
@@ -163,6 +176,7 @@ wrangler d1 migrations apply fantasy42-raw-feed --remote
 **Location:** `src/api/fantasy402-ingest.ts`
 
 **Template:**
+
 ```typescript
 // Process [endpoint name]
 async function process[EndpointName](
@@ -217,18 +231,20 @@ async function process[EndpointName](
 ```
 
 **Then add to switch statement:**
+
 ```typescript
 // Extract and process specific operation types
 switch (packet.operation) {
-    // ... existing cases
-    
-    case '[operationName]':
-        await process[EndpointName](packet, parsedData, env, requestId);
-        break;
+  // ... existing cases
+
+  case '[operationName]':
+    await process[EndpointName](packet, parsedData, env, requestId);
+    break;
 }
 ```
 
 **Best Practices:**
+
 - ✅ Log meaningful metrics for monitoring
 - ✅ Decide on KV caching strategy (TTL)
 - ✅ Handle database errors gracefully
@@ -242,6 +258,7 @@ switch (packet.operation) {
 **Location:** `src/api/fantasy402-[endpoint]-api.ts`
 
 **Template:**
+
 ```typescript
 import { Errors, createErrorResponse } from '../utils/error-handler';
 import type { Env } from '../types/cloudflare';
@@ -291,6 +308,7 @@ export async function get[EndpointName](
 ```
 
 **Add route in `src/api/routes.ts`:**
+
 ```typescript
 // 1. Import
 import { get[EndpointName] } from './fantasy402-[endpoint]-api';
@@ -307,6 +325,7 @@ case '/fantasy402/[endpoint]':
 Here's a prioritized list of endpoints to map:
 
 ### High Priority (Financial Data) 💰
+
 - ✅ `getAgentPerformance` - **DONE** ✨
 - ⬜ `getWeeklyFigureByAgent` - Weekly P&L
 - ⬜ `getDailyFigureByAgent` - Daily P&L
@@ -315,6 +334,7 @@ Here's a prioritized list of endpoints to map:
 - ⬜ `getPendingWagers` - Open bets
 
 ### Medium Priority (Customer Data) 👥
+
 - ✅ `getAccountInfoOwner` - **DONE** ✨
 - ✅ `getAuthorizations` - **DONE** ✨
 - ⬜ `getCustomerActivity` - Activity log
@@ -323,6 +343,7 @@ Here's a prioritized list of endpoints to map:
 - ⬜ `getCustomerWagerHistory` - Bet history
 
 ### Medium Priority (Wager Data) 🎲
+
 - ⬜ `getWagersByDate` - Wagers by date range
 - ⬜ `getWagerDetails` - Individual bet details
 - ⬜ `getOpenWagers` - Active bets
@@ -330,6 +351,7 @@ Here's a prioritized list of endpoints to map:
 - ⬜ `getCancelledWagers` - Voided bets
 
 ### Low Priority (System Data) ⚙️
+
 - ✅ `getSportsType` - **DONE** ✨
 - ⬜ `getMarkets` - Available markets
 - ⬜ `getLimits` - Bet limits
@@ -337,6 +359,7 @@ Here's a prioritized list of endpoints to map:
 - ⬜ `getLogs` - Activity logs
 
 ### Nice to Have (Reporting) 📊
+
 - ⬜ `getAgentRiskReport` - Risk exposure
 - ⬜ `getSportPerformance` - Sport-specific P&L
 - ⬜ `getMarketPerformance` - Market-specific P&L
@@ -348,20 +371,24 @@ Here's a prioritized list of endpoints to map:
 ## 📊 Tracking Progress
 
 **Create a checklist:**
+
 ```markdown
 ## Fantasy402 Integration Progress
 
 ### Completed ✅
+
 - [x] getAgentPerformance
 - [x] getAccountInfoOwner
 - [x] getAuthorizations
 - [x] getSportsType
 
 ### In Progress 🚧
+
 - [ ] getWeeklyFigureByAgent
 - [ ] getDailyFigureByAgent
 
 ### Planned 📋
+
 - [ ] getCustomerList
 - [ ] getWagersByDate
 ```
@@ -371,7 +398,9 @@ Here's a prioritized list of endpoints to map:
 ## 🔄 Automation Opportunities
 
 ### 1. Auto-Discovery
+
 Create a script to log all API calls:
+
 ```javascript
 // In browser extension
 window.fantasy402Endpoints = new Set();
@@ -379,30 +408,34 @@ window.fantasy402Endpoints = new Set();
 // Override fetch
 const originalFetch = window.fetch;
 window.fetch = async (...args) => {
-    const url = args[0];
-    if (url.includes('fantasy402.com/cloud/api')) {
-        fantasy402Endpoints.add(url);
-        console.log('[Discovery]', url);
-    }
-    return originalFetch.apply(this, args);
+  const url = args[0];
+  if (url.includes('fantasy402.com/cloud/api')) {
+    fantasy402Endpoints.add(url);
+    console.log('[Discovery]', url);
+  }
+  return originalFetch.apply(this, args);
 };
 ```
 
 ### 2. Schema Generator
+
 Parse response JSON to auto-generate table schemas:
+
 ```typescript
 function generateSchema(response: any, tableName: string) {
-    const columns = Object.entries(response).map(([key, value]) => {
-        const type = typeof value === 'number' ? 'REAL' : 'TEXT';
-        return `${key} ${type}`;
-    });
-    
-    return `CREATE TABLE fantasy402_${tableName} (${columns.join(', ')})`;
+  const columns = Object.entries(response).map(([key, value]) => {
+    const type = typeof value === 'number' ? 'REAL' : 'TEXT';
+    return `${key} ${type}`;
+  });
+
+  return `CREATE TABLE fantasy402_${tableName} (${columns.join(', ')})`;
 }
 ```
 
 ### 3. Parser Generator
+
 Use AI to generate parsers from sample responses:
+
 ```
 "Generate a Fantasy402 parser for this response: [paste JSON]"
 ```
@@ -411,31 +444,34 @@ Use AI to generate parsers from sample responses:
 
 ## 🚨 Handling API Changes
 
-As you noted, the browser extension creates a dependency on Fantasy402's API. Here's how to handle changes:
+As you noted, the browser extension creates a dependency on Fantasy402's API.
+Here's how to handle changes:
 
 ### Version Detection
+
 ```typescript
 // In parser
 export function detectAPIVersion(response: any): string {
-    // Check for version indicators
-    if (response.version) return response.version;
-    if (response.API_VERSION) return response.API_VERSION;
-    
-    // Detect by structure
-    if ('new_field' in response) return 'v2';
-    return 'v1';
+  // Check for version indicators
+  if (response.version) return response.version;
+  if (response.API_VERSION) return response.API_VERSION;
+
+  // Detect by structure
+  if ('new_field' in response) return 'v2';
+  return 'v1';
 }
 
 // In handler
 const version = detectAPIVersion(response);
 if (version === 'v2') {
-    return parseV2(response);
+  return parseV2(response);
 } else {
-    return parseV1(response);
+  return parseV1(response);
 }
 ```
 
 ### Change Monitoring
+
 ```typescript
 // Store response structure hash
 import { hash } from 'bun';
@@ -444,28 +480,29 @@ const responseHash = await hash(JSON.stringify(response));
 
 // Compare against known structure
 if (responseHash !== KNOWN_HASH) {
-    console.warn(`[${requestId}] ⚠️ API structure changed for ${operation}`);
-    // Send alert
-    await env.ALERT_QUEUE.send({
-        type: 'api_change',
-        operation,
-        oldHash: KNOWN_HASH,
-        newHash: responseHash
-    });
+  console.warn(`[${requestId}] ⚠️ API structure changed for ${operation}`);
+  // Send alert
+  await env.ALERT_QUEUE.send({
+    type: 'api_change',
+    operation,
+    oldHash: KNOWN_HASH,
+    newHash: responseHash,
+  });
 }
 ```
 
 ### Graceful Degradation
+
 ```typescript
 try {
-    return parseAgentPerformance(response);
+  return parseAgentPerformance(response);
 } catch (error) {
-    console.error('Parser failed, storing raw data');
-    return {
-        raw: response,
-        parseError: error.message,
-        fallback: true
-    };
+  console.error('Parser failed, storing raw data');
+  return {
+    raw: response,
+    parseError: error.message,
+    fallback: true,
+  };
 }
 ```
 
@@ -474,18 +511,21 @@ try {
 ## 💡 Pro Tips
 
 ### 1. Start Small, Iterate Fast
+
 - Pick one endpoint
 - Implement end-to-end
 - Test thoroughly
 - Then scale to next endpoint
 
 ### 2. Reuse Code Patterns
+
 - Copy successful parser
 - Copy successful handler
 - Copy successful migration
 - Adapt for new data
 
 ### 3. Test with Real Data
+
 ```bash
 # Watch logs while using Fantasy402
 wrangler tail --env=""
@@ -495,20 +535,21 @@ wrangler d1 execute fantasy42-raw-feed --remote --command="SELECT * FROM fantasy
 ```
 
 ### 4. Document As You Go
+
 ```markdown
 ## Endpoint: getWeeklyFigureByAgent
 
-**Captures:** Weekly profit/loss by agent
-**Frequency:** Updates daily
-**Critical Fields:** week_number, total_risk, total_win
-**Notes:** Amounts in cents, divide by 100
+**Captures:** Weekly profit/loss by agent **Frequency:** Updates daily
+**Critical Fields:** week_number, total_risk, total_win **Notes:** Amounts in
+cents, divide by 100
 ```
 
 ### 5. Use Database Views
+
 ```sql
 -- Simplify complex queries
 CREATE VIEW v_agent_summary AS
-SELECT 
+SELECT
     agent_id,
     COUNT(*) as total_reports,
     SUM(net_income) as lifetime_net
@@ -534,30 +575,36 @@ Track these metrics to measure progress:
 
 Use `getAgentPerformance` as your template:
 
-1. **Parser:** [`src/utils/fantasy402-parser.ts`](../../src/utils/fantasy402-parser.ts#L316-L412)
-2. **Handler:** [`src/api/fantasy402-ingest.ts`](../../src/api/fantasy402-ingest.ts#L484-L606)
-3. **Migration:** [`migrations/0006_agent_performance.sql`](../../migrations/0006_agent_performance.sql)
-4. **API:** [`src/api/fantasy402-performance-api.ts`](../../src/api/fantasy402-performance-api.ts)
-5. **Dashboard:** [`dashboards/dashboard-agent-performance.html`](../../dashboards/dashboard-agent-performance.html)
+1. **Parser:**
+   [`src/utils/fantasy402-parser.ts`](../../src/utils/fantasy402-parser.ts#L316-L412)
+2. **Handler:**
+   [`src/api/fantasy402-ingest.ts`](../../src/api/fantasy402-ingest.ts#L484-L606)
+3. **Migration:**
+   [`migrations/0006_agent_performance.sql`](../../migrations/0006_agent_performance.sql)
+4. **API:**
+   [`src/api/fantasy402-performance-api.ts`](../../src/api/fantasy402-performance-api.ts)
+5. **Dashboard:**
+   [`dashboards/dashboard-agent-performance.html`](../../dashboards/dashboard-agent-performance.html)
 
 ---
 
 ## 🚀 Ready to Scale!
 
-You have a proven, production-ready pattern. Simply replicate it for each endpoint you want to capture. The architecture handles:
+You have a proven, production-ready pattern. Simply replicate it for each
+endpoint you want to capture. The architecture handles:
 
 ✅ High-volume data capture  
 ✅ Multiple storage tiers (KV + D1)  
 ✅ Fast queries with indexes  
 ✅ Historical analytics with views  
 ✅ Graceful error handling  
-✅ Real-time monitoring  
+✅ Real-time monitoring
 
 **Next Steps:**
+
 1. Pick your next endpoint from the inventory
 2. Follow the 5-step blueprint
 3. Deploy and test
 4. Repeat!
 
 Happy scaling! 🎉
-

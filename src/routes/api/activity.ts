@@ -7,14 +7,8 @@
 import { Env } from '../../types/api';
 import { CORS_HEADERS } from '../../utils/request';
 
-export async function getActivity(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getActivity(request: Request, env: Env, requestId: string): Promise<Response> {
   console.log(`[${requestId}] 📡 GET /api/activity`);
-
-
 
   try {
     const url = new URL(request.url);
@@ -37,16 +31,20 @@ export async function getActivity(
            WHERE ing > datetime('now', '-1 hour')
            ORDER BY ts DESC
            LIMIT ?`
-        ).bind(limit).all();
+        )
+          .bind(limit)
+          .all();
 
         if (result.results) {
-          activities.push(...result.results.map((row: any) => ({
-            type: 'line_movement',
-            eventId: row.eventId,
-            market: row.market,
-            change: `${row.oldLine} → ${row.newLine}`,
-            timestamp: row.timestamp,
-          })));
+          activities.push(
+            ...result.results.map((row: any) => ({
+              type: 'line_movement',
+              eventId: row.eventId,
+              market: row.market,
+              change: `${row.oldLine} → ${row.newLine}`,
+              timestamp: row.timestamp,
+            }))
+          );
         }
       } catch (error) {
         console.warn(`[${requestId}] ⚠️ Could not fetch line movements:`, error);

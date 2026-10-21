@@ -17,7 +17,7 @@ import type { Sport, Market, OddsSource, AggregatedOdds } from '../types/api';
  * @returns Rotated key value
  */
 export function rotateSecret(keyName: string): string {
-  const dayOfYear = Math.floor(Date.now() / 86400000) % 3 + 1;
+  const dayOfYear = (Math.floor(Date.now() / 86400000) % 3) + 1;
   const rotatedKey = `${keyName}_${dayOfYear}`;
 
   return process.env[rotatedKey] || process.env[keyName] || '';
@@ -26,11 +26,7 @@ export function rotateSecret(keyName: string): string {
 /**
  * Fetch odds from Pinnacle API
  */
-async function fetchPinnacleOdds(
-  sport: Sport,
-  market: Market,
-  apiKey: string
-): Promise<OddsSource> {
+async function fetchPinnacleOdds(sport: Sport, market: Market, apiKey: string): Promise<OddsSource> {
   try {
     if (!apiKey) {
       return {
@@ -75,11 +71,7 @@ async function fetchPinnacleOdds(
 /**
  * Fetch odds from Bet365 API
  */
-async function fetchBet365Odds(
-  sport: Sport,
-  market: Market,
-  apiKey: string
-): Promise<OddsSource> {
+async function fetchBet365Odds(sport: Sport, market: Market, apiKey: string): Promise<OddsSource> {
   try {
     if (!apiKey) {
       return { source: 'bet365', data: null, error: 'API key not configured' };
@@ -127,10 +119,7 @@ async function fetchBet365Odds(
  * @param market - Market type
  * @returns Aggregated odds from all sources
  */
-export async function aggregateOdds(
-  sport: Sport,
-  market: Market
-): Promise<AggregatedOdds> {
+export async function aggregateOdds(sport: Sport, market: Market): Promise<AggregatedOdds> {
   const pinnacleKey = rotateSecret('PINNACLE_KEY');
   const bet365Key = rotateSecret('BET365_KEY');
 
@@ -141,10 +130,8 @@ export async function aggregateOdds(
   ]);
 
   const sources: OddsSource[] = results
-    .filter(
-      (r): r is PromiseFulfilledResult<OddsSource> => r.status === 'fulfilled'
-    )
-    .map((r) => r.value);
+    .filter((r): r is PromiseFulfilledResult<OddsSource> => r.status === 'fulfilled')
+    .map(r => r.value);
 
   return {
     sport,

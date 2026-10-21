@@ -20,9 +20,7 @@ export async function getLiveBets(request: Request, env: Env): Promise<Response>
       })),
       ...(expand && {
         analytics: {
-          steamAlerts: [
-            { gameId: 'NBA_123', oldLine: -3, newLine: -4.5, seconds: 45 },
-          ],
+          steamAlerts: [{ gameId: 'NBA_123', oldLine: -3, newLine: -4.5, seconds: 45 }],
           riskByAgent: { A1: 12_300, A2: 9_800, A3: 7_200 },
           exposureBySide: {
             NBA_123: { home: 25_000, away: 18_000 },

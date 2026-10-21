@@ -1,16 +1,17 @@
 # Cursor Rules Maintenance Guide
 
-**Version:** 1.0.0
-**Last Updated:** 2025-10-08
-**Status:** Production Ready
+**Version:** 1.0.0 **Last Updated:** 2025-10-08 **Status:** Production Ready
 
-This document provides comprehensive maintenance procedures for the Cursor rules system in `.cursor/rules/`.
+This document provides comprehensive maintenance procedures for the Cursor rules
+system in `.cursor/rules/`.
 
 ---
 
 ## Overview
 
-The Cursor rules system consists of **24 MDC files** (2,200+ lines) providing AI-assisted development guidance. Each rule has:
+The Cursor rules system consists of **24 MDC files** (2,200+ lines) providing
+AI-assisted development guidance. Each rule has:
+
 - **Frontmatter metadata** (version, lastUpdated, dependencies)
 - **Quality standards integration** (referencing infrastructure utilities)
 - **Dependency relationships** (hierarchical rule dependencies)
@@ -31,10 +32,16 @@ PATCH (Z): Bug fixes, typo corrections, clarifications
 ```
 
 **Current versions (as of v3.2.0):**
+
 - **v5.0.0** (2): bun-runtime.mdc, file-naming.mdc, root-organization.mdc
-- **v2.0.0** (5): cloudflare-workers.mdc, mcp-integration.mdc, security-patterns.mdc, testing-patterns.mdc, database-patterns.mdc
-- **v1.1.0** (7): analytics-stub-api.mdc, analytics-testing.mdc, ci-integration.mdc, coverage-thresholds.mdc, test-setup-patterns.mdc
-- **v1.0.0** (10): api-patterns.mdc, endpoint-routing.mdc, quality-standards.mdc, browser-extension.mdc, ci-patterns.mdc, code-searchability.mdc, documentation.mdc, process-management.mdc, production-security.mdc, testing.mdc
+- **v2.0.0** (5): cloudflare-workers.mdc, mcp-integration.mdc,
+  security-patterns.mdc, testing-patterns.mdc, database-patterns.mdc
+- **v1.1.0** (7): analytics-stub-api.mdc, analytics-testing.mdc,
+  ci-integration.mdc, coverage-thresholds.mdc, test-setup-patterns.mdc
+- **v1.0.0** (10): api-patterns.mdc, endpoint-routing.mdc,
+  quality-standards.mdc, browser-extension.mdc, ci-patterns.mdc,
+  code-searchability.mdc, documentation.mdc, process-management.mdc,
+  production-security.mdc, testing.mdc
 
 ### Version Bump Guidelines
 
@@ -78,13 +85,15 @@ grep -r "^version:" .cursor/rules/*.mdc
 
 ## Dependency Graph
 
-Rules reference other rules via `dependencies` frontmatter field. This creates a **hierarchical dependency graph**.
+Rules reference other rules via `dependencies` frontmatter field. This creates a
+**hierarchical dependency graph**.
 
 ### Root Dependencies (Referenced by Many)
 
 1. **quality-standards.mdc** (v1.0.0) - Referenced by 18 rules
    - Defines: Type safety, constants, logging, error handling patterns
-   - Infrastructure: src/shared/constants.ts, src/utils/request.ts, src/utils/logger.ts
+   - Infrastructure: src/shared/constants.ts, src/utils/request.ts,
+     src/utils/logger.ts
 
 2. **bun-runtime.mdc** (v5.0.0) - Referenced by 7 rules
    - Defines: Bun Test patterns, file APIs, process management
@@ -155,12 +164,12 @@ ci-integration.mdc (v1.1.0)
 
 **When updating a root dependency, expect cascading updates:**
 
-| Rule Updated | Direct Dependents | Indirect Dependents | Total Impact |
-|--------------|-------------------|---------------------|--------------|
-| quality-standards.mdc | 18 rules | ~5 rules | 23 rules |
-| bun-runtime.mdc | 7 rules | ~4 rules | 11 rules |
-| api-patterns.mdc | 5 rules | ~2 rules | 7 rules |
-| testing-patterns.mdc | 4 rules | ~1 rule | 5 rules |
+| Rule Updated          | Direct Dependents | Indirect Dependents | Total Impact |
+| --------------------- | ----------------- | ------------------- | ------------ |
+| quality-standards.mdc | 18 rules          | ~5 rules            | 23 rules     |
+| bun-runtime.mdc       | 7 rules           | ~4 rules            | 11 rules     |
+| api-patterns.mdc      | 5 rules           | ~2 rules            | 7 rules      |
+| testing-patterns.mdc  | 4 rules           | ~1 rule             | 5 rules      |
 
 ---
 
@@ -171,6 +180,7 @@ ci-integration.mdc (v1.1.0)
 **Every Monday morning:**
 
 1. **Check for outdated lastUpdated fields:**
+
    ```bash
    cd .cursor/rules
    for f in *.mdc; do
@@ -179,6 +189,7 @@ ci-integration.mdc (v1.1.0)
    ```
 
 2. **Review ast-grep rule hits:**
+
    ```bash
    cd /Users/nolarose/ffffff
    sg scan --filter "detect-type-assertion-any"      # Should be 0 errors
@@ -198,6 +209,7 @@ ci-integration.mdc (v1.1.0)
 **First week of each month:**
 
 1. **Dependency graph audit:**
+
    ```bash
    # Check all dependencies resolve
    cd .cursor/rules
@@ -208,6 +220,7 @@ ci-integration.mdc (v1.1.0)
    ```
 
 2. **Version consistency check:**
+
    ```bash
    # Ensure all have version and lastUpdated
    grep -L "^version:" *.mdc
@@ -215,6 +228,7 @@ ci-integration.mdc (v1.1.0)
    ```
 
 3. **Cross-reference README:**
+
    ```bash
    # Verify README.md links to key rules
    grep -c "\.cursor/rules" /Users/nolarose/ffffff/README.md
@@ -238,6 +252,7 @@ ci-integration.mdc (v1.1.0)
 **Before each release (e.g., v3.2.0 → v3.3.0):**
 
 1. **Version bump all updated rules:**
+
    ```bash
    # Find rules updated since last release
    git diff v3.1.0..HEAD .cursor/rules/ | grep "^+++" | awk '{print $2}'
@@ -247,20 +262,26 @@ ci-integration.mdc (v1.1.0)
    ```
 
 2. **Update CHANGELOG.md:**
+
    ```markdown
    ## [3.3.0] - 2025-10-XX
+
    ### Added
+
    - Updated X rules with new patterns
    - Added Y new quality enforcement rules
 
    ### Changed
+
    - Refactored Z patterns in quality-standards.mdc
 
    ### Fixed
+
    - Fixed typos in A, B, C rules
    ```
 
 3. **Verify ast-grep integration:**
+
    ```bash
    # Run full scan
    sg scan
@@ -273,12 +294,14 @@ ci-integration.mdc (v1.1.0)
    ```
 
 4. **Update package.json version:**
+
    ```bash
    # Bump minor version (3.2.0 → 3.3.0)
    sed -i '' 's/"version": "3.2.0"/"version": "3.3.0"/' package.json
    ```
 
 5. **Create git commits:**
+
    ```bash
    git add .cursor/rules/*.mdc
    git commit -m "chore: update cursor rules for v3.3.0 release"
@@ -308,10 +331,12 @@ ci-integration.mdc (v1.1.0)
 ### Current Rules (23 total)
 
 **Security (2 errors):**
+
 - `find-sql-injection-risk` - String interpolation in SQL queries
 - `detect-type-assertion-any` - 'as any' type assertions ⚠️ **BLOCKING**
 
 **Quality Standards (8 rules, added in v3.2.0):**
+
 1. `detect-type-assertion-any` (ERROR) - 'as any' type assertions
 2. `detect-manual-request-id` (WARNING) - Date.now().toString(36)
 3. `detect-inline-cors` (WARNING) - Inline CORS headers
@@ -322,11 +347,13 @@ ci-integration.mdc (v1.1.0)
 8. `detect-manual-json-response` (INFO) - Manual JSON responses
 
 **Code Discovery (13 info rules):**
+
 - API endpoints, MCP handlers, database queries, validation calls, etc.
 
 ### Running ast-grep
 
 **Full scan:**
+
 ```bash
 cd /Users/nolarose/ffffff
 sg scan                          # All rules
@@ -335,6 +362,7 @@ sg scan --filter "detect-*"      # Filter by pattern
 ```
 
 **By severity:**
+
 ```bash
 sg scan --filter "detect-type-assertion-any"  # Errors only (BLOCKING)
 sg scan | grep "warning"                      # Warnings
@@ -342,6 +370,7 @@ sg scan | grep "info"                         # Info hints
 ```
 
 **Count hits:**
+
 ```bash
 sg scan | grep -c "error:"       # Should be 0
 sg scan | grep -c "warning:"     # Track warnings
@@ -353,10 +382,11 @@ sg scan | grep -c "info:"        # Info hints
 **Procedure:**
 
 1. **Edit .ast-grep.yml:**
+
    ```yaml
    # Add to rules section
    - id: my-new-rule
-     message: "Description of what this detects"
+     message: 'Description of what this detects'
      severity: error|warning|info
      language: TypeScript
      rule:
@@ -364,11 +394,13 @@ sg scan | grep -c "info:"        # Info hints
    ```
 
 2. **Test the rule:**
+
    ```bash
    sg scan --filter "my-new-rule"
    ```
 
 3. **Update version in .ast-grep.yml:**
+
    ```yaml
    # Version: 2.1.0
    # Last Updated: 2025-10-XX
@@ -382,6 +414,7 @@ sg scan | grep -c "info:"        # Info hints
 5. **Update CHANGELOG.md:**
    ```markdown
    ### Added
+
    - ast-grep: Added `my-new-rule` to detect X pattern
    ```
 
@@ -416,9 +449,9 @@ rule:
 ```yaml
 # Add more specific paths to ignore
 ignore:
-  - "tests/**/*.test.ts"
-  - "docs/**/*.md"
-  - ".cursor/rules/*.mdc"
+  - 'tests/**/*.test.ts'
+  - 'docs/**/*.md'
+  - '.cursor/rules/*.mdc'
 ```
 
 ---
@@ -432,6 +465,7 @@ ignore:
 **Symptom:** Multiple `version:` lines in a single .mdc file
 
 **Fix:**
+
 ```bash
 # Check for duplicates
 grep -c "^version:" .cursor/rules/code-searchability.mdc
@@ -460,6 +494,7 @@ awk '
 **Symptom:** Rule references another rule but no `dependencies` field
 
 **Fix:**
+
 ```bash
 # Add dependencies to frontmatter
 # Example: cloudflare-workers.mdc references quality-standards
@@ -476,6 +511,7 @@ dependencies: ["quality-standards", "api-patterns"]
 **Symptom:** Rules reference utilities that don't exist
 
 **Check:**
+
 ```bash
 # Verify infrastructure files exist
 ls -lh src/shared/constants.ts
@@ -495,6 +531,7 @@ grep -r "src/utils/logger" .cursor/rules/
 **Symptom:** Mix of `version: 4` and `version: "4.0.0"`
 
 **Fix:**
+
 ```bash
 # Standardize to "X.Y.Z" format
 grep "^version: [0-9]$" .cursor/rules/*.mdc
@@ -510,17 +547,20 @@ sed -i '' 's/^version: 4$/version: "4.0.0"/' .cursor/rules/file.mdc
 ### Current Status (v3.2.0)
 
 **Rules:**
+
 - Total rules: 24
 - Total lines: 2,200+
 - Versioned: 24/24 (100%)
 - With dependencies: 24/24 (100%)
 
 **Infrastructure:**
+
 - src/shared/constants.ts: 278 lines, 12 categories
 - src/utils/request.ts: 371 lines, 15+ utilities
 - src/utils/logger.ts: Structured logging with StructuredLogger
 
 **ast-grep:**
+
 - Total rules: 23
 - Quality enforcement: 8 rules
 - Error-level (blocking): 2 rules
@@ -528,13 +568,16 @@ sed -i '' 's/^version: 4$/version: "4.0.0"/' .cursor/rules/file.mdc
 - Info-level: 8 rules
 
 **Dependency Graph:**
+
 - Root dependencies: 3 (quality-standards, bun-runtime, root-organization)
-- Mid-level: 5 (testing-patterns, security-patterns, database-patterns, api-patterns, endpoint-routing)
+- Mid-level: 5 (testing-patterns, security-patterns, database-patterns,
+  api-patterns, endpoint-routing)
 - Leaf nodes: 16
 
 ### Target Metrics (v4.0.0)
 
 **Goals for next major version:**
+
 - [ ] 30 total rules (add 6 new rules)
 - [ ] 3,000+ total lines
 - [ ] 30 ast-grep rules (add 7 new rules)
@@ -549,19 +592,23 @@ sed -i '' 's/^version: 4$/version: "4.0.0"/' .cursor/rules/file.mdc
 ### Key Files
 
 **Rules:**
+
 - `.cursor/rules/*.mdc` (24 files)
 - `.cursor/rules/quality-standards.mdc` (root dependency, 460 lines)
 
 **Configuration:**
+
 - `.ast-grep.yml` (v2.0.0, 23 rules)
 - `package.json` (v3.2.0)
 
 **Infrastructure:**
+
 - `src/shared/constants.ts` (278 lines)
 - `src/utils/request.ts` (371 lines, 15+ utilities)
 - `src/utils/logger.ts` (StructuredLogger)
 
 **Documentation:**
+
 - `docs/QUALITY_STANDARDS.md` (571 lines, complete guide)
 - `docs/CHANGELOG.md` (versioning history)
 - `docs/CURSOR_RULES.md` (overview of all rules)
@@ -580,6 +627,7 @@ sed -i '' 's/^version: 4$/version: "4.0.0"/' .cursor/rules/file.mdc
 ## Changelog
 
 ### v1.0.0 (2025-10-08)
+
 - Initial maintenance guide
 - Documented version management procedures
 - Created dependency graph
@@ -589,6 +637,5 @@ sed -i '' 's/^version: 4$/version: "4.0.0"/' .cursor/rules/file.mdc
 
 ---
 
-**Status:** Production Ready ✅
-**Maintained By:** Development Team
-**Review Frequency:** Monthly
+**Status:** Production Ready ✅ **Maintained By:** Development Team **Review
+Frequency:** Monthly

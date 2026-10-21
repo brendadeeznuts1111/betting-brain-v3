@@ -29,7 +29,11 @@ function extractFunctionDocs(filePath: string): FunctionDoc[] {
 
     // Collect JSDoc comments
     if (line.trim().startsWith('/**') || line.trim().startsWith('*')) {
-      currentComment += line.trim().replace(/^\/?\*+\s?/, '').replace(/\*\/$/, '') + '\n';
+      currentComment +=
+        line
+          .trim()
+          .replace(/^\/?\*+\s?/, '')
+          .replace(/\*\/$/, '') + '\n';
 
       // Extract examples from comments
       if (line.includes('@example')) {
@@ -65,7 +69,7 @@ function extractFunctionDocs(filePath: string): FunctionDoc[] {
         line: i + 1,
         signature,
         comment: currentComment.trim(),
-        example: currentExample.trim()
+        example: currentExample.trim(),
       });
 
       currentComment = '';
@@ -120,16 +124,17 @@ function processMarkdownFile(mdFile: string): boolean {
 
     try {
       const docs = extractFunctionDocs(file);
-      const filteredDocs = funcName
-        ? docs.filter(d => d.name === funcName)
-        : docs;
+      const filteredDocs = funcName ? docs.filter(d => d.name === funcName) : docs;
 
       if (filteredDocs.length === 0) return;
 
       const newContent = '\n\n' + filteredDocs.map(generateFunctionMarkdown).join('') + '\n';
 
       if (newContent.trim() !== oldContent.trim()) {
-        content = content.replace(match[0], `<!-- AUTO-GENERATED-START ${sourceFile} -->${newContent}<!-- AUTO-GENERATED-END -->`);
+        content = content.replace(
+          match[0],
+          `<!-- AUTO-GENERATED-START ${sourceFile} -->${newContent}<!-- AUTO-GENERATED-END -->`
+        );
         modified = true;
       }
     } catch (error) {
@@ -147,7 +152,7 @@ function processMarkdownFile(mdFile: string): boolean {
 // Generate API reference from all source files
 function generateAPIReference(): void {
   const files = globSync('src/**/*.ts', {
-    ignore: ['**/*.test.ts', 'node_modules/**', 'dist/**']
+    ignore: ['**/*.test.ts', 'node_modules/**', 'dist/**'],
   });
 
   let apiMd = '# API Reference\n\n';
@@ -175,7 +180,7 @@ const startTime = Date.now();
 
 // Process markdown files with AUTO-GENERATED sections
 const mdFiles = globSync('docs/**/*.md', {
-  ignore: ['node_modules/**', 'docs/api/AUTO_GENERATED_API.md']
+  ignore: ['node_modules/**', 'docs/api/AUTO_GENERATED_API.md'],
 });
 
 let modified = 0;

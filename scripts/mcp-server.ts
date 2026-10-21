@@ -1,29 +1,25 @@
 #!/usr/bin/env bun
 /**
  * MCP Server for Forest Grove - Production Edition
- * 
+ *
  * Exposes forest automation + sports data as MCP tools
  * Uses official @modelcontextprotocol/sdk
- * 
+ *
  * MCP Protocol: JSON-RPC 2.0 over stdio
- * 
+ *
  * Usage:
  *   bun run scripts/mcp-server.ts
- * 
+ *
  * Configuration:
  *   Add to .cursor/mcp.json
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  Tool,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-// Import sports utilities  
+// Import sports utilities
 import { aggregateOdds, fetchLiveScores, rotateSecret } from '../src/utils/sports-api.js';
 import type { Sport, Market, IngestDataPoint } from '../src/types/api.js';
 
@@ -53,10 +49,7 @@ async function pushToAnalytics(records: IngestDataPoint[]): Promise<any> {
 }
 
 // MCP Server Setup
-const server = new Server(
-  { name: 'forest-grove', version: '3.3.0' },
-  { capabilities: { tools: {} } }
-);
+const server = new Server({ name: 'forest-grove', version: '3.3.0' }, { capabilities: { tools: {} } });
 
 // Tool Definitions
 const TOOLS: Tool[] = [
@@ -136,7 +129,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
 // Call Tool Handler
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async request => {
   const { name, arguments: args } = request.params;
 
   try {
@@ -144,18 +137,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'forest-status': {
         const workerUrl = getWorkerUrl();
         const [healthRes, localRes] = await Promise.all([
-          fetch(`${workerUrl}/health`).then(r => r.json()).catch(() => ({ status: 'down' })),
+          fetch(`${workerUrl}/health`)
+            .then(r => r.json())
+            .catch(() => ({ status: 'down' })),
           Bun.$`bun run scripts/forest.ts --json`.text().catch(() => '{}'),
         ]);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              worker: healthRes,
-              local: JSON.parse(localRes || '{}'),
-              timestamp: new Date().toISOString(),
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  worker: healthRes,
+                  local: JSON.parse(localRes || '{}'),
+                  timestamp: new Date().toISOString(),
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
 
@@ -215,7 +216,7 @@ async function main() {
 }
 
 if (import.meta.main) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('MCP Server error:', error);
     process.exit(1);
   });

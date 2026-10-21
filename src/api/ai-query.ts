@@ -60,7 +60,7 @@ function parseQuery(query: string): { intent: string; params: Record<string, any
         },
       };
     }
-    
+
     // Try to extract event ID
     const eventMatch = query.match(/([A-Z]+_[A-Z0-9_]+)/);
     if (eventMatch) {
@@ -80,7 +80,7 @@ function parseQuery(query: string): { intent: string; params: Record<string, any
         params: { eventId: eventMatch[1] },
       };
     }
-    
+
     // General risk report
     return {
       intent: 'risk_report',
@@ -108,11 +108,11 @@ function parseQuery(query: string): { intent: string; params: Record<string, any
  */
 async function executeSharpAnalysis(params: Record<string, any>, env: Env): Promise<any> {
   const result = await getAISharpAnalysis(params, env);
-  
+
   if (result.isError) {
     throw new Error(result.content[0].text);
   }
-  
+
   return JSON.parse(result.content[0].text);
 }
 
@@ -126,13 +126,13 @@ async function executeSteamDetection(params: Record<string, any>, env: Env): Pro
     params.eventId = `NBA_${params.awayTeam.toUpperCase()}_${params.homeTeam.toUpperCase()}_${today}`;
     params.marketType = 'SPREAD';
   }
-  
+
   const result = await getAISteamDetection(params, env);
-  
+
   if (result.isError) {
     throw new Error(result.content[0].text);
   }
-  
+
   return JSON.parse(result.content[0].text);
 }
 
@@ -141,11 +141,11 @@ async function executeSteamDetection(params: Record<string, any>, env: Env): Pro
  */
 async function executeRiskReport(params: Record<string, any>, env: Env): Promise<any> {
   const result = await getAIRiskReport(params, env);
-  
+
   if (result.isError) {
     throw new Error(result.content[0].text);
   }
-  
+
   return JSON.parse(result.content[0].text);
 }
 
@@ -156,7 +156,7 @@ async function executeAgentPerformance(params: Record<string, any>, env: Env): P
   // Query top agents from fantasy402_agents
   const period = params.period || 'week';
   const limit = params.limit || 5;
-  
+
   const query = `
     SELECT 
       agent_id,
@@ -172,9 +172,9 @@ async function executeAgentPerformance(params: Record<string, any>, env: Env): P
     ORDER BY (total_win - total_risk) DESC
     LIMIT ?
   `;
-  
+
   const results = await env.RAW_FEED_DB.prepare(query).bind(limit).all();
-  
+
   return {
     period,
     topAgents: results.results,
@@ -189,11 +189,9 @@ async function executeGeneralChat(params: Record<string, any>, env: Env): Promis
   const analyzer = new BettingAnalyzer({
     apiKey: env.KIMI_API_KEY,
   });
-  
-  const result = await analyzer.chatAboutBettingData([
-    { role: 'user', content: params.query },
-  ]);
-  
+
+  const result = await analyzer.chatAboutBettingData([{ role: 'user', content: params.query }]);
+
   return {
     response: result.response,
     usage: result.usage,
@@ -218,8 +216,8 @@ export async function handleAIQuery(request: Request, env: Env): Promise<Respons
     }
 
     // Parse request
-    const body = await request.json() as QueryRequest;
-    
+    const body = (await request.json()) as QueryRequest;
+
     if (!body.query) {
       return new Response(JSON.stringify({ error: 'query is required' }), {
         status: 400,
@@ -294,13 +292,15 @@ export async function handleAIQuery(request: Request, env: Env): Promise<Respons
   } catch (error) {
     console.error(`[${requestId}] ❌ Query error:`, error);
 
-    return new Response(JSON.stringify({
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-    }), {
-      status: 500,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 500,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
-

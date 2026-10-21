@@ -4,9 +4,9 @@
  */
 
 // Cache TTL values (in seconds)
-export const CACHE_TTL_7_DAYS = 86400 * 7;  // 604800 seconds
-export const CACHE_TTL_1_DAY = 86400;       // 86400 seconds
-export const CACHE_TTL_1_HOUR = 3600;       // 3600 seconds
+export const CACHE_TTL_7_DAYS = 86400 * 7; // 604800 seconds
+export const CACHE_TTL_1_DAY = 86400; // 86400 seconds
+export const CACHE_TTL_1_HOUR = 3600; // 3600 seconds
 
 // Query limits
 export const DEFAULT_AGENT_QUERY_LIMIT = 100;

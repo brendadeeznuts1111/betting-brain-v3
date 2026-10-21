@@ -94,7 +94,7 @@ describe('SQLite In-Memory Database Tests', () => {
       customer_id: 'cust_1003',
       edge: 0.08,
       sharp_score: 85,
-      classification: 'HIGH_VALUE_SHARP'
+      classification: 'HIGH_VALUE_SHARP',
     });
 
     // Regular sharp customer
@@ -102,7 +102,7 @@ describe('SQLite In-Memory Database Tests', () => {
       customer_id: 'cust_1001',
       edge: 0.05,
       sharp_score: 75,
-      classification: 'SHARP'
+      classification: 'SHARP',
     });
   });
 
@@ -191,16 +191,14 @@ describe('SQLite In-Memory Database Tests', () => {
     const profitableSegments = results.filter((r: any) =>
       ['BOOK_FAVORABLE', 'WINNING_CUSTOMER'].includes(r.profitability_segment)
     );
-    const losingSegments = results.filter((r: any) =>
-      r.profitability_segment === 'LOSING_CUSTOMER'
-    );
+    const losingSegments = results.filter((r: any) => r.profitability_segment === 'LOSING_CUSTOMER');
 
     expect(profitableSegments).toHaveLength(2);
     expect(losingSegments).toHaveLength(1);
 
     // Top profitable customer
     expect(results[0].profitability_segment).toBe('BOOK_FAVORABLE');
-    expect(results[0].hold_percentage).toBeGreaterThan(0.10);
+    expect(results[0].hold_percentage).toBeGreaterThan(0.1);
   });
 
   test('should simulate line movement insertion and validation', () => {
@@ -213,7 +211,7 @@ describe('SQLite In-Memory Database Tests', () => {
     const newResults = [
       { eid: 'live_event_1', mt: 'SPREAD', ts: '2025-01-08T05:00:00.000Z', oldLine: -2.5, newLine: -3.5 },
       { eid: 'live_event_1', mt: 'TOTAL', ts: '2025-01-08T05:05:00.000Z', oldLine: 44.5, newLine: 45.5 },
-      { eid: 'live_event_2', mt: 'MONEYLINE', ts: '2025-01-08T05:10:00.000Z', oldLine: -110, newLine: -120 }
+      { eid: 'live_event_2', mt: 'MONEYLINE', ts: '2025-01-08T05:10:00.000Z', oldLine: -110, newLine: -120 },
     ];
 
     // Insert test data
@@ -227,14 +225,19 @@ describe('SQLite In-Memory Database Tests', () => {
     expect(count).toBe(3);
 
     // Verify data integrity - check that lines actually moved
-    const movementCheck = db.query(`
+    const movementCheck = db
+      .query(
+        `
       SELECT eid,
              mt,
              (new_line - old_line) as movement_delta,
              ABS(new_line - old_line) as absolute_movement
       FROM line_movements
       WHERE eid LIKE ?
-    `, '%live_event%').all();
+    `,
+        '%live_event%'
+      )
+      .all();
 
     expect(movementCheck.every((row: any) => row.absolute_movement > 0)).toBe(true);
   });
@@ -306,7 +309,9 @@ describe('SQLite In-Memory Database Tests', () => {
 
     // Test NOT NULL constraint using STRICT table (would throw error)
     // Instead, verify with regular constraints work
-    const rowCount = (db.query('SELECT COUNT(*) as count FROM line_movements WHERE mt IS NOT NULL').get() as { count: number }).count;
+    const rowCount = (
+      db.query('SELECT COUNT(*) as count FROM line_movements WHERE mt IS NOT NULL').get() as { count: number }
+    ).count;
     expect(rowCount).toBeGreaterThan(0);
 
     // Test successful insertion
@@ -340,9 +345,7 @@ describe('SQLite Edge Runtime Simulation', () => {
 
     // Simulate multiple customers being looked up in edge functions
     const customersToLookup = ['cust_1001', 'cust_1002', 'cust_1003', 'cust_1004'];
-    const results = customersToLookup.map(customerId =>
-      stmt.get(customerId) as any
-    );
+    const results = customersToLookup.map(customerId => stmt.get(customerId) as any);
 
     // Verify each customer was found
     expect(results.every(r => r !== null)).toBe(true);

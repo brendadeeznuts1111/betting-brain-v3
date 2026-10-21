@@ -57,16 +57,13 @@ function resolveImport(fromFile: string, importPath: string): string {
 
 // Simplify file path for display
 function simplifyPath(path: string): string {
-  return path
-    .replace('src/', '')
-    .replace('.ts', '')
-    .replace('/', '_');
+  return path.replace('src/', '').replace('.ts', '').replace('/', '_');
 }
 
 // Parse import graph
 function parseImportGraph(): Map<string, ModuleNode> {
   const files = globSync('src/**/*.ts', {
-    ignore: ['node_modules/**', 'dist/**', '**/*.test.ts']
+    ignore: ['node_modules/**', 'dist/**', '**/*.test.ts'],
   });
 
   const nodes = new Map<string, ModuleNode>();
@@ -82,7 +79,7 @@ function parseImportGraph(): Map<string, ModuleNode> {
       imports,
       exports: [], // TODO: parse exports
       incomingEdges: 0,
-      outgoingEdges: imports.length
+      outgoingEdges: imports.length,
     });
   });
 

@@ -1,15 +1,15 @@
 # Enhanced Analytics Architecture
-*"Make the invisible obvious, the obvious actionable, and the action profitable."*
 
-**Version:** 2.0
-**Status:** Production Ready
-**Budget:** 200 LOC across 6 modules
-**Performance:** < 50ms p99
-**Last Updated:** 2025-10-08
+_"Make the invisible obvious, the obvious actionable, and the action
+profitable."_
+
+**Version:** 2.0 **Status:** Production Ready **Budget:** 200 LOC across 6
+modules **Performance:** < 50ms p99 **Last Updated:** 2025-10-08
 
 ---
 
 ## Table of Contents
+
 1. [Guiding Principles](#guiding-principles)
 2. [Micro-analytics 2.0](#micro-analytics-20)
 3. [Mini-Insight Badges](#mini-insight-badges)
@@ -25,12 +25,16 @@
 ## Guiding Principles
 
 ### Core Rules
+
 1. **< 50 ms rule**: Every new query must return in ≤ 50 ms at p99
-2. **Zero raw data leakage**: Only rolled-up, obfuscated, or time-bucketed numbers leave the edge
+2. **Zero raw data leakage**: Only rolled-up, obfuscated, or time-bucketed
+   numbers leave the edge
 3. **Explainability first**: Every anomaly ships with a human sentence
-4. **Progressive consent**: Heavier compute (graph, ML) is opt-in via feature flag
+4. **Progressive consent**: Heavier compute (graph, ML) is opt-in via feature
+   flag
 
 ### Architecture Philosophy
+
 - Pre-compute on ingest, serve from cache
 - Parallel writes with `waitUntil()` for non-blocking storage
 - Pure functions for testability and auditability
@@ -41,18 +45,17 @@
 
 ## Micro-analytics 2.0
 
-**Location:** `src/analytics/micro-analytics.ts`
-**Budget:** 80 LOC
-**Storage:** 4 KV keys per agent
+**Location:** `src/analytics/micro-analytics.ts` **Budget:** 80 LOC **Storage:**
+4 KV keys per agent
 
 ### Four Dimensions
 
-| Dimension | Function | KV Key | TTL | Dashboard Text |
-|-----------|----------|--------|-----|----------------|
-| **Velocity** | `betsPerMinute(bets, 5min)` | `vm:{agentId}` | 5 min | "⚡ 47 bets/min (‑12% vs prev 5 min)" |
-| **Sharpness** | `percentBetsOnSteam(bets, steamEvents)` | `sharp:{agentId}` | 5 min | "🎯 68% steam bets (top 5% of agents)" |
-| **Concentration** | `giniCoefficient(customerStakes)` | `gini:{agentId}` | 1 h | "📊 stake Gini 0.82 (highly concentrated)" |
-| **Recency** | `decayScore(lastActivityMs, 24h)` | `rec:{customerId}` | 1 h | "🔥 Customer #432 active 3h ago (score 0.87)" |
+| Dimension         | Function                                | KV Key             | TTL   | Dashboard Text                                |
+| ----------------- | --------------------------------------- | ------------------ | ----- | --------------------------------------------- |
+| **Velocity**      | `betsPerMinute(bets, 5min)`             | `vm:{agentId}`     | 5 min | "⚡ 47 bets/min (‑12% vs prev 5 min)"         |
+| **Sharpness**     | `percentBetsOnSteam(bets, steamEvents)` | `sharp:{agentId}`  | 5 min | "🎯 68% steam bets (top 5% of agents)"        |
+| **Concentration** | `giniCoefficient(customerStakes)`       | `gini:{agentId}`   | 1 h   | "📊 stake Gini 0.82 (highly concentrated)"    |
+| **Recency**       | `decayScore(lastActivityMs, 24h)`       | `rec:{customerId}` | 1 h   | "🔥 Customer #432 active 3h ago (score 0.87)" |
 
 ### Usage Example
 
@@ -60,13 +63,7 @@
 import { computeAndStore } from './analytics/micro-analytics';
 
 // In your ingest handler
-await computeAndStore(
-  env,
-  ctx,
-  agentId,
-  recentBets,
-  steamEventSet
-);
+await computeAndStore(env, ctx, agentId, recentBets, steamEventSet);
 
 // Reads from KV keys:
 // - vm:{agentId} → velocity
@@ -76,6 +73,7 @@ await computeAndStore(
 ```
 
 ### Performance
+
 - **Compute time:** < 10 ms for 1000 bets
 - **Storage:** 4 KV writes in parallel (< 5 ms total)
 - **Read latency:** < 1 ms from edge cache
@@ -84,13 +82,13 @@ await computeAndStore(
 
 ## Mini-Insight Badges
 
-**Location:** `src/analytics/badgeRules.ts`
-**Budget:** 12 if/else rules (< 30 LOC)
-**Purpose:** One-sentence actionable insights
+**Location:** `src/analytics/badgeRules.ts` **Budget:** 12 if/else rules (< 30
+LOC) **Purpose:** One-sentence actionable insights
 
 ### Badge Types
 
 #### 1. Velocity Badge
+
 ```typescript
 velocityBadge(currentRate: number, prevRate: number): Badge
 
@@ -101,6 +99,7 @@ velocityBadge(currentRate: number, prevRate: number): Badge
 ```
 
 #### 2. Sharpness Badge
+
 ```typescript
 sharpnessBadge(steamPct: number, percentile: number): Badge
 
@@ -111,6 +110,7 @@ sharpnessBadge(steamPct: number, percentile: number): Badge
 ```
 
 #### 3. Concentration Badge
+
 ```typescript
 concentrationBadge(gini: number): Badge
 
@@ -121,6 +121,7 @@ concentrationBadge(gini: number): Badge
 ```
 
 #### 4. Recency Badge
+
 ```typescript
 recencyBadge(score: number, hoursAgo: number): Badge
 
@@ -143,9 +144,9 @@ recencyBadge(score: number, hoursAgo: number): Badge
 
 ## Agent Graph++ (Temporal Edges)
 
-**Location:** `src/analytics/lagAnalysis.ts`
-**Migration:** `migrations/0005_agent_graph_temporal.sql`
-**Schema Addition:** Non-breaking (ALTER TABLE with defaults)
+**Location:** `src/analytics/lagAnalysis.ts` **Migration:**
+`migrations/0005_agent_graph_temporal.sql` **Schema Addition:** Non-breaking
+(ALTER TABLE with defaults)
 
 ### New Schema Fields
 
@@ -199,24 +200,26 @@ const suspects = await getRingFenceAgents(
 ```
 
 ### Use Cases
+
 1. **Steam propagation:** Visualize how steam moves through agent network
-2. **Ring-fencing:** Identify multi-account operations (high overlap + suspicious lag)
+2. **Ring-fencing:** Identify multi-account operations (high overlap +
+   suspicious lag)
 3. **Credit risk:** Detect coordinated betting patterns
 
 ---
 
 ## Three-Tier Time-Series
 
-**Location:** `src/analytics/timeSeriesLayer.ts`
-**Cron Job:** `src/schedules/downSample.ts`
+**Location:** `src/analytics/timeSeriesLayer.ts` **Cron Job:**
+`src/schedules/downSample.ts`
 
 ### Storage Tiers
 
-| Tier | Storage | Retention | Granularity | Cost | Query Performance |
-|------|---------|-----------|-------------|------|-------------------|
-| **Hot** | KV | 48h | 1 min | Free | < 1 ms |
-| **Warm** | Analytics Engine | 90 days | 1 h | ~$0.02/100k pts | < 50 ms |
-| **Cold** | R2 Parquet | 2 years | 1 day | ~$0.004/GB | < 500 ms |
+| Tier     | Storage          | Retention | Granularity | Cost            | Query Performance |
+| -------- | ---------------- | --------- | ----------- | --------------- | ----------------- |
+| **Hot**  | KV               | 48h       | 1 min       | Free            | < 1 ms            |
+| **Warm** | Analytics Engine | 90 days   | 1 h         | ~$0.02/100k pts | < 50 ms           |
+| **Cold** | R2 Parquet       | 2 years   | 1 day       | ~$0.004/GB      | < 500 ms          |
 
 ### Data Flow
 
@@ -231,6 +234,7 @@ Ingest → writeHot() → KV (1-min buckets, 48h TTL)
 ### Automatic Down-sampling
 
 #### Hourly Cron (0 * * * *)
+
 ```typescript
 // Roll 60 × 1-min KV buckets → 1 × 1-h AE point
 await hourlyDownSample(request, env, ctx);
@@ -243,6 +247,7 @@ await hourlyDownSample(request, env, ctx);
 ```
 
 #### Daily Cron (0 0 * * *)
+
 ```typescript
 // Roll 24 × 1-h AE points → 1 × 1-day R2 Parquet
 await dailyDownSample(request, env, ctx);
@@ -273,12 +278,13 @@ const annual = await queryTimeSeries(env, 'velocity', agentId, '1y');
 
 ## Predictive Signals
 
-**Location:** `src/analytics/signals.ts`
-**Purpose:** Export 0-100 signals for downstream ML (no models in worker)
+**Location:** `src/analytics/signals.ts` **Purpose:** Export 0-100 signals for
+downstream ML (no models in worker)
 
 ### Three Signal Types
 
 #### 1. Steam Signal (0-100)
+
 ```typescript
 steamSignal(velocity, sharpness, avgLag): number
 // Formula: 30% velocity + 50% sharpness + 20% lag
@@ -286,6 +292,7 @@ steamSignal(velocity, sharpness, avgLag): number
 ```
 
 #### 2. Risk Signal (0-100)
+
 ```typescript
 riskSignal(gini, recency, exposurePct): number
 // Formula: 40% concentration + 30% recency + 30% exposure
@@ -293,6 +300,7 @@ riskSignal(gini, recency, exposurePct): number
 ```
 
 #### 3. Volume Signal (0-100)
+
 ```typescript
 volumeSignal(betCount, avgStake, frequency): number
 // Formula: 30% count + 40% size + 30% frequency
@@ -332,7 +340,7 @@ const borderColor = {
   low: 'green',
   medium: 'yellow',
   high: 'orange',
-  critical: 'red'
+  critical: 'red',
 }[level];
 ```
 
@@ -350,7 +358,8 @@ await exportSignalToAE(env, ctx, signals);
 // WHERE timestamp > NOW() - INTERVAL '30 days'
 ```
 
-**Philosophy:** Worker exports signals, not models. Data science builds models outside the critical path.
+**Philosophy:** Worker exports signals, not models. Data science builds models
+outside the critical path.
 
 ---
 
@@ -360,11 +369,14 @@ await exportSignalToAE(env, ctx, signals);
 
 ### 1. Numeric Fingerprinting
 
-**Problem:** Exact numeric values enable re-identification attacks
-**Solution:** Round + salt + hash
+**Problem:** Exact numeric values enable re-identification attacks **Solution:**
+Round + salt + hash
 
 ```typescript
-import { fingerprintNumber, fingerprintAnalytics } from './guards/securityHardening';
+import {
+  fingerprintNumber,
+  fingerprintAnalytics,
+} from './guards/securityHardening';
 
 // Single value
 const { value, fingerprint } = fingerprintNumber(42.678, 'agent-123');
@@ -374,7 +386,7 @@ const { value, fingerprint } = fingerprintNumber(42.678, 'agent-123');
 const fingerprinted = fingerprintAnalytics('agent-123', {
   velocity: 47.234,
   sharpness: 68.912,
-  concentration: 0.823
+  concentration: 0.823,
 });
 
 // Export format:
@@ -393,32 +405,37 @@ const fingerprinted = fingerprintAnalytics('agent-123', {
 
 ### 2. Rate Limiting
 
-**Limit:** 10 req/s per IP for analytics endpoints
-**Storage:** KV with 1-second TTL
-**Headers:** `X-RateLimit-*` standard
+**Limit:** 10 req/s per IP for analytics endpoints **Storage:** KV with 1-second
+TTL **Headers:** `X-RateLimit-*` standard
 
 ```typescript
-import { checkAnalyticsRateLimit, rateLimitHeaders } from './guards/securityHardening';
+import {
+  checkAnalyticsRateLimit,
+  rateLimitHeaders,
+} from './guards/securityHardening';
 
 // In your analytics endpoint handler
-const { allowed, remaining, resetAt } = await checkAnalyticsRateLimit(env, request);
+const { allowed, remaining, resetAt } = await checkAnalyticsRateLimit(
+  env,
+  request
+);
 
 if (!allowed) {
   return new Response('Rate limit exceeded', {
     status: 429,
-    headers: rateLimitHeaders(remaining, resetAt)
+    headers: rateLimitHeaders(remaining, resetAt),
   });
 }
 
 // Continue with request...
 ```
 
-**Cloudflare Rate Limiting:** For production, use Cloudflare's rate limiting rules (Enterprise plan) instead of KV-based limiter.
+**Cloudflare Rate Limiting:** For production, use Cloudflare's rate limiting
+rules (Enterprise plan) instead of KV-based limiter.
 
 ### 3. GDPR Purge Job
 
-**Schedule:** Daily at 2am UTC
-**Scope:** Zero customer-level data after 90 days
+**Schedule:** Daily at 2am UTC **Scope:** Zero customer-level data after 90 days
 **Preservation:** Aggregates remain for analytics
 
 ```typescript
@@ -444,7 +461,7 @@ await logSecurityEvent(env, ctx, {
   type: 'rate_limit',
   ip: '192.0.2.1',
   timestamp: Date.now(),
-  details: { endpoint: '/api/analytics', attempts: 15 }
+  details: { endpoint: '/api/analytics', attempts: 15 },
 });
 
 // Queryable via Analytics Engine
@@ -456,8 +473,8 @@ await logSecurityEvent(env, ctx, {
 
 ### 1. Micro-Analytics
 
-**Endpoint:** `GET /api/analytics/micro/{agentId}`
-**Response Time:** < 5 ms (KV read)
+**Endpoint:** `GET /api/analytics/micro/{agentId}` **Response Time:** < 5 ms (KV
+read)
 
 ```bash
 curl https://your-worker.workers.dev/api/analytics/micro/agent-123
@@ -515,7 +532,8 @@ curl https://your-worker.workers.dev/api/analytics/ring-fence?overlap=0.8&minLag
 
 ### 4. Time-Series Query
 
-**Endpoint:** `GET /api/analytics/timeseries/{metric}/{agentId}?range={5m|1h|24h|7d|30d|90d|1y|2y}`
+**Endpoint:**
+`GET /api/analytics/timeseries/{metric}/{agentId}?range={5m|1h|24h|7d|30d|90d|1y|2y}`
 **Response Time:** Varies by tier (< 1 ms hot, < 50 ms warm, < 500 ms cold)
 
 ```bash
@@ -534,8 +552,8 @@ curl https://your-worker.workers.dev/api/analytics/timeseries/velocity/agent-123
 
 ### 5. Predictive Signals
 
-**Endpoint:** `GET /api/analytics/signals/{agentId}`
-**Response Time:** < 5 ms (KV read)
+**Endpoint:** `GET /api/analytics/signals/{agentId}` **Response Time:** < 5 ms
+(KV read)
 
 ```bash
 curl https://your-worker.workers.dev/api/analytics/signals/agent-123
@@ -619,17 +637,17 @@ wrangler tail --format pretty
 
 ## Performance Benchmarks
 
-| Operation | Target | Actual | Method |
-|-----------|--------|--------|--------|
-| Micro-analytics compute | < 10 ms | 6 ms | Pure functions |
-| Micro-analytics storage | < 5 ms | 3 ms | 4 parallel KV writes |
-| Badge generation | < 1 ms | 0.4 ms | Simple if/else |
-| Lag analysis | < 100 ms | 67 ms | D1 with indexes |
-| Steam propagation query | < 50 ms | 32 ms | D1 composite index |
-| Hot tier query (5 min) | < 1 ms | 0.8 ms | KV list |
-| Warm tier query (30 days) | < 50 ms | N/A | AE SQL API (placeholder) |
-| Signal computation | < 5 ms | 2 ms | Pure functions |
-| Signal storage | < 5 ms | 3 ms | 3 parallel KV writes |
+| Operation                 | Target   | Actual | Method                   |
+| ------------------------- | -------- | ------ | ------------------------ |
+| Micro-analytics compute   | < 10 ms  | 6 ms   | Pure functions           |
+| Micro-analytics storage   | < 5 ms   | 3 ms   | 4 parallel KV writes     |
+| Badge generation          | < 1 ms   | 0.4 ms | Simple if/else           |
+| Lag analysis              | < 100 ms | 67 ms  | D1 with indexes          |
+| Steam propagation query   | < 50 ms  | 32 ms  | D1 composite index       |
+| Hot tier query (5 min)    | < 1 ms   | 0.8 ms | KV list                  |
+| Warm tier query (30 days) | < 50 ms  | N/A    | AE SQL API (placeholder) |
+| Signal computation        | < 5 ms   | 2 ms   | Pure functions           |
+| Signal storage            | < 5 ms   | 3 ms   | 3 parallel KV writes     |
 
 **Total overhead per ingest:** ~15 ms (all analytics combined)
 
@@ -639,14 +657,14 @@ wrangler tail --format pretty
 
 ### Monthly Costs (10M bets/month)
 
-| Component | Usage | Cost | Notes |
-|-----------|-------|------|-------|
-| **KV Storage** | 4 keys × 10k agents = 40k writes | Free | Under 1M/day limit |
-| **KV Reads** | 10M badge lookups | Free | Under 10M/day limit |
-| **D1 Writes** | 10k lag updates/day | Free | Under 100k/day limit |
-| **Analytics Engine** | 720 hourly points × 10k agents = 7.2M pts | $1.44 | $0.20/1M pts |
-| **R2 Storage** | 365 Parquet files × 10 MB = 3.65 GB | $0.05 | $0.015/GB/month |
-| **Worker CPU** | 15 ms × 10M = 150k CPU-seconds | Free | Under 30M/month limit |
+| Component            | Usage                                     | Cost  | Notes                 |
+| -------------------- | ----------------------------------------- | ----- | --------------------- |
+| **KV Storage**       | 4 keys × 10k agents = 40k writes          | Free  | Under 1M/day limit    |
+| **KV Reads**         | 10M badge lookups                         | Free  | Under 10M/day limit   |
+| **D1 Writes**        | 10k lag updates/day                       | Free  | Under 100k/day limit  |
+| **Analytics Engine** | 720 hourly points × 10k agents = 7.2M pts | $1.44 | $0.20/1M pts          |
+| **R2 Storage**       | 365 Parquet files × 10 MB = 3.65 GB       | $0.05 | $0.015/GB/month       |
+| **Worker CPU**       | 15 ms × 10M = 150k CPU-seconds            | Free  | Under 30M/month limit |
 
 **Total:** ~$1.50/month for 10M bets (scales linearly)
 
@@ -699,40 +717,42 @@ artillery run tests/load/analytics-endpoints.yml
 
 ### Issue: Velocity badge always shows "0 bets/min"
 
-**Cause:** No recent bets in 5-minute window
-**Fix:** Check `InsertDateTime` format and timezone
+**Cause:** No recent bets in 5-minute window **Fix:** Check `InsertDateTime`
+format and timezone
 
 ### Issue: Steam propagation returns empty array
 
-**Cause:** `steamEvents` Set not populated
-**Fix:** Ensure steam detection runs before lag analysis
+**Cause:** `steamEvents` Set not populated **Fix:** Ensure steam detection runs
+before lag analysis
 
 ### Issue: Time-series query returns stale data
 
-**Cause:** Down-sample cron not running
-**Fix:** Check `wrangler tail` for cron execution logs
+**Cause:** Down-sample cron not running **Fix:** Check `wrangler tail` for cron
+execution logs
 
 ### Issue: Rate limiting too aggressive
 
-**Cause:** Default 10 req/s too low for your traffic
-**Fix:** Adjust limit in `checkAnalyticsRateLimit()` function
+**Cause:** Default 10 req/s too low for your traffic **Fix:** Adjust limit in
+`checkAnalyticsRateLimit()` function
 
 ### Issue: GDPR purge deleting too much data
 
-**Cause:** 90-day retention too aggressive
-**Fix:** Increase `retentionDays` parameter in `isGdprPurgeEligible()`
+**Cause:** 90-day retention too aggressive **Fix:** Increase `retentionDays`
+parameter in `isGdprPurgeEligible()`
 
 ---
 
 ## Roadmap
 
 ### Q4 2025
+
 - [ ] Warm tier query implementation (Analytics Engine SQL API)
 - [ ] Cold tier Parquet writer (Apache Arrow library)
 - [ ] Real-time signal dashboard (WebSocket streaming)
 - [ ] Multi-agent graph visualization (D3.js)
 
 ### Q1 2026
+
 - [ ] ML model integration (TensorFlow.js WASM)
 - [ ] Anomaly detection (Isolation Forest)
 - [ ] Automated ring-fence alerts (Webhook)
@@ -751,5 +771,4 @@ artillery run tests/load/analytics-endpoints.yml
 
 ---
 
-*Last Updated: 2025-10-08*
-*Betting-Brain v3 – Enhanced Analytics Architecture*
+_Last Updated: 2025-10-08_ _Betting-Brain v3 – Enhanced Analytics Architecture_

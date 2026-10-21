@@ -1,17 +1,19 @@
 # GitHub Repository Metadata
 
-**Project:** Betting-Brain v3.2.0
-**Last Updated:** 2025-10-08
+**Project:** Betting-Brain v3.2.0 **Last Updated:** 2025-10-08
 
-This document describes GitHub repository metadata including topics, tags, description, and settings that should be configured.
+This document describes GitHub repository metadata including topics, tags,
+description, and settings that should be configured.
 
 ---
 
 ## Repository Topics
 
-Add these topics via GitHub Settings → Topics (or click "Add topics" on repository page):
+Add these topics via GitHub Settings → Topics (or click "Add topics" on
+repository page):
 
 ### Primary Topics (Core Technology)
+
 ```
 bun
 typescript
@@ -24,6 +26,7 @@ mcp-server
 ```
 
 ### Functional Topics (What It Does)
+
 ```
 betting-intelligence
 sports-betting
@@ -37,6 +40,7 @@ exposure-tracking
 ```
 
 ### Development Topics (How It's Built)
+
 ```
 ai-assisted
 cursor-rules
@@ -48,6 +52,7 @@ type-safety
 ```
 
 ### Integration Topics
+
 ```
 json-rpc
 mcp-protocol
@@ -58,6 +63,7 @@ browser-extension
 ```
 
 ### Testing & Quality
+
 ```
 bun-test
 code-quality
@@ -95,16 +101,19 @@ ci-cd
 ## Repository Description
 
 **Current Description:**
+
 ```
 Enterprise-grade betting data interceptor with circuit breaker and health monitoring
 ```
 
 **Updated Description (v3.2.0):**
+
 ```
 🧠 Edge-native betting intelligence platform with MCP server, real-time analytics, and AI-assisted development (Bun + TypeScript + Cloudflare Workers)
 ```
 
 **Alternative (Shorter):**
+
 ```
 Edge-native betting intelligence with MCP server | Bun + TypeScript + Cloudflare Workers
 ```
@@ -120,6 +129,7 @@ Edge-native betting intelligence with MCP server | Bun + TypeScript + Cloudflare
 **Visibility:** Private (or Public depending on your needs)
 
 **Features:**
+
 - ✅ Issues
 - ✅ Projects
 - ✅ Discussions (optional)
@@ -127,6 +137,7 @@ Edge-native betting intelligence with MCP server | Bun + TypeScript + Cloudflare
 - ✅ Preserve this repository (recommended)
 
 **Pull Requests:**
+
 - ✅ Allow squash merging
 - ✅ Allow merge commits
 - ✅ Automatically delete head branches
@@ -134,6 +145,7 @@ Edge-native betting intelligence with MCP server | Bun + TypeScript + Cloudflare
 - ✅ Require PR reviews before merging (1 reviewer minimum)
 
 **Merge Button:**
+
 - ✅ Squash and merge (default)
 - ❌ Rebase and merge
 - ❌ Allow merge commits
@@ -143,6 +155,7 @@ Edge-native betting intelligence with MCP server | Bun + TypeScript + Cloudflare
 **Protected Branch:** `main`
 
 **Rules:**
+
 - ✅ Require pull request reviews before merging (1 approval)
 - ✅ Require status checks to pass before merging
   - `ci` (bun run ci)
@@ -157,6 +170,7 @@ Edge-native betting intelligence with MCP server | Bun + TypeScript + Cloudflare
 ### About Section
 
 **Website:** (Your deployed worker URL, if public)
+
 ```
 https://betting-brain-v3.workers.dev
 ```
@@ -179,6 +193,7 @@ CLOUDFLARE_ACCOUNT_ID=<your-account-id>
 ```
 
 Optional secrets:
+
 ```
 SLACK_WEBHOOK_URL=<webhook-for-release-notifications>
 ```
@@ -190,6 +205,7 @@ SLACK_WEBHOOK_URL=<webhook-for-release-notifications>
 ### Release Settings
 
 **Releases:**
+
 - ✅ Automatically generate release notes
 - ✅ Include contributors in release notes
 
@@ -244,9 +260,11 @@ Add to README.md:
 ### Creating Social Preview
 
 Use tools like:
+
 - [Canva](https://www.canva.com/) - Free design tool
 - [Figma](https://www.figma.com/) - Design platform
-- [GitHub Social Preview Generator](https://github.com/pqt/github-social-preview-generator) - Automated tool
+- [GitHub Social Preview Generator](https://github.com/pqt/github-social-preview-generator) -
+  Automated tool
 
 ---
 
@@ -317,16 +335,19 @@ nolarose1968/betting-brain-v3
 ## Maintenance Checklist
 
 ### Weekly
+
 - [ ] Check CI/CD status
 - [ ] Review open PRs
 - [ ] Update dependencies (bun update)
 
 ### Monthly
+
 - [ ] Review and update topics if needed
 - [ ] Check repository insights/analytics
 - [ ] Update documentation for major changes
 
 ### Per Release
+
 - [ ] Create annotated git tag
 - [ ] Update version in README, package.json, CHANGELOG
 - [ ] Create GitHub release with notes
@@ -337,14 +358,17 @@ nolarose1968/betting-brain-v3
 
 ## References
 
-- **GitHub Topics**: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/classifying-your-repository-with-topics
-- **Branch Protection**: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
-- **CODEOWNERS**: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
-- **GitHub Releases**: https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
+- **GitHub Topics**:
+  https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/classifying-your-repository-with-topics
+- **Branch Protection**:
+  https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
+- **CODEOWNERS**:
+  https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+- **GitHub Releases**:
+  https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
 - **GitHub CLI**: https://cli.github.com/
 
 ---
 
-**Status:** Ready for implementation ✅
-**Last Updated:** 2025-10-08
-**Project Version:** v3.2.0
+**Status:** Ready for implementation ✅ **Last Updated:** 2025-10-08 **Project
+Version:** v3.2.0

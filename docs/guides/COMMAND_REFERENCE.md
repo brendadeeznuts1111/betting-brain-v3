@@ -2,7 +2,8 @@
 
 ## Overview
 
-Betting-Brain v3.3.0 provides **three tiers of commands** for development, automation, and autonomous operations:
+Betting-Brain v3.3.0 provides **three tiers of commands** for development,
+automation, and autonomous operations:
 
 1. **CLI** - Direct commands (bun, wrangler, git)
 2. **Forest** - Project-level automation & monitoring
@@ -39,7 +40,8 @@ Betting-Brain v3.3.0 provides **three tiers of commands** for development, autom
 
 ## 🤖 Floor Commands (Autonomous Operations)
 
-**Purpose:** System-level health, validation, and autonomous operations with AI integration.
+**Purpose:** System-level health, validation, and autonomous operations with AI
+integration.
 
 ### Health & Validation
 
@@ -92,7 +94,8 @@ bun run floor:status
 
 ## 🌲 Forest Commands (Project Automation)
 
-**Purpose:** Project-level automation, grove health monitoring, and release management.
+**Purpose:** Project-level automation, grove health monitoring, and release
+management.
 
 ### Dashboard
 
@@ -373,21 +376,22 @@ bun run floor:voice
 
 ## 📊 Command Comparison
 
-| Task | CLI | Forest | Floor |
-|------|-----|--------|-------|
-| **Health Check** | `bun test` | `forest:health` | `floor:health` |
-| **Deploy** | `wrangler deploy` | - | `floor:deploy` |
-| **Status** | `curl /health` | `forest` | `floor:status` |
-| **Tests** | `bun test` | - | `floor:test` |
-| **MCP** | - | `forest:mcp` | `floor:mcp` |
-| **Release** | - | `forest:release` | - |
-| **Dependencies** | `bun update` | `forest:fresh` | - |
+| Task             | CLI               | Forest           | Floor          |
+| ---------------- | ----------------- | ---------------- | -------------- |
+| **Health Check** | `bun test`        | `forest:health`  | `floor:health` |
+| **Deploy**       | `wrangler deploy` | -                | `floor:deploy` |
+| **Status**       | `curl /health`    | `forest`         | `floor:status` |
+| **Tests**        | `bun test`        | -                | `floor:test`   |
+| **MCP**          | -                 | `forest:mcp`     | `floor:mcp`    |
+| **Release**      | -                 | `forest:release` | -              |
+| **Dependencies** | `bun update`      | `forest:fresh`   | -              |
 
 ---
 
 ## 🎯 When to Use Which Tier
 
 ### Use **CLI** when:
+
 - Developing locally
 - Running specific tests
 - Deploying manually
@@ -395,6 +399,7 @@ bun run floor:voice
 - Managing database migrations
 
 ### Use **Forest** when:
+
 - Checking grove health
 - Preparing for release
 - Monitoring dependencies
@@ -402,6 +407,7 @@ bun run floor:voice
 - Validating MCP integration
 
 ### Use **Floor** when:
+
 - Validating system health
 - Running smoke tests
 - Deploying with safety checks
@@ -458,15 +464,18 @@ bun run floor:mcp
 ## 📚 Documentation References
 
 ### Floor System
+
 - [FLOOR_SYSTEM.md](FLOOR_SYSTEM.md) - Complete Floor documentation
 - [FLOOR_SMOKE_TEST.md](FLOOR_SMOKE_TEST.md) - 60-second validation guide
 - [.cursor/rules/99-floor.mdc](../.cursor/rules/99-floor.mdc) - Floor rules
 
 ### Forest CLI
+
 - [scripts/forest.ts](../scripts/forest.ts) - Forest CLI implementation
 - [docs/AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md) - Automation documentation
 
 ### CLI Tools
+
 - [QUICKSTART.md](QUICKSTART.md) - Quick setup guide
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment documentation
 - [TESTING_STATUS.md](TESTING_STATUS.md) - Testing guide
@@ -505,9 +514,8 @@ bun run floor:test:quick || exit 1
 
 ---
 
-**The three-tier command system (CLI → Forest → Floor) provides a complete development, automation, and autonomous operations framework.**
+**The three-tier command system (CLI → Forest → Floor) provides a complete
+development, automation, and autonomous operations framework.**
 
-**Status:** Production-Ready ✅
-**Version:** 3.3.0
-**Last Updated:** 2025-10-08
+**Status:** Production-Ready ✅ **Version:** 3.3.0 **Last Updated:** 2025-10-08
 **Maintainer:** Betting-Brain Team

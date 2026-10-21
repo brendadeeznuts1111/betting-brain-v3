@@ -16,21 +16,22 @@ function isRetryableError(error: unknown): boolean {
     if (error.name === 'ZodError' || error.message.includes('validation')) {
       return false;
     }
-    
+
     // Don't retry database constraint errors
-    if (error.message.includes('UNIQUE constraint') || 
-        error.message.includes('FOREIGN KEY constraint')) {
+    if (error.message.includes('UNIQUE constraint') || error.message.includes('FOREIGN KEY constraint')) {
       return false;
     }
-    
+
     // Retry network errors, timeouts, and other transient errors
-    if (error.message.includes('timeout') || 
-        error.message.includes('network') ||
-        error.message.includes('connection')) {
+    if (
+      error.message.includes('timeout') ||
+      error.message.includes('network') ||
+      error.message.includes('connection')
+    ) {
       return true;
     }
   }
-  
+
   // Default to retryable for unknown errors
   return true;
 }
@@ -44,7 +45,7 @@ const SteamMoveSchema = z.object({
   vb: z.number().nullable(),
   va: z.number().nullable(),
   ts: z.string().datetime(),
-  trigger: z.string().optional()
+  trigger: z.string().optional(),
 });
 
 // Type inference from schema
@@ -60,10 +61,10 @@ export async function handleSteamWebhook(message: Message, env: Env, ctx: Execut
       // JSON parsing errors are non-retryable
       return;
     }
-    
+
     // Validate incoming data
     const validatedData = SteamMoveSchema.parse(data);
-    
+
     // Check cost cap before processing
     const costCheck = await costCapGuard.checkRequest(new Request('https://internal'), env);
     if (!costCheck.allowed) {
@@ -82,13 +83,13 @@ export async function handleSteamWebhook(message: Message, env: Env, ctx: Execut
 
     // Process the steam move
     await processSteamMove(validatedData, env);
-    
+
     console.log(`Processed steam move for event ${validatedData.eid}, market ${validatedData.mt}`);
-    
+
     // Message will be automatically acknowledged on successful completion
   } catch (error) {
     console.error('Error processing steam webhook:', error);
-    
+
     // Check if this is a retryable error
     if (isRetryableError(error)) {
       console.log('Retryable error detected, message will be retried');
@@ -103,23 +104,31 @@ export async function handleSteamWebhook(message: Message, env: Env, ctx: Execut
 
 async function checkDeduplication(data: SteamMoveData, env: Env): Promise<boolean> {
   const dedupeKey = `${data.eid}_${data.mt}`;
-  
+
   // Check if we've already processed this event/market combination recently
-  const existing = await env.ANALYTICS.prepare(`
+  const existing = await env.ANALYTICS.prepare(
+    `
     SELECT 1 FROM steam_dedupe 
     WHERE eid = ? AND mt = ? 
     AND ts > datetime('now', '-5 minutes')
-  `).bind(data.eid, data.mt).first();
+  `
+  )
+    .bind(data.eid, data.mt)
+    .first();
 
   if (existing) {
     return true; // Duplicate found
   }
 
   // Insert deduplication record
-  await env.ANALYTICS.prepare(`
+  await env.ANALYTICS.prepare(
+    `
     INSERT OR REPLACE INTO steam_dedupe (eid, mt, ts)
     VALUES (?, ?, ?)
-  `).bind(data.eid, data.mt, data.ts).run();
+  `
+  )
+    .bind(data.eid, data.mt, data.ts)
+    .run();
 
   return false; // Not a duplicate
 }
@@ -127,14 +136,14 @@ async function checkDeduplication(data: SteamMoveData, env: Env): Promise<boolea
 async function processSteamMove(data: SteamMoveData, env: Env): Promise<void> {
   // Calculate steam move metrics
   const metrics = await calculateSteamMoveMetrics(data, env);
-  
+
   // Check if this qualifies as a steam move
   const isSteamMove = await evaluateSteamMove(metrics, env);
-  
+
   if (isSteamMove) {
     // Send alert
     await sendSteamMoveAlert(metrics, env);
-    
+
     // Log to analytics engine
     await logSteamMoveToAnalytics(metrics, env);
   }
@@ -142,14 +151,14 @@ async function processSteamMove(data: SteamMoveData, env: Env): Promise<void> {
 
 async function calculateSteamMoveMetrics(data: SteamMoveData, env: Env): Promise<SteamMoveMetrics> {
   // Calculate line change
-  const lineChange = (data.lb !== null && data.la !== null) ? data.la - data.lb : 0;
-  
+  const lineChange = data.lb !== null && data.la !== null ? data.la - data.lb : 0;
+
   // Calculate volume change
-  const volumeChange = (data.vb !== null && data.va !== null) ? data.va - data.vb : 0;
-  
+  const volumeChange = data.vb !== null && data.va !== null ? data.va - data.vb : 0;
+
   // Calculate sigma (standard deviation) - simplified calculation
   const sigma = await calculateSigma(data.eid, data.mt, env);
-  
+
   return {
     eventId: data.eid,
     marketType: data.mt,
@@ -160,22 +169,26 @@ async function calculateSteamMoveMetrics(data: SteamMoveData, env: Env): Promise
     isSteamMove: false, // Will be determined by evaluateSteamMove
     alertThreshold: {
       sigma: 3,
-      timeWindow: 60 // 60 seconds
-    }
+      timeWindow: 60, // 60 seconds
+    },
   };
 }
 
 async function calculateSigma(eventId: string, marketType: string, env: Env): Promise<number> {
   // Get recent line movements for this event/market to calculate sigma
-  const recentMovementsResult = await env.ANALYTICS.prepare(`
+  const recentMovementsResult = await env.ANALYTICS.prepare(
+    `
     SELECT lb, la, ts
     FROM line_movements 
     WHERE eid = ? AND mt = ? 
     AND ts > datetime('now', '-1 hour')
     ORDER BY ts DESC
     LIMIT 100
-  `).bind(eventId, marketType).all();
-  
+  `
+  )
+    .bind(eventId, marketType)
+    .all();
+
   const recentMovements = recentMovementsResult.results as unknown as Array<{
     lb: number | null;
     la: number | null;
@@ -188,7 +201,7 @@ async function calculateSigma(eventId: string, marketType: string, env: Env): Pr
 
   // Calculate standard deviation of line changes
   const changes = recentMovements
-    .map((row: any) => row.lb !== null && row.la !== null ? row.la - row.lb : 0)
+    .map((row: any) => (row.lb !== null && row.la !== null ? row.la - row.lb : 0))
     .filter(change => change !== 0);
 
   if (changes.length < 2) {
@@ -197,7 +210,7 @@ async function calculateSigma(eventId: string, marketType: string, env: Env): Pr
 
   const mean = changes.reduce((sum, change) => sum + change, 0) / changes.length;
   const variance = changes.reduce((sum, change) => sum + Math.pow(change - mean, 2), 0) / changes.length;
-  
+
   return Math.sqrt(variance);
 }
 
@@ -205,19 +218,19 @@ async function evaluateSteamMove(metrics: SteamMoveMetrics, env: Env): Promise<b
   // Check if line change exceeds 3 sigma threshold
   const sigmaThreshold = metrics.alertThreshold.sigma;
   const timeWindow = metrics.alertThreshold.timeWindow;
-  
+
   // Check if this is a significant move within the time window
-  const isSignificantMove = Math.abs(metrics.lineChange) >= (sigmaThreshold * metrics.sigma);
-  
+  const isSignificantMove = Math.abs(metrics.lineChange) >= sigmaThreshold * metrics.sigma;
+
   if (isSignificantMove) {
     // Check if this happened within the time window
     const moveTime = new Date(metrics.timestamp).getTime();
     const now = Date.now();
     const timeDiff = (now - moveTime) / 1000; // seconds
-    
+
     return timeDiff <= timeWindow;
   }
-  
+
   return false;
 }
 
@@ -233,7 +246,7 @@ async function logSteamMoveToAnalytics(metrics: SteamMoveMetrics, env: Env): Pro
   await env.ANALYTICS_ENGINE.writeDataPoint({
     blobs: [metrics.eventId, metrics.marketType],
     doubles: [metrics.lineChange, metrics.volumeChange, metrics.sigma],
-    indexes: ['steam_move']
+    indexes: ['steam_move'],
   });
 }
 
@@ -241,14 +254,12 @@ async function logSteamMoveToAnalytics(metrics: SteamMoveMetrics, env: Env): Pro
 export async function handleBatchSteamWebhook(messages: Message[], env: Env, ctx: ExecutionContext): Promise<void> {
   const batchSize = 5; // Max batch size from wrangler.toml
   const batches = [];
-  
+
   for (let i = 0; i < messages.length; i += batchSize) {
     batches.push(messages.slice(i, i + batchSize));
   }
 
   for (const batch of batches) {
-    await Promise.all(
-      batch.map(message => handleSteamWebhook(message, env, ctx))
-    );
+    await Promise.all(batch.map(message => handleSteamWebhook(message, env, ctx)));
   }
 }

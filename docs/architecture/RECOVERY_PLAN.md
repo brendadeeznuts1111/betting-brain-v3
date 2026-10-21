@@ -11,12 +11,12 @@
 
 ### Critical Issues (Blocking Development) 🔴
 
-| Issue | Impact | Count | Severity |
-|-------|--------|-------|----------|
-| **Tests Hanging** | Can't run test suite | 1+ files | 🔴 CRITICAL |
-| **Security Rule Violations** | CI will fail | 145 errors | 🟠 HIGH |
-| **Broken Links** | Poor documentation | 75 links | 🟡 MEDIUM |
-| **TypeScript Errors** | Type safety issues | 100+ | 🟡 MEDIUM |
+| Issue                        | Impact               | Count      | Severity    |
+| ---------------------------- | -------------------- | ---------- | ----------- |
+| **Tests Hanging**            | Can't run test suite | 1+ files   | 🔴 CRITICAL |
+| **Security Rule Violations** | CI will fail         | 145 errors | 🟠 HIGH     |
+| **Broken Links**             | Poor documentation   | 75 links   | 🟡 MEDIUM   |
+| **TypeScript Errors**        | Type safety issues   | 100+       | 🟡 MEDIUM   |
 
 ### Root Causes Identified
 
@@ -34,16 +34,19 @@
 ### Task 1.1: Fix Hanging Tests ⏱️ 30 minutes
 
 **Files:**
+
 - `tests/unit/steam.test.ts` (hanging on line 59)
 - `src/queues/steamWebhook.ts:185` (undefined.length error)
 
 **Root Cause:**
+
 ```typescript
 // Line 185: steamWebhook.ts
 if (recentMovements.length < 2) {  // ← recentMovements is undefined
 ```
 
 **Fix:**
+
 ```typescript
 const recentMovements = await env.ANALYTICS.prepare(...).all();
 
@@ -54,6 +57,7 @@ if (!recentMovements || !recentMovements.results || recentMovements.results.leng
 ```
 
 **Validation:**
+
 ```bash
 bun test tests/unit/steam.test.ts
 ```
@@ -68,14 +72,16 @@ bun test tests/unit/steam.test.ts
 
 ```typescript
 // tests/unit/steam.test.ts
-describe.skip("Steam Move Detection", () => {  // ← Add .skip
-  test("should detect steam move", async () => {
+describe.skip('Steam Move Detection', () => {
+  // ← Add .skip
+  test('should detect steam move', async () => {
     // ... test code
   });
 });
 ```
 
 **Validation:**
+
 ```bash
 bun test  # Should complete without hanging
 ```
@@ -85,30 +91,34 @@ bun test  # Should complete without hanging
 ### Task 1.3: Fix Test Infrastructure ⏱️ 1 hour
 
 **Issues:**
+
 1. `husky` prepare script triggering tests on install
 2. Test commands hanging without timeout
 
 **Fixes:**
 
 **File:** `package.json`
+
 ```json
 {
   "scripts": {
-    "test": "bun test --timeout 10000",  // ← Add 10s timeout
+    "test": "bun test --timeout 10000", // ← Add 10s timeout
     "test:unit": "bun test tests/unit --timeout 5000",
     "test:integration": "bun test tests/integration --timeout 30000",
-    "prepare": "husky || true"  // ← Already fixed
+    "prepare": "husky || true" // ← Already fixed
   }
 }
 ```
 
 **File:** `bunfig.toml`
+
 ```toml
 [test]
 timeout = 10000  # 10 second default timeout
 ```
 
 **Validation:**
+
 ```bash
 bun test --timeout 5000
 ```
@@ -122,11 +132,13 @@ bun test --timeout 5000
 ### Task 2.1: Categorize Violations ⏱️ 30 minutes
 
 **Run analysis:**
+
 ```bash
 bun run security src/ 2>&1 | grep "^error\[" | cut -d'[' -f2 | cut -d']' -f1 | sort | uniq -c
 ```
 
 **Expected breakdown:**
+
 - `no-new-date-edge`: ~60 violations (mostly `.toISOString()` - false positives)
 - `unstructured-log`: ~40 violations (missing requestId)
 - `msgpack-ticker`: ~30 violations (warnings, not errors)
@@ -142,12 +154,13 @@ bun run security src/ 2>&1 | grep "^error\[" | cut -d'[' -f2 | cut -d']' -f1 | s
 **File:** `rules/no-new-date-edge.yaml`
 
 **Current (too strict):**
+
 ```yaml
 rule:
   all:
     - pattern: new Date()
     - not:
-        pattern: new Date().toISOString()  # ← Should allow this
+        pattern: new Date().toISOString() # ← Should allow this
     - not:
         pattern: new Date().getTime()
 ```
@@ -155,6 +168,7 @@ rule:
 **Issue:** The `not` pattern isn't working correctly
 
 **Fix Option 1 - Be More Specific:**
+
 ```yaml
 rule:
   pattern: new Date()
@@ -167,6 +181,7 @@ rule:
 ```
 
 **Fix Option 2 - Disable for Now (Faster):**
+
 ```yaml
 # Move to rules/no-new-date-edge.yaml.disabled
 # Add to sgconfig.yml ignore list
@@ -183,6 +198,7 @@ rule:
 1. **Queue Batch Limit** (~5 violations) - 30 min
    - File: `src/triggers/onLineMove.ts:26`
    - Fix: Add batch slicing
+
    ```typescript
    const batch = messages.slice(0, 100);
    await env.STEAM_WEBHOOK.send(batch);
@@ -191,6 +207,7 @@ rule:
 2. **Worker URL Duplication** (~10 violations) - 1 hour
    - Files: `dashboards/*.html`, `tools/*.html`
    - Fix: Import from `dashboards/shared/config.js`
+
    ```html
    <script type="module">
      import { WORKER_URL } from './shared/config.js';
@@ -237,6 +254,7 @@ cat link-check-results.txt | grep "✗" | wc -l
    - Replace: `[...](archive/URGENT_TEST_FIXES.md)`
 
 **Automated fix script:**
+
 ```typescript
 // scripts/fix-links.ts
 const replacements = {
@@ -255,11 +273,12 @@ const replacements = {
 **File:** `scripts/link-check.js`
 
 **Add ignore patterns:**
+
 ```javascript
 const ignorePatterns = [
-  /^https?:\/\//,  // External links (check separately)
-  /^#/,  // Anchor links
-  /mdc:/,  // Cursor MDC links
+  /^https?:\/\//, // External links (check separately)
+  /^#/, // Anchor links
+  /mdc:/, // Cursor MDC links
 ];
 ```
 
@@ -274,12 +293,14 @@ const ignorePatterns = [
 **Pattern:** All D1 queries returning wrong types
 
 **Files affected:**
+
 - `src/queues/steamWebhook.ts`
 - `src/schedules/exposureCalc.ts`
 - `src/schedules/sharpCalc.ts`
 - `src/triggers/onLineMove.ts`
 
 **Fix pattern:**
+
 ```typescript
 // Before:
 const result = await env.ANALYTICS.prepare(`...`).all();
@@ -287,7 +308,7 @@ const result = await env.ANALYTICS.prepare(`...`).all();
 
 // After:
 const result = await env.ANALYTICS.prepare(`...`).all();
-const rows = result.results as Array<{ field1: type1, field2: type2 }>;
+const rows = result.results as Array<{ field1: type1; field2: type2 }>;
 ```
 
 ---
@@ -295,10 +316,11 @@ const rows = result.results as Array<{ field1: type1, field2: type2 }>;
 ### Task 4.2: Enable Strict Type Checking ⏱️ 1 hour
 
 **File:** `tsconfig.json`
+
 ```json
 {
   "compilerOptions": {
-    "strict": true,  // ← Enable gradually
+    "strict": true, // ← Enable gradually
     "noImplicitAny": true,
     "strictNullChecks": true
   }
@@ -306,6 +328,7 @@ const rows = result.results as Array<{ field1: type1, field2: type2 }>;
 ```
 
 **Validate:**
+
 ```bash
 bun x tsc --noEmit
 ```
@@ -315,6 +338,7 @@ bun x tsc --noEmit
 ## 📋 Complete Execution Plan
 
 ### Day 1 Morning (4 hours)
+
 ```bash
 # Phase 1: Unblock Development
 1. Fix steam test hanging             ⏱️ 30 min   ✅
@@ -331,6 +355,7 @@ bun run security src/                  # <50 errors
 ```
 
 ### Day 1 Afternoon (4 hours)
+
 ```bash
 # Phase 2: Continue Security Fixes
 6. Fix queue batch limit              ⏱️ 30 min
@@ -342,6 +367,7 @@ bun run security src/                  # <20 errors
 ```
 
 ### Day 2 (6-8 hours)
+
 ```bash
 # Phase 2: Finish Security Fixes
 9. Fix remaining logs                 ⏱️ 1 hour
@@ -358,6 +384,7 @@ bun run security src/                  # 0 errors
 ```
 
 ### Day 3 (4-6 hours)
+
 ```bash
 # Phase 4: Fix TypeScript Errors
 14. Fix D1 result types               ⏱️ 2 hours
@@ -376,21 +403,25 @@ bun scripts/link-check.js              # 0 broken
 ## 🎯 Success Metrics
 
 ### Phase 1 Complete ✅
+
 - [ ] `bun test` completes without hanging
 - [ ] Test timeout configured in bunfig.toml
 - [ ] All unit tests can run
 
 ### Phase 2 Complete ✅
+
 - [ ] <20 security rule violations
 - [ ] No false positive rules active
 - [ ] CI security job can pass
 
 ### Phase 3 Complete ✅
+
 - [ ] 0 broken internal links
 - [ ] Link checker passes
 - [ ] Documentation fully navigable
 
 ### Phase 4 Complete ✅
+
 - [ ] 0 TypeScript errors
 - [ ] Strict mode enabled
 - [ ] All type safety enforced
@@ -436,6 +467,7 @@ bun x tsc --noEmit
 **YES** - Focus on stability first. MessagePack can wait.
 
 **Rationale:**
+
 - Tests must pass before adding features
 - Security violations block CI
 - Broken links hurt maintainability
@@ -447,12 +479,14 @@ bun x tsc --noEmit
 ## 🎯 Recommended Approach
 
 **Option A: Full Sprint (Aggressive - 2-3 days)**
+
 - Work through all phases sequentially
 - Fix everything before moving forward
 - Pros: Clean slate, no technical debt
 - Cons: 2-3 days before new features
 
 **Option B: Phased Rollout (Pragmatic - 4-5 days)**
+
 - Phase 1 immediately (unblock tests)
 - Phase 2 next (security critical for CI)
 - Phase 3 and 4 as time permits
@@ -460,6 +494,7 @@ bun x tsc --noEmit
 - Cons: Some debt remains
 
 **Option C: Triage (Minimal - 1 day)**
+
 - Fix only hanging tests
 - Disable failing security rules
 - Skip broken links for now
@@ -471,12 +506,14 @@ bun x tsc --noEmit
 ## 🎯 My Recommendation: Option B (Phased Rollout)
 
 **Why:**
+
 1. **Immediate Impact** - Tests unblocked Day 1 morning
 2. **CI Ready** - Security fixes by Day 1 afternoon
 3. **Sustainable** - Phases 3 and 4 don't block progress
 4. **Flexible** - Can pause between phases for urgent work
 
 **Next Steps:**
+
 1. Approve this plan
 2. Start Phase 1 (30 minutes)
 3. Validate tests pass
@@ -485,4 +522,3 @@ bun x tsc --noEmit
 ---
 
 **Ready to start Phase 1?** 🚀
-

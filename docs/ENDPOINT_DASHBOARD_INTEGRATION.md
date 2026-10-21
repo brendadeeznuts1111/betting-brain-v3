@@ -19,8 +19,10 @@
 ### 1. Core System Endpoints
 
 #### GET `/health`
+
 **Purpose:** Health check endpoint  
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -31,6 +33,7 @@
 ```
 
 **Used By:**
+
 - Dashboard Hub (index.html) - System status indicator
 - Health monitoring tools
 - CI/CD health checks
@@ -38,8 +41,10 @@
 ---
 
 #### POST `/logs`
+
 **Purpose:** Centralized logging endpoint for browser extension  
 **Request:**
+
 ```json
 {
   "logs": [
@@ -57,6 +62,7 @@
 ```
 
 **Response:**
+
 ```json
 {
   "status": "received",
@@ -67,14 +73,17 @@
 ```
 
 **Used By:**
+
 - Browser extension (background.js, content.js)
 - Debugging tools
 
 ---
 
 #### GET `/diagnostics`
+
 **Purpose:** System diagnostics and configuration check  
 **Response:**
+
 ```json
 {
   "bindings": {
@@ -89,6 +98,7 @@
 ```
 
 **Used By:**
+
 - Diagnostic suite
 - Setup wizard
 - System health monitor
@@ -96,8 +106,10 @@
 ---
 
 #### GET `/system-status`
+
 **Purpose:** Detailed system status and metrics  
 **Response:**
+
 ```json
 {
   "database": {
@@ -112,6 +124,7 @@
 ```
 
 **Used By:**
+
 - Dashboard status cards
 - Monitoring tools
 
@@ -120,29 +133,35 @@
 ### 2. BetTicker Endpoints
 
 #### POST `/cloud/api/Manager/getBetTicker`
+
 **Purpose:** Transparent proxy + interception for BetTicker API  
-**Request:** Proxied from original API
-**Response:** Original API response + KV storage
+**Request:** Proxied from original API **Response:** Original API response + KV
+storage
 
 **Features:**
+
 - Transparent interception
 - 7-day KV retention
 - Automatic archival
 - No API changes required
 
 **Used By:**
+
 - Browser extension (content.js)
 - BetTicker Sniffer
 
 ---
 
 #### GET `/interceptor/history?limit=100`
+
 **Purpose:** Get intercepted BetTicker records  
 **Query Params:**
+
 - `limit` (default: 100) - Max records to return
 - `offset` (optional) - Pagination offset
 
 **Response:**
+
 ```json
 {
   "records": [
@@ -158,6 +177,7 @@
 ```
 
 **Used By:**
+
 - Dashboard Hub (index.html) - Data count
 - All dashboards - Historical data
 - Capture live data tool
@@ -165,8 +185,10 @@
 ---
 
 #### GET `/interceptor/stats`
+
 **Purpose:** Statistics on intercepted data  
 **Response:**
+
 ```json
 {
   "totalRecords": 1234,
@@ -178,6 +200,7 @@
 ```
 
 **Used By:**
+
 - System health monitor
 - Dashboard statistics
 
@@ -186,15 +209,18 @@
 ### 3. MCP (Model Context Protocol) Endpoints
 
 #### POST `/mcp`
+
 **Purpose:** JSON-RPC 2.0 endpoint for MCP tools  
 **Protocol:** JSON-RPC 2.0
 
 **Methods:**
+
 - `initialize` - Get server capabilities
 - `tools/list` - List available tools
 - `tools/call` - Execute a tool
 
 **Example Request:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -204,6 +230,7 @@
 ```
 
 **Response:**
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -215,6 +242,7 @@
 ```
 
 **Used By:**
+
 - Claude Desktop (MCP integration)
 - AI assistants
 - Automation scripts
@@ -228,12 +256,15 @@
 All tools accessible via `/tools/{toolName}` endpoint.
 
 #### GET `/tools/getBettingExposure?eid=EVENT_ID`
+
 **Purpose:** Get current betting exposure by event  
 **Query Params:**
+
 - `eid` (required) - Event ID
 - `agentID` (optional) - Filter by agent
 
 **Response:**
+
 ```json
 {
   "eventId": "nba_123",
@@ -251,6 +282,7 @@ All tools accessible via `/tools/{toolName}` endpoint.
 ```
 
 **Used By:**
+
 - Dashboard Enhanced (exposure cards)
 - Dashboard Positions (risk tracker)
 - Exposure monitoring alerts
@@ -258,35 +290,42 @@ All tools accessible via `/tools/{toolName}` endpoint.
 ---
 
 #### GET `/tools/getCLV?cid=CUSTOMER_ID&lookbackDays=30`
+
 **Purpose:** Calculate Customer Lifetime Value  
 **Query Params:**
+
 - `cid` (required) - Customer ID
 - `lookbackDays` (optional, default: 30)
 
 **Response:**
+
 ```json
 {
   "customerId": "cust_123",
-  "clv": 1250.50,
+  "clv": 1250.5,
   "betCount": 45,
   "winRate": 58.5,
-  "avgBetSize": 125.00,
+  "avgBetSize": 125.0,
   "period": "30 days"
 }
 ```
 
 **Used By:**
+
 - Dashboard Pro (customer analytics)
 - Sharp score calculations
 
 ---
 
 #### GET `/tools/getSharpScore?cid=CUSTOMER_ID`
+
 **Purpose:** Calculate sharp customer score (0-100)  
 **Query Params:**
+
 - `cid` (required) - Customer ID
 
 **Response:**
+
 ```json
 {
   "customerId": "cust_123",
@@ -306,6 +345,7 @@ All tools accessible via `/tools/{toolName}` endpoint.
 ```
 
 **Used By:**
+
 - Dashboard Enhanced (sharp activity)
 - Dashboard Pro (AI analysis)
 - Risk management
@@ -313,12 +353,15 @@ All tools accessible via `/tools/{toolName}` endpoint.
 ---
 
 #### GET `/tools/getHoldPercentage?eid=EVENT_ID`
+
 **Purpose:** Calculate hold percentage for event  
 **Query Params:**
+
 - `eid` (required) - Event ID
 - `mt` (optional) - Market type
 
 **Response:**
+
 ```json
 {
   "eventId": "nba_123",
@@ -330,6 +373,7 @@ All tools accessible via `/tools/{toolName}` endpoint.
 ```
 
 **Used By:**
+
 - Dashboard Enhanced (profitability metrics)
 - Hold forecasting
 
@@ -340,6 +384,7 @@ All tools accessible via `/tools/{toolName}` endpoint.
 ### Landing Page: `dashboards/index.html`
 
 **Features:**
+
 - ✅ 4 Dashboard cards (Basic, Enhanced, Pro, Positions)
 - ✅ Quick stats (Records, Last Update, System Status)
 - ✅ Features comparison table
@@ -352,13 +397,14 @@ All tools accessible via `/tools/{toolName}` endpoint.
 const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
 
 // System health check
-fetch(`${WORKER_URL}/health`)
+fetch(`${WORKER_URL}/health`);
 
 // Data count
-fetch(`${WORKER_URL}/interceptor/history?limit=100`)
+fetch(`${WORKER_URL}/interceptor/history?limit=100`);
 ```
 
 **Connected To:**
+
 - `/health` → System status indicator
 - `/interceptor/history` → Data count & last update
 - `../tools/system-health-monitor.html` → Health check tool
@@ -369,8 +415,10 @@ fetch(`${WORKER_URL}/interceptor/history?limit=100`)
 ## 📊 Dashboard Pages
 
 ### 1. Dashboard Enhanced (`dashboard-enhanced.html`)
+
 **Size:** 46 KB  
 **Features:**
+
 - Real-time charts (Chart.js)
 - Alert notifications
 - Trend analysis
@@ -378,6 +426,7 @@ fetch(`${WORKER_URL}/interceptor/history?limit=100`)
 - Sharp activity monitoring
 
 **Endpoints Used:**
+
 - `/health` - System status
 - `/interceptor/history` - Historical data
 - `/tools/getBettingExposure` - Exposure cards
@@ -389,8 +438,10 @@ fetch(`${WORKER_URL}/interceptor/history?limit=100`)
 ---
 
 ### 2. Dashboard Pro (`dashboard-pro.html`)
+
 **Size:** 54 KB  
 **Features:**
+
 - AI-powered insights
 - Claude AI integration
 - Intelligent analysis
@@ -398,6 +449,7 @@ fetch(`${WORKER_URL}/interceptor/history?limit=100`)
 - Advanced risk management
 
 **Endpoints Used:**
+
 - `/mcp` - MCP protocol integration
 - `/tools/*` - All intelligence tools
 - `/interceptor/history` - Data analysis
@@ -408,8 +460,10 @@ fetch(`${WORKER_URL}/interceptor/history?limit=100`)
 ---
 
 ### 3. Dashboard Positions (`dashboard-positions.html`)
+
 **Size:** 42 KB  
 **Features:**
+
 - Real-time position tracking
 - Exposure monitoring
 - Risk heat maps
@@ -417,6 +471,7 @@ fetch(`${WORKER_URL}/interceptor/history?limit=100`)
 - Alert system
 
 **Endpoints Used:**
+
 - `/tools/getBettingExposure` - Position data
 - `/interceptor/history` - Historical positions
 - `/tools/getSharpScore` - Risk assessment
@@ -427,14 +482,17 @@ fetch(`${WORKER_URL}/interceptor/history?limit=100`)
 ---
 
 ### 4. Basic Dashboard (`dashboard.html`)
+
 **Size:** 18 KB  
 **Features:**
+
 - Clean, simple UI
 - Fast loading
 - Basic monitoring
 - Quick overview
 
 **Endpoints Used:**
+
 - `/health` - System status
 - `/interceptor/history` - Basic data
 
@@ -490,6 +548,7 @@ browser-extension/
 ## 🧪 Testing Endpoint Integration
 
 ### 1. Test Health Endpoint
+
 ```bash
 curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 ```
@@ -499,6 +558,7 @@ curl https://betting-brain-v3.nolarose1968-806.workers.dev/health
 ---
 
 ### 2. Test Interceptor History
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/history?limit=5"
 ```
@@ -508,6 +568,7 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/interceptor/history?
 ---
 
 ### 3. Test MCP Endpoint
+
 ```bash
 curl -X POST https://betting-brain-v3.nolarose1968-806.workers.dev/mcp \
   -H "Content-Type: application/json" \
@@ -519,6 +580,7 @@ curl -X POST https://betting-brain-v3.nolarose1968-806.workers.dev/mcp \
 ---
 
 ### 4. Test Intelligence Tool
+
 ```bash
 curl "https://betting-brain-v3.nolarose1968-806.workers.dev/tools/getBettingExposure?eid=nba_123"
 ```
@@ -530,11 +592,13 @@ curl "https://betting-brain-v3.nolarose1968-806.workers.dev/tools/getBettingExpo
 ### 5. Test Dashboard Integration
 
 **Open in browser:**
+
 ```
 file:///Users/nolarose/ffffff/dashboards/index.html
 ```
 
 **Check:**
+
 - ✅ System status shows ✅ or ❌
 - ✅ Data count loads
 - ✅ Last update shows time
@@ -556,6 +620,7 @@ const corsHeaders = {
 ```
 
 **Allows:**
+
 - Local file:// access (for local dashboards)
 - Any origin (for deployed dashboards)
 - GET, POST, OPTIONS methods
@@ -564,18 +629,18 @@ const corsHeaders = {
 
 ## 📊 Endpoint Performance
 
-| Endpoint | Avg Response Time | Complexity |
-|----------|------------------|------------|
-| `/health` | 5-20ms | Low |
-| `/logs` | 10-50ms | Low |
-| `/diagnostics` | 20-100ms | Medium |
-| `/system-status` | 50-200ms | Medium |
-| `/interceptor/history` | 50-300ms | Medium |
-| `/mcp` | 100-500ms | High |
-| `/tools/getBettingExposure` | 50-150ms | Low-Medium |
-| `/tools/getCLV` | 50-150ms | Low-Medium |
-| `/tools/getSharpScore` | 50-150ms | Low-Medium |
-| `/tools/getHoldPercentage` | 50-150ms | Low-Medium |
+| Endpoint                    | Avg Response Time | Complexity |
+| --------------------------- | ----------------- | ---------- |
+| `/health`                   | 5-20ms            | Low        |
+| `/logs`                     | 10-50ms           | Low        |
+| `/diagnostics`              | 20-100ms          | Medium     |
+| `/system-status`            | 50-200ms          | Medium     |
+| `/interceptor/history`      | 50-300ms          | Medium     |
+| `/mcp`                      | 100-500ms         | High       |
+| `/tools/getBettingExposure` | 50-150ms          | Low-Medium |
+| `/tools/getCLV`             | 50-150ms          | Low-Medium |
+| `/tools/getSharpScore`      | 50-150ms          | Low-Medium |
+| `/tools/getHoldPercentage`  | 50-150ms          | Low-Medium |
 
 ---
 
@@ -584,21 +649,25 @@ const corsHeaders = {
 ### Update Worker URL
 
 **In each dashboard file, find:**
+
 ```javascript
 const WORKER_URL = 'https://betting-brain-v3.nolarose1968-806.workers.dev';
 ```
 
 **For local development:**
+
 ```javascript
 const WORKER_URL = 'http://localhost:8787';
 ```
 
 **For production:**
+
 ```javascript
 const WORKER_URL = 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
 ```
 
 **Files to update:**
+
 - `dashboards/index.html` (line 261)
 - `dashboards/dashboard-enhanced.html`
 - `dashboards/dashboard-pro.html`
@@ -610,6 +679,7 @@ const WORKER_URL = 'https://betting-brain-v3-prod.nolarose1968-806.workers.dev';
 ## 🚀 Quick Start Guide
 
 ### 1. Start Worker (Local)
+
 ```bash
 cd /Users/nolarose/ffffff
 bun run dev
@@ -622,6 +692,7 @@ bun run dev
 ### 2. Update Dashboard URLs
 
 **Edit each dashboard file:**
+
 ```javascript
 const WORKER_URL = 'http://localhost:8787';
 ```
@@ -631,11 +702,13 @@ const WORKER_URL = 'http://localhost:8787';
 ### 3. Open Dashboard Hub
 
 **Browser:**
+
 ```
 file:///Users/nolarose/ffffff/dashboards/index.html
 ```
 
 **Or use Python server:**
+
 ```bash
 cd dashboards
 python3 -m http.server 8000
@@ -648,6 +721,7 @@ Then visit: `http://localhost:8000`
 ### 4. Verify Integration
 
 **Check:**
+
 1. System status indicator (should be ✅)
 2. Data count (should load number)
 3. Last update (should show time)
@@ -686,5 +760,4 @@ Then visit: `http://localhost:8000`
 **Quality Score:** 100/100 🎉  
 **Last Verified:** 2025-10-07
 
-*System is production-ready with full dashboard integration!*
-
+_System is production-ready with full dashboard integration!_

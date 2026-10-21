@@ -48,17 +48,25 @@ wrangler tail | grep -c SQLITE_BUSY
 ```typescript
 // ❌ BAD: Many individual writes
 for (const record of records) {
-    await env.DB.prepare(`
+  await env.DB.prepare(
+    `
         INSERT INTO fantasy402_raw_feed VALUES (?, ?, ?)
-    `).bind(record.id, record.data, record.ts).run();
+    `
+  )
+    .bind(record.id, record.data, record.ts)
+    .run();
 }
 
 // ✅ GOOD: Single batch write
 const statements = records.map(r =>
-    env.DB.prepare('INSERT INTO fantasy402_raw_feed VALUES (?, ?, ?)').bind(r.id, r.data, r.ts)
+  env.DB.prepare('INSERT INTO fantasy402_raw_feed VALUES (?, ?, ?)').bind(
+    r.id,
+    r.data,
+    r.ts
+  )
 );
 
-await env.DB.batch(statements);  // All or nothing!
+await env.DB.batch(statements); // All or nothing!
 ```
 
 **Expected:** 90% reduction in SQLITE_BUSY errors
@@ -73,7 +81,7 @@ async function writeWithJitter(data, env) {
     // Random delay 0-500ms
     const jitter = Math.random() * 500;
     await new Promise(resolve => setTimeout(resolve, jitter));
-    
+
     // Now write
     await env.DB.prepare('INSERT ...').bind(...).run();
 }
@@ -87,14 +95,16 @@ async function writeWithJitter(data, env) {
 
 ```typescript
 // ✅ BEST: Single INSERT with UNION ALL
-const values = records.map(r => 
-    `SELECT '${r.id}', '${r.data}', '${r.ts}'`
-).join(' UNION ALL ');
+const values = records
+  .map(r => `SELECT '${r.id}', '${r.data}', '${r.ts}'`)
+  .join(' UNION ALL ');
 
-await env.DB.prepare(`
+await env.DB.prepare(
+  `
     INSERT INTO fantasy402_raw_feed (id, data, ts)
     ${values}
-`).run();
+`
+).run();
 ```
 
 **Expected:** Maximum throughput, minimal locks
@@ -105,10 +115,10 @@ await env.DB.prepare(`
 
 ```sql
 -- Add indexes for common queries
-CREATE INDEX IF NOT EXISTS idx_fantasy402_operation 
+CREATE INDEX IF NOT EXISTS idx_fantasy402_operation
 ON fantasy402_raw_feed(operation, timestamp);
 
-CREATE INDEX IF NOT EXISTS idx_fantasy402_timestamp 
+CREATE INDEX IF NOT EXISTS idx_fantasy402_timestamp
 ON fantasy402_raw_feed(timestamp DESC);
 
 -- Apply
@@ -125,7 +135,7 @@ async function writeWithRetry(data, env, maxRetries = 3) {
         try {
             await env.DB.prepare('INSERT ...').bind(...).run();
             return;  // Success!
-            
+
         } catch (error) {
             if (error.message.includes('SQLITE_BUSY')) {
                 const backoff = Math.pow(2, attempt) * 100;  // 100ms, 200ms, 400ms
@@ -136,7 +146,7 @@ async function writeWithRetry(data, env, maxRetries = 3) {
             }
         }
     }
-    
+
     throw new Error('Max retries exceeded for SQLITE_BUSY');
 }
 ```
@@ -153,12 +163,10 @@ async function writeWithRetry(data, env, maxRetries = 3) {
 
 const statements = [];
 for (const item of items) {
-    statements.push(
-        env.DB.prepare('INSERT ...').bind(item.id, item.data)
-    );
+  statements.push(env.DB.prepare('INSERT ...').bind(item.id, item.data));
 }
 
-await env.DB.batch(statements);  // ✅ Always batch!
+await env.DB.batch(statements); // ✅ Always batch!
 ```
 
 ### 2. Monitor Write Latency
@@ -170,13 +178,13 @@ await env.DB.batch(statements);
 const latencyMs = Date.now() - timer;
 
 if (latencyMs > 400) {
-    console.warn(`Slow D1 write: ${latencyMs}ms`);
+  console.warn(`Slow D1 write: ${latencyMs}ms`);
 }
 
 // Log to Analytics Engine
 env.ANALYTICS_ENGINE.writeDataPoint({
-    blobs: ['d1_write_latency'],
-    doubles: [latencyMs]
+  blobs: ['d1_write_latency'],
+  doubles: [latencyMs],
 });
 ```
 
@@ -193,7 +201,7 @@ async function writeWithCircuitBreaker(data, env) {
         await fallbackStorage(data);
         return;
     }
-    
+
     try {
         await env.DB.prepare('INSERT ...').bind(...).run();
         consecutiveFailures = 0;  // Reset on success
@@ -248,4 +256,3 @@ wrangler tail | grep "Batch inserted"
 **Last Updated:** 2025-10-08  
 **Owner:** Database Team  
 **Severity:** High
-

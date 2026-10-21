@@ -28,14 +28,13 @@ export async function handleMCPTools(request: Request, env: Env, ctx: ExecutionC
     default:
       return new Response(JSON.stringify({ error: 'Tool not found' }), {
         status: 404,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
   }
 }
 
 // Diagnostics handler
 export async function handleDiagnostics(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-
   try {
     const diagnostics = {
       timestamp: new Date(Date.now()).toISOString(),
@@ -47,19 +46,19 @@ export async function handleDiagnostics(request: Request, env: Env, ctx: Executi
           betTickerRaw: !!env.BET_TICKER_RAW,
           lineIngress: !!env.LINE_INGRESS,
           steamWebhook: !!env.STEAM_WEBHOOK,
-          analyticsEngine: !!env.ANALYTICS_ENGINE
-        }
+          analyticsEngine: !!env.ANALYTICS_ENGINE,
+        },
       },
       kv: {
         available: !!env.BET_TICKER_RAW,
         status: 'unknown' as string,
-        error: undefined as string | undefined
+        error: undefined as string | undefined,
       },
       lastChecks: {
         timestamp: new Date(Date.now()).toISOString(),
         health: '/health',
-        interceptor: '/interceptor/history?limit=1'
-      }
+        interceptor: '/interceptor/history?limit=1',
+      },
     };
 
     // Check KV status
@@ -76,23 +75,25 @@ export async function handleDiagnostics(request: Request, env: Env, ctx: Executi
     }
 
     return new Response(JSON.stringify(diagnostics, null, 2), {
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Diagnostics error:', error);
-    return new Response(JSON.stringify({
-      error: 'Diagnostics failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Diagnostics failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
 
 // Logs handler
 export async function handleLogs(request: Request, env: Env): Promise<Response> {
-
   try {
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '50');
@@ -100,12 +101,15 @@ export async function handleLogs(request: Request, env: Env): Promise<Response> 
 
     // Since we can't access actual console logs in Workers, we'll provide recent activity
     if (!env.BET_TICKER_RAW) {
-      return new Response(JSON.stringify({
-        error: 'KV storage not available for log retrieval'
-      }), {
-        status: 503,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          error: 'KV storage not available for log retrieval',
+        }),
+        {
+          status: 503,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Get recent BetTicker activity as a proxy for logs
@@ -119,8 +123,8 @@ export async function handleLogs(request: Request, env: Env): Promise<Response> 
         status: record.metadata.status,
         ip: record.metadata.ip,
         userAgent: record.metadata.userAgent,
-        contentLength: record.metadata.contentLength
-      }
+        contentLength: record.metadata.contentLength,
+      },
     }));
 
     // Add system logs
@@ -132,36 +136,41 @@ export async function handleLogs(request: Request, env: Env): Promise<Response> 
         metadata: {
           endpoint: '/logs',
           limit: limit,
-          totalRecords: logs.length
-        }
-      }
+          totalRecords: logs.length,
+        },
+      },
     ];
 
     const allLogs = [...systemLogs, ...logs].slice(0, limit);
 
-    return new Response(JSON.stringify({
-      logs: allLogs,
-      total: allLogs.length,
-      limit: limit,
-      level: level
-    }), {
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        logs: allLogs,
+        total: allLogs.length,
+        limit: limit,
+        level: level,
+      }),
+      {
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     console.error('Logs error:', error);
-    return new Response(JSON.stringify({
-      error: 'Log retrieval failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Log retrieval failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
 
 // System status handler
 export async function handleSystemStatus(request: Request, env: Env): Promise<Response> {
-
   try {
     const now = Date.now();
     const status: any = {
@@ -169,27 +178,27 @@ export async function handleSystemStatus(request: Request, env: Env): Promise<Re
       uptime: 'N/A', // Workers don't have traditional uptime
       memory: {
         used: 'N/A',
-        limit: '128MB' // Workers memory limit
+        limit: '128MB', // Workers memory limit
       },
       cpu: {
         usage: 'N/A',
-        limit: '50ms' // Workers CPU limit
+        limit: '50ms', // Workers CPU limit
       },
       requests: {
         total: 'N/A',
-        recent: 'N/A'
+        recent: 'N/A',
       },
       errors: {
         total: 'N/A',
-        recent: 'N/A'
+        recent: 'N/A',
       },
       kv: {
         status: 'unknown' as string,
         records: 0,
         lastWrite: null as string | null,
-        error: undefined as string | undefined
+        error: undefined as string | undefined,
       },
-      health: 'unknown' as string
+      health: 'unknown' as string,
     };
 
     // Check KV status and get recent activity
@@ -238,35 +247,40 @@ export async function handleSystemStatus(request: Request, env: Env): Promise<Re
         betTickerRaw: !!env.BET_TICKER_RAW,
         lineIngress: !!env.LINE_INGRESS,
         steamWebhook: !!env.STEAM_WEBHOOK,
-        analyticsEngine: !!env.ANALYTICS_ENGINE
-      }
+        analyticsEngine: !!env.ANALYTICS_ENGINE,
+      },
     };
 
     return new Response(JSON.stringify(status, null, 2), {
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('System status error:', error);
-    return new Response(JSON.stringify({
-      error: 'System status check failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'System status check failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
 
 // Interceptor API handler (for analysis/debugging)
 export async function handleInterceptorAPI(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-
   if (!env.BET_TICKER_RAW) {
-    return new Response(JSON.stringify({
-      error: 'BetTicker interception not configured'
-    }), {
-      status: 503,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'BetTicker interception not configured',
+      }),
+      {
+        status: 503,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   const url = new URL(request.url);
@@ -277,12 +291,8 @@ export async function handleInterceptorAPI(request: Request, env: Env, ctx: Exec
       case 'history': {
         // GET /interceptor/history?limit=100&startTime=...&endTime=...
         const limit = parseInt(url.searchParams.get('limit') || '100');
-        const startTime = url.searchParams.get('startTime')
-          ? parseInt(url.searchParams.get('startTime')!)
-          : undefined;
-        const endTime = url.searchParams.get('endTime')
-          ? parseInt(url.searchParams.get('endTime')!)
-          : undefined;
+        const startTime = url.searchParams.get('startTime') ? parseInt(url.searchParams.get('startTime')!) : undefined;
+        const endTime = url.searchParams.get('endTime') ? parseInt(url.searchParams.get('endTime')!) : undefined;
 
         const history = await getBetTickerHistory(env as BetTickerSnifferEnv, {
           limit,
@@ -291,7 +301,7 @@ export async function handleInterceptorAPI(request: Request, env: Env, ctx: Exec
         });
 
         return new Response(JSON.stringify(history), {
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         });
       }
 
@@ -301,7 +311,7 @@ export async function handleInterceptorAPI(request: Request, env: Env, ctx: Exec
         if (!key) {
           return new Response(JSON.stringify({ error: 'Missing key parameter' }), {
             status: 400,
-            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
           });
         }
 
@@ -309,29 +319,32 @@ export async function handleInterceptorAPI(request: Request, env: Env, ctx: Exec
         if (!response) {
           return new Response(JSON.stringify({ error: 'Response not found' }), {
             status: 404,
-            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
           });
         }
 
         return new Response(JSON.stringify(response), {
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         });
       }
 
       default:
         return new Response(JSON.stringify({ error: 'Invalid interceptor endpoint' }), {
           status: 404,
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         });
     }
   } catch (error) {
     console.error('Interceptor API error:', error);
-    return new Response(JSON.stringify({
-      error: 'Internal error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Internal error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   }
-};
+}

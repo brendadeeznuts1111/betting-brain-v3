@@ -94,16 +94,20 @@ function validateChatRequest(body: any): { valid: boolean; error?: string; data?
 /**
  * Get platform context from D1
  */
-async function getPlatformContext(env: Env): Promise<{ totalCustomers: number; avgCLV: number; avgWinRate: number } | null> {
+async function getPlatformContext(
+  env: Env
+): Promise<{ totalCustomers: number; avgCLV: number; avgWinRate: number } | null> {
   try {
-    const result = await env.ANALYTICS.prepare(`
+    const result = await env.ANALYTICS.prepare(
+      `
       SELECT 
         COUNT(*) as total_customers,
         AVG(clv) as avg_clv,
         AVG(wr) as avg_win_rate
       FROM sharp_indicators
       WHERE upd > datetime('now', '-7 days')
-    `).first<{ total_customers: number; avg_clv: number; avg_win_rate: number }>();
+    `
+    ).first<{ total_customers: number; avg_clv: number; avg_win_rate: number }>();
 
     return result || null;
   } catch (error) {
@@ -202,7 +206,9 @@ export async function handleAIChat(request: Request, env: Env): Promise<Response
     // Call AI
     const result = await analyzer.chatAboutBettingData(chatRequest.messages);
 
-    console.log(`[${requestId}] ✅ AI response received (${result.usage.totalTokens} tokens, $${result.cost.totalCost.toFixed(6)})`);
+    console.log(
+      `[${requestId}] ✅ AI response received (${result.usage.totalTokens} tokens, $${result.cost.totalCost.toFixed(6)})`
+    );
 
     // Build response
     const response: AIChatResponse = {

@@ -9,14 +9,8 @@ import { CORS_HEADERS } from '../../utils/request';
 
 const FANTASY402_API = 'https://fantasy402.com/cloud/api/Report/getScoresLiveDynamic';
 
-export async function getLiveScores(
-  request: Request,
-  env: Env,
-  requestId: string
-): Promise<Response> {
+export async function getLiveScores(request: Request, env: Env, requestId: string): Promise<Response> {
   console.log(`[${requestId}] 🏀 GET /api/live-scores`);
-
-
 
   try {
     const url = new URL(request.url);
@@ -84,20 +78,25 @@ export async function getLiveScores(
               defaultMainLine: score.DefaultMainLine,
             }));
 
-            console.log(`[${requestId}] ✅ Returning ${games.length} scores from cache (${Math.round(cacheAge / 1000)}s old)`);
+            console.log(
+              `[${requestId}] ✅ Returning ${games.length} scores from cache (${Math.round(cacheAge / 1000)}s old)`
+            );
 
-            return new Response(JSON.stringify({
-              sport,
-              count: games.length,
-              games,
-              cached: true,
-              cacheAge: Math.round(cacheAge / 1000),
-              isLive: true,
-              timestamp: cachedData.capturedAt,
-              requestId,
-            }), {
-              headers: CORS_HEADERS,
-            });
+            return new Response(
+              JSON.stringify({
+                sport,
+                count: games.length,
+                games,
+                cached: true,
+                cacheAge: Math.round(cacheAge / 1000),
+                isLive: true,
+                timestamp: cachedData.capturedAt,
+                requestId,
+              }),
+              {
+                headers: CORS_HEADERS,
+              }
+            );
           }
         }
       } catch (error) {
@@ -131,7 +130,7 @@ export async function getLiveScores(
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'Authorization': authToken,
+            Authorization: authToken,
           },
           body: new URLSearchParams({
             customerID: 'BILLY666', // TODO: Get from session

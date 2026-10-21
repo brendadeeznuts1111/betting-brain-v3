@@ -8,17 +8,17 @@
  */
 export interface SharpAnalysisResult {
   customerId: string;
-  sharpScore: number;        // 0-100 score
-  confidence: number;         // 0-1 confidence level
+  sharpScore: number; // 0-100 score
+  confidence: number; // 0-1 confidence level
   indicators: {
-    clv: number;             // Customer Lifetime Value
-    winRate: number;         // Win rate percentage
-    actionCount: number;     // Number of bets
-    netBet: number;          // Net betting amount
+    clv: number; // Customer Lifetime Value
+    winRate: number; // Win rate percentage
+    actionCount: number; // Number of bets
+    netBet: number; // Net betting amount
   };
-  insights: string[];        // AI-generated insights
+  insights: string[]; // AI-generated insights
   recommendation: 'SHARP' | 'RECREATIONAL' | 'MONITOR';
-  reasoning: string;         // AI explanation
+  reasoning: string; // AI explanation
 }
 
 /**
@@ -28,7 +28,7 @@ export interface SteamMoveResult {
   eventId: string;
   marketType: string;
   isSteamMove: boolean;
-  confidence: number;        // 0-1 confidence level
+  confidence: number; // 0-1 confidence level
   lineMovement: {
     before: number;
     after: number;
@@ -100,9 +100,9 @@ export interface TokenUsage {
  * Cost Breakdown
  */
 export interface CostBreakdown {
-  inputCost: number;        // USD
-  outputCost: number;       // USD
-  totalCost: number;        // USD
+  inputCost: number; // USD
+  outputCost: number; // USD
+  totalCost: number; // USD
   inputTokens: number;
   outputTokens: number;
 }

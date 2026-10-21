@@ -45,13 +45,15 @@ export async function handleExposureCalculation(env: Env, ctx: ExecutionContext)
 
 async function getActiveEvents(env: Env): Promise<string[]> {
   // Get events with recent line movements (last 5 minutes)
-  const result = await env.ANALYTICS.prepare(`
+  const result = await env.ANALYTICS.prepare(
+    `
     SELECT DISTINCT eid
     FROM line_movements
     WHERE ing > datetime('now', '-5 minutes')
     ORDER BY ing DESC
     LIMIT 50
-  `).all();
+  `
+  ).all();
 
   const events = result.results as unknown as Array<{ eid: string }>;
   return events.map(row => row.eid);
@@ -59,11 +61,15 @@ async function getActiveEvents(env: Env): Promise<string[]> {
 
 async function calculateEventExposure(eventId: string, env: Env): Promise<ExposureMetrics> {
   // Get current exposure data for this event
-  const exposureDataResult = await env.ANALYTICS.prepare(`
+  const exposureDataResult = await env.ANALYTICS.prepare(
+    `
     SELECT side, risk, net
     FROM exposure_tracking
     WHERE eid = ?
-  `).bind(eventId).all();
+  `
+  )
+    .bind(eventId)
+    .all();
 
   const exposureData = exposureDataResult.results as unknown as Array<{
     side: string;
@@ -88,7 +94,7 @@ async function calculateEventExposure(eventId: string, env: Env): Promise<Exposu
       side: side as 'HOME' | 'AWAY',
       risk,
       net,
-      percentage: risk > 0 ? (net / risk) * 100 : 0
+      percentage: risk > 0 ? (net / risk) * 100 : 0,
     });
   }
 
@@ -100,8 +106,8 @@ async function calculateEventExposure(eventId: string, env: Env): Promise<Exposu
     lastUpdated: new Date().toISOString(),
     alertThreshold: {
       maxAmount: 50000, // $50k
-      maxPercentage: 60 // 60%
-    }
+      maxPercentage: 60, // 60%
+    },
   };
 }
 
@@ -110,23 +116,21 @@ async function updateExposureTracking(exposureUpdates: ExposureMetrics[], env: E
 
   for (const exposure of exposureUpdates) {
     for (const side of exposure.sides) {
-      await env.ANALYTICS.prepare(`
+      await env.ANALYTICS.prepare(
+        `
         INSERT OR REPLACE INTO exposure_tracking (eid, side, risk, net, upd)
         VALUES (?, ?, ?, ?, ?)
-      `).bind(
-        exposure.eventId,
-        side.side,
-        side.risk,
-        side.net,
-        now
-      ).run();
+      `
+      )
+        .bind(exposure.eventId, side.side, side.risk, side.net, now)
+        .run();
     }
 
     // Write to analytics engine
     await env.ANALYTICS_ENGINE.writeDataPoint({
       blobs: [exposure.eventId, 'exposure_update'],
       doubles: [exposure.totalRisk, exposure.maxExposure],
-      indexes: ['exposure_calculation']
+      indexes: ['exposure_calculation'],
     });
   }
 }
@@ -159,12 +163,12 @@ async function sendExposureAlert(exposure: ExposureMetrics, alertType: string, e
   await env.ANALYTICS_ENGINE.writeDataPoint({
     blobs: [exposure.eventId, alertType],
     doubles: [exposure.totalRisk, exposure.maxExposure],
-    indexes: ['exposure_alert']
+    indexes: ['exposure_alert'],
   });
 }
 
 // Export for use in scheduled trigger
 export const exposureCalculationSchedule = {
   cron: '*/30 * * * * *', // Every 30 seconds
-  handler: handleExposureCalculation
+  handler: handleExposureCalculation,
 };
