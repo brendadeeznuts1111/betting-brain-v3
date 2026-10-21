@@ -27,6 +27,9 @@
 import { Env } from '../types/api';
 import { runSafe, wait } from '../lib/scheduleUtils';
 import { createFantasy402Client } from '../utils/fantasy402-client';
+import { StructuredLogger } from '../utils/logger';
+
+const log = new StructuredLogger({ operation: 'bet_history_ingest' });
 
 /** Incremental overlap window — re-fetch a little history to catch late
  * settlements (a bet graded after the cursor advanced). */
@@ -71,7 +74,7 @@ export async function handleBetHistoryIngest(
     if (roster.length === 0) {
       // Not a silent no-op: on a fresh deploy this means no customer source
       // is populated yet, so nothing can ever be polled. Say so loudly.
-      console.error(
+      log.error(
         'bet-history ingest: empty roster — no bet_history_cursors, no recent bet_history, ' +
         'no active fantasy402_players in RAW_FEED_DB, and BET_HISTORY_SEED_CIDS unset. ' +
         'Capture player info (getInfoPlayer) or set BET_HISTORY_SEED_CIDS to seed the poller.'
@@ -112,15 +115,16 @@ export async function handleBetHistoryIngest(
         } catch (e) {
           failed++;
           await markCursorFailure(env, cid);
-          console.error(`bet-history ingest failed for ${cid}:`,
-            e instanceof Error ? e.message : e);
+          log.error('bet-history ingest failed for customer', {
+            cid, reason: e instanceof Error ? e.message : String(e),
+          });
         }
       }));
       // Gentle pacing between batches — protects the endpoint's rate limit
       if (i + BATCH_CONCURRENCY < work.length) await wait(250);
     }
 
-    console.log(`bet-history ingest: +${inserted} rows, ${backfills} backfills, ${failed} failures, roster ${roster.length}`);
+    log.info('bet-history ingest run complete', { written: inserted, backfills, failed, roster: roster.length });
     await reportHealth(env);
   });
 }
@@ -189,8 +193,9 @@ export async function getRoster(env: Env): Promise<string[]> {
     } catch (e) {
       // Table missing (migration 0007 not applied to RAW_FEED_DB) — keep going
       // with what we have; the empty-roster branch reports if that is nothing.
-      console.warn('bet-history ingest: fantasy402_players roster source unavailable:',
-        e instanceof Error ? e.message : e);
+      log.warn('bet-history ingest: fantasy402_players roster source unavailable', {
+        reason: e instanceof Error ? e.message : String(e),
+      });
     }
   }
   const seed = (env as unknown as { BET_HISTORY_SEED_CIDS?: string }).BET_HISTORY_SEED_CIDS;
@@ -207,10 +212,10 @@ async function getCursors(env: Env, cids: string[]): Promise<Map<string, CursorR
   // D1 supports batch binds; chunk to stay under bind limits
   for (let i = 0; i < cids.length; i += 100) {
     const slice = cids.slice(i, i + 100);
-    const placeholders = slice.map(() => '?').join(',');
+    // One JSON-array bind instead of an interpolated "?, ?, ..." list.
     const result = await env.ANALYTICS.prepare(
-      `SELECT * FROM bet_history_cursors WHERE cid IN (${placeholders})`
-    ).bind(...slice).all();
+      'SELECT * FROM bet_history_cursors WHERE cid IN (SELECT value FROM json_each(?))'
+    ).bind(JSON.stringify(slice)).all();
     for (const row of (result.results ?? []) as unknown as CursorRow[]) {
       map.set(row.cid, row);
     }
@@ -242,12 +247,18 @@ async function fetchCustomerPerformance(
   // Report date params are fantasy402-local (US Eastern) calendar dates.
   const fmt = formatEasternDate;
 
-  const data = await (client as any).getCustomerPerformance?.({
+  // Tolerant call: a typed getCustomerPerformance if the client grows one,
+  // else the client's generic POST helper.
+  const c = client as unknown as {
+    getCustomerPerformance?: (p: Record<string, string>) => Promise<unknown>;
+    makeRequest?: (endpoint: string, p: Record<string, string>) => Promise<unknown>;
+  };
+  const data = await c.getCustomerPerformance?.({
     customerID: cid,
     start: fmt(start),
     end: fmt(end),
     type: 'CP',
-  }) ?? await (client as any).makeRequest?.('/cloud/api/Reports/getCustomerPerformance', {
+  }) ?? await c.makeRequest?.('/cloud/api/Reports/getCustomerPerformance', {
     customerID: cid, start: fmt(start), end: fmt(end),
     operation: 'getCustomerPerformance',
   });
@@ -256,10 +267,11 @@ async function fetchCustomerPerformance(
 }
 
 /** Normalize a Customer Performance response into bet rows. Exported for tests. */
-export function normalizePerformanceRows(data: any): PerformanceWagerRow[] {
+export function normalizePerformanceRows(data: unknown): PerformanceWagerRow[] {
+  const wrapped = (data ?? {}) as { LIST?: unknown; data?: unknown };
   const list: unknown[] = Array.isArray(data) ? data
-    : Array.isArray(data?.LIST) ? data.LIST
-    : Array.isArray(data?.data) ? data.data
+    : Array.isArray(wrapped.LIST) ? wrapped.LIST
+    : Array.isArray(wrapped.data) ? wrapped.data
     : [];
 
   const rows: PerformanceWagerRow[] = [];
@@ -443,7 +455,10 @@ async function reportHealth(env: Env): Promise<void> {
 
   if (!healthy) {
     const webhook = (env as unknown as { ALERT_WEBHOOK_URL?: string }).ALERT_WEBHOOK_URL;
-    console.error(`🚨 bet_history stale: lag ${Number.isFinite(lagMinutes) ? lagMinutes.toFixed(0) : '∞'} min`);
+    log.error('🚨 bet_history stale', {
+      lagMinutes: Number.isFinite(lagMinutes) ? Math.round(lagMinutes) : null,
+      threshold: HEALTH_LAG_MINUTES,
+    });
     if (webhook) {
       await fetch(webhook, {
         method: 'POST',
@@ -455,7 +470,7 @@ async function reportHealth(env: Env): Promise<void> {
           impact: 'sharp scores frozen until ingest resumes',
           at: new Date().toISOString(),
         }),
-      }).catch(e => console.error('health webhook failed:', e));
+      }).catch(e => log.error('health webhook failed', { reason: e instanceof Error ? e.message : String(e) }));
     }
   }
 }

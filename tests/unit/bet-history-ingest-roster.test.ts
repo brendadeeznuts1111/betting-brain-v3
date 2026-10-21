@@ -5,6 +5,7 @@
  */
 import { describe, expect, spyOn, test } from 'bun:test';
 import { getRoster, handleBetHistoryIngest } from '../../src/schedules/betHistoryIngest';
+import { AnalyticsEngineStub } from '../utils/analytics-engine-stub';
 import { createMigratedSqlite, d1 } from '../utils/d1-sqlite-shim';
 
 const ctx = { waitUntil() {}, passThroughOnException() {} } as any;
@@ -16,14 +17,14 @@ const PROD_MIGRATIONS_SKIP = ['0004_test_data.sql'];
 function freshDeploy(extra: Record<string, unknown> = {}) {
   const analytics = createMigratedSqlite(PROD_MIGRATIONS_SKIP);
   const raw = createMigratedSqlite(PROD_MIGRATIONS_SKIP);
-  const points: any[] = [];
+  const analyticsEngine = new AnalyticsEngineStub();
   const env: any = {
     ANALYTICS: d1(analytics),
     RAW_FEED_DB: d1(raw),
-    ANALYTICS_ENGINE: { writeDataPoint: (p: any) => void points.push(p) },
+    ANALYTICS_ENGINE: analyticsEngine,
     ...extra,
   };
-  return { analytics, raw, env, points };
+  return { analytics, raw, env, analyticsEngine };
 }
 
 function addPlayer(raw: any, cid: string, active = 1) {
@@ -48,7 +49,7 @@ describe('bet-history ingest roster bootstrap', () => {
 
   test('missing fantasy402_players table does not break the roster', async () => {
     const { env } = freshDeploy({ RAW_FEED_DB: d1(new (require('bun:sqlite').Database)(':memory:')) });
-    const warn = spyOn(console, 'warn').mockImplementation(() => {});
+    const warn = spyOn(console, 'log').mockImplementation(() => {});
     expect(await getRoster(env)).toEqual([]);
     warn.mockRestore();
   });
@@ -88,15 +89,15 @@ describe('bet-history ingest roster bootstrap', () => {
   });
 
   test('no source at all: loud error + empty_roster datapoint, no upstream calls', async () => {
-    const { env, points } = freshDeploy();
+    const { env, analyticsEngine } = freshDeploy();
     const errors: string[] = [];
-    const err = spyOn(console, 'error').mockImplementation((...a: unknown[]) => void errors.push(a.join(' ')));
+    const err = spyOn(console, 'log').mockImplementation((...a: unknown[]) => void errors.push(a.join(' ')));
     let called = false;
     await handleBetHistoryIngest(env, ctx, { makeRequest: async () => ((called = true), []) } as any);
     err.mockRestore();
     expect(called).toBe(false);
     expect(errors.some(e => e.includes('empty roster'))).toBe(true);
-    expect(points.some(p => p.blobs?.[1] === 'empty_roster')).toBe(true);
+    expect(analyticsEngine.getCalls().some(c => c.blobs[1] === 'empty_roster')).toBe(true);
   });
 });
 
